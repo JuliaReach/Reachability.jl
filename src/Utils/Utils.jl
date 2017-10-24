@@ -4,7 +4,7 @@ for visualization.
 """
 module Utils
 
-using PyPlot, LazySets, ..Systems
+using LazySets, ..Systems
 
 # Visualization
 export @filename_to_png,
@@ -274,6 +274,10 @@ function plot_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64
     if isempty(plot_backend)
         # plot nothing
     elseif plot_backend in ["pyplot_inline", "pyplot_savefig"]
+        if !isdefined(:PyPlot)
+              error("this backend requires that your script loads the PyPlot module")
+        end
+        eval(Expr(:using, :PyPlot))      
         if plot_backend == "pyplot_savefig"
             PyPlot.ioff()  # turn off interactive plotting
             fig = PyPlot.figure()
