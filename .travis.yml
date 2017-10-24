@@ -14,6 +14,7 @@ git:
 before_script:
   - julia -e 'Pkg.clone("git://github.com/acroy/Expokit.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/juliareach/LazySets.jl.git")'
+  - julia -e 'ENV["PYTHON"]=""; Pkg.build("PyCall")'
 
 ## uncomment the following lines to allow failures on nightly julia
 ## (tests will run but not make your overall status red)
