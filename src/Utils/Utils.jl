@@ -1,6 +1,6 @@
 """
-Utils module containing helper functions and macros for block decompositions and
-for visualization.
+Utils module containing helper functions and macros for, e.g., block
+decompositions and visualization.
 """
 module Utils
 
@@ -17,6 +17,9 @@ export @filename_to_png,
 # Block Structure
 export @block_id,
        add_dimension
+
+# Usability
+export @relpath
 
 """
     @filename_to_png
@@ -277,7 +280,7 @@ function plot_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64
         if !isdefined(:PyPlot)
               error("this backend requires that your script loads the PyPlot module")
         end
-        eval(Expr(:using, :PyPlot))      
+        eval(Expr(:using, :PyPlot))
         if plot_backend == "pyplot_savefig"
             PyPlot.ioff()  # turn off interactive plotting
             fig = PyPlot.figure()
@@ -320,6 +323,22 @@ function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, p
         labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * dec(yaxis))
     end
     return labels
+end
+
+
+"""
+   @relpath(name)
+
+Returns the path of the current code file.
+This is handy, e.g., when calling a function from anywhere that wants to open a
+file relative to its own location.
+
+INPUT:
+
+- ``name`` -- file name
+"""
+macro relpath(name::String)
+    return :(join(split(@__FILE__, "/")[1:end-1], "/") * "/" * $name)
 end
 
 end # module
