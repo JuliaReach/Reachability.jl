@@ -158,7 +158,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :approx_model
             expected_type = String
         elseif key == :property
-            expected_type = Property
+            expected_type = Union{Property, Void}
         elseif key == :δ
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
