@@ -10,12 +10,13 @@ include("ReachSets/ReachSets.jl")
 include("Properties/Properties.jl")
 include("Transformations/Transformations.jl")
 
-using Reexport
+using Reexport, RecipesBase
 @reexport using LazySets, Reachability.Utils, Reachability.Systems
 using Reachability.ReachSets, Reachability.Properties,
       Reachability.Transformations
 
-export Property, Clause
+export Property, Clause,
+       RsetsProjSolution
 
 """
     Options
@@ -32,6 +33,25 @@ struct Options
     Options(dict::Dict{Symbol,Any}) = new(dict)
 end
 
+"""
+    Rset2DSolution
+
+Type that wraps the two-dimensional reach sets of the solution of a
+reachability problem.
+
+FIELDS:
+
+- ``polygons`` -- the list of reachable states, given as polygons in constraint
+                  representation
+- ``options``  -- the dictionary of options
+"""
+struct Rsets2DSolution
+  polygons::Vector{HPolygon}
+  options::Options
+
+  Rsets2DSolution(polygons, args::Options) = new(polygons, args)
+  Rset2sDSolution(polygons) = new(polygons, Options())
+end
 
 import Base.merge
 
@@ -453,7 +473,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             tic()
             RsetsProj = project(Rsets, size(Δ.A, 1), options, transformation_matrix)
             toc()
-            return RsetsProj
+            return Rsets2DSolution(RsetsProj, options)
         end
 
         return Rsets
@@ -613,9 +633,8 @@ function validate_plot_options_and_add_default_values!(polygons::Vector{HPolygon
         end
     end
 
-    return options
+    #return options
 end
-
 
 """
     plot(polygons, [options])
@@ -627,23 +646,24 @@ INPUT:
 - ``polygons`` -- sequence of polygons
 - ``options`` -- options for plotting
 """
-function plot(polygons::Vector{HPolygon}, options::Options)
-    options = validate_plot_options_and_add_default_values!(polygons, options)
+@recipe function plot_sol(sol::Rsets2DSolution)
 
-    plot_polygon(
-        view(polygons, options[:plot_indices]),
-        backend=options[:plot_backend],
-        gridlines=options[:gridlines],
-        name=options[:plot_name],
-        plot_labels=options[:plot_labels],
-        color=options[:plot_color]
-        )
-    nothing
+    #validate_plot_options_and_add_default_values!(sol.polygons, sol.options)
+
+    alpha --> 0.5
+    seriestype := :shape
+    #label --> options[:plot_labels]
+    #color --> options[:plot_color]
+    #gridlines --> options[:plot_gridlines]
+
+    #for i in sol.options[:plot_indices]
+    for i in 1:length(sol.polygons)
+        vlist = hcat(vertices_list(sol.polygons[i])...).'
+        @series (x, y) = vlist[:, 1], vlist[:, 2]
+    end
 end
 
-
-plot(polygons::Vector{HPolygon}, options::Pair{Symbol,<:Any}...) = plot(polygons, Options(Dict{Symbol,Any}(options)))
-
-export plot
+# TODO: allow interface like plot(sol, :color => "blue")
+#@recipe plot_sol(polygons::Vector{HPolygon}, options::Pair{Symbol,<:Any}...) = plot(polygons, Options(Dict{Symbol,Any}(options)))
 
 end # module
