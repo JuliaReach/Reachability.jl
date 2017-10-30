@@ -179,16 +179,16 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Vector{Int64}
             domain_constraints = (v::Vector{Int64}  ->  length(v) == 2)
         else
-            error("Unrecognized option '" * string(key) * "' found.")
+            error("Unrecognized option '$key' found.")
         end
 
         # check value type
         if !(value isa expected_type)
-            error("Option :" * string(key) * " must be of '" * string(expected_type) * "' type.")
+            error("Option :$key must be of '$expected_type' type.")
         end
         # check value domain constraints
         if !domain_constraints(value)
-            error(string(value) * " is not a valid value for option " * string(key) * ".")
+            error("$value is not a valid value for option :$key.")
         end
     end
 
@@ -217,27 +217,28 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
     δ_aliases = [:δ, :sampling_time]
     T_aliases = [:T, :time_horizon]
     check_aliases!(dict, dict_copy, δ_aliases)
+    check_aliases!(dict, dict_copy, [:N])
     check_aliases!(dict, dict_copy, T_aliases)
 
     defined = 0
     if haskey(dict_copy, :δ)
         value = dict_copy[:δ]
         if !(value isa Float64 && value > 0.)
-            error(string(value) * " is not a valid value for option $δ_aliases.")
+            error("$value is not a valid value for option $δ_aliases.")
         end
         defined += 1
     end
     if haskey(dict_copy, :N)
         value = dict_copy[:N]
         if !(value isa Int64 && value > 0)
-            error(string(value) * " is not a valid value for option :N.")
+            error("$value is not a valid value for option :N.")
         end
         defined += 1
     end
     if haskey(dict_copy, :T)
         value = dict_copy[:T]
         if !(value isa Float64 && value > 0.)
-            error(string(value) * " is not a valid value for option $T_aliases.")
+            error("$value is not a valid value for option $T_aliases.")
         end
         defined += 1
     end
@@ -268,10 +269,10 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
     elseif defined == 3
         N_computed = (Int64)(ceil(dict_copy[:T] / dict_copy[:δ]))
         if N_computed != dict_copy[:N]
-            error("Values for :δ, :N, and :T were defined, but they are inconsistent.")
+            error("Values for :δ ($(dict_copy[:δ])), :N ($(dict_copy[:N])), and :T ($(dict_copy[:T])) were defined, but they are inconsistent.")
         end
     else
-        error("Need two of the following options: :δ, :N, :T")
+        error("Need two of the following options: :δ, :N, :T (or at least :T and using default values)")
     end
 end
 
