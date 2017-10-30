@@ -22,7 +22,7 @@ using Reachability.ReachSets,
 
 export Property, Clause
 
-include("interface.jl")
+include("options.jl")
 include("solve.jl")
 include("plot_recipes.jl")
 

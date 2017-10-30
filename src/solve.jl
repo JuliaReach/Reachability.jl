@@ -1,146 +1,23 @@
-export solve, project
+export Rset2DSolution, solve, project
 
 """
-    validate_solver_options_and_add_default_values!(options)
+    Rset2DSolution
 
-Validates that the given solver options are supported and adds default values for most
-unspecified options.
+Type that wraps the two-dimensional reach sets of the solution of a
+reachability problem.
 
-INPUT:
+FIELDS:
 
-- ``options`` -- an `Options` object, a dictionary of options
-
-Supported options:
-- `:mode` (main analysis mode)
-- `:approx_model` (switch for bloating/continuous time analysis)
-- `:property` (a safety property)
-- `:δ` (time step)
-  - alias: `:sampling_time`
-- `:N` (number of time steps)
-- `:T` (time horizon)
-  - alias: `:time_horizon`
-- `:algorithm` (algorithm backend)
-- `:blocks` (blocks of interest)
-- `:iterative_refinement` (switch for refining precision/directions)
-- `:ɛ` (precision threshold, s. :iterative_refinement)
-- `:lazy_expm` (lazy matrix exponential)
-- `:assume_sparse` (switch for sparse matrices)
-- `:pade_expm` (switch for using Pade approximant method)
-- `:lazy_X0` (switch for keeping the initial states a lazy set)
-- `:discr_algorithm` (discretization algorithm)
-- `:coordinate_transformation` (coordinate transformation method)
-- `:assume_homogeneous` (switch for ignoring inputs)
-- `:projection_matrix` (projection matrix)
-- `:apply_projection` (switch for applying projection)
-- `:plot_vars` (variables for projection and plotting)
-  - alias: `:output_variables`
-
-We add default values for almost all undefined options, i.e., modify the input
-options. The benefit is that the user can print the options that were actually
-used. For supporting aliases, we create another copy that is actually used where
-we only keep those option names that are used internally.
+- ``polygons`` -- the list of reachable states, given as polygons in constraint
+                  representation
+- ``options``  -- the dictionary of options
 """
-function validate_solver_options_and_add_default_values!(options::Options)::Options
-    dict = options.dict
-    options_copy = Options()
-    dict_copy = options_copy.dict
+struct Rsets2DSolution
+  polygons::Vector{HPolygon}
+  options::Options
 
-    # check for aliases and use default values for unspecified options
-    check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_model], "forward")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:iterative_refinement], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:ɛ], Inf)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:discr_algorithm], "forward")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
-
-    # special options: δ, N, T
-    check_and_add_δ_N_T!(dict, dict_copy)
-
-    # validation
-    for kv_pair in dict_copy
-        key::Symbol = kv_pair.first
-        value = kv_pair.second
-
-        # define type/domain constraints for each known key
-        domain_constraints = (v  ->  true)
-        if key == :mode
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["reach", "check"])
-            if value == "check" && dict_copy[:property] == nothing
-                error("No property has been defined.")
-            end
-        elseif key == :approx_model
-            expected_type = String
-        elseif key == :property
-            expected_type = Union{Property, Void}
-        elseif key == :δ
-            expected_type = Float64
-            domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :N
-            expected_type = Int64
-            domain_constraints = (v::Int64  ->  v > 0)
-        elseif key == :T
-            expected_type = Float64
-            domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :algorithm
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["explicit"])
-        elseif key == :blocks
-            expected_type = AbstractVector{Int64}
-        elseif key == :iterative_refinement
-            expected_type = Bool
-        elseif key == :ɛ
-            expected_type = Float64
-            domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :lazy_expm
-            expected_type = Bool
-        elseif key == :assume_sparse
-            expected_type = Bool
-        elseif key == :pade_expm
-            expected_type = Bool
-        elseif key == :lazy_X0
-            expected_type = Bool
-        elseif key == :discr_algorithm
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["forward"])
-        elseif key == :coordinate_transformation
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["", "schur"])
-        elseif key == :assume_homogeneous
-            expected_type = Bool
-        elseif key == :projection_matrix
-            expected_type = Union{SparseMatrixCSC{Float64, Int64}, Void}
-        elseif key == :apply_projection
-            expected_type = Bool
-        elseif key == :plot_vars
-            expected_type = Vector{Int64}
-            domain_constraints = (v::Vector{Int64}  ->  length(v) == 2)
-        else
-            error("Unrecognized option '" * string(key) * "' found.")
-        end
-
-        # check value type
-        if !(value isa expected_type)
-            error("Option :" * string(key) * " must be of '" * string(expected_type) * "' type.")
-        end
-        # check value domain constraints
-        if !domain_constraints(value)
-            error(string(value) * " is not a valid value for option " * string(key) * ".")
-        end
-    end
-
-    return options_copy
+  Rsets2DSolution(polygons, args::Options) = new(polygons, args)
+  Rset2sDSolution(polygons) = new(polygons, Options())
 end
 
 """
