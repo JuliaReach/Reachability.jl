@@ -1,115 +1,52 @@
 """
-    validate_plot_options_and_add_default_values!(polygons, options)
+    plot_sol(sol::Rsets2DSolution; ...)
 
-Validates that the given plot options are supported and adds default values for all
-unspecified options.
+Plots the solution of a reachability problem in 2D with the given options.
 
-INPUT:
+### Input
 
-- ``polygons`` -- sequence of polygons
-- ``options``  -- an `Options` object, a dictionary of options
-                  Supported options:
-                  - `:plot_indices` (which indices of the sequence to plot)
-                  - `:plot_backend` (which backend should be used)
-                  - `:gridlines` (should grid lines be used)
-                  - `:plot_name` (name of the plot file)
-                  - `:plot_vars` (variables to plot)
-                  - `:plot_labels` (axis labels)
-                  - `:plot_color` (plot color)
-"""
-function validate_plot_options_and_add_default_values!(polygons::Vector{HPolygon}, options::Options)
-    dict = options.dict
+- `Rsets2DSolution` -- the solution of a reachability problem, projected into
+                         two dimensions
+- `seriescolor`     -- (optional, default: "blue"): color of the polygons; by
+                         default, the same color is used for all of them
+- `label`           -- (optional, default: nothing): the legend label 
+- `grid`            -- (optional, default: true): to use gridlines or not 
+- `alpha`           -- (optional, default: 0.5): the transparency of the polygons
+- `indices`         -- (optional, default: nothing): if given, plot only a sample of
+                       the array; this option can be passed through `sol.options`
+- `vars`            -- (optional, default: nothing): if given, label the x and y
+                       axes with the variables being plotted; this option can be
+                       passed through `sol.options`, or as a pair of integers,
+                       where 0 indicates the time variable
 
-    # use default values for unspecified options
-    # TODO<notification> print message to user for each default option, depending on verbosity level
-    if !haskey(dict, :plot_indices)
-        dict[:plot_indices] = 1:length(polygons)
-    end
-    if !haskey(dict, :plot_backend)
-        dict[:plot_backend] = "pyplot_savefig"
-    end
-    if !haskey(dict, :gridlines)
-        dict[:gridlines] = true
-    end
-    if !haskey(dict, :plot_name)
-        dict[:plot_name] = "plot.png"
-    end
-    if !haskey(dict, :plot_vars)
-        dict[:plot_vars] = [0, 1]
-    end
-    if !haskey(dict, :plot_labels)
-        dict[:plot_labels] = add_plot_labels(dict[:plot_vars])
-    end
-    if !haskey(dict, :plot_color)
-        dict[:plot_color] = "blue"
-    end
+### Notes
 
-    # validation
-    for kv_pair in dict
-        key::Symbol = kv_pair.first
-
-        # define type/domain constraints for each known key
-	domain_constraints = (v  ->  true)
-	if key == :plot_indices
-            expected_type = AbstractVector{Int64}
-        elseif key == :plot_backend
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["", "pyplot_savefig", "pyplot_inline", "gadfly"])
-        elseif key == :gridlines
-            expected_type = Bool
-        elseif key == :plot_name
-            expected_type = String
-        elseif key == :plot_labels
-            expected_type = Vector{String}
-            domain_constraints = (v::Vector{String}  ->  length(v) == 2)
-        elseif key == :plot_vars
-            expected_type = Vector{Int64}
-            domain_constraints = (v::Vector{Int64}  ->  length(v) == 2)
-        elseif key == :plot_color
-            expected_type = String
-        else
-            error("Unrecognized option '" * string(key) * "' found.")
-        end
-
-        value = kv_pair.second
-        # check value type
-        if !(value isa expected_type)
-            error("Option :" * string(key) * " must be of '" * string(expected_type) * "' type.")
-        end
-        # check value domain constraints
-        if !domain_constraints(value)
-            error(string(value) * " is not a valid value for option " * string(key) * ".")
-        end
-    end
-
-    #return options
-end
-
-"""
-    plot(polygons, [options])
-
-Plots a sequence of polygons with the given options.
-
-INPUT:
-
-- ``polygons`` -- sequence of polygons
-- ``options`` -- options for plotting
+To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
+argument. For additional options, consult the Plots.jl reference manual.
 """
 @recipe function plot_sol(sol::Rsets2DSolution;
-                          seriescolor="blue", label="", grid=true, alpha=0.5)
-    #                     plot_indices::AbstractVector{Int64}=1:length(sol.polygons))
-
-    #validate_plot_options_and_add_default_values!(sol.polygons, sol.options)
+                          seriescolor="blue", label="", grid=true, alpha=0.5,
+                          indices=nothing, vars=nothing)
 
     seriestype := :shape
-#=
-    if plot_options[:plot_indices]
-         idx = plot_options[:plot_indices]
-    else
-        idx = 1:length(sol.polygons)
+
+    if vars != nothing
+        vars = add_plot_labels(vars)
+        xguide --> vars[1]; yguide --> vars[2]
+    elseif haskey(sol.options.dict, :plot_vars)
+        vars = add_plot_labels(sol.options.dict[:plot_vars])
+        xguide --> vars[1]; yguide --> vars[2]
     end
-=#
-    for i in 1:length(sol.polygons)
+
+    if indices == nothing
+        if haskey(sol.options.dict, :plot_indices)
+            indices = sol.options.dict[:plot_indices]
+        else
+            indices = 1:length(sol.polygons)
+        end
+    end
+
+    for i in indices
         vlist = hcat(vertices_list(sol.polygons[i])...).'
         @series (x, y) = vlist[:, 1], vlist[:, 2]
     end
