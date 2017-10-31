@@ -79,7 +79,7 @@ Supported options:
 - `:assume_sparse` (switch for sparse matrices)
 - `:pade_expm` (switch for using Pade approximant method)
 - `:lazy_X0` (switch for keeping the initial states a lazy set)
-- `:discr_algorithm` (discretization algorithm)
+- `:approx_model` (approximation model)
 - `:coordinate_transformation` (coordinate transformation method)
 - `:assume_homogeneous` (switch for ignoring inputs)
 - `:projection_matrix` (projection matrix)
@@ -109,7 +109,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:discr_algorithm], "forward")
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
@@ -134,6 +133,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             end
         elseif key == :approx_model
             expected_type = String
+            domain_constraints = (v::String  ->  v in ["forward", "backward",
+                                                       "firstorder", "nobloating"])
         elseif key == :property
             expected_type = Union{Property, Void}
         elseif key == :δ
@@ -163,9 +164,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_X0
             expected_type = Bool
-        elseif key == :discr_algorithm
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["forward"])
         elseif key == :coordinate_transformation
             expected_type = String
             domain_constraints = (v::String  ->  v in ["", "schur"])
