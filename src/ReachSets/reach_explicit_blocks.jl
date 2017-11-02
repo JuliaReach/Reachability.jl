@@ -247,7 +247,7 @@ end
 
 
 # lazymexp, no input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp,
+function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 n::Int64,
                                 b::Int64,
@@ -297,7 +297,7 @@ end
 
 
 # lazymexp, with input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp,
+function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 U::ConstantNonDeterministicInput,
                                 n::Int64,

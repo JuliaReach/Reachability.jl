@@ -235,7 +235,7 @@ function print_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int6
     @printf "sparsity %s: %.3f %% (%d/%d zero blocks)\n" name sparsity zero_blocks all_blocks
 end
 
-function print_sparsity(ϕ::SparseMatrixExp, name::String="")
+function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
     zero_blocks = 0
     b = (Int64)(size(ϕ, 1) / 2)
     @inline F(bi::Int64) = get_rows(ϕ, (2*bi-1):2*bi)
@@ -273,7 +273,7 @@ INPUT:
 
                  - ``''`` -- (empty string), no plotting
 """
-function plot_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}, SparseMatrixExp}, name::String, plot_backend::String="")
+function plot_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}, SparseMatrixExp{Float64}}, name::String, plot_backend::String="")
     if isempty(plot_backend)
         # plot nothing
     elseif plot_backend in ["pyplot_inline", "pyplot_savefig"]
