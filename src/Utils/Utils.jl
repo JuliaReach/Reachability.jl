@@ -218,7 +218,7 @@ INPUT:
 - ``ϕ``    -- a matrix, which can be either dense or sparse
 - ``name`` -- the name of the matrix (for the output message)
 """
-function print_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}}, name::String="")
+function print_sparsity(ϕ::AbstractVector{Float64}, name::String="")
     zero_blocks = 0
     b = (Int64)(size(ϕ, 1) / 2)
     @inline F(bi::Int64, bj::Int64) = ϕ[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
@@ -273,7 +273,7 @@ INPUT:
 
                  - ``''`` -- (empty string), no plotting
 """
-function plot_sparsity(ϕ::Union{Matrix{Float64}, SparseMatrixCSC{Float64, Int64}, SparseMatrixExp{Float64}}, name::String, plot_backend::String="")
+function plot_sparsity(ϕ::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, name::String, plot_backend::String="")
     if isempty(plot_backend)
         # plot nothing
     elseif plot_backend in ["pyplot_inline", "pyplot_savefig"]
