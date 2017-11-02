@@ -76,7 +76,7 @@ EXAMPLES:
      0.46  -0.67  0.0
      0.0    0.0   0.0
 """
-function add_dimension(A::AbstractArray)::AbstractArray
+function add_dimension(A::AbstractMatrix{Float64})::AbstractMatrix{Float64}
     n = size(A, 1)
     return vcat(hcat(A, zeros(n)), zeros(n+1).')
 end

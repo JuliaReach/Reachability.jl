@@ -32,7 +32,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -91,7 +91,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -142,7 +142,7 @@ function check_explicit_blocks!(ϕ::Matrix{Float64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -200,7 +200,7 @@ function check_explicit_blocks!(ϕ::Matrix{Float64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -247,7 +247,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp,
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -295,7 +295,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp,
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
