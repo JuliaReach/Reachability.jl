@@ -32,7 +32,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -91,7 +91,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -142,7 +142,7 @@ function check_explicit_blocks!(ϕ::Matrix{Float64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -200,7 +200,7 @@ function check_explicit_blocks!(ϕ::Matrix{Float64},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -242,12 +242,12 @@ end
 
 
 # lazymexp, no input
-function check_explicit_blocks!(ϕ::SparseMatrixExp,
+function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -288,14 +288,14 @@ end
 
 
 # lazymexp, with input
-function check_explicit_blocks!(ϕ::SparseMatrixExp,
+function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 prop::Property)::Int64
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1

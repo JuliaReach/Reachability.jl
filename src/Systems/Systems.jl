@@ -57,7 +57,7 @@ Base.length(NDInput::ConstantNonDeterministicInput) = 1
 
 import Base: *
 
-function *(M::AbstractArray{Float64, 2}, NDInput::ConstantNonDeterministicInput)
+function *(M::AbstractMatrix{Float64}, NDInput::ConstantNonDeterministicInput)
     return ConstantNonDeterministicInput(M * start(NDInput).sf)
 end
 
@@ -103,7 +103,7 @@ where:
 struct ContinuousSystem <: System
 
     # system's matrix
-    A::AbstractArray{Float64, 2}
+    A::AbstractMatrix{Float64}
 
     # initial set of states
     X0::LazySet
@@ -111,10 +111,10 @@ struct ContinuousSystem <: System
     # input
     U::NonDeterministicInput
 
-    ContinuousSystem(A::AbstractArray{Float64, 2}, X0::LazySet, U::NonDeterministicInput) = new(A, X0, U)
-    ContinuousSystem(A::AbstractArray{Float64, 2}, X0::LazySet) = new(A, X0, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
-    ContinuousSystem(A::AbstractArray{Float64, 2}, X0::LazySet, U::LazySet) = new(A, X0, ConstantNonDeterministicInput(U))
-    ContinuousSystem(A::AbstractArray{Float64, 2}, X0::LazySet, U::Array{<:LazySet, 1}) = new(A, X0, TimeVaryingNonDeterministicInput(U))
+    ContinuousSystem(A::AbstractMatrix{Float64}, X0::LazySet, U::NonDeterministicInput) = new(A, X0, U)
+    ContinuousSystem(A::AbstractMatrix{Float64}, X0::LazySet) = new(A, X0, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    ContinuousSystem(A::AbstractMatrix{Float64}, X0::LazySet, U::LazySet) = new(A, X0, ConstantNonDeterministicInput(U))
+    ContinuousSystem(A::AbstractMatrix{Float64}, X0::LazySet, U::Array{<:LazySet, 1}) = new(A, X0, TimeVaryingNonDeterministicInput(U))
 end
 
 # dimension of a System (number of independent variables)
@@ -135,7 +135,7 @@ where
 """
 struct DiscreteSystem <: System
     # system's matrix
-    A::Union{AbstractArray{Float64, 2}, SparseMatrixExp}
+    A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}
 
     # initial set of states
     X0::LazySet
@@ -146,10 +146,10 @@ struct DiscreteSystem <: System
     # input
     U::NonDeterministicInput
 
-    DiscreteSystem(A::Union{AbstractArray{Float64, 2}, SparseMatrixExp}, X0::LazySet, δ::Float64) = new(A, X0, δ, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
-    DiscreteSystem(A::Union{AbstractArray{Float64, 2}, SparseMatrixExp}, X0::LazySet, δ::Float64, U::LazySet) = new(A, X0, δ, ConstantNonDeterministicInput(U))
-    DiscreteSystem(A::Union{AbstractArray{Float64, 2}, SparseMatrixExp}, X0::LazySet, δ::Float64, U::Array{<:LazySet, 1}) = new(A, X0, δ, TimeVaryingNonDeterministicInput(U))
-    DiscreteSystem(A::Union{AbstractArray{Float64, 2}, SparseMatrixExp}, X0::LazySet, δ::Float64, U::NonDeterministicInput) = new(A, X0, δ, U)
+    DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, X0::LazySet, δ::Float64) = new(A, X0, δ, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, X0::LazySet, δ::Float64, U::LazySet) = new(A, X0, δ, ConstantNonDeterministicInput(U))
+    DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, X0::LazySet, δ::Float64, U::Array{<:LazySet, 1}) = new(A, X0, δ, TimeVaryingNonDeterministicInput(U))
+    DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, X0::LazySet, δ::Float64, U::NonDeterministicInput) = new(A, X0, δ, U)
 end
 
 # dimension of a System (number of independent variables)

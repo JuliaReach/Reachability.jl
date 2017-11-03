@@ -35,7 +35,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -95,7 +95,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -146,7 +146,7 @@ function reach_explicit_blocks!(ϕ::Matrix{Float64},
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -205,7 +205,7 @@ function reach_explicit_blocks!(ϕ::Matrix{Float64},
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -247,13 +247,13 @@ end
 
 
 # lazymexp, no input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp,
+function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -297,14 +297,14 @@ end
 
 
 # lazymexp, with input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp,
+function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 Xhat0::Vector{HPolygon},
                                 U::ConstantNonDeterministicInput,
                                 n::Int64,
                                 b::Int64,
                                 N::Int64,
                                 overapproximate::Function,
-                                blocks::AbstractArray{Int64},
+                                blocks::AbstractVector{Int64},
                                 res::Vector{CartesianProductArray})
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
