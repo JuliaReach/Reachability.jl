@@ -58,13 +58,9 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
 
     #coefficients matrix
     if assume_sparse
-        push!(args, S.A)
+        push!(args, sparse(S.A))
     else
-        try
-            push!(args, full(S.A))
-        catch
-            push!(args, S.A)
-        end
+        push!(args, S.A)
     end
 
     # Cartesian decomposition of the initial set

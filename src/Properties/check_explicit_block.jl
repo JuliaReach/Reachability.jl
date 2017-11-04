@@ -116,7 +116,7 @@ end
 
 
 # dense, with input
-function check_explicit_block!(ϕ::Matrix{Float64},
+function check_explicit_block!(ϕ::AbstractMatrix{Float64},
                                Xhat0::Vector{HPolygon},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
@@ -161,7 +161,7 @@ end
 
 
 # dense, no input
-function check_explicit_block!(ϕ::Matrix{Float64},
+function check_explicit_block!(ϕ::AbstractMatrix{Float64},
                                Xhat0::Vector{HPolygon},
                                n::Int64,
                                b::Int64,
