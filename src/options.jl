@@ -288,7 +288,6 @@ INPUT:
 - ``dict`` -- a dictionary of options
 - ``dict_copy`` -- a copy of the dictionary of options for internal names
 - ``aliases`` -- option aliases; the first name is the one we use internally
-- ``default_value`` -- the default value for the option
 """
 function check_aliases!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol})
     # find aliases and check consistency in case several aliases have been used
@@ -314,7 +313,7 @@ function check_aliases!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, ali
 end
 
 """
-    check_aliases_and_add_default_value!(dict, dict_copy, aliases, default_value)
+    check_aliases_and_add_default_value!(dict, dict_copy, aliases, default_value, [modify_dict])
 
 This function has several purposes:
 - translate aliases to the option that is used internally
@@ -327,14 +326,17 @@ INPUT:
 - ``dict_copy`` -- a copy of the dictionary of options for internal names
 - ``aliases`` -- option aliases; the first name is the one we use internally
 - ``default_value`` -- the default value for the option
+- ``modify_dict`` -- (optional, default true) indicates if `dict` should be modified
 """
-function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any)
+function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any, modify_dict::Bool=true)
     check_aliases!(dict, dict_copy, aliases)
 
-    if !haskey(dict, aliases[1])
+    if !haskey(dict_copy, aliases[1])
         # no alias and no value
         # TODO<notification> print message to user for each default option, depending on verbosity level
-        dict[aliases[1]] = default_value
+        if (modify_dict)
+            dict[aliases[1]] = default_value
+        end
         dict_copy[aliases[1]] = default_value
     end
 end

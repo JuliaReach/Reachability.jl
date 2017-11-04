@@ -30,24 +30,47 @@ argument. For additional options, consult the Plots.jl reference manual.
 
     seriestype := :shape
 
+    options = check_aliases_and_add_default_value(sol)
+
     if vars != nothing
         vars = add_plot_labels(vars)
         xguide --> vars[1]; yguide --> vars[2]
-    elseif haskey(sol.options.dict, :plot_vars)
-        vars = add_plot_labels(sol.options.dict[:plot_vars])
+    elseif options.dict[:plot_vars] != nothing
+        vars = add_plot_labels(options.dict[:plot_vars])
         xguide --> vars[1]; yguide --> vars[2]
     end
 
     if indices == nothing
-        if haskey(sol.options.dict, :plot_indices)
-            indices = sol.options.dict[:plot_indices]
-        else
-            indices = 1:length(sol.polygons)
-        end
+        indices = options.dict[:plot_indices]
     end
 
     for i in indices
         vlist = hcat(vertices_list(sol.polygons[i])...).'
         @series (x, y) = vlist[:, 1], vlist[:, 2]
     end
+end
+
+"""
+    check_aliases_and_add_default_value(sol)
+
+Creates a copy of an options structure where aliases have been converted to the
+symbol that we use internally.
+
+INPUT:
+
+- ``sol`` -- the solution of a reachability problem, projected into two dimensions
+
+Supported options:
+- `:plot_vars` (variables for plotting)
+- alias: `:output_variables`
+"""
+function check_aliases_and_add_default_value(sol::Rsets2DSolution)::Options
+    dict = sol.options.dict
+    options_copy = Options()
+    dict_copy = options_copy.dict
+
+    check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_indices], 1:length(sol.polygons), false)
+
+    return options_copy
 end
