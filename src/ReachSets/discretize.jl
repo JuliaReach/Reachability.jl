@@ -41,9 +41,9 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
         ϕ = SparseMatrixExp(cont_sys.A * δ)
     else
         if pade_expm
-            ϕ = sparse(padm(cont_sys.A * δ))
+            ϕ = padm(cont_sys.A * δ)
         else
-            ϕ = sparse(expm(full(cont_sys.A * δ)))
+            ϕ = expm(full(cont_sys.A * δ))
         end
     end
 
@@ -60,9 +60,9 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
         Phi1Adelta = get_columns(P, (n+1):2*n)[1:n, :]
     else
         if pade_expm
-            P = sparse(padm([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
+            P = padm([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
         else
-            P = sparse(expm(full([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])))
+            P = expm(full([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
         end
         Phi1Adelta = P[1:n, (n+1):2*n]
     end
@@ -93,8 +93,11 @@ Compute bloating factors using forward or backward interpolation.
 
 - `cs`        -- a continuous system
 - `δ`         -- step size
+- `approx_model`
 - `pade_expm` -- if true, use Pade approximant method to compute the
                  matrix exponential
+- `lazy_expm` -- if true, compute the matrix exponential in a lazy way
+                 suitable for very large systems)
 
 ## Algorithm
 
@@ -120,9 +123,9 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         ϕ = SparseMatrixExp(cont_sys.A*δ)
     else
         if pade_expm
-            ϕ = sparse(padm(cont_sys.A*δ))
+            ϕ = padm(cont_sys.A*δ)
         else
-            ϕ = sparse(expm(full(cont_sys.A*δ)))
+            ϕ = expm(full(cont_sys.A*δ))
         end
     end
 
@@ -142,9 +145,9 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         Phi2Aabs = get_columns(P, (2*n+1):3*n)[1:n, :]
     else
         if pade_expm
-            P = sparse(padm([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
+            P = padm([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
         else
-            P = sparse(expm(full([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])))
+            P = expm(full([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
         end
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
@@ -255,9 +258,9 @@ computed flowpipe of the discretized system.
 For discrete-time reachability, use `approx_model="`nobloating`"`).
 """
 function discretize(cont_sys::ContinuousSystem, δ::Float64;
-                           approx_model::String="forward",
-                           pade_expm::Bool=false,
-                           lazy_expm::Bool=false)::DiscreteSystem
+                    approx_model::String="forward",
+                    pade_expm::Bool=false,
+                    lazy_expm::Bool=false)::DiscreteSystem
 
     if approx_model in ["forward", "backward"]
         return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)

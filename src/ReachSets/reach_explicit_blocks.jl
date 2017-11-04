@@ -139,7 +139,7 @@ end
 
 
 # dense, with input
-function reach_explicit_blocks!(ϕ::Matrix{Float64},
+function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
                                 Xhat0::Vector{HPolygon},
                                 U::ConstantNonDeterministicInput,
                                 n::Int64,
@@ -199,7 +199,7 @@ end
 
 
 # dense, no input
-function reach_explicit_blocks!(ϕ::Matrix{Float64},
+function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
                                 Xhat0::Vector{HPolygon},
                                 n::Int64,
                                 b::Int64,
