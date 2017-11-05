@@ -63,6 +63,7 @@ INPUT:
 - ``options`` -- an `Options` object, a dictionary of options
 
 Supported options:
+- `:verbosity` (controls logging output)
 - `:mode` (main analysis mode)
 - `:approx_model` (switch for bloating/continuous time analysis)
 - `:property` (a safety property)
@@ -93,9 +94,16 @@ used. For supporting aliases, we create another copy that is actually used where
 we only keep those option names that are used internally.
 """
 function validate_solver_options_and_add_default_values!(options::Options)::Options
+    global G_LOG
+
     dict = options.dict
     options_copy = Options()
     dict_copy = options_copy.dict
+
+    # first read the verbosity option and set global log level accordingly
+    if haskey(dict, :verbosity)
+        G_LOG = dict[:verbosity]
+    end
 
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
@@ -125,7 +133,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
         # define type/domain constraints for each known key
         domain_constraints = (v  ->  true)
-        if key == :mode
+        if key == :verbosity
+            expected_type = Bool
+        elseif key == :mode
             expected_type = String
             domain_constraints = (v::String  ->  v in ["reach", "check"])
             if value == "check" && dict_copy[:property] == nothing
