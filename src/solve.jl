@@ -60,7 +60,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             pade_expm=options[:pade_expm],
             lazy_expm=options[:lazy_expm]
             )
-        toc()
+        tocc()
     else
         Δ = system
     end
@@ -76,7 +76,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             Δ,
             options[:plot_vars]
             )
-        toc()
+        tocc()
     else
         transformation_matrix = nothing
     end
@@ -98,7 +98,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0]
             )
-        toc()
+        tocc()
 
         # ==========
         # Projection
@@ -107,7 +107,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             info("Projection...")
             tic()
             RsetsProj = project(Rsets, size(Δ.A, 1), options, transformation_matrix)
-            toc()
+            tocc()
             return Rsets2DSolution(RsetsProj, options)
         end
 
@@ -130,7 +130,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             assume_homogeneous=options[:assume_homogeneous],
             property=options[:property]
             )
-        toc()
+        tocc()
 
         if answer == 0
             info("The property is satisfied!")

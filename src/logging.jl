@@ -1,17 +1,17 @@
 import Base: info, toc
 
-export info, toc
+export info, tocc
 
 global G_LOG = false
 
 function info(msg::String)
     if G_LOG
-        Base.println(msg)
+        println(msg)
     end
 end
 
-function toc()
+function tocc()
     if G_LOG
-        Base.toc()
+        toc()
     end
 end
