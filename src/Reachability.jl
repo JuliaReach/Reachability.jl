@@ -4,6 +4,7 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
+include("logging.jl")
 include("Systems/Systems.jl")
 include("Utils/Utils.jl")
 include("ReachSets/ReachSets.jl")
