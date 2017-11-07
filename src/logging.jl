@@ -1,17 +1,26 @@
-import Base: info, toc
+import Base: info, warn, toc
+import Memento: debug
 
-export info, tocc, configure_logger
+export info, warn, debug, tocc, configure_logger
 
 global G_LOGGER = nothing
 
 const DEFAULT_LOG_LEVEL = "warn"
 
-function info(msg::String)
-    info(G_LOGGER, msg)
+@inline function info(msg::String)
+    Memento.info(G_LOGGER, msg)
 end
 
-function tocc()
-    info(G_LOGGER, "elapsed time: $(toq()) seconds")
+@inline function warn(msg::String)
+    Memento.warn(G_LOGGER, msg)
+end
+
+@inline function debug(msg::String)
+    Memento.debug(G_LOGGER, msg)
+end
+
+@inline function tocc(func::Function=info)
+    func("elapsed time: $(toq()) seconds")
 end
 
 function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
