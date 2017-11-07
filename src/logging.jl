@@ -7,22 +7,70 @@ global G_LOGGER = nothing
 
 const DEFAULT_LOG_LEVEL = "warn"
 
+"""
+    info(msg)
+
+Prints a message on info level.
+
+INPUT:
+
+- `msg` - message string
+"""
 @inline function info(msg::String)
     Memento.info(G_LOGGER, msg)
 end
 
+"""
+    warn(msg)
+
+Prints a message on warn level.
+
+INPUT:
+
+- `msg` - message string
+"""
 @inline function warn(msg::String)
     Memento.warn(G_LOGGER, msg)
 end
 
+"""
+    debug(msg)
+
+Prints a message on debug level.
+
+INPUT:
+
+- `msg` - message string
+"""
 @inline function debug(msg::String)
     Memento.debug(G_LOGGER, msg)
 end
 
+"""
+    tocc(func)
+
+Prints the output of `toc()` using the given log function (default: `info`).
+
+INPUT:
+
+- `func` - (optional, default: `info`) log function
+"""
 @inline function tocc(func::Function=info)
     func("elapsed time: $(toq()) seconds")
 end
 
+"""
+    configure_logger(level)
+
+Configures the global log level. If no log level is passed, we use the log level
+that is defined by the constant `DEFAULT_LOG_LEVEL`.
+
+INPUT:
+
+- `level` - (optional) the log level; can be either an integer between 0 and 2
+            or a string that is supported by the `Memento.jl` package; see:
+            https://invenia.github.io/Memento.jl/latest/man/intro.html#Logging-levels-1
+"""
 function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
     if level isa String
         level_string = level
