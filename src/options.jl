@@ -94,7 +94,7 @@ used. For supporting aliases, we create another copy that is actually used where
 we only keep those option names that are used internally.
 """
 function validate_solver_options_and_add_default_values!(options::Options)::Options
-    global G_LOG
+    global G_LOGGER
 
     dict = options.dict
     options_copy = Options()
@@ -102,7 +102,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # first read the verbosity option and set global log level accordingly
     if haskey(dict, :verbosity)
-        G_LOG = dict[:verbosity]
+        G_LOGGER = configure_logger(dict[:verbosity])
+    else
+        G_LOGGER = configure_logger()
     end
 
     # check for aliases and use default values for unspecified options

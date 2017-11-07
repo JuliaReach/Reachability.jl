@@ -11,7 +11,7 @@ include("ReachSets/ReachSets.jl")
 include("Properties/Properties.jl")
 include("Transformations/Transformations.jl")
 
-using Reexport, RecipesBase
+using Reexport, RecipesBase, Memento
 
 @reexport using LazySets,
                 Reachability.Utils,
