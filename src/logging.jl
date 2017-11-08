@@ -12,7 +12,7 @@ const DEFAULT_LOG_LEVEL = "warn"
 
 Prints a message on info level.
 
-INPUT:
+### Input
 
 - `msg` - message string
 """
@@ -25,7 +25,7 @@ end
 
 Prints a message on warn level.
 
-INPUT:
+### Input
 
 - `msg` - message string
 """
@@ -38,7 +38,7 @@ end
 
 Prints a message on debug level.
 
-INPUT:
+### Input
 
 - `msg` - message string
 """
@@ -51,7 +51,7 @@ end
 
 Prints the output of `toc()` using the given log function (default: `info`).
 
-INPUT:
+### Input
 
 - `func` - (optional, default: `info`) log function
 """
@@ -65,11 +65,12 @@ end
 Configures the global log level. If no log level is passed, we use the log level
 that is defined by the constant `DEFAULT_LOG_LEVEL`.
 
-INPUT:
+### Input
 
 - `level` - (optional) the log level; can be either an integer between 0 and 2
-            or a string that is supported by the `Memento.jl` package; see:
-            https://invenia.github.io/Memento.jl/latest/man/intro.html#Logging-levels-1
+            or a string that is supported by the
+            [Memento.jl](https://invenia.github.io/Memento.jl/latest/man/intro.html#Logging-levels-1)
+            package.
 """
 function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
     if level isa String
