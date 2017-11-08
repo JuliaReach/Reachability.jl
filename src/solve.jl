@@ -140,7 +140,7 @@ function solve(system::AbstractSystem,
                                       Rsets,
                                       options[:algorithm];
                                       ɛ=options[:ɛ],
-                                      transformation_matrix=options[:transformation_matrix],
+                                      transformation_matrix=transformation_matrix,
                                       projection_matrix=options[:projection_matrix])
             toc()
             return Reach2DSolution(RsetsProj, options)
@@ -192,7 +192,7 @@ Projects a sequence of sets according to the settings defined in the options.
 - `options` -- options structure
 """
 function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-                 options::Options)
+                 options::Options; transformation_matrix=nothing)
 
     RsetsProj = project_reach(options[:plot_vars],
                               options[:n],
@@ -200,7 +200,7 @@ function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
                               Rsets,
                               options[:algorithm],
                               ɛ=options[:ɛ],
-                              transformation_matrix=options[:transformation_matrix],
+                              transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
                               )
 end
