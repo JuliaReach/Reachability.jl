@@ -1,4 +1,19 @@
 """
+    plot_sol(sol::RsetsNDSolution; ...)
+
+Plots the solution of a reachability problem in ND.
+
+### Input
+
+- `RsetsNDSolution` -- the solution of a reachability problem in high-dimensions
+"""
+@recipe function plot_sol(sol::ReachNDSolution)
+
+    error("There is no user recipe defined for a Reachability.ReachNDSolution;
+    you need to project first into 2D using `project`")
+end
+
+"""
     plot_sol(sol::Rsets2DSolution; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
@@ -24,7 +39,7 @@ Plots the solution of a reachability problem in 2D with the given options.
 To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
 argument. For additional options, consult the Plots.jl reference manual.
 """
-@recipe function plot_sol(sol::Rsets2DSolution;
+@recipe function plot_sol(sol::Reach2DSolution;
                           seriescolor="blue", label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing)
 
@@ -45,7 +60,7 @@ argument. For additional options, consult the Plots.jl reference manual.
     end
 
     for i in indices
-        vlist = hcat(vertices_list(sol.polygons[i])...).'
+        vlist = hcat(vertices_list(sol.Xk[i])...).'
         @series (x, y) = vlist[:, 1], vlist[:, 2]
     end
 end
@@ -56,21 +71,19 @@ end
 Creates a copy of an options structure where aliases have been converted to the
 symbol that we use internally.
 
-INPUT:
+### Input
 
-- ``sol`` -- the solution of a reachability problem, projected into two dimensions
-
-Supported options:
-- `:plot_vars` (variables for plotting)
-- alias: `:output_variables`
+- `sol`       -- the solution of a reachability problem, projected in 2D
+- `plot_vars` -- (optional) variables for plotting
+- `alias`     -- (optional) output_variables
 """
-function check_aliases_and_add_default_value(sol::Rsets2DSolution)::Options
+function check_aliases_and_add_default_value(sol::Reach2DSolution)::Options
     dict = sol.options.dict
     options_copy = Options()
     dict_copy = options_copy.dict
 
     check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_indices], 1:length(sol.polygons), false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_indices], 1:length(sol.Xk), false)
 
     return options_copy
 end
