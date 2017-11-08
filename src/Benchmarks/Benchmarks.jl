@@ -42,8 +42,8 @@ function tune_δ(algorithm::Function,
     i = 0
     while true
         i += 1
-        println("Iteration ", i)
-        println("δ: ", δ)
+        info("Iteration ", i)
+        info("δ: ", δ)
 
         assert((δ > biggest_working && δ < smallest_failing) || (!smallest_failing_modified && δ == smallest_failing))
 
@@ -115,8 +115,8 @@ function tune_δ(algorithm::Function,
 
         δ = δ_new
     end
-    println("biggest working δ found: ", biggest_working, " (runs in ", runtime_best, " sec)")
-    println("smallest failing δ found: ", smallest_failing_modified ? smallest_failing : "--")
+    info("biggest working δ found: ", biggest_working, " (runs in ", runtime_best, " sec)")
+    info("smallest failing δ found: ", smallest_failing_modified ? smallest_failing : "--")
     return δ
 end
 

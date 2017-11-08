@@ -51,7 +51,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
     # Time discretization
     # ===================
     if system isa ContinuousSystem
-        println("Time discretization...")
+        info("Time discretization...")
         tic()
         Δ = discretize(
             system,
@@ -60,7 +60,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             pade_expm=options[:pade_expm],
             lazy_expm=options[:lazy_expm]
             )
-        toc()
+        tocc()
     else
         Δ = system
     end
@@ -69,14 +69,14 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
     # Transformation
     # ==============
     if options[:coordinate_transformation] != ""
-        println("Transformation...")
+        info("Transformation...")
         tic()
         (Δ, transformation_matrix) = transform(
             options[:coordinate_transformation],
             Δ,
             options[:plot_vars]
             )
-        toc()
+        tocc()
     else
         transformation_matrix = nothing
     end
@@ -85,7 +85,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
         # ============================
         # Reachable states computation
         # ============================
-        println("Reachable States Computation...")
+        info("Reachable States Computation...")
         tic()
         Rsets = reach(
             Δ,
@@ -98,16 +98,16 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0]
             )
-        toc()
+        tocc()
 
         # ==========
         # Projection
         # ==========
         if options[:apply_projection]
-            println("Projection...")
+            info("Projection...")
             tic()
             RsetsProj = project(Rsets, size(Δ.A, 1), options, transformation_matrix)
-            toc()
+            tocc()
             return Rsets2DSolution(RsetsProj, options)
         end
 
@@ -117,7 +117,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
         # =================
         # Property checking
         # =================
-        println("Property Checking...")
+        info("Property Checking...")
         tic()
         answer = check_property(
             Δ,
@@ -130,13 +130,13 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
             assume_homogeneous=options[:assume_homogeneous],
             property=options[:property]
             )
-        toc()
+        tocc()
 
         if answer == 0
-            println("The property is satisfied!")
+            info("The property is satisfied!")
             return true
         else
-            println("The property may be violated at index ", answer, " (time point ", answer * options[:δ], ")!")
+            info("The property may be violated at index $answer, (time point $(answer * options[:δ]))!")
             return false
         end
     else
