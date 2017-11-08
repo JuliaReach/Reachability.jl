@@ -1,23 +1,50 @@
-export Rset2DSolution, solve, project
+export Reach2DSolution, ReachNDSolution, AbstractReachSolution, solve, project
 
 """
-    Rset2DSolution
+    AbstractReachSolution
 
-Type that wraps the two-dimensional reach sets of the solution of a
-reachability problem.
-
-FIELDS:
-
-- ``polygons`` -- the list of reachable states, given as polygons in constraint
-                  representation
-- ``options``  -- the dictionary of options
+Abstract type representing the solution of a rechability problem.
 """
-struct Rsets2DSolution
-  polygons::Vector{HPolygon}
+abstract type AbstractReachSolution end
+
+"""
+    Reach2DSolution
+
+Type that wraps the solution of a reachability problem projected onto 2D and a
+dictionary of options.
+
+### Fields
+
+- `Xk`       -- the list of reachable states, given as polygons in constraint
+                representation
+- `options`  -- the dictionary of options
+"""
+struct Reach2DSolution <: AbstractReachSolution
+  Xk::Vector{HPolygon}
   options::Options
 
-  Rsets2DSolution(polygons, args::Options) = new(polygons, args)
-  Rset2sDSolution(polygons) = new(polygons, Options())
+  Reach2DSolution(Xk, args::Options) = new(Xk, args)
+  Reach2DSolution(Xk) = new(Xk, Options())
+end
+
+"""
+    ReachNDSolution
+
+Type that wraps a the solution of a reachability problem as a sequence of cartesian
+product arrays in high-dimension, and a dictionary of options.
+
+### Fields
+
+- `Xk`       -- the list of reachable states, given as a sequence of cartesian
+                product arrays of polygons in constraint representation
+- `options`  -- the dictionary of options
+"""
+struct ReachNDSolution <: AbstractReachSolution
+  Xk::Vector{CartesianProductArray} # TODO: CartesianProductArray{HPolygon}, see https://github.com/JuliaReach/LazySets.jl/issues/25
+  options::Options
+
+  ReachNDSolution(Xk, args::Options) = new(Xk, args)
+  ReachNDSolution(Xk) = new(Xk, Options())
 end
 
 """
@@ -26,12 +53,13 @@ end
 Solves a reachability problem s.t. the given options.
 If some options are not defined, we may fall back to default values.
 
-INPUT:
+### Input
 
-- ``system`` -- a (discrete or continuoues) system specification
-- ``options`` -- options for solving the problem
+- `system`  -- a (discrete or continuoues) system specification
+- `options` -- options for solving the problem
 """
-function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::Options)
+function solve(system::AbstractSystem,
+               options_input::Options)::AbstractReachSolution
 
     # ==========
     # Dimensions
@@ -40,7 +68,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
     if isodd(dimension)
          system = add_dimension(system)
     end
-
+    options_input.dict[:n] = dimension
     # =======
     # Options
     # =======
@@ -106,12 +134,19 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
         if options[:apply_projection]
             info("Projection...")
             tic()
-            RsetsProj = project(Rsets, size(Δ.A, 1), options, transformation_matrix)
-            tocc()
-            return Rsets2DSolution(RsetsProj, options)
+            RsetsProj = project_reach(options[:plot_vars],
+                                      dimension,
+                                      options[:δ],
+                                      Rsets,
+                                      options[:algorithm];
+                                      ɛ=options[:ɛ],
+                                      transformation_matrix=options[:transformation_matrix],
+                                      projection_matrix=options[:projection_matrix])
+            toc()
+            return Reach2DSolution(RsetsProj, options)
         end
 
-        return Rsets
+        return ReachNDSolution(Rsets, options)
 
     elseif options[:mode] == "check"
         # =================
@@ -147,32 +182,30 @@ end
 solve(system::Union{ContinuousSystem, DiscreteSystem}, options::Pair{Symbol,<:Any}...) = solve(system, Options(Dict{Symbol,Any}(options)))
 
 """
-    project(Rsets, n, options, [transformation_matrix])
+    project(Rsets, options)
 
 Projects a sequence of sets according to the settings defined in the options.
 
-INPUT:
+### Input
 
-- ``Rsets``                 -- sequence of sets
-- ``n``                     -- dimension
-- ``options``               -- options structure
-- ``transformation_matrix`` -- (optional, default: `nothing`) transformation matrix
+- `Rsets`   -- solution of a reachability problem
+- `options` -- options structure
 """
 function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-                 n::Int64, options::Options, transformation_matrix=nothing)
+                 options::Options)
 
-    RsetsProj = project_reach(
-        options[:plot_vars],
-        n,
-        options[:δ],
-        Rsets,
-        options[:algorithm],
-        ɛ=options[:ɛ],
-        transformation_matrix=transformation_matrix,
-        projection_matrix=options[:projection_matrix]
-        )
+    RsetsProj = project_reach(options[:plot_vars],
+                              options[:n],
+                              options[:δ],
+                              Rsets,
+                              options[:algorithm],
+                              ɛ=options[:ɛ],
+                              transformation_matrix=options[:transformation_matrix],
+                              projection_matrix=options[:projection_matrix]
+                              )
 end
 
+project(reach_sol::AbstractReachSolution) = project(reach_sol.Xk, reach_sol.options)
+
 project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-        n::Int64,
-        options::Pair{Symbol,<:Any}...) = project(Rsets, n, Options(Dict{Symbol,Any}(options)))
+        options::Pair{Symbol,<:Any}...) = project(Rsets, Options(Dict{Symbol,Any}(options)))
