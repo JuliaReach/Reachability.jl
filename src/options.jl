@@ -103,6 +103,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # first read the verbosity option and set global log level accordingly
     if haskey(dict, :verbosity)
         G_LOGGER = configure_logger(dict[:verbosity])
+        dict_copy[:verbosity] = dict[:verbosity]
     else
         G_LOGGER = configure_logger()
     end
@@ -136,7 +137,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         # define type/domain constraints for each known key
         domain_constraints = (v  ->  true)
         if key == :verbosity
-            expected_type = Bool
+            expected_type = Union{String, Int}
         elseif key == :mode
             expected_type = String
             domain_constraints = (v::String  ->  v in ["reach", "check"])
