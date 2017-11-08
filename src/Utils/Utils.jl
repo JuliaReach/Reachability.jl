@@ -218,26 +218,32 @@ INPUT:
 - ``ϕ``    -- a matrix, which can be either dense or sparse
 - ``name`` -- the name of the matrix (for the output message)
 """
-function print_sparsity(ϕ::Union{AbstractVector{Float64}, SparseMatrixExp{Float64}}, name::String="")
+function print_sparsity(ϕ::AbstractMatrix{Float64}, name::String="")
     zero_blocks = 0
     b = (Int64)(size(ϕ, 1) / 2)
-    if ϕ isa SparseMatrixExp
-        @inline F(bi::Int64) = get_rows(ϕ, (2*bi-1):2*bi)
+    @inline F(bi::Int64, bj::Int64) = ϕ[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    for bj in 1:b
         for bi in 1:b
-            block_row_bi = F(bi)
-            for bj in 1:b
-                if findfirst(block_row_bi[1:2, (2*bj-1):(2*bj)]) == 0
-                    zero_blocks += 1
-                end
+            if findfirst(F(bi, bj)) == 0
+                zero_blocks += 1
             end
         end
-    else
-        @inline F(bi::Int64, bj::Int64) = ϕ[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    end
+    all_blocks = b^2
+    sparsity = zero_blocks / all_blocks * 100.
+
+    @printf "sparsity %s: %.3f %% (%d/%d zero blocks)\n" name sparsity zero_blocks all_blocks
+end
+
+function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
+    zero_blocks = 0
+    b = (Int64)(size(ϕ, 1) / 2)
+    @inline F(bi::Int64) = get_rows(ϕ, (2*bi-1):2*bi)
+    for bi in 1:b
+        block_row_bi = F(bi)
         for bj in 1:b
-            for bi in 1:b
-                if findfirst(F(bi, bj)) == 0
-                    zero_blocks += 1
-                end
+            if findfirst(block_row_bi[1:2, (2*bj-1):(2*bj)]) == 0
+                zero_blocks += 1
             end
         end
     end
