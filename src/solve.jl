@@ -182,7 +182,7 @@ end
 solve(system::Union{ContinuousSystem, DiscreteSystem}, options::Pair{Symbol,<:Any}...) = solve(system, Options(Dict{Symbol,Any}(options)))
 
 """
-    project(Rsets, options)
+    project(Rsets, options; [transformation_matrix])
 
 Projects a sequence of sets according to the settings defined in the options.
 
@@ -190,6 +190,13 @@ Projects a sequence of sets according to the settings defined in the options.
 
 - `Rsets`   -- solution of a reachability problem
 - `options` -- options structure
+- `transformation_matrix` -- (optional, default: nothing) matrix implementing
+                              the transformation)
+
+### Notes
+
+A projection matrix can be given in the options structure, or passed as a
+dictionary entry.
 """
 function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
                  options::Options; transformation_matrix=nothing)
