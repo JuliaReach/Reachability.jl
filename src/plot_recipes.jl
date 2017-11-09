@@ -1,31 +1,31 @@
 """
-    plot_sol(sol::RsetsNDSolution; ...)
+    plot_sol(sol::RsetsSolution; ...)
 
-Plots the solution of a reachability problem in ND.
+Plots the solution of a reachability problem in high-dimensions.
 
 ### Input
 
-- `RsetsNDSolution` -- the solution of a reachability problem in high-dimensions
+- `ReachSolution{CartesianProductArray}` -- the solution of a reachability problem
+                                            as a cartesian product array
 """
-@recipe function plot_sol(sol::ReachNDSolution)
+@recipe function plot_sol(sol::ReachSolution{CartesianProductArray})
 
-    error("There is no user recipe defined for a Reachability.ReachNDSolution;
-    you need to project first into 2D using `project`")
+    error("There is no user recipe defined for a ReachSolution{CartesianProductArray}; you need to project first into 2D using `project`")
 end
 
 """
-    plot_sol(sol::Rsets2DSolution; ...)
+    plot_sol(sol::RsetsSolution; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
 
 ### Input
 
-- `Rsets2DSolution` -- the solution of a reachability problem, projected into
-                         two dimensions
+- `RsetsSolution` --   the solution of a reachability problem, projected into
+                       two dimensions
 - `seriescolor`     -- (optional, default: "blue"): color of the polygons; by
-                         default, the same color is used for all of them
-- `label`           -- (optional, default: nothing): the legend label 
-- `grid`            -- (optional, default: true): to use gridlines or not 
+                       default, the same color is used for all of them
+- `label`           -- (optional, default: nothing): the legend label
+- `grid`            -- (optional, default: true): to use gridlines or not
 - `alpha`           -- (optional, default: 0.5): the transparency of the polygons
 - `indices`         -- (optional, default: nothing): if given, plot only a sample of
                        the array; this option can be passed through `sol.options`
@@ -39,7 +39,7 @@ Plots the solution of a reachability problem in 2D with the given options.
 To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
 argument. For additional options, consult the Plots.jl reference manual.
 """
-@recipe function plot_sol(sol::Reach2DSolution;
+@recipe function plot_sol(sol::ReachSolution{HPolygon};
                           seriescolor="blue", label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing)
 
@@ -77,7 +77,7 @@ symbol that we use internally.
 - `plot_vars` -- (optional) variables for plotting
 - `alias`     -- (optional) output_variables
 """
-function check_aliases_and_add_default_value(sol::Reach2DSolution)::Options
+function check_aliases_and_add_default_value(sol::ReachSolution{HPolygon})::Options
     dict = sol.options.dict
     options_copy = Options()
     dict_copy = options_copy.dict

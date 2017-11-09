@@ -8,44 +8,28 @@ Abstract type representing the solution of a rechability problem.
 abstract type AbstractReachSolution end
 
 """
-    Reach2DSolution
+    ReachSolution
 
-Type that wraps the solution of a reachability problem projected onto 2D and a
-dictionary of options.
-
-### Fields
-
-- `Xk`       -- the list of reachable states, given as polygons in constraint
-                representation
-- `options`  -- the dictionary of options
-"""
-struct Reach2DSolution <: AbstractReachSolution
-  Xk::Vector{HPolygon}
-  options::Options
-
-  Reach2DSolution(Xk, args::Options) = new(Xk, args)
-  Reach2DSolution(Xk) = new(Xk, Options())
-end
-
-"""
-    ReachNDSolution
-
-Type that wraps a the solution of a reachability problem as a sequence of cartesian
-product arrays in high-dimension, and a dictionary of options.
+Type that wraps a the solution of a reachability problem as a sequence of
+lazy sets, and a dictionary of options.
 
 ### Fields
 
-- `Xk`       -- the list of reachable states, given as a sequence of cartesian
-                product arrays of polygons in constraint representation
+- `Xk`       -- the list of reachable states
 - `options`  -- the dictionary of options
-"""
-struct ReachNDSolution <: AbstractReachSolution
-  Xk::Vector{CartesianProductArray} # TODO: CartesianProductArray{HPolygon}, see https://github.com/JuliaReach/LazySets.jl/issues/25
-  options::Options
 
-  ReachNDSolution(Xk, args::Options) = new(Xk, args)
-  ReachNDSolution(Xk) = new(Xk, Options())
+### Note
+
+If the solution has been projected in 2D, the sequence `Xk` is an array
+of polygons in constraint representation. In high-dimensions this is a sequence
+of cartesian product arrays of low-dimensional sets.
+"""
+struct ReachSolution{S<:LazySet} <: AbstractReachSolution
+  Xk::Vector{S}
+  options::Options
 end
+ReachSolution(Xk::Vector{S}, options) where {S<:LazySet} = ReachSolution{S}(Xk, options)
+ReachSolution(Xk::Vector{S}) where {S<:LazySet} = ReachSolution{S}(Xk, Options())
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
@@ -143,10 +127,10 @@ function solve(system::AbstractSystem,
                                       transformation_matrix=transformation_matrix,
                                       projection_matrix=options[:projection_matrix])
             toc()
-            return Reach2DSolution(RsetsProj, options)
+            return ReachSolution(RsetsProj, options)
         end
 
-        return ReachNDSolution(Rsets, options)
+        return ReachSolution(Rsets, options)
 
     elseif options[:mode] == "check"
         # =================
