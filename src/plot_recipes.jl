@@ -1,12 +1,12 @@
 """
-    plot_sol(sol::RsetsSolution; ...)
+    plot_sol(sol::RsetsSolution{CartesianProductArray}; ...)
 
 Plots the solution of a reachability problem in high-dimensions.
 
 ### Input
 
-- `ReachSolution{CartesianProductArray}` -- the solution of a reachability problem
-                                            as a cartesian product array
+- `sol` -- the solution of a reachability problem
+           as a cartesian product array
 """
 @recipe function plot_sol(sol::ReachSolution{CartesianProductArray})
 
@@ -14,13 +14,13 @@ Plots the solution of a reachability problem in high-dimensions.
 end
 
 """
-    plot_sol(sol::RsetsSolution; ...)
+    plot_sol(sol::RsetsSolution{HPolygon}; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
 
 ### Input
 
-- `RsetsSolution` --   the solution of a reachability problem, projected into
+- `sol`            --  the solution of a reachability problem, projected into
                        two dimensions
 - `seriescolor`     -- (optional, default: "blue"): color of the polygons; by
                        default, the same color is used for all of them
@@ -66,7 +66,7 @@ argument. For additional options, consult the Plots.jl reference manual.
 end
 
 """
-    check_aliases_and_add_default_value(sol)
+    check_aliases_and_add_default_value(sol::ReachSolution{HPolygon})
 
 Creates a copy of an options structure where aliases have been converted to the
 symbol that we use internally.
