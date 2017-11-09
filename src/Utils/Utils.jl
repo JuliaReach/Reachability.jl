@@ -7,8 +7,7 @@ module Utils
 using LazySets, ..Systems
 
 # Visualization
-export @filename_to_png,
-       print_sparsity,
+export print_sparsity,
        plot_sparsity,
        print_last_interval,
        range_last_x_percent,
@@ -19,20 +18,22 @@ export @block_id,
        add_dimension
 
 # Usability
-export @relpath
+export @filename_to_png,
+       @relpath
 
 """
     @filename_to_png
 
-This macro expands into the current filename, and transforms the suffix
-to png format.
+Expands into the current filename and transforms the file extension to `png`.
 
-EXAMPLES:
+### Examples
 
-If this macro is executed from a script name my_model.jl, then:
+If this macro is executed from a script named my_model.jl, then:
 
-    julia> plot_name = @filename_to_png
-    my_model.png
+```julia
+julia> plot_name = @filename_to_png
+my_model.png
+```
 """
 macro filename_to_png()
     return :(split(split(@__FILE__, "/")[end], ".")[1] * ".png")
@@ -41,15 +42,17 @@ end
 """
     @block_id v
 
-Return the block number associated to a given variable.
+Returns the block number associated to a given variable/dimension.
 
-It is assumed that block size is two and that they are ordered from top (first
-row) to bottom (last row).
+It is assumed that the block size is two and that blocks are ordered from top
+(first two rows) to bottom (last two rows) in a matrix.
 
-EXAMPLES:
+### Examples
 
-    julia> @block_id 4
-    2
+```julia
+julia> @block_id 4
+2
+```
 """
 macro block_id(v::Int64)
     return :(div($v, 2) + mod($v, 2))
@@ -58,23 +61,25 @@ end
 """
     add_dimension(A)
 
-Add an extra, empty, row and column to a given matrix.
+Adds an extra zero row and column to a matrix.
 
-INPUT:
+### Input
 
-- `A` -- matrix, which can be either dense or sparse
+- `A` -- matrix
 
-EXAMPLES:
+### Examples
 
-    julia> A = [0.4 0.25; 0.46 -0.67]
-    2×2 Array{Float64,2}:
-     0.4    0.25
-     0.46  -0.67
-    julia> add_dimension(A)
-    3×3 Array{Float64,2}:
-     0.4    0.25  0.0
-     0.46  -0.67  0.0
-     0.0    0.0   0.0
+```julia
+julia> A = [0.4 0.25; 0.46 -0.67]
+2×2 Array{Float64,2}:
+ 0.4    0.25
+ 0.46  -0.67
+julia> add_dimension(A)
+3×3 Array{Float64,2}:
+ 0.4    0.25  0.0
+ 0.46  -0.67  0.0
+ 0.0    0.0   0.0
+```
 """
 function add_dimension(A::AbstractMatrix{Float64})::AbstractMatrix{Float64}
     n = size(A, 1)
@@ -84,13 +89,13 @@ end
 """
     add_dimension(X)
 
-Add an extra dimension to a lazy set through a Cartesian product.
+Adds an extra dimension to a LazySet, usually through a Cartesian product.
 
-INPUT:
+### Input
 
 - `X` -- a lazy set
 
-EXAMPLES:
+### Examples
 
 ```julia
 julia> using LazySets
@@ -103,23 +108,23 @@ julia> dim(Xext)
 ```
 """
 function add_dimension(X::LazySet)::LazySet
-    if X isa VoidSet
-        return VoidSet(dim(X)+1)
-    else
-        return X * Singleton([0])
-    end
+    return X * Singleton([0])
+end
+
+function add_dimension(X::VoidSet)::VoidSet
+    return VoidSet(dim(X)+1)
 end
 
 """
     add_dimension(cont_sys)
 
-Add an extra dimension to a continuous system.
+Adds an extra dimension to a continuous system.
 
-INPUT:
+### Input
 
-- `A` -- matrix, which can be either dense or sparse
+- `cs` -- continuous system
 
-EXAMPLES:
+### Examples
 
 ```julia
 julia> A = sprandn(3, 3, 0.5);
@@ -146,17 +151,18 @@ function add_dimension(cs::ContinuousSystem)::ContinuousSystem
     if cs.U isa ConstantNonDeterministicInput
         U = start(cs.U).sf
         Uext = add_dimension(U)
-        return ContinuousSystem(Aext, X0ext, Uext)
     elseif cs.U isa TimeVaryingNonDeterministicInput
-        Uext = LazySet[]
+        Uext = Vector{LazySet}(length(cs.U))
         Ui = start(cs.U)
-        push!(Uext, add_dimension(Ui.sf))
+        Uext[1] = add_dimension(Ui.sf)
         for i in 2:length(cs.U)
             Ui = next(cs.U, Ui)
-            push!(Uext, add_dimension(Ui.sf))
+            Uext[i] = add_dimension(Ui.sf)
         end
-        return ContinuousSystem(Aext, X0ext, Uext)
+    else
+        error("Unsupported inputs type $(typeof(cs.U)).")
     end
+    return ContinuousSystem(Aext, X0ext, Uext)
 end
 
 """
@@ -164,28 +170,28 @@ end
 
 Returns a StepRange for the last x percent of the range 1:N.
 
-The user can control the percentage of the start index and the step size.
+### Input
 
-INPUT:
-
-- ``N``     -- range length
-- ``first`` -- relative starting index (in percent); a number from [0, 100)
+- `N`     -- range length
+- `first` -- relative starting index (in percent); a number from [0, 99]
                 (default: 0)
-- ``step``  -- step size (default: 1)
+- `step`  -- step size (default: 1)
 
 EXAMPLE:
 
-    julia> range_last_x_percent(200, 20, 5)
-    160:5:200
+```julia
+julia> range_last_x_percent(200, 20, 5)
+160:5:200
+```
 """
 function range_last_x_percent(N::Int64, first::Int64=0, step::Int64=1)
     if first == 0
         start = 1
     elseif first > 0 && first < 100
-        start = (100-first)*(Int)(floor(N/100))
+        start = (100-first)*(floor(Int, N/100))
         start = max(1, start + ((N-start) % step)) # last index should be N
     else
-        throw(DomainError())
+        throw(DomainError("Start index must be in [0, 99]."))
     end
     return start : step : N
 end
@@ -193,11 +199,12 @@ end
 """
     print_last_interval(RsetsProj)
 
-Prints the max/min values for the last element in the array of HPolygons.
+Prints the max/min values for the last element in the array of HPolygons in the
+second dimension.
 
-INPUT:
+### Input
 
-- ``RsetsProj`` -- (projected) reach set given as an array of HPolygons
+- `RsetsProj` -- (projected) reach set given as an array of HPolygons
 """
 function print_last_interval(RsetsProj::Vector{HPolygon})
     last_polygon = RsetsProj[end]
@@ -213,10 +220,10 @@ end
 
 Prints the sparsity of a matrix ϕ.
 
-INPUT:
+### Input
 
-- ``ϕ``    -- a matrix, which can be either dense or sparse
-- ``name`` -- the name of the matrix (for the output message)
+- `ϕ`    -- matrix
+- `name` -- (optional, default: "") matrix name (for the output message)
 """
 function print_sparsity(ϕ::AbstractMatrix{Float64}, name::String="")
     zero_blocks = 0
@@ -230,9 +237,8 @@ function print_sparsity(ϕ::AbstractMatrix{Float64}, name::String="")
         end
     end
     all_blocks = b^2
-    sparsity = zero_blocks / all_blocks * 100.
 
-    @printf "sparsity %s: %.3f %% (%d/%d zero blocks)\n" name sparsity zero_blocks all_blocks
+    print_sparsity_message(name, zero_blocks, all_blocks)
 end
 
 function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
@@ -248,8 +254,12 @@ function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
         end
     end
     all_blocks = b^2
-    sparsity = zero_blocks / all_blocks * 100.
 
+    print_sparsity_message(name, zero_blocks, all_blocks)
+end
+
+@inline function print_sparsity_message(name::String, zero_blocks::Int, all_blocks::Int)
+    sparsity = zero_blocks / all_blocks * 100.
     @printf "sparsity %s: %.3f %% (%d/%d zero blocks)\n" name sparsity zero_blocks all_blocks
 end
 
@@ -258,20 +268,18 @@ end
 
 Plots the sparsity of a matrix ϕ.
 
-INPUT:
+### Input
 
-- ``ϕ``            -- a matrix, which can be either dense or sparse
-- ``name``         -- the name of the matrix (for the file name)
-- ``plot_backend`` -- (optional, default: ``''``): name of the plotting backend;
+- `ϕ`            -- dense or sparse matrix
+- `name`         -- the name of the matrix (for the file name)
+- `plot_backend` -- (optional, default: `''`): name of the plotting backend;
                       valid values are:
 
-                 -  ``'pyplot_savefig'`` -- use PyPlot package, save to a file
+                 -  `'pyplot_savefig'` -- use PyPlot package, save to a file
 
-                 -  ``'pyplot_inline'`` -- use PyPlot package, showing in external program
+                 -  `'pyplot_inline'` -- use PyPlot package, showing in external program
 
-                 - ``'gadfly'`` -- use Gadfly package, showing in browser
-
-                 - ``''`` -- (empty string), no plotting
+                 - `''` -- (empty string), no plotting
 """
 function plot_sparsity(ϕ::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, name::String, plot_backend::String="")
     if isempty(plot_backend)
@@ -306,11 +314,12 @@ end
 
 Creates the axis labels for plotting.
 
-INPUT:
+### Input
 
-- ``plot_vars``      -- variable indices for plotting (0 stands for time)
-- ``project_output`` -- flag indicating if the y axis is an output function
-- ``plot_labels``    -- (optional) vector of plot labels (empty strings are ignored)
+- `plot_vars`      -- variable indices for plotting (0 stands for time)
+- `project_output` -- (optional, default: false) flag indicating if the y axis
+                      is an output function
+- `plot_labels`    -- (optional) vector of plot labels (empty strings are ignored)
 """
 function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, plot_labels::Vector{String}=["", ""])
     labels = copy(plot_labels)
@@ -333,9 +342,9 @@ Returns the path of the current code file.
 This is handy, e.g., when calling a function from anywhere that wants to open a
 file relative to its own location.
 
-INPUT:
+### Input
 
-- ``name`` -- file name
+- `name` -- file name
 """
 macro relpath(name::String)
     return :(join(split(@__FILE__, "/")[1:end-1], "/") * "/" * $name)
