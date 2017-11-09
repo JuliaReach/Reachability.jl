@@ -1,24 +1,35 @@
-export Rset2DSolution, solve, project
+export Reach2DSolution, ReachNDSolution, AbstractReachSolution, solve, project
 
 """
-    Rset2DSolution
+    AbstractReachSolution
 
-Type that wraps the two-dimensional reach sets of the solution of a
-reachability problem.
-
-FIELDS:
-
-- ``polygons`` -- the list of reachable states, given as polygons in constraint
-                  representation
-- ``options``  -- the dictionary of options
+Abstract type representing the solution of a rechability problem.
 """
-struct Rsets2DSolution
-  polygons::Vector{HPolygon}
+abstract type AbstractReachSolution end
+
+"""
+    ReachSolution
+
+Type that wraps a the solution of a reachability problem as a sequence of
+lazy sets, and a dictionary of options.
+
+### Fields
+
+- `Xk`       -- the list of reachable states
+- `options`  -- the dictionary of options
+
+### Note
+
+If the solution has been projected in 2D, the sequence `Xk` is an array
+of polygons in constraint representation. In high-dimensions this is a sequence
+of cartesian product arrays of low-dimensional sets.
+"""
+struct ReachSolution{S<:LazySet} <: AbstractReachSolution
+  Xk::Vector{S}
   options::Options
-
-  Rsets2DSolution(polygons, args::Options) = new(polygons, args)
-  Rset2sDSolution(polygons) = new(polygons, Options())
 end
+ReachSolution(Xk::Vector{S}, options) where {S<:LazySet} = ReachSolution{S}(Xk, options)
+ReachSolution(Xk::Vector{S}) where {S<:LazySet} = ReachSolution{S}(Xk, Options())
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
@@ -26,12 +37,13 @@ end
 Solves a reachability problem s.t. the given options.
 If some options are not defined, we may fall back to default values.
 
-INPUT:
+### Input
 
-- ``system`` -- a (discrete or continuoues) system specification
-- ``options`` -- options for solving the problem
+- `system`  -- a (discrete or continuoues) system specification
+- `options` -- options for solving the problem
 """
-function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::Options)
+function solve(system::AbstractSystem,
+               options_input::Options)::AbstractReachSolution
 
     # ==========
     # Dimensions
@@ -40,7 +52,7 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
     if isodd(dimension)
          system = add_dimension(system)
     end
-
+    options_input.dict[:n] = dimension
     # =======
     # Options
     # =======
@@ -106,12 +118,19 @@ function solve(system::Union{ContinuousSystem, DiscreteSystem}, options_input::O
         if options[:apply_projection]
             info("Projection...")
             tic()
-            RsetsProj = project(Rsets, size(Δ.A, 1), options, transformation_matrix)
-            tocc()
-            return Rsets2DSolution(RsetsProj, options)
+            RsetsProj = project_reach(options[:plot_vars],
+                                      dimension,
+                                      options[:δ],
+                                      Rsets,
+                                      options[:algorithm];
+                                      ɛ=options[:ɛ],
+                                      transformation_matrix=transformation_matrix,
+                                      projection_matrix=options[:projection_matrix])
+            toc()
+            return ReachSolution(RsetsProj, options)
         end
 
-        return Rsets
+        return ReachSolution(Rsets, options)
 
     elseif options[:mode] == "check"
         # =================
@@ -147,32 +166,37 @@ end
 solve(system::Union{ContinuousSystem, DiscreteSystem}, options::Pair{Symbol,<:Any}...) = solve(system, Options(Dict{Symbol,Any}(options)))
 
 """
-    project(Rsets, n, options, [transformation_matrix])
+    project(Rsets, options; [transformation_matrix])
 
 Projects a sequence of sets according to the settings defined in the options.
 
-INPUT:
+### Input
 
-- ``Rsets``                 -- sequence of sets
-- ``n``                     -- dimension
-- ``options``               -- options structure
-- ``transformation_matrix`` -- (optional, default: `nothing`) transformation matrix
+- `Rsets`   -- solution of a reachability problem
+- `options` -- options structure
+- `transformation_matrix` -- (optional, default: nothing) matrix implementing
+                              the transformation)
+
+### Notes
+
+A projection matrix can be given in the options structure, or passed as a
+dictionary entry.
 """
 function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-                 n::Int64, options::Options, transformation_matrix=nothing)
+                 options::Options; transformation_matrix=nothing)
 
-    RsetsProj = project_reach(
-        options[:plot_vars],
-        n,
-        options[:δ],
-        Rsets,
-        options[:algorithm],
-        ɛ=options[:ɛ],
-        transformation_matrix=transformation_matrix,
-        projection_matrix=options[:projection_matrix]
-        )
+    RsetsProj = project_reach(options[:plot_vars],
+                              options[:n],
+                              options[:δ],
+                              Rsets,
+                              options[:algorithm],
+                              ɛ=options[:ɛ],
+                              transformation_matrix=transformation_matrix,
+                              projection_matrix=options[:projection_matrix]
+                              )
 end
 
+project(reach_sol::AbstractReachSolution) = project(reach_sol.Xk, reach_sol.options)
+
 project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-        n::Int64,
-        options::Pair{Symbol,<:Any}...) = project(Rsets, n, Options(Dict{Symbol,Any}(options)))
+        options::Pair{Symbol,<:Any}...) = project(Rsets, Options(Dict{Symbol,Any}(options)))

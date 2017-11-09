@@ -58,35 +58,35 @@ end
 Validates that the given solver options are supported and adds default values for most
 unspecified options.
 
-INPUT:
+### Input
 
 - ``options`` -- an `Options` object, a dictionary of options
 
 Supported options:
-- `:verbosity` (controls logging output)
-- `:mode` (main analysis mode)
-- `:approx_model` (switch for bloating/continuous time analysis)
-- `:property` (a safety property)
-- `:δ` (time step)
-  - alias: `:sampling_time`
-- `:N` (number of time steps)
-- `:T` (time horizon)
-  - alias: `:time_horizon`
-- `:algorithm` (algorithm backend)
-- `:blocks` (blocks of interest)
-- `:iterative_refinement` (switch for refining precision/directions)
-- `:ɛ` (precision threshold, s. :iterative_refinement)
-- `:lazy_expm` (lazy matrix exponential)
-- `:assume_sparse` (switch for sparse matrices)
-- `:pade_expm` (switch for using Pade approximant method)
-- `:lazy_X0` (switch for keeping the initial states a lazy set)
-- `:approx_model` (approximation model)
-- `:coordinate_transformation` (coordinate transformation method)
-- `:assume_homogeneous` (switch for ignoring inputs)
-- `:projection_matrix` (projection matrix)
-- `:apply_projection` (switch for applying projection)
-- `:plot_vars` (variables for projection and plotting)
-  - alias: `:output_variables`
+
+- `:verbosity`     -- controls logging output
+- `:mode`          -- main analysis mode
+- `:approx_model`  -- switch for bloating/continuous time analysis
+- `:property`      -- a safety property
+- `:δ`             -- time step; alias: `:sampling_time`
+- `:N`             -- number of time steps
+- `:T`             -- time horizon; alias `:time_horizon`
+- `:algorithm`     -- algorithm backend
+- `:n`             -- system's dimension
+- `:blocks`        -- blocks of interest
+- `:iterative_refinement` -- switch for refining precision/directions
+- `:ɛ`             -- precision threshold, see also: `:iterative_refinement`
+- `:lazy_expm`     -- lazy matrix exponential
+- `:assume_sparse` -- switch for sparse matrices
+- `:pade_expm`     -- switch for using Pade approximant method
+- `:lazy_X0`       -- switch for keeping the initial states a lazy set
+- `:approx_model`  -- approximation model
+- `:coordinate_transformation` -- coordinate transformation method
+- `:assume_homogeneous`        -- switch for ignoring inputs
+- `:projection_matrix`         -- projection matrix
+- `:apply_projection`          -- switch for applying projection
+- `:plot_vars`                 -- variables for projection and plotting;
+                                  alias: `:output_variables`
 
 We add default values for almost all undefined options, i.e., modify the input
 options. The benefit is that the user can print the options that were actually
@@ -113,6 +113,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:approx_model], "forward")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
+    check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
     check_aliases_and_add_default_value!(dict, dict_copy, [:iterative_refinement], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:ɛ], Inf)
@@ -162,6 +163,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :algorithm
             expected_type = String
             domain_constraints = (v::String  ->  v in ["explicit"])
+        elseif key == :n
+            expected_type = Int
+            domain_constraints = (v::Int  ->  v > 0)
         elseif key == :blocks
             expected_type = AbstractVector{Int64}
         elseif key == :iterative_refinement

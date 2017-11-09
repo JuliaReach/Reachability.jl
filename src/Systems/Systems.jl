@@ -6,7 +6,7 @@ module Systems
 
 using LazySets
 
-export System,
+export AbstractSystem,
        ContinuousSystem,
        DiscreteSystem,
        NonDeterministicInput,
@@ -86,7 +86,7 @@ Base.length(NDInput::TimeVaryingNonDeterministicInput) = length(NDInput.U)
 """
 Abstract type representing a system of affine ODEs.
 """
-abstract type System end
+abstract type AbstractSystem end
 
 """
 Type that represents an continous-time affine system with non-deterministic inputs,
@@ -100,7 +100,7 @@ where:
 - u(t) ∈ U(t), where U(t) is a piecewise-constant set-valued function defined
   over [t1, t1+δ], ... , [tN, tN+δ]
 """
-struct ContinuousSystem <: System
+struct ContinuousSystem <: AbstractSystem
 
     # system's matrix
     A::AbstractMatrix{Float64}
@@ -117,10 +117,19 @@ struct ContinuousSystem <: System
     ContinuousSystem(A::AbstractMatrix{Float64}, X0::LazySet, U::Array{<:LazySet, 1}) = new(A, X0, TimeVaryingNonDeterministicInput(U))
 end
 
-# dimension of a System (number of independent variables)
+"""
+    dim(S)
+
+Dimension of a continuous system.
+
+### Input
+
+- `S` -- continuous system
+"""
 function dim(S::ContinuousSystem)
     return size(S.A, 1)
 end
+
 
 """
 Type that represents a discrete-time affine system with non-deterministic inputs,
@@ -133,7 +142,7 @@ where
 - x(0) ∈ X0
 - u_{k} ∈ U_{k}, where U_{k} is a piecewise-constant set-valued function defined over [t1, t1+δ], ... , [tN, tN+δ]
 """
-struct DiscreteSystem <: System
+struct DiscreteSystem <: AbstractSystem
     # system's matrix
     A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}
 
@@ -152,7 +161,15 @@ struct DiscreteSystem <: System
     DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}}, X0::LazySet, δ::Float64, U::NonDeterministicInput) = new(A, X0, δ, U)
 end
 
-# dimension of a System (number of independent variables)
+"""
+    dim(S)
+
+Dimension of a discrete system.
+
+### Input
+
+- `S` -- discrete system
+"""
 function dim(S::DiscreteSystem)
     return size(S.A, 1)
 end
