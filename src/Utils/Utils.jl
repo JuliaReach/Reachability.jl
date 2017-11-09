@@ -30,8 +30,10 @@ Expands into the current filename and transforms the file extension to `png`.
 
 If this macro is executed from a script named my_model.jl, then:
 
-    julia> plot_name = @filename_to_png
-    my_model.png
+```julia
+julia> plot_name = @filename_to_png
+my_model.png
+```
 """
 macro filename_to_png()
     return :(split(split(@__FILE__, "/")[end], ".")[1] * ".png")
@@ -47,8 +49,10 @@ It is assumed that the block size is two and that blocks are ordered from top
 
 ### Examples
 
-    julia> @block_id 4
-    2
+```julia
+julia> @block_id 4
+2
+```
 """
 macro block_id(v::Int64)
     return :(div($v, 2) + mod($v, 2))
@@ -65,15 +69,17 @@ Adds an extra zero row and column to a matrix.
 
 ### Examples
 
-    julia> A = [0.4 0.25; 0.46 -0.67]
-    2×2 Array{Float64,2}:
-     0.4    0.25
-     0.46  -0.67
-    julia> add_dimension(A)
-    3×3 Array{Float64,2}:
-     0.4    0.25  0.0
-     0.46  -0.67  0.0
-     0.0    0.0   0.0
+```julia
+julia> A = [0.4 0.25; 0.46 -0.67]
+2×2 Array{Float64,2}:
+ 0.4    0.25
+ 0.46  -0.67
+julia> add_dimension(A)
+3×3 Array{Float64,2}:
+ 0.4    0.25  0.0
+ 0.46  -0.67  0.0
+ 0.0    0.0   0.0
+```
 """
 function add_dimension(A::AbstractMatrix{Float64})::AbstractMatrix{Float64}
     n = size(A, 1)
@@ -173,8 +179,10 @@ Returns a StepRange for the last x percent of the range 1:N.
 
 EXAMPLE:
 
-    julia> range_last_x_percent(200, 20, 5)
-    160:5:200
+```julia
+julia> range_last_x_percent(200, 20, 5)
+160:5:200
+```
 """
 function range_last_x_percent(N::Int64, first::Int64=0, step::Int64=1)
     if first == 0
