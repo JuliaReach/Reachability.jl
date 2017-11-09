@@ -1,5 +1,5 @@
 """
-    plot_sol(sol::RsetsSolution{CartesianProductArray}; ...)
+    plot_sol(sol::ReachSolution{CartesianProductArray}; ...)
 
 Plots the solution of a reachability problem in high-dimensions.
 
@@ -14,7 +14,7 @@ Plots the solution of a reachability problem in high-dimensions.
 end
 
 """
-    plot_sol(sol::RsetsSolution{HPolygon}; ...)
+    plot_sol(sol::ReachSolution{HPolygon}; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
 
