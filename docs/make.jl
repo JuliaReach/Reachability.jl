@@ -3,6 +3,7 @@ using Documenter, Reachability
 makedocs(
     modules = [Reachability],
     format = :html,
+    assets = ["assets/juliareach.css"],
     sitename = "Reachability.jl",
     pages = [
         "Home" => "index.md",
