@@ -161,19 +161,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "about.html#About-1",
+    "page": "About",
+    "title": "About",
+    "category": "section",
+    "text": "This page contains some general information about this project, and recommendations about contributing.Pages = [\"about.md\"]"
+},
+
+{
     "location": "about.html#Contributing-1",
     "page": "About",
     "title": "Contributing",
     "category": "section",
-    "text": "Pages = [\"about/CONTRIBUTING.md\"]This page details the some of the guidelines that should be followed when contributing to this package."
-},
-
-{
-    "location": "about.html#Running-the-Unit-Tests-1",
-    "page": "About",
-    "title": "Running the Unit Tests",
-    "category": "section",
-    "text": "$ julia --color=yes test/runtests.jl"
+    "text": "If you like this package, consider contributing! We welcome bug reports, examples that can be added to the documentation, or new feature proposals.Below we detail some of the guidelines that should be followed when contributing to this package."
 },
 
 {
@@ -181,15 +181,23 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "Branches",
     "category": "section",
-    "text": ""
+    "text": "Each pull request (PR) should be pushed in a new branch with the name of the author followed by a descriptive name, e.g. t/mforets/my_feature. If the branch is associated to a previous discussion in one issue, we use the name of the issue for easier lookup, e.g. t/mforets/7."
 },
 
 {
-    "location": "about.html#Contributing-to-the-Documentation-1",
+    "location": "about.html#Unit-testing-and-continuous-integration-(CI)-1",
     "page": "About",
-    "title": "Contributing to the Documentation",
+    "title": "Unit testing and continuous integration (CI)",
     "category": "section",
-    "text": "The documentation source is written with Markdown, and we use Documenter.jl to produce the HTML documentation. To build the docs, run make.jl:$ julia --color=yes docs/make.jl"
+    "text": "This project is synchronized with Travis CI, such that each PR gets tested before merging (and the build is automatically triggered after each new commit). For the maintainability of this project, it is important to understand and fix the failing doctests if they exist. We develop in Julia v0.6.0, but for experimentation we also build on the nightly branch.To run the unit tests locally, you should do:$ julia --color=yes test/runtests.jl"
+},
+
+{
+    "location": "about.html#Contributing-to-the-documentation-1",
+    "page": "About",
+    "title": "Contributing to the documentation",
+    "category": "section",
+    "text": "This documentation is written in Markdown, and it relies on Documenter.jl to produce the HTML layout. To build the docs, run make.jl:$ julia --color=yes docs/make.jl"
 },
 
 {
@@ -197,7 +205,7 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "Credits",
     "category": "section",
-    "text": "These persons have contributed to Reachability.jl (in alphabetic order):Marcelo Forets\nChristian Schilling\nFrederic ViryWe are also grateful to Goran Frehse for enlightening discussions."
+    "text": "These persons have contributed to Reachability.jl (in alphabetic order):Marcelo Forets\nChristian Schilling\nFrederic ViryWe are also grateful to Goran Frehse, Sergiy Bogomolov, Alexandre Rocca, Nikolaos Kekatos, for enlightening discussions."
 },
 
 ]}
