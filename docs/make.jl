@@ -9,6 +9,7 @@ makedocs(
         "Home" => "index.md",
         "Library" => Any[
         "User interface" => "lib/interface.md",
+        "Systems" => "lib/systems.md",
         "Discretization" => "lib/discretize.md"],
         "About" => "about.md"
     ]
