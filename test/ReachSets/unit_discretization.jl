@@ -12,7 +12,7 @@ cont_sys_homog = ContinuousSystem(A, X0)
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys_homog.U) == 1
 input_state = start(discr_sys_homog.U)
-@test isa(input_state.sf, VoidSet) && dim(input_state.sf) == 4
+@test isa(input_state.set, VoidSet) && dim(input_state.set) == 4
 
 # no bloating, use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=true)
@@ -33,9 +33,9 @@ cont_sys = ContinuousSystem(A, X0, U)
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys.U) == 1
 input_state = start(discr_sys.U)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, LinearMap)
-@test isa(input_state.sf.sf, Ball2) && input_state.sf.sf.center == ones(4) && input_state.sf.sf.radius == 0.5
+@test dim(input_state.set) == 4
+@test isa(input_state.set, LinearMap)
+@test isa(input_state.set.sf, Ball2) && input_state.set.sf.center == ones(4) && input_state.set.sf.radius == 0.5
 
 # no bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
@@ -44,8 +44,8 @@ discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
 discr_sys = discretize(cont_sys, δ, pade_expm=false)
 @test length(discr_sys.U) == 1
 input_state = start(discr_sys.U)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, MinkowskiSum)
+@test dim(input_state.set) == 4
+@test isa(input_state.set, MinkowskiSum)
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
@@ -64,19 +64,19 @@ discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys.U) == 3
 
 input_state = start(discr_sys.U)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, LinearMap)
-@test isa(input_state.sf.sf, Ball2) && input_state.sf.sf.center == 0.01*ones(4) && input_state.sf.sf.radius == 0.2
+@test dim(input_state.set) == 4
+@test isa(input_state.set, LinearMap)
+@test isa(input_state.set.sf, Ball2) && input_state.set.sf.center == 0.01*ones(4) && input_state.set.sf.radius == 0.2
 
 input_state = next(discr_sys.U, input_state)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, LinearMap)
-@test isa(input_state.sf.sf, Ball2) && input_state.sf.sf.center == 0.01*2*ones(4) && input_state.sf.sf.radius == 0.2*2
+@test dim(input_state.set) == 4
+@test isa(input_state.set, LinearMap)
+@test isa(input_state.set.sf, Ball2) && input_state.set.sf.center == 0.01*2*ones(4) && input_state.set.sf.radius == 0.2*2
 
 input_state = next(discr_sys.U, input_state)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, LinearMap)
-@test isa(input_state.sf.sf, Ball2) && input_state.sf.sf.center == 0.01*3*ones(4) && input_state.sf.sf.radius == 0.2*3
+@test dim(input_state.set) == 4
+@test isa(input_state.set, LinearMap)
+@test isa(input_state.set.sf, Ball2) && input_state.set.sf.center == 0.01*3*ones(4) && input_state.set.sf.radius == 0.2*3
 
 # no bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
@@ -86,19 +86,19 @@ discr_sys = discretize(cont_sys, δ, pade_expm=false)
 @test length(discr_sys.U) == 3
 
 input_state = start(discr_sys.U)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, MinkowskiSum)
-@test isa(input_state.sf.X.sf, Ball2) && input_state.sf.X.sf.center == 0.01*ones(4) && input_state.sf.X.sf.radius == 0.2
+@test dim(input_state.set) == 4
+@test isa(input_state.set, MinkowskiSum)
+@test isa(input_state.set.X.sf, Ball2) && input_state.set.X.sf.center == 0.01*ones(4) && input_state.set.X.sf.radius == 0.2
 
 input_state = next(discr_sys.U, input_state)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, MinkowskiSum)
-@test isa(input_state.sf.X.sf, Ball2) && input_state.sf.X.sf.center == 0.01*2*ones(4) && input_state.sf.X.sf.radius == 0.2*2
+@test dim(input_state.set) == 4
+@test isa(input_state.set, MinkowskiSum)
+@test isa(input_state.set.X.sf, Ball2) && input_state.set.X.sf.center == 0.01*2*ones(4) && input_state.set.X.sf.radius == 0.2*2
 
 input_state = next(discr_sys.U, input_state)
-@test dim(input_state.sf) == 4
-@test isa(input_state.sf, MinkowskiSum)
-@test isa(input_state.sf.X.sf, Ball2) && input_state.sf.X.sf.center == 0.01*3*ones(4) && input_state.sf.X.sf.radius == 0.2*3
+@test dim(input_state.set) == 4
+@test isa(input_state.set, MinkowskiSum)
+@test isa(input_state.set.X.sf, Ball2) && input_state.set.X.sf.center == 0.01*3*ones(4) && input_state.set.X.sf.radius == 0.2*3
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
