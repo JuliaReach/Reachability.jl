@@ -1,26 +1,46 @@
-# Contributing
+# About
+
+This page contains some general information about this project, and recommendations
+about contributing.
 
 ```@contents
-Pages = ["about/CONTRIBUTING.md"]
+Pages = ["about.md"]
 ```
 
-This page details the some of the guidelines that should be followed when contributing to this package.
+## Contributing
 
-## Running the Unit Tests
+If you like this package, consider contributing! We welcome bug reports,
+examples that can be added to the documentation, or new feature proposals.
+
+Below we detail some of the guidelines that should be followed when contributing
+to this package.
+
+#### Branches
+
+Each pull request (PR) should be pushed in a new branch with the name of the author
+followed by a descriptive name, e.g. `t/mforets/my_feature`. If the branch is associated
+to a previous discussion in one issue, we use the name of the issue for easier
+lookup, e.g. `t/mforets/7`.
+
+### Unit testing and continuous integration (CI)
+
+This project is synchronized with Travis CI, such that each PR gets tested
+before merging (and the build is automatically triggered after each new commit).
+For the maintainability of this project, it is important to understand and fix the
+failing doctests if they exist. We develop in Julia v0.6.0, but for experimentation
+we also build on the nightly branch.
+
+To run the unit tests locally, you should do:
 
 ```julia
 $ julia --color=yes test/runtests.jl
 ```
 
-## Branches
+### Contributing to the documentation
 
-
-
-## Contributing to the Documentation
-
-The documentation source is written with Markdown, and we use
+This documentation is written in Markdown, and it relies on
 [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl) to produce the HTML
-documentation. To build the docs, run `make.jl`:
+layout. To build the docs, run `make.jl`:
 
 ```julia
 $ julia --color=yes docs/make.jl
@@ -34,4 +54,5 @@ These persons have contributed to `Reachability.jl` (in alphabetic order):
 - Christian Schilling
 - Frederic Viry
 
-We are also grateful to Goran Frehse for enlightening discussions.
+We are also grateful to Goran Frehse, Sergiy Bogomolov, Alexandre Rocca,
+Nikolaos Kekatos, for enlightening discussions.
