@@ -46,7 +46,7 @@ function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    input_state = start(U).sf
+    input_state = start(U).set
     Whatk_bi::HPolygon = overapproximate(G0(bi) * input_state)
     ϕpowerk = copy(ϕ)
 
@@ -139,7 +139,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     arr = Vector{LazySet}(b+1)
-    input_state = start(U).sf
+    input_state = start(U).set
     arr[b+1] = overapproximate(G0(bi) * input_state)
     ϕpowerk = copy(ϕ)
 
@@ -259,7 +259,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
     end
 
     voidSet2 = VoidSet(2)
-    input_state = start(U).sf
+    input_state = start(U).set
     Whatk_bi::HPolygon = overapproximate(sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n) * input_state)
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
