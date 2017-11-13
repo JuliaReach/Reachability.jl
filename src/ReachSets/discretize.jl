@@ -1,3 +1,95 @@
+export discretize
+
+"""
+    discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm])
+
+Discretize a continuous system of ODEs with nondeterministic inputs.
+
+## Input
+
+- `cont_sys`          -- continuous system
+- `δ`                 -- step size
+- `approx_model`      -- the method to compute the approximation model for the discretization,
+                         which can be one of:
+                         - `forward`    -- use forward-time interpolation
+                         - `backward`   -- use backward-time interpolation
+                         - `firstorder` -- use first order approximation of the ODE
+                         - `nobloating` -- do not bloat the initial states
+                                           (use for discrete-time reachability)
+- `pade_expm`         -- (optional, default = false) if true, use Pade approximant
+                         method to compute matrix exponentials of sparse matrices;
+                         otherwise use Julia's buil-in `expm`
+- `lazy_expm`         -- (optional, default = false) if true, compute the matrix
+                         exponential in a lazy way (suitable for very large systems)
+
+## Output
+
+A discrete system.
+
+## Notes
+
+This function applies an approximation model to transform a continuous affine system
+into a discrete affine system. This transformation allows to do dense time reachability,
+i.e. such that the trajectories of the given continuous system are included in the
+computed flowpipe of the discretized system.
+For discrete-time reachability, use `approx_model="`nobloating`"`).
+"""
+function discretize(cont_sys::ContinuousSystem, δ::Float64;
+                    approx_model::String="forward",
+                    pade_expm::Bool=false,
+                    lazy_expm::Bool=false)::DiscreteSystem
+
+    if approx_model in ["forward", "backward"]
+        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)
+    elseif approx_model == "firstorder"
+        return discr_bloat_firstorder(cont_sys, δ)
+    elseif approx_model == "nobloating"
+        return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
+    else
+        error("The approximation model is invalid.")
+    end
+end
+
+"""
+    bloat_firstorder(cont_sys, δ)
+
+Compute bloating factors using first order approximation.
+
+## Input
+
+- `cont_sys` -- a continuous affine system
+- `δ`        -- step size
+
+## Notes
+
+In this algorithm, the infinity norm is used.
+See also: `discr_bloat_interpolation` for more accurate (less conservative)
+bounds.
+
+## Algorithm
+
+This uses a first order approximation of the ODE, and matrix norm upper bounds,
+see Le Guernic, C., & Girard, A. (2010). "Reachability analysis of linear systems
+using support functions." Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.
+"""
+function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::DiscreteSystem
+
+    if length(cont_sys.U) > 1
+        error("this bloat algorithm only works with constant inputs")
+    end
+
+    Anorm = norm(full(cont_sys.A), Inf)
+    RX0 = norm(cont_sys.X0, Inf)
+    input_state = start(cont_sys.U)
+    RU = norm(input_state.sf, Inf)
+    α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
+    β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
+    ϕ = expm(full(cont_sys.A))
+    Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ*input_state.sf + Ball2(zeros(size(ϕ, 1)), α))
+    discr_U =  δ * input_state.sf + Ball2(zeros(size(ϕ, 1)), β)
+    return DiscreteSystem(ϕ, Ω0, δ, discr_U)
+end
+
 """
     discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
 
@@ -48,7 +140,7 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
     end
 
     # early return for homogeneous systems
-    input_state = start(cont_sys.U) 
+    input_state = start(cont_sys.U)
     if isa(input_state.sf, VoidSet) && length(cont_sys.U) == 1
             Ω0 = cont_sys.X0
             return DiscreteSystem(ϕ, Ω0, δ)
@@ -183,94 +275,3 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
     end
 end
-
-"""
-    bloat_firstorder(cont_sys, δ)
-
-Compute bloating factors using first order approximation.
-
-## Input
-
-- `cont_sys` -- a continuous affine system
-- `δ`        -- step size
-
-## Notes
-
-More accurate (less conservative) bounds are known, see other algorithms in
-this file.
-
-## Algorithm
-
-This uses a first order approximation of the ODE, and matrix norm upper bounds,
-see Le Guernic, C., & Girard, A. (2010). "Reachability analysis of linear systems
-using support functions." Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.
-"""
-function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::DiscreteSystem
-
-    if length(cont_sys.U) > 1
-        error("this bloat algorithm only works with constant inputs")
-    end
-
-    Anorm = norm(full(cont_sys.A))
-    RX0 = radius_approximation(cont_sys.X0)
-    input_state = start(U)
-    RU = radius_approximation(input_state)
-    α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
-    β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
-    ϕ = expm(full(cont_sys.A))
-    Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ*input_state.sf + Ball2(zeros(size(ϕ, 1)), α))
-    discr_U =  δ * input_state.sf + Ball2(zeros(size(ϕ, 1)), β)
-    return DiscreteSystem(ϕ, Ω0, discr_U) 
-end
-
-"""
-    discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm])
-
-Discretize a continuous system of ODEs with nondeterministic inputs.
-
-## Input
-
-- `cont_sys`          -- continuous system
-- `δ`                 -- step size
-- `approx_model`      -- the method to compute the approximation model for the discretization,
-                         which can be one of:
-                         - `forward`    -- use forward-time interpolation
-                         - `backward`   -- use backward-time interpolation
-                         - `firstorder` -- use first order approximation of the ODE
-                         - `nobloating` -- do not bloat the initial states
-                                           (use for discrete-time reachability)
-- `pade_expm`         -- (optional, default = false) if true, use Pade approximant
-                         method to compute matrix exponentials of sparse matrices;
-                         otherwise use Julia's buil-in `expm`
-- `lazy_expm`         -- (optional, default = false) if true, compute the matrix
-                         exponential in a lazy way (suitable for very large systems)
-
-## Output
-
-A discrete system.
-
-## Notes
-
-This function applies an approximation model to transform a continuous affine system
-into a discrete affine system. This transformation allows to do dense time reachability,
-i.e. such that the trajectories of the given continuous system are included in the
-computed flowpipe of the discretized system.
-For discrete-time reachability, use `approx_model="`nobloating`"`).
-"""
-function discretize(cont_sys::ContinuousSystem, δ::Float64;
-                    approx_model::String="forward",
-                    pade_expm::Bool=false,
-                    lazy_expm::Bool=false)::DiscreteSystem
-
-    if approx_model in ["forward", "backward"]
-        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)
-    elseif approx_model == "firstorder"
-        return discr_bloat_firstorder(cont_sys, δ, pade_expm)
-    elseif approx_model == "nobloating"
-        return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
-    else
-        error("The approximation model is invalid.")
-    end
-end
-
-export discretize

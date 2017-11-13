@@ -50,6 +50,9 @@ input_state = start(discr_sys.U)
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
 
+# us
+discr_sys = discretize(cont_sys, δ, approx_model="firstorder")
+
 # ===================================================================
 # Discretization of a continuous-time system with time-varying input
 # ===================================================================
@@ -99,4 +102,3 @@ input_state = next(discr_sys.U, input_state)
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
-
