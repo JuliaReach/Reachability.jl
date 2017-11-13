@@ -126,7 +126,7 @@ function solve(system::AbstractSystem,
                                       ɛ=options[:ɛ],
                                       transformation_matrix=transformation_matrix,
                                       projection_matrix=options[:projection_matrix])
-            toc()
+            tocc()
             return ReachSolution(RsetsProj, options)
         end
 
