@@ -7,7 +7,8 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Library" => Any[
-        "User interface" => "lib/interface.md"],
+        "User interface" => "lib/interface.md",
+        "Discretization" => "lib/discretize.md"],
         "About" => "about.md"
     ]
 )

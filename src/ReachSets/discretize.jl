@@ -9,17 +9,19 @@ Discretize a continuous system of ODEs with nondeterministic inputs.
 
 - `cont_sys`          -- continuous system
 - `δ`                 -- step size
-- `approx_model`      -- the method to compute the approximation model for the discretization,
-                         which can be one of:
-                         - `forward`    -- use forward-time interpolation
-                         - `backward`   -- use backward-time interpolation
-                         - `firstorder` -- use first order approximation of the ODE
-                         - `nobloating` -- do not bloat the initial states
-                                           (use for discrete-time reachability)
-- `pade_expm`         -- (optional, default = false) if true, use Pade approximant
+- `approx_model`      -- the method to compute the approximation model for the
+                         discretization, among:
+
+    - `forward`    -- use forward-time interpolation
+    - `backward`   -- use backward-time interpolation
+    - `firstorder` -- use first order approximation of the ODE
+    - `nobloating` -- do not bloat the initial states
+                      (use for discrete-time reachability)
+
+- `pade_expm`         -- (optional, default = `false`) if true, use Pade approximant
                          method to compute matrix exponentials of sparse matrices;
                          otherwise use Julia's buil-in `expm`
-- `lazy_expm`         -- (optional, default = false) if true, compute the matrix
+- `lazy_expm`         -- (optional, default = `false`) if true, compute the matrix
                          exponential in a lazy way (suitable for very large systems)
 
 ## Output
@@ -32,7 +34,7 @@ This function applies an approximation model to transform a continuous affine sy
 into a discrete affine system. This transformation allows to do dense time reachability,
 i.e. such that the trajectories of the given continuous system are included in the
 computed flowpipe of the discretized system.
-For discrete-time reachability, use `approx_model="`nobloating`"`).
+For discrete-time reachability, use `approx_model="nobloating"`.
 """
 function discretize(cont_sys::ContinuousSystem, δ::Float64;
                     approx_model::String="forward",
@@ -46,7 +48,7 @@ function discretize(cont_sys::ContinuousSystem, δ::Float64;
     elseif approx_model == "nobloating"
         return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
     else
-        error("The approximation model is invalid.")
+        error("The approximation model is invalid")
     end
 end
 
@@ -69,13 +71,13 @@ bounds.
 ## Algorithm
 
 This uses a first order approximation of the ODE, and matrix norm upper bounds,
-see Le Guernic, C., & Girard, A. (2010). "Reachability analysis of linear systems
-using support functions." Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.
+see Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
+using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
 function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::DiscreteSystem
 
     if length(cont_sys.U) > 1
-        error("this bloat algorithm only works with constant inputs")
+        error("This discretization algorithm is only implemented for constant inputs")
     end
 
     Anorm = norm(full(cont_sys.A), Inf)
@@ -100,9 +102,9 @@ for discrete-time reachability.
 
 - `cont_sys`     -- a continuous system
 - `δ`            -- step size
-- `pade_expm`    -- if true, use Pade approximant method to compute the
+- `pade_expm`    -- if `true`, use Pade approximant method to compute the
                     matrix exponential
-- `lazy_expm`    -- if true, compute the matrix exponential in a lazy way
+- `lazy_expm`    -- if `true`, compute the matrix exponential in a lazy way
                     (suitable for very large systems)
 
 ## Output
@@ -113,12 +115,12 @@ A discrete system.
 
 The transformation implemented here is the following:
 
-A -> Phi := exp(A*delta)
-U -> V := M*U
-X0 -> X0hat := X0
+- `A -> Phi := exp(A*delta)`
+- `U -> V := M*U`
+- `X0 -> X0hat := X0`
 
-where M corresponds to Phi1(A, delta) in Eq. (8) of SpaceEx: Scalable
-Verification of Hybrid Systems.
+where `M` corresponds to `Phi1(A, delta)` in Eq. (8) of *SpaceEx: Scalable
+Verification of Hybrid Systems.*
 
 In particular, there is no bloating, i.e. we don't bloat the initial states and
 dont multiply the input by the step size δ, as required for the dense time case.
@@ -193,7 +195,7 @@ Compute bloating factors using forward or backward interpolation.
 
 ## Algorithm
 
-See Frehse et al CAV'11 paper, SpaceEx: Scalable Verification of Hybrid Systems,
+See Frehse et al CAV'11 paper, *SpaceEx: Scalable Verification of Hybrid Systems*,
 see Lemma 3.
 
 Note that in the unlikely case that A is invertible, the result can also

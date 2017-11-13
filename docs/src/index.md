@@ -41,6 +41,7 @@ exact but lazy (i.e. symbolic) representations of common sets.
 ```@contents
 Pages = [
     "lib/interface.md",
+    "lib/discretize.md"
 ]
 Depth = 2
 ```
