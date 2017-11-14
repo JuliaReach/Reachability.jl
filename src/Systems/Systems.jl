@@ -22,14 +22,14 @@ Nondeterministic inputs
 
 
 """
-Abstract type representing a nondeterministic input. The input can be either constant
-or time-varying. In both cases it is represented by an iterator.
+Abstract type representing a nondeterministic input. The input can be either
+constant or time-varying. In both cases it is represented by an iterator.
 """
 abstract type NonDeterministicInput end
 
 
 """
-Type that represent the state of a `NonDeterministicInput`.
+Type that represents the state of a `NonDeterministicInput`.
 
 ### Fields
 - `set`   -- current set
@@ -54,7 +54,7 @@ The iteration over this set is such that its `state` is a tuple
 (`set`, `index`), where `set` is the value of the input, represented as a
 `LazySet`, and `index` counts the number of times this iterator was called. Its
 length is infinite, since the input is defined for all times. The index of the
-input state is always contantly 1.
+input state is always constantly 1.
 
 ### Fields
 
@@ -122,7 +122,8 @@ abstract type AbstractSystem end
 
 
 """
-Type that represents a continous-time affine system with nondeterministic inputs,
+Type that represents a continuous-time affine system with nondeterministic
+inputs,
 
 ``x'(t) = Ax(t) + u(t)``,
 
@@ -130,8 +131,9 @@ where:
 
 - ``A`` is a square matrix
 - ``x(0) ∈ X0``
-- ``u(t) ∈ U(t)``, where ``U(t)`` is a piecewise-constant set-valued function
-  defined over ``[t1, t1+δ], ... , [tN, tN+δ]`` for some δ
+- ``u(t) ∈ U(t)``, where ``U(\cdot)`` is a piecewise-constant set-valued
+  function, i.e. we consider a possibly time-varying discrete sequence
+  ``\{U(k)\}_k``
 
 ### Fields
 
@@ -190,7 +192,7 @@ where
 - ``A ``is a square matrix
 - ``x(0) ∈ X0``
 - ``u_{k} ∈ U_{k}``, where ``U_{k}`` is a piecewise-constant set-valued function
-  defined over ``[t1, t1+δ], ... , [tN, tN+δ]`` for some δ
+  defined over ``[0, δ], ..., [(N-1)\delta, N δ]`` for some δ.
 
 ### Fields
 
