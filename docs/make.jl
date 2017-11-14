@@ -10,6 +10,7 @@ makedocs(
         "Library" => Any[
         "User interface" => "lib/interface.md",
         "Systems" => "lib/systems.md",
+        "Transformations" => "lib/transformations.md",
         "Discretization" => "lib/discretize.md"],
         "About" => "about.md"
     ]
