@@ -54,8 +54,8 @@ NonDeterministicInput
 ```
 
 The inputs are closely related to a [`DiscreteSystem`](@ref) in the sense that
-for each discrete time step the inputs may change. The `InputState` type allows
-an iteration through the inputs over time.
+for each discrete time step the input set may change. The `InputState` type
+allows an iteration through the inputs over time.
 
 ```@docs
 InputState
@@ -64,7 +64,8 @@ InputState
 ### Constant nondeterministic inputs
 
 Constant nondeterministic inputs are chosen from a set of values that does not
-change over time.
+change over time. Note that, while the set is constant, the inputs themselves
+vary over time.
 
 ```@docs
 ConstantNonDeterministicInput
