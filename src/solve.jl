@@ -84,9 +84,8 @@ function solve(system::AbstractSystem,
         info("Transformation...")
         tic()
         (Δ, transformation_matrix) = transform(
-            options[:coordinate_transformation],
             Δ,
-            options[:plot_vars]
+            options[:coordinate_transformation]
             )
         tocc()
     else
