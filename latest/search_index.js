@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.DiscreteSystem",
     "category": "Type",
-    "text": "Type that represents a system of discrete-time affine ODEs with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu_k  mathcalU_k, where mathcalU_k_k is a set-valued sequence defined over 0   (N-1) N  for some 0\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\n\n\n"
+    "text": "DiscreteSystem <: AbstractSystem\n\nType that represents a system of discrete-time affine ODEs with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu_k  mathcalU_k, where mathcalU_k_k is a set-valued sequence defined over 0   (N-1) N  for some 0\n\nFields\n\nA  – square matrix, possibly of type SparseMatrixExp\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\nExamples\n\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},                  X0::LazySet,                  δ::Float64,                  U::NonDeterministicInput) – default constructor\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64) – constructor with no inputs\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.dim",
     "category": "Method",
-    "text": "dim(S)\n\nDimension of a discrete system.\n\nInput\n\nS – discrete system\n\n\n\n"
+    "text": "dim(S)\n\nDimension of a discrete system.\n\nInput\n\nS – discrete system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.ContinuousSystem",
     "category": "Type",
-    "text": "Type that represents a system of continuous-time affine ODEs with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu(t)  mathcalU(t), where mathcalU(cdot) is a piecewise-constant set-valued function, i.e. we consider that it can be approximated by a possibly time-varying discrete sequence mathcalU_k _k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\n\n\n"
+    "text": "ContinuousSystem <: AbstractSystem\n\nType that represents a system of continuous-time affine ODEs with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu(t)  mathcalU(t), where mathcalU(cdot) is a piecewise-constant set-valued function, i.e. we consider that it can be approximated by a possibly time-varying discrete sequence mathcalU_k _k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\nExamples\n\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::NonDeterministicInput) – default constructor\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet) – constructor with no inputs\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
 },
 
 {
@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.dim",
     "category": "Method",
-    "text": "dim(S)\n\nDimension of a continuous system.\n\nInput\n\nS – continuous system\n\n\n\n"
+    "text": "dim(S)\n\nDimension of a continuous system.\n\nInput\n\nS – continuous system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
 },
 
 {
@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.InputState",
     "category": "Type",
-    "text": "Type that represents the state of a NonDeterministicInput.\n\nFields\n\nset   – current set\nindex – index in the iteration\n\n\n\n"
+    "text": "InputState\n\nType that represents the state of a NonDeterministicInput.\n\nFields\n\nset   – current set\nindex – index in the iteration\n\n\n\n"
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Nondeterministic inputs",
     "category": "section",
-    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the inputs may change. The InputState type allows an iteration through the inputs over time.InputState"
+    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the input set may change. The InputState type allows an iteration through the inputs over time.InputState"
 },
 
 {
@@ -197,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.ConstantNonDeterministicInput",
     "category": "Type",
-    "text": "Type that represents a constant nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called. Its length is infinite, since the input is defined for all times. The index of the input state is always constantly 1.\n\nFields\n\nU – LazySet\n\n\n\n"
+    "text": "ConstantNonDeterministicInput <: NonDeterministicInput\n\nType that represents a constant nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called. Its length is infinite, since the input is defined for all times. The index of the input state is always constantly 1.\n\nFields\n\nU – LazySet\n\nExamples\n\nConstantNonDeterministicInput(U::LazySet) – default constructor\n\n\n\n"
 },
 
 {
@@ -205,7 +205,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Constant nondeterministic inputs",
     "category": "section",
-    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time.ConstantNonDeterministicInput"
+    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time.ConstantNonDeterministicInput"
 },
 
 {
@@ -213,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.TimeVaryingNonDeterministicInput",
     "category": "Type",
-    "text": "Type that represents a time-varying nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as an array of LazySets, and index counts the number of times this iterator was called. Its length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nFields\n\nU – array containing LazySets\n\n\n\n"
+    "text": "TimeVaryingNonDeterministicInput <: NonDeterministicInput\n\nType that represents a time-varying nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as an array of LazySets, and index counts the number of times this iterator was called. Its length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nFields\n\nU – array containing LazySets\n\nExamples\n\nTimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) – constructor from a vector of sets\n\n\n\n"
 },
 
 {
