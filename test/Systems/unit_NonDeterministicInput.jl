@@ -1,9 +1,5 @@
 import Reachability.Systems: ConstantNonDeterministicInput, TimeVaryingNonDeterministicInput
 
-# Testing null constant input
-state = start(ConstantNonDeterministicInput())
-@test isa(state.set, VoidSet)
-
 # Testing constant non-deterministic input
 c = zeros(4); r = 0.1
 U = BallInf(c, r)
