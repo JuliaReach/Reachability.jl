@@ -185,13 +185,13 @@ Compute bloating factors using forward or backward interpolation.
 
 ## Input
 
-- `cs`        -- a continuous system
-- `δ`         -- step size
-- `approx_model`
-- `pade_expm` -- if true, use Pade approximant method to compute the
-                 matrix exponential
-- `lazy_expm` -- if true, compute the matrix exponential in a lazy way
-                 suitable for very large systems)
+- `cs`           -- a continuous system
+- `δ`            -- step size
+- `approx_model` -- choose the approximation model among `"forward"` and `"backward"`
+- `pade_expm`    -- if true, use Pade approximant method to compute the
+                    matrix exponential
+- `lazy_expm`   --  if true, compute the matrix exponential in a lazy way
+                    suitable for very large systems)
 
 ## Algorithm
 

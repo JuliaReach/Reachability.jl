@@ -122,7 +122,7 @@ abstract type AbstractSystem end
 
 
 """
-Type that represents a continuous-time affine system with nondeterministic
+Type that represents a system of continuous-time affine ODEs with nondeterministic
 inputs,
 
 ``x'(t) = Ax(t) + u(t)``,
@@ -130,10 +130,10 @@ inputs,
 where:
 
 - ``A`` is a square matrix
-- ``x(0) ∈ X0``
-- ``u(t) ∈ U(t)``, where ``U(\cdot)`` is a piecewise-constant set-valued
-  function, i.e. we consider a possibly time-varying discrete sequence
-  ``\{U(k)\}_k``
+- ``x(0) ∈ \\mathcal{X}_0`` and ``\\mathcal{X}_0`` is a convex set
+- ``u(t) ∈ \\mathcal{U}(t)``, where ``\\mathcal{U}(\\cdot)`` is a piecewise-constant
+  set-valued function, i.e. we consider that it can be approximated by a possibly
+  time-varying discrete sequence ``\\{\\mathcal{U}_k \\}_k``
 
 ### Fields
 
@@ -183,16 +183,16 @@ end
 
 
 """
-Type that represents a discrete-time affine system with nondeterministic inputs,
+Type that represents a system of discrete-time affine ODEs with nondeterministic inputs,
 
-``x_{k+1} = A x_{k} + u_{k}``,
+``x_{k+1} = A x_{k} + u_{k}``
 
-where
+where:
 
-- ``A ``is a square matrix
-- ``x(0) ∈ X0``
-- ``u_{k} ∈ U_{k}``, where ``U_{k}`` is a piecewise-constant set-valued function
-  defined over ``[0, δ], ..., [(N-1)\delta, N δ]`` for some δ.
+- ``A`` is a square matrix
+- ``x(0) ∈ \\mathcal{X}_0`` and ``\\mathcal{X}_0`` is a convex set
+- ``u_{k} ∈ \\mathcal{U}_{k}``, where ``\\{\\mathcal{U}_{k}\\}_k`` is a
+  set-valued sequence defined over ``[0, δ], ..., [(N-1)δ, N δ]`` for some ``δ>0``
 
 ### Fields
 
@@ -220,15 +220,18 @@ struct DiscreteSystem <: AbstractSystem
             ? throw(DomainError())
             : new(A, X0, U, δ))
 end
+
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
                X0::LazySet,
                δ::Float64) =
     DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
                X0::LazySet,
                δ::Float64,
                U::LazySet) =
     DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(U))
+
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
                X0::LazySet,
                δ::Float64,
