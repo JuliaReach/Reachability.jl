@@ -1,67 +1,90 @@
 __precompile__()
-
+"""
+Module to apply coordinate transformations.
+"""
 module Transformations
 
 using LazySets, ..Systems
 
+export transform
+
 """
-    transform(method, Δ, plot_vars)
+    transform(S, method)
 
-Forward call to the respective transformation function.
+Interface function that calls the respective transformation function.
 
-INPUT:
+### Input
 
-- ``method``    -- transformation method name, one of: ``'schur'``
-- ``Δ``         -- discretized system
-- ``plot_vars`` -- variables to plot; two-dimensional index array
+- `S`      -- discrete or continuous system
+- `method` -- transformation method name, one of: `'schur'`
+
+### Output
+
+- transformed discrete or continuous system
+- inverse transformation matrix for reverting the transformation
+
+### Notes
+
+The functions that are called in the background should return a four-tuple
+`(A, X0, U, M)` consisting of the transformed system components `A`, `X0`, and
+`U`, and an inverse transformation matrix `M`.
 """
-function transform(method::String, Δ::DiscreteSystem, plot_vars::Array{Int64, 1})::Tuple{DiscreteSystem, SparseMatrixCSC{Float64,Int64}}
+function transform(S::T,
+                   method::String)::Tuple{T, SparseMatrixCSC{Float64, Int64}} where
+                       {T<:Union{DiscreteSystem, ContinuousSystem}}
     if method == "schur"
-        return transformSchur(Δ, plot_vars)
+        (A, X0, U, M) = transform_schur(S)
     else
         error("undefined transformation")
+    end
+
+    if S isa DiscreteSystem
+        return (DiscreteSystem(A, X0, S.δ, U), M)
+    else
+        return (ContinuousSystem(A, X0, U), M)
     end
 end
 
 """
-    transformSchur(Δ, plot_vars)
+    transform_schur(S)
 
-Applies a Schur transformation to a discretized system Δ.
-The output is again a discretized system together with a transformation matrix
-for undoing the transformation.
-The argument plot_vars is used to determine whether we will add another
-dimension for time later and hence whether the transformation matrix should have
-another dimension for time.
+Applies a Schur transformation to a discrete or continuous system S.
 
-INPUT:
+### Input
 
-- ``Δ``         -- discretized system
-- ``plot_vars`` -- variables to plot; two-dimensional index array
+- `S` -- discrete or continuous system
+
+### Output
+
+- transformed system matrix
+- transformed initial states
+- transformed nondeterministic inputs
+- inverse transformation matrix for reverting the transformation
+
+### Algorithm
+
+We use the default `schurfact` function to compute a Schur decomposition.
 """
-function transformSchur(Δ::DiscreteSystem, plot_vars::Array{Int64, 1})::Tuple{DiscreteSystem, SparseMatrixCSC{Float64,Int64}}
-    A::SparseMatrixCSC{Float64, Int64} = Δ.A
+function transform_schur(S::Union{DiscreteSystem, ContinuousSystem})::Tuple{
+                             SparseMatrixCSC{Float64, Int64},
+                             LazySet,
+                             NonDeterministicInput,
+                             SparseMatrixCSC{Float64,Int64}}
+    A::SparseMatrixCSC{Float64, Int64} = S.A
     F = schurfact(full(A))
     A_new::SparseMatrixCSC{Float64, Int64} = sparse(F[:Schur])
     Z_inverse = sparse(F[:vectors].') # for Schur matrix: inv(F) == F'
 
     # apply transformation to initial states
-    X0_new = Z_inverse * Δ.X0
+    X0_new = Z_inverse * S.X0
 
     # apply transformation to inputs
-    U_new = Z_inverse * Δ.U
+    U_new = Z_inverse * S.U
     
-    # compute the transformation matrix for undoing the transformation again
-    transformationMatrix = sparse(F[:vectors])
-#=
-    got_time = (plot_vars[1] == 0)
-    if got_time
-        # add another dimension for time: block matrix [M 0; 0 1]
-        transformationMatrix = sparse(cat([1, 2], transformationMatrix, [1]))
-    end
-=#
-    return (DiscreteSystem(A_new, X0_new, Δ.δ, U_new), transformationMatrix)
+    # compute the transformation matrix for reverting the transformation again
+    inverse = sparse(F[:vectors])
+
+    return (A_new, X0_new, U_new, inverse)
 end
 
-export transform
-
-end
+end # module
