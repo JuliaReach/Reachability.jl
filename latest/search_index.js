@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Library outline",
     "category": "section",
-    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/discretize.md\"\n]\nDepth = 2"
+    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/discretize.md\"\n]\nDepth = 2"
 },
 
 {
@@ -85,7 +85,143 @@ var documenterSearchIndex = {"docs": [
     "page": "User interface",
     "title": "Posing and solving a reachability problem",
     "category": "section",
-    "text": "solve"
+    "text": "A reachability problem is characterized by an AbstractSystem together with an Options structure.solve"
+},
+
+{
+    "location": "lib/systems.html#",
+    "page": "Systems",
+    "title": "Systems",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "lib/systems.html#Systems-1",
+    "page": "Systems",
+    "title": "Systems",
+    "category": "section",
+    "text": "This module provides types to represent systems of affine ODEs in both discrete and continuous time.Pages = [\"systems.md\"]\nDepth = 3CurrentModule = Reachability.Systems"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.AbstractSystem",
+    "page": "Systems",
+    "title": "Reachability.Systems.AbstractSystem",
+    "category": "Type",
+    "text": "Abstract type representing a system of affine ODEs.\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Different-types-of-systems-1",
+    "page": "Systems",
+    "title": "Different types of systems",
+    "category": "section",
+    "text": "Every system inherits from AbstractSystem.AbstractSystemWe support the following two concrete types of systems. "
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.DiscreteSystem",
+    "page": "Systems",
+    "title": "Reachability.Systems.DiscreteSystem",
+    "category": "Type",
+    "text": "Type that represents a discrete-time affine system with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k,\n\nwhere\n\nAis a square matrix\nx(0)  X0\nu_k  U_k, where U_k is a piecewise-constant set-valued function defined over 0   (N-1)delta N  for some δ.\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.DiscreteSystem}",
+    "page": "Systems",
+    "title": "Reachability.Systems.dim",
+    "category": "Method",
+    "text": "dim(S)\n\nDimension of a discrete system.\n\nInput\n\nS – discrete system\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Discrete-system-1",
+    "page": "Systems",
+    "title": "Discrete system",
+    "category": "section",
+    "text": "A discrete system consists of a matrix representing the system dynamics, a set of initial states, a set of nondeterministic inputs, and a discretization step δ.DiscreteSystem\ndim(S::DiscreteSystem)"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.ContinuousSystem",
+    "page": "Systems",
+    "title": "Reachability.Systems.ContinuousSystem",
+    "category": "Type",
+    "text": "Type that represents a continuous-time affine system with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  X0\nu(t)  U(t), where U(cdot) is a piecewise-constant set-valued function, i.e. we consider a possibly time-varying discrete sequence U(k)_k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.ContinuousSystem}",
+    "page": "Systems",
+    "title": "Reachability.Systems.dim",
+    "category": "Method",
+    "text": "dim(S)\n\nDimension of a continuous system.\n\nInput\n\nS – continuous system\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Continuous-system-1",
+    "page": "Systems",
+    "title": "Continuous system",
+    "category": "section",
+    "text": "A continuous system consists of a matrix representing the system dynamics, a set of initial states, and a set of nondeterministic inputs.ContinuousSystem\ndim(S::ContinuousSystem)"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.NonDeterministicInput",
+    "page": "Systems",
+    "title": "Reachability.Systems.NonDeterministicInput",
+    "category": "Type",
+    "text": "Abstract type representing a nondeterministic input. The input can be either constant or time-varying. In both cases it is represented by an iterator.\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.InputState",
+    "page": "Systems",
+    "title": "Reachability.Systems.InputState",
+    "category": "Type",
+    "text": "Type that represents the state of a NonDeterministicInput.\n\nFields\n\nset   – current set\nindex – index in the iteration\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Nondeterministic-inputs-1",
+    "page": "Systems",
+    "title": "Nondeterministic inputs",
+    "category": "section",
+    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the inputs may change. The InputState type allows an iteration through the inputs over time.InputState"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.ConstantNonDeterministicInput",
+    "page": "Systems",
+    "title": "Reachability.Systems.ConstantNonDeterministicInput",
+    "category": "Type",
+    "text": "Type that represents a constant nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called. Its length is infinite, since the input is defined for all times. The index of the input state is always constantly 1.\n\nFields\n\nU – LazySet\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Constant-nondeterministic-inputs-1",
+    "page": "Systems",
+    "title": "Constant nondeterministic inputs",
+    "category": "section",
+    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time.ConstantNonDeterministicInput"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.TimeVaryingNonDeterministicInput",
+    "page": "Systems",
+    "title": "Reachability.Systems.TimeVaryingNonDeterministicInput",
+    "category": "Type",
+    "text": "Type that represents a time-varying nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as an array of LazySets, and index counts the number of times this iterator was called. Its length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nFields\n\nU – array containing LazySets\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Time-varying-nondeterministic-inputs-1",
+    "page": "Systems",
+    "title": "Time-varying nondeterministic inputs",
+    "category": "section",
+    "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step).TimeVaryingNonDeterministicInput"
 },
 
 {
