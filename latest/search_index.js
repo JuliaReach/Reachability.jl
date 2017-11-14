@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.DiscreteSystem",
     "category": "Type",
-    "text": "Type that represents a discrete-time affine system with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k,\n\nwhere\n\nAis a square matrix\nx(0)  X0\nu_k  U_k, where U_k is a piecewise-constant set-valued function defined over 0   (N-1)delta N  for some δ.\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\n\n\n"
+    "text": "Type that represents a system of discrete-time affine ODEs with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu_k  mathcalU_k, where mathcalU_k_k is a set-valued sequence defined over 0   (N-1) N  for some 0\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\n\n\n"
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.ContinuousSystem",
     "category": "Type",
-    "text": "Type that represents a continuous-time affine system with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  X0\nu(t)  U(t), where U(cdot) is a piecewise-constant set-valued function, i.e. we consider a possibly time-varying discrete sequence U(k)_k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\n\n\n"
+    "text": "Type that represents a system of continuous-time affine ODEs with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu(t)  mathcalU(t), where mathcalU(cdot) is a piecewise-constant set-valued function, i.e. we consider that it can be approximated by a possibly time-varying discrete sequence mathcalU_k _k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\n\n\n"
 },
 
 {
@@ -261,7 +261,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_bloat_interpolation",
     "category": "Function",
-    "text": "discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)\n\nCompute bloating factors using forward or backward interpolation.\n\nInput\n\ncs        – a continuous system\nδ         – step size\napprox_model\npade_expm – if true, use Pade approximant method to compute the                matrix exponential\nlazy_expm – if true, compute the matrix exponential in a lazy way                suitable for very large systems)\n\nAlgorithm\n\nSee Frehse et al CAV'11 paper, SpaceEx: Scalable Verification of Hybrid Systems, see Lemma 3.\n\nNote that in the unlikely case that A is invertible, the result can also be obtained directly, as a function of the inverse of A and e^{At} - I.\n\nThe matrix P is such that: ϕAabs = P[1:n, 1:n], Phi1Aabsdelta = P[1:n, (n+1):2*n], and Phi2Aabs = P[1:n, (2*n+1):3*n].\n\n\n\n"
+    "text": "discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)\n\nCompute bloating factors using forward or backward interpolation.\n\nInput\n\ncs           – a continuous system\nδ            – step size\napprox_model – choose the approximation model among \"forward\" and \"backward\"\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm   –  if true, compute the matrix exponential in a lazy way                   suitable for very large systems)\n\nAlgorithm\n\nSee Frehse et al CAV'11 paper, SpaceEx: Scalable Verification of Hybrid Systems, see Lemma 3.\n\nNote that in the unlikely case that A is invertible, the result can also be obtained directly, as a function of the inverse of A and e^{At} - I.\n\nThe matrix P is such that: ϕAabs = P[1:n, 1:n], Phi1Aabsdelta = P[1:n, (n+1):2*n], and Phi2Aabs = P[1:n, (2*n+1):3*n].\n\n\n\n"
 },
 
 {
