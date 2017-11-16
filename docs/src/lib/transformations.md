@@ -1,7 +1,7 @@
 # Transformations
 
 This module provides functions to apply coordinate transformations to
-[Systems](@ref).
+[Systems](@ref) using matrix decompositions.
 
 ```@contents
 Pages = ["transformations.md"]
@@ -21,10 +21,22 @@ which transformation to apply using a string argument.
 transform
 ```
 
-## Types of transformations
+## Schur transform
 
-We currently only support a Schur transformation.
+
+$U^TAU = \begin{pmatrix}
+T_{11} & T_{12} &\cdots & T_{1b} \\
+0 & T_{22} & \cdots & T_{2b} \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & T_{bb}
+\end{pmatrix}$
 
 ```@docs
-transform_schur
+schur_transform
+```
+
+## Jordan transform
+
+```@docs
+jordan_transform
 ```
