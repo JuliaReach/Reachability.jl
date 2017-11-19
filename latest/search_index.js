@@ -309,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "Contributing",
     "category": "section",
-    "text": "If you like this package, consider contributing! We welcome bug reports, examples that can be added to the documentation, or new feature proposals.Below we detail some of the guidelines that should be followed when contributing to this package."
+    "text": "If you like this package, consider contributing! We welcome bug reports, examples that can be added to the documentation, or new feature proposals.Below some conventions that we follow when contributing to this package are detailed. For specific guidelines on documentation, see the Documentations Guidelines wiki."
 },
 
 {
