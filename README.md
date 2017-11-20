@@ -20,9 +20,18 @@ for scientific computing.
 
 ### Dependencies
 
-This package requires Julia v0.6 or later. Refer to the official documentation on how to install it for your system. 
+This package requires Julia v0.6 or later. Refer to the [official documentation](https://julialang.org/downloads)
+on how to install and run Julia in your system.
 
-To install the [LazySets](https://github.com/JuliaReach/LazySets.jl) dependency, follow the instructions in the [installation section](https://github.com/JuliaReach/LazySets.jl#installing).
+To install the [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) dependency,
+use the following command inside Julia's REPL:
+
+```julia
+Pkg.clone("https://github.com/JuliaReach/LazySets.jl")
+```
+
+For further information see the
+[installation section of LazySets.jl](https://github.com/JuliaReach/LazySets.jl#installing).
 
 ### Installation
 
@@ -33,7 +42,7 @@ Pkg.clone("https://github.com/JuliaReach/Reachability.jl")
 
 ## Updating
 
-To checkout the latest version, do 
+To checkout the latest version, do
 ```julia
 Pkg.checkout("Reachability")
 ````
