@@ -9,46 +9,45 @@ using LazySets, ..Systems
 export transform
 
 """
-    transform(S, method)
+    transform(S; [method])
 
 Interface function that calls the respective transformation function.
 
 ### Input
 
 - `S`      -- discrete or continuous system
-- `method` -- transformation method name, one of: `'schur'`
+- `method` -- (optional, default: `'schur'`) transformation method name; valid
+              otions are:
+
+    * `'schur'`
 
 ### Output
+
+A tuple containing:
 
 - transformed discrete or continuous system
 - inverse transformation matrix for reverting the transformation
 
 ### Notes
 
-The functions that are called in the background should return a four-tuple
-`(A, X0, U, M)` consisting of the transformed system components `A`, `X0`, and
-`U`, and an inverse transformation matrix `M`.
+The functions that are called in the background should return a the transformed
+system components `A`, `X0`, and `U`, and also an inverse transformation matrix `M`.
 """
-function transform(S::T,
-                   method::String)::Tuple{T, SparseMatrixCSC{Float64, Int64}} where
-                       {T<:Union{DiscreteSystem, ContinuousSystem}}
-    if method == "schur"
-        (A, X0, U, M) = transform_schur(S)
-    else
-        error("undefined transformation")
-    end
+function transform(S::T;
+                   method::String="schur")::Tuple{T, AbstractMatrix} where
+                                            {T<:Union{DiscreteSystem, ContinuousSystem}}
 
-    if S isa DiscreteSystem
-        return (DiscreteSystem(A, X0, S.δ, U), M)
+    if method == "schur"
+        return schur_transform(S)
     else
-        return (ContinuousSystem(A, X0, U), M)
+        error("The transformation method $method is undefined")
     end
 end
 
 """
-    transform_schur(S)
+    schur_transform(S)
 
-Applies a Schur transformation to a discrete or continuous system S.
+Applies a Schur transformation to a discrete or continuous system.
 
 ### Input
 
@@ -56,35 +55,40 @@ Applies a Schur transformation to a discrete or continuous system S.
 
 ### Output
 
-- transformed system matrix
-- transformed initial states
-- transformed nondeterministic inputs
+A tuple containing:
+
+- transformed discrete or continuous system
 - inverse transformation matrix for reverting the transformation
 
 ### Algorithm
 
-We use the default `schurfact` function to compute a Schur decomposition.
+We use Julia's default `schurfact` function to compute a
+[Schur decomposition](https://en.wikipedia.org/wiki/Schur_decomposition)
+of the coefficients matrix ``A``.
 """
-function transform_schur(S::Union{DiscreteSystem, ContinuousSystem})::Tuple{
-                             SparseMatrixCSC{Float64, Int64},
-                             LazySet,
-                             NonDeterministicInput,
-                             SparseMatrixCSC{Float64,Int64}}
-    A::SparseMatrixCSC{Float64, Int64} = S.A
-    F = schurfact(full(A))
-    A_new::SparseMatrixCSC{Float64, Int64} = sparse(F[:Schur])
-    Z_inverse = sparse(F[:vectors].') # for Schur matrix: inv(F) == F'
+function schur_transform(S::T)::Tuple{T, AbstractMatrix} where
+                                     {T<:Union{DiscreteSystem, ContinuousSystem}}
 
-    # apply transformation to initial states
+    A_new, T_new = schur(full(S.A)) # full (dense) matrix is required
+
+
+    # recall that for Schur matrices, inv(T) == T'
+    Z_inverse = T_new.'
+
+    # apply transformation to the initial states
     X0_new = Z_inverse * S.X0
 
-    # apply transformation to inputs
+    # apply transformation to the inputs
     U_new = Z_inverse * S.U
-    
-    # compute the transformation matrix for reverting the transformation again
-    inverse = sparse(F[:vectors])
 
-    return (A_new, X0_new, U_new, inverse)
+    # obtain the transformation matrix for reverting the transformation again
+    T_inverse = F[:vectors]
+
+    if S isa DiscreteSystem
+        return (DiscreteSystem(A_new, X0_new, S.δ, U_new), T_inverse)
+    elseif S isa ContinuousSystem
+        return (ContinuousSystem(A_new, X0_new, U_new), T_inverse)
+    end
 end
 
 end # module

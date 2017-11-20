@@ -23,6 +23,7 @@ transform
 
 ## Schur transform
 
+The real Schur decomposition is of the form
 
 $U^TAU = \begin{pmatrix}
 T_{11} & T_{12} &\cdots & T_{1b} \\
@@ -30,13 +31,11 @@ T_{11} & T_{12} &\cdots & T_{1b} \\
 \vdots & \vdots & \ddots & \vdots \\
 0 & 0 & \cdots & T_{bb}
 \end{pmatrix}$
+where $T_{ij}$ are 2x2 matrices
+
 
 ```@docs
 schur_transform
 ```
 
-## Jordan transform
-
-```@docs
-jordan_transform
-```
+## Examples
