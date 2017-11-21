@@ -114,7 +114,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
     check_aliases_and_add_default_value!(dict, dict_copy, [:iterative_refinement], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:ɛ], Inf)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
@@ -125,7 +124,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
+
+    # special options: blocks, plotvars
+    check_and_add_blocks_plotvars(dict, dict_copy)
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
@@ -208,6 +209,53 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     end
 
     return options_copy
+end
+
+"""
+    check_and_add_blocks_plotvars(dict, dict_copy)
+
+Handling of the special duo `:blocks`, `:plot_vars`.
+
+### Input
+
+- `dict`      -- input dictionary of options
+- `dict_copy` -- a copy of the dictionary of options for internal names
+
+### Notes
+
+Supported options:
+- `:blocks` (blocks structure)
+- `:plot_vars` (output variables)
+- alias: `:output_variables`
+"""
+function check_and_add_blocks_plotvars(dict::Dict{Symbol,Any},
+                                       dict_copy::Dict{Symbol,Any})
+    if haskey(dict, :blocks)
+        check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], nothing)
+        # default: choose first variable in block
+        plot_vars_default = [0, dict_copy[:blocks][1]*2-1]
+        check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], plot_vars_default)
+    else
+        # no blocks defined
+        check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
+
+        # choose block(s) fitting the output variables
+        blocks = [dict_copy[:plot_vars][1], dict_copy[:plot_vars][2]]
+        for i = 2 : -1 : 1
+            if blocks[i] == 0
+                # remove 0 entry
+                blocks = [blocks[3-i]]
+            else
+                # find correct block index for 2D decomposition
+                blocks[i] = div(blocks[i]-1, 2)+1
+            end
+        end
+        if length(blocks) == 2 && blocks[1] == blocks[2]
+            # both variables were in the same block
+            blocks = [blocks[1]]
+        end
+        check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], blocks)
+    end
 end
 
 """
