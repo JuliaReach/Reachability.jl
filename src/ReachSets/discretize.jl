@@ -223,9 +223,6 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         end
     end
 
-    # get first input set
-    input_state = start(cont_sys.U)
-
     # early return for homogeneous systems
     input_state = start(cont_sys.U)
     if isa(input_state.set, VoidSet) && length(cont_sys.U) == 1

@@ -1,4 +1,4 @@
-export Reach2DSolution, ReachNDSolution, AbstractReachSolution, solve, project
+export ReachSolution, AbstractReachSolution, solve, project
 
 """
     AbstractReachSolution
