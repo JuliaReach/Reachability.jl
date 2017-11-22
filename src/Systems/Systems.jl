@@ -11,10 +11,10 @@ export AbstractSystem,
        DiscreteSystem,
        NonDeterministicInput,
        ConstantNonDeterministicInput,
-       TimeVaryingNonDeterministicInput
-
-import Base: *
-
+       TimeVaryingNonDeterministicInput,
+       wrap_input_state,
+       get_set,
+       next_set
 
 #=
 Nondeterministic inputs
@@ -29,25 +29,11 @@ abstract type NonDeterministicInput end
 
 
 """
-    InputState
+    AbstractInputState
 
 Type that represents the state of a `NonDeterministicInput`.
-
-### Fields
-
-- `set`   -- current set
-- `index` -- index in the iteration
 """
-struct InputState
-    # set representation
-    set::LazySet
-    # iteration index
-    index::Int64
-
-    # default constructor
-    InputState(set::LazySet, index::Int64) = new(set, index)
-end
-InputState(set::LazySet) = InputState(set, 1)
+abstract type AbstractInputState end
 
 
 """
@@ -78,15 +64,28 @@ struct ConstantNonDeterministicInput <: NonDeterministicInput
 end
 
 
-Base.start(NDInput::ConstantNonDeterministicInput) = InputState(NDInput.U)
-Base.next(NDInput::ConstantNonDeterministicInput, state) = InputState(NDInput.U)
-Base.done(NDInput::ConstantNonDeterministicInput, state) = false
-Base.eltype(::Type{ConstantNonDeterministicInput}) = Type{InputState}
-Base.length(NDInput::ConstantNonDeterministicInput) = 1
+"""
+    ConstantInputState
+
+Type that represents the state of a `ConstantNonDeterministicInput`.
+
+### Fields
+
+- `inputs` -- backing inputs data structure
+"""
+struct ConstantInputState
+    # set representation
+    inputs::ConstantNonDeterministicInput
+end
+
+wrap_input_state(inputs::ConstantNonDeterministicInput) =
+    ConstantInputState(inputs)
+get_set(state::ConstantInputState) = state.inputs
+next_set(state::ConstantInputState) = nothing
 
 
-function *(M::AbstractMatrix{Float64}, NDInput::ConstantNonDeterministicInput)
-    return ConstantNonDeterministicInput(M * start(NDInput).set)
+function *(M::AbstractMatrix{<:Real}, NDInput::ConstantNonDeterministicInput)
+    return ConstantNonDeterministicInput(M * NDInput)
 end
 
 
@@ -120,13 +119,34 @@ struct TimeVaryingNonDeterministicInput <: NonDeterministicInput
 end
 
 
-Base.start(NDInput::TimeVaryingNonDeterministicInput) = InputState(NDInput.U[1])
-Base.next(NDInput::TimeVaryingNonDeterministicInput, state) =
-    InputState(NDInput.U[state.index+1], state.index+1)
-Base.done(NDInput::TimeVaryingNonDeterministicInput, state) =
-    state.index > length(NDInput.U)
-Base.eltype(::Type{TimeVaryingNonDeterministicInput}) = Type{InputState}
-Base.length(NDInput::TimeVaryingNonDeterministicInput) = length(NDInput.U)
+"""
+    TimeVaryingInputState
+
+Type that represents the state of a `TimeVaryingNonDeterministicInput`.
+
+### Fields
+
+- `inputs` -- backing inputs data structure
+- `index`  -- index in the iteration
+"""
+mutable struct TimeVaryingInputState
+    # set representation
+    inputs::TimeVaryingNonDeterministicInput
+    # iteration index
+    index::Int64
+
+    # default constructor
+    TimeVaryingInputState(inputs::TimeVaryingNonDeterministicInput) =
+        new(inputs, 1)
+end
+
+wrap_input_state(inputs::TimeVaryingNonDeterministicInput) =
+    TimeVaryingInputState(inputs)
+get_set(state::TimeVaryingInputState) = state.inputs.U[state.index]
+next_set(state::TimeVaryingInputState) = (
+    state.index >= length(state.inputs.U)
+        ? error("No next set available.")
+        : state.index += 1)
 
 
 #=
