@@ -265,7 +265,7 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
     else
         discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
-        push!(discretized_U_arr, discretized_U)
+        discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
             inputs = next(cont_sys.U, i)[1]
             EPsi_i = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * inputs))

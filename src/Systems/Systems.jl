@@ -95,7 +95,7 @@ struct TimeVaryingNonDeterministicInput <: NonDeterministicInput
 end
 
 Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
-    (inputs.U[state.index], state + 1)
+    (inputs.U[state], state + 1)
 Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
     (state > length(inputs.U))
 Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
