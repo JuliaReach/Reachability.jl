@@ -76,19 +76,19 @@ using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
 function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::DiscreteSystem
 
-    if length(cont_sys.U) > 1
+    if !(cont_sys.U isa ConstantNonDeterministicInput)
         error("This discretization algorithm is only implemented for constant inputs")
     end
 
     Anorm = norm(full(cont_sys.A), Inf)
     RX0 = norm(cont_sys.X0, Inf)
-    input_state = start(cont_sys.U)
-    RU = norm(input_state.set, Inf)
+    inputs = next_set(cont_sys.U)
+    RU = norm(inputs, Inf)
     α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
     β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
     ϕ = expm(full(cont_sys.A))
-    Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ*input_state.set + Ball2(zeros(size(ϕ, 1)), α))
-    discr_U =  δ * input_state.set + Ball2(zeros(size(ϕ, 1)), β)
+    Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ*inputs + Ball2(zeros(size(ϕ, 1)), α))
+    discr_U =  δ * inputs + Ball2(zeros(size(ϕ, 1)), β)
     return DiscreteSystem(ϕ, Ω0, δ, discr_U)
 end
 
@@ -142,8 +142,8 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
     end
 
     # early return for homogeneous systems
-    input_state = start(cont_sys.U)
-    if isa(input_state.set, VoidSet) && length(cont_sys.U) == 1
+    inputs = next_set(cont_sys.U, 1)
+    if isa(inputs, VoidSet) && length(cont_sys.U) == 1
             Ω0 = cont_sys.X0
             return DiscreteSystem(ϕ, Ω0, δ)
     end
@@ -161,18 +161,18 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
         Phi1Adelta = P[1:n, (n+1):2*n]
     end
 
-    discretized_U = Phi1Adelta * input_state.set
+    discretized_U = Phi1Adelta * inputs
 
     Ω0 = cont_sys.X0
 
     if length(cont_sys.U) == 1
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
     else
-        discretized_U_arr = LazySet[]
-        push!(discretized_U_arr, discretized_U)
+        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
+        discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
-            input_state = next(cont_sys.U, input_state)
-            push!(discretized_U_arr, Phi1Adelta * input_state.set)
+            inputs = next(cont_sys.U, i)[1]
+            discretized_U_arr[i] = Phi1Adelta * inputs
         end
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
     end
@@ -224,8 +224,8 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
     end
 
     # early return for homogeneous systems
-    input_state = start(cont_sys.U)
-    if isa(input_state.set, VoidSet) && length(cont_sys.U) == 1
+    inputs = next_set(cont_sys.U, 1)
+    if isa(inputs, VoidSet) && length(cont_sys.U) == 1
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0)
             return DiscreteSystem(ϕ, Ω0, δ)
     end
@@ -243,15 +243,15 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
 
-    if isa(input_state.set, VoidSet)
-            if approx_model == "forward"
-                Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * input_state.set)
-            elseif approx_model == "backward"
-                Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * input_state.set)
-            end
+    if isa(inputs, VoidSet)
+        if approx_model == "forward"
+            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
+        elseif approx_model == "backward"
+            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
+        end
     else
-        EPsi = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * input_state.set))
-        discretized_U = δ * input_state.set + EPsi
+        EPsi = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * inputs))
+        discretized_U = δ * inputs + EPsi
         if approx_model == "forward"
             EOmegaPlus = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull((cont_sys.A * cont_sys.A) * cont_sys.X0))
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaPlus)
@@ -264,12 +264,12 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
     if length(cont_sys.U) == 1
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
     else
-        discretized_U_arr = LazySet[]
-        push!(discretized_U_arr, discretized_U)
+        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
+        discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
-            input_state = next(cont_sys.U, input_state)
-            EPsi_i = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * input_state.set))
-            push!(discretized_U_arr, δ * input_state.set + EPsi_i)
+            inputs = next(cont_sys.U, i)[1]
+            EPsi_i = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * inputs))
+            discretized_U_arr[i] = δ * inputs + EPsi_i
         end
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
     end
