@@ -12,7 +12,7 @@ Depth = 3
 CurrentModule = Reachability.Systems
 ```
 
-## Different types of systems
+## Types of systems
 
 Every system inherits from `AbstractSystem`.
 
@@ -54,12 +54,9 @@ NonDeterministicInput
 ```
 
 The inputs are closely related to a [`DiscreteSystem`](@ref) in the sense that
-for each discrete time step the input set may change. The `InputState` type
-allows an iteration through the inputs over time.
+for each discrete time step the input set may change. We support iteration
+through the inputs over time.
 
-```@docs
-InputState
-```
 
 ### Constant nondeterministic inputs
 
@@ -69,6 +66,8 @@ vary over time.
 
 ```@docs
 ConstantNonDeterministicInput
+next_set(inputs::ConstantNonDeterministicInput, state::Int64)
+next_set(inputs::ConstantNonDeterministicInput)
 ```
 
 ### Time-varying nondeterministic inputs
@@ -78,4 +77,5 @@ changes over time (with each time step).
 
 ```@docs
 TimeVaryingNonDeterministicInput
+next_set(inputs::TimeVaryingNonDeterministicInput, state::Int64)
 ```

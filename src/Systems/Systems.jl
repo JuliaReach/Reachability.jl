@@ -36,15 +36,19 @@ Base.eltype(::Type{NonDeterministicInput}) = LazySet
 
 Type that represents a constant nondeterministic input.
 
-The iteration over this set is such that its `state` is a tuple
-(`set`, `index`), where `set` is the value of the input, represented as a
-`LazySet`, and `index` counts the number of times this iterator was called. Its
-length is infinite, since the input is defined for all times. The index of the
-input state is always constantly 1.
-
 ### Fields
 
 - `U` -- `LazySet`
+
+### Notes
+
+This type supports iteration with an index number as *iterator state*.
+The iteration function `next` takes and returns a tuple (`set`, `index`), where
+`set` is the value of the input, represented as a `LazySet`, and `index` counts
+the number of times this iterator was called.
+
+The iterator length is 1, but for convenience `next` can be called with any
+index.
 
 ### Examples
 
@@ -58,8 +62,36 @@ end
 Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
 Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
 Base.length(inputs::ConstantNonDeterministicInput) = 1
+
+"""
+    next_set(inputs, state)
+
+Convenience iteration function that only returns the set.
+
+### Input
+
+- `inputs` - nondeterministic inputs wrapper
+- `state`  - iterator state, i.e., an index
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
 next_set(inputs::ConstantNonDeterministicInput, state::Int64) = inputs.U
-# convenience function with no index
+
+"""
+    next_set(inputs)
+
+Convenience iteration function without index that only returns the set.
+
+### Input
+
+- `inputs` - constant nondeterministic inputs wrapper
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
 next_set(inputs::ConstantNonDeterministicInput) = inputs.U
 
 
@@ -73,16 +105,20 @@ end
 
 Type that represents a time-varying nondeterministic input.
 
-The iteration over this set is such that its `state` is a tuple
-(`set`, `index`), where `set` is the value of the input, represented as an array
-of `LazySet`s, and `index` counts the number of times this iterator was called.
-Its length corresponds to the number of elements in the given array. The index
-of the input state increases from 1 and corresponds at each time to the array
-index in the input array.
-
 ### Fields
 
 - `U` -- array containing `LazySet`s
+
+### Notes
+
+This type supports iteration with an index number as *iterator state*.
+The iteration function `next` takes and returns a tuple (`set`, `index`), where
+`set` is the value of the input, represented as a `LazySet`, and `index` counts
+the number of times this iterator was called.
+
+The iterator length corresponds to the number of elements in the given array.
+The index of the input state increases from 1 and corresponds at each time to
+the array index in the input array.
 
 ### Examples
 
@@ -99,6 +135,21 @@ Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
 Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
     (state > length(inputs.U))
 Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
+
+"""
+    next_set(inputs, state)
+
+Convenience iteration function that only returns the set.
+
+### Input
+
+- `inputs` - nondeterministic inputs wrapper
+- `state`  - iterator state, i.e., an index
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
 next_set(inputs::TimeVaryingNonDeterministicInput, state::Int64) =
     inputs.U[state]
 
