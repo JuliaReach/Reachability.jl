@@ -54,7 +54,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
          Xhatk[bi] = voidSet2
     end
 
-    inputs = get_set(U)
+    inputs = next_set(U)
     @inbounds for bi in blocks
         Whatk[bi] = overapproximate(G0(bi) * inputs)
     end
@@ -165,7 +165,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
          Xhatk[bi] = voidSet2
     end
 
-    inputs = get_set(U)
+    inputs = next_set(U)
     @inbounds for bi in blocks
         Whatk[bi] = overapproximate(G0(bi) * inputs)
     end
@@ -321,7 +321,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
          Xhatk[bi] = voidSet2
     end
 
-    inputs = get_set(U)
+    inputs = next_set(U)
     @inbounds for bi in blocks
         Whatk[bi] = overapproximate(G0(bi) * inputs)
     end

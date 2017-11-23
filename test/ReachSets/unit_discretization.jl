@@ -11,7 +11,7 @@ cont_sys_homog = ContinuousSystem(A, X0)
 # no bloating, do not use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys_homog.U) == 1
-inputs = get_set(discr_sys_homog.U)
+inputs = next_set(discr_sys_homog.U)
 @test isa(inputs, VoidSet) && dim(inputs) == 4
 
 # no bloating, use Pade approximation
@@ -32,7 +32,7 @@ cont_sys = ContinuousSystem(A, X0, U)
 # no bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys.U) == 1
-inputs = get_set(discr_sys.U)
+inputs = next_set(discr_sys.U)
 @test dim(inputs) == 4
 @test isa(inputs, LinearMap)
 @test isa(inputs.sf, Ball2) && inputs.sf.center == ones(4) && inputs.sf.radius == 0.5
@@ -43,7 +43,7 @@ discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
 # bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=false)
 @test length(discr_sys.U) == 1
-inputs = get_set(discr_sys.U)
+inputs = next_set(discr_sys.U)
 @test dim(inputs) == 4
 @test isa(inputs, MinkowskiSum)
 

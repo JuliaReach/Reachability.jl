@@ -82,7 +82,7 @@ function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::Discre
 
     Anorm = norm(full(cont_sys.A), Inf)
     RX0 = norm(cont_sys.X0, Inf)
-    inputs = get_set(cont_sys.U)
+    inputs = next_set(cont_sys.U)
     RU = norm(inputs, Inf)
     α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
     β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
@@ -142,7 +142,7 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
     end
 
     # early return for homogeneous systems
-    inputs = get_set(cont_sys.U, 1)
+    inputs = next_set(cont_sys.U, 1)
     if isa(inputs, VoidSet) && length(cont_sys.U) == 1
             Ω0 = cont_sys.X0
             return DiscreteSystem(ϕ, Ω0, δ)
@@ -224,7 +224,7 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
     end
 
     # early return for homogeneous systems
-    inputs = get_set(cont_sys.U, 1)
+    inputs = next_set(cont_sys.U, 1)
     if isa(inputs, VoidSet) && length(cont_sys.U) == 1
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0)
             return DiscreteSystem(ϕ, Ω0, δ)

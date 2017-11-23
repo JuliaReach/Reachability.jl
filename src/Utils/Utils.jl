@@ -141,7 +141,7 @@ If there is an input set, it is also extended:
 julia> U = ConstantNonDeterministicInput(Ball2(ones(3), 0.1));
 julia> s = ContinuousSystem(A, X0, U);
 julia> sext = add_dimension(s);
-julia> dim(get_set(sext.U))
+julia> dim(next_set(sext.U))
 4
 ```
 """
@@ -149,7 +149,7 @@ function add_dimension(cs::ContinuousSystem)::ContinuousSystem
     Aext = add_dimension(cs.A)
     X0ext = add_dimension(cs.X0)
     if cs.U isa ConstantNonDeterministicInput
-        Uext = add_dimension(get_set(cs.U))
+        Uext = add_dimension(next_set(cs.U))
     elseif cs.U isa TimeVaryingNonDeterministicInput
         Uext = Vector{LazySet}(length(cs.U))
         i = 0

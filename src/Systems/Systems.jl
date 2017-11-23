@@ -12,7 +12,7 @@ export AbstractSystem,
        NonDeterministicInput,
        ConstantNonDeterministicInput,
        TimeVaryingNonDeterministicInput,
-       get_set
+       next_set
 
 import Base: *
 
@@ -58,9 +58,9 @@ end
 Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
 Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
 Base.length(inputs::ConstantNonDeterministicInput) = 1
-get_set(inputs::ConstantNonDeterministicInput, index::Int64) = inputs.U
+next_set(inputs::ConstantNonDeterministicInput, state::Int64) = inputs.U
 # convenience function with no index
-get_set(inputs::ConstantNonDeterministicInput) = inputs.U
+next_set(inputs::ConstantNonDeterministicInput) = inputs.U
 
 
 function *(M::AbstractMatrix{<:Real}, input::ConstantNonDeterministicInput)
@@ -99,8 +99,8 @@ Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
 Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
     (state > length(inputs.U))
 Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
-get_set(inputs::TimeVaryingNonDeterministicInput, index::Int64) =
-    inputs.U[index]
+next_set(inputs::TimeVaryingNonDeterministicInput, state::Int64) =
+    inputs.U[state]
 
 
 #=

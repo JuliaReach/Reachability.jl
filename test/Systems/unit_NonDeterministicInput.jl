@@ -6,7 +6,7 @@ U = BallInf(c, r)
 U = ConstantNonDeterministicInput(U)
 
 @test length(U) == 1
-inputs = get_set(U)
+inputs = next_set(U)
 input_remains_constant = inputs.center == c && inputs.radius == r
 @test input_remains_constant
 for i in 1:5
