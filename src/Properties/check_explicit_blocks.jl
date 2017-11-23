@@ -51,9 +51,9 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
          Xhatk[bi] = voidSet2
     end
 
-    input_state = start(U).set
+    inputs = get_set(U)
     @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * input_state)
+        Whatk[bi] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -75,7 +75,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
         end
 
         for bi in blocks
-            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * input_state)
+            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -161,9 +161,9 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
          Xhatk[bi] = voidSet2
     end
 
-    input_state = start(U).set
+    inputs = get_set(U)
     @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * input_state)
+        Whatk[bi] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -184,7 +184,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
         end
 
         for bi in blocks
-            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * input_state)
+            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -312,9 +312,9 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
          Xhatk[bi] = voidSet2
     end
 
-    input_state = start(U).set
+    inputs = get_set(U)
     @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * input_state)
+        Whatk[bi] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
@@ -337,7 +337,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
 
         for bi in blocks
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-            Whatk[bi] = overapproximate(Whatk[bi] + ϕpowerk_πbi * input_state)
+            Whatk[bi] = overapproximate(Whatk[bi] + ϕpowerk_πbi * inputs)
         end
         ϕpowerk.M = ϕpowerk.M + ϕ.M
         k += 1

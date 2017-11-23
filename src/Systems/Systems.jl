@@ -58,6 +58,8 @@ end
 Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
 Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
 Base.length(inputs::ConstantNonDeterministicInput) = 1
+get_set(inputs::ConstantNonDeterministicInput, index::Int64) = inputs.U
+# convenience function with no index
 get_set(inputs::ConstantNonDeterministicInput) = inputs.U
 
 
