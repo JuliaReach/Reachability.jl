@@ -113,9 +113,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "lib/systems.html#Different-types-of-systems-1",
+    "location": "lib/systems.html#Types-of-systems-1",
     "page": "Systems",
-    "title": "Different types of systems",
+    "title": "Types of systems",
     "category": "section",
     "text": "Every system inherits from AbstractSystem.AbstractSystemWe support the following two concrete types of systems. "
 },
@@ -177,19 +177,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "lib/systems.html#Reachability.Systems.InputState",
-    "page": "Systems",
-    "title": "Reachability.Systems.InputState",
-    "category": "Type",
-    "text": "InputState\n\nType that represents the state of a NonDeterministicInput.\n\nFields\n\nset   – current set\nindex – index in the iteration\n\n\n\n"
-},
-
-{
     "location": "lib/systems.html#Nondeterministic-inputs-1",
     "page": "Systems",
     "title": "Nondeterministic inputs",
     "category": "section",
-    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the input set may change. The InputState type allows an iteration through the inputs over time.InputState"
+    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the input set may change. We support iteration through the inputs over time."
 },
 
 {
@@ -197,7 +189,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.ConstantNonDeterministicInput",
     "category": "Type",
-    "text": "ConstantNonDeterministicInput <: NonDeterministicInput\n\nType that represents a constant nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called. Its length is infinite, since the input is defined for all times. The index of the input state is always constantly 1.\n\nFields\n\nU – LazySet\n\nExamples\n\nConstantNonDeterministicInput(U::LazySet) – default constructor\n\n\n\n"
+    "text": "ConstantNonDeterministicInput <: NonDeterministicInput\n\nType that represents a constant nondeterministic input.\n\nFields\n\nU – LazySet\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length is 1, but for convenience next can be called with any index.\n\nExamples\n\nConstantNonDeterministicInput(U::LazySet) – default constructor\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput,Int64}",
+    "page": "Systems",
+    "title": "Reachability.Systems.next_set",
+    "category": "Method",
+    "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput}",
+    "page": "Systems",
+    "title": "Reachability.Systems.next_set",
+    "category": "Method",
+    "text": "next_set(inputs)\n\nConvenience iteration function without index that only returns the set.\n\nInput\n\ninputs - constant nondeterministic inputs wrapper\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
 {
@@ -205,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Constant nondeterministic inputs",
     "category": "section",
-    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time.ConstantNonDeterministicInput"
+    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time.ConstantNonDeterministicInput\nnext_set(inputs::ConstantNonDeterministicInput, state::Int64)\nnext_set(inputs::ConstantNonDeterministicInput)"
 },
 
 {
@@ -213,7 +221,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Reachability.Systems.TimeVaryingNonDeterministicInput",
     "category": "Type",
-    "text": "TimeVaryingNonDeterministicInput <: NonDeterministicInput\n\nType that represents a time-varying nondeterministic input.\n\nThe iteration over this set is such that its state is a tuple (set, index), where set is the value of the input, represented as an array of LazySets, and index counts the number of times this iterator was called. Its length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nFields\n\nU – array containing LazySets\n\nExamples\n\nTimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) – constructor from a vector of sets\n\n\n\n"
+    "text": "TimeVaryingNonDeterministicInput <: NonDeterministicInput\n\nType that represents a time-varying nondeterministic input.\n\nFields\n\nU – array containing LazySets\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nExamples\n\nTimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) – constructor from a vector of sets\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.TimeVaryingNonDeterministicInput,Int64}",
+    "page": "Systems",
+    "title": "Reachability.Systems.next_set",
+    "category": "Method",
+    "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
 {
@@ -221,7 +237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Time-varying nondeterministic inputs",
     "category": "section",
-    "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step).TimeVaryingNonDeterministicInput"
+    "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step).TimeVaryingNonDeterministicInput\nnext_set(inputs::TimeVaryingNonDeterministicInput, state::Int64)"
 },
 
 {
