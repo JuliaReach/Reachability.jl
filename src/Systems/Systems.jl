@@ -12,9 +12,9 @@ export AbstractSystem,
        NonDeterministicInput,
        ConstantNonDeterministicInput,
        TimeVaryingNonDeterministicInput,
-       wrap_input_state,
-       get_set,
-       next_set
+       get_set
+
+import Base: *
 
 #=
 Nondeterministic inputs
@@ -27,13 +27,8 @@ constant or time-varying. In both cases it is represented by an iterator.
 """
 abstract type NonDeterministicInput end
 
-
-"""
-    AbstractInputState
-
-Type that represents the state of a `NonDeterministicInput`.
-"""
-abstract type AbstractInputState end
+Base.start(::NonDeterministicInput) = 1
+Base.eltype(::Type{NonDeterministicInput}) = LazySet
 
 
 """
@@ -58,34 +53,16 @@ input state is always constantly 1.
 struct ConstantNonDeterministicInput <: NonDeterministicInput
     # input
     U::LazySet
-
-    # default constructor
-    ConstantNonDeterministicInput(U::LazySet) = new(U)
 end
 
-
-"""
-    ConstantInputState
-
-Type that represents the state of a `ConstantNonDeterministicInput`.
-
-### Fields
-
-- `inputs` -- backing inputs data structure
-"""
-struct ConstantInputState
-    # set representation
-    inputs::ConstantNonDeterministicInput
-end
-
-wrap_input_state(inputs::ConstantNonDeterministicInput) =
-    ConstantInputState(inputs)
-get_set(state::ConstantInputState) = state.inputs
-next_set(state::ConstantInputState) = nothing
+Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
+Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
+Base.length(inputs::ConstantNonDeterministicInput) = 1
+get_set(inputs::ConstantNonDeterministicInput) = inputs.U
 
 
-function *(M::AbstractMatrix{<:Real}, NDInput::ConstantNonDeterministicInput)
-    return ConstantNonDeterministicInput(M * NDInput)
+function *(M::AbstractMatrix{<:Real}, input::ConstantNonDeterministicInput)
+    return ConstantNonDeterministicInput(M * input.U)
 end
 
 
@@ -113,40 +90,15 @@ vector of sets
 struct TimeVaryingNonDeterministicInput <: NonDeterministicInput
     # input sequence
     U::Vector{<:LazySet}
-
-    # default constructor
-    TimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) = new(U)
 end
 
-
-"""
-    TimeVaryingInputState
-
-Type that represents the state of a `TimeVaryingNonDeterministicInput`.
-
-### Fields
-
-- `inputs` -- backing inputs data structure
-- `index`  -- index in the iteration
-"""
-mutable struct TimeVaryingInputState
-    # set representation
-    inputs::TimeVaryingNonDeterministicInput
-    # iteration index
-    index::Int64
-
-    # default constructor
-    TimeVaryingInputState(inputs::TimeVaryingNonDeterministicInput) =
-        new(inputs, 1)
-end
-
-wrap_input_state(inputs::TimeVaryingNonDeterministicInput) =
-    TimeVaryingInputState(inputs)
-get_set(state::TimeVaryingInputState) = state.inputs.U[state.index]
-next_set(state::TimeVaryingInputState) = (
-    state.index >= length(state.inputs.U)
-        ? error("No next set available.")
-        : state.index += 1)
+Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
+    (inputs.U[state.index], state + 1)
+Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
+    (state > length(inputs.U))
+Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
+get_set(inputs::TimeVaryingNonDeterministicInput, index::Int64) =
+    inputs.U[index]
 
 
 #=
