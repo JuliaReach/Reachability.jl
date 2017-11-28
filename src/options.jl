@@ -199,7 +199,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Vector{Int64}
             domain_constraints = (v::Vector{Int64}  ->  length(v) == 2)
         else
-            error("Unrecognized option '$key' found.")
+            error(get_unrecognized_key_message(key))
         end
 
         # check value type
@@ -379,7 +379,25 @@ function check_valid_option_keywords(dict)
     for kv_pair in dict
         key::Symbol = kv_pair.first
         if !in(key, G_available_keywords)
-            error("Unrecognized option '$key' found.")
+            error(get_unrecognized_key_message(key))
         end
     end
+end
+
+"""
+    get_unrecognized_key_message(key)
+
+Create an error message for an unrecognized option key.
+
+### Input
+
+- `key` -- unrecognized option key
+
+### Output
+
+The error message.
+"""
+function get_unrecognized_key_message(key)
+    return "Unrecognized option '$key' found. See " *
+        "`keys(Reachability.G_available_keywords.dict)` for all valid keywords."
 end
