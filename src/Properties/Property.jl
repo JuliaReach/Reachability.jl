@@ -29,10 +29,10 @@ end
 Property(clause::Clause{N}) where {N<:Real} = Property{N}([clause])
 # constructor from a single constraint
 Property(linConst::LinearConstraint{N}) where {N<:Real} =
-    Property{N}([Clause{N}(linConst)])
+    Property{N}([Clause(linConst)])
 # constructor from a single constraint in raw form ax+b
 Property(linComb::Vector{N}, bound::N) where {N<:Real} =
-    Property{N}([Clause{N}(LinearConstraint{N}(linComb, bound))])
+    Property{N}([Clause(LinearConstraint{N}(linComb, bound))])
 
 """
     check_property(sf, prop)
