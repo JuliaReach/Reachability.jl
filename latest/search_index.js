@@ -357,7 +357,7 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "Credits",
     "category": "section",
-    "text": "These persons have contributed to Reachability.jl (in alphabetic order):Marcelo Forets\nChristian Schilling\nFrederic ViryWe are also grateful to Goran Frehse, Sergiy Bogomolov, Alexandre Rocca, Nikolaos Kekatos, for enlightening discussions."
+    "text": "These persons have contributed to Reachability.jl (in alphabetic order):Marcelo Forets\nChristian Schilling\nFrederic ViryWe are also grateful to Goran Frehse, Sergiy Bogomolov, Andreas Podelski, Alexandre Rocca and Nikolaos Kekatos for enlightening discussions."
 },
 
 ]}
