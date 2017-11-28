@@ -2,6 +2,8 @@ import Base: merge, getindex
 
 export Options, merge, getindex
 
+G_available_keywords = Set{Symbol}([])
+
 """
     Options
 
@@ -9,7 +11,7 @@ Type that wraps a dictionary used for options.
 
 FIELDS:
 
-- ``dict`` -- the wrapped dictionary
+- `dict` -- the wrapped dictionary
 """
 struct Options
     dict::Dict{Symbol,Any}
@@ -26,8 +28,8 @@ for conflicting keys a later object overrides a previous value.
 
 INPUT:
 
-- ``op1`` -- first options object
-- ``opn`` -- list of options objects
+- `op1` -- first options object
+- `opn` -- list of options objects
 """
 function merge(op1::Options, opn::Options...)::Options
     dict = Dict{Symbol,Any}(op1.dict)
@@ -44,8 +46,8 @@ Returns the value stored for key `sym`.
 
 INPUT:
 
-- ``op`` -- options object
-- ``sym`` -- key
+- `op` -- options object
+- `sym` -- key
 """
 function getindex(op::Options, sym::Symbol)
     return getindex(op.dict, sym)
@@ -60,7 +62,7 @@ unspecified options.
 
 ### Input
 
-- ``options`` -- an `Options` object, a dictionary of options
+- `options` -- an `Options` object, a dictionary of options
 
 Supported options:
 
@@ -129,6 +131,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
+
+    # validate that all input keywords are recognized
+    check_valid_option_keywords(dict)
 
     # validation
     for kv_pair in dict_copy
@@ -218,8 +223,8 @@ If only `:T` is defined, we use `:N = 100`.
 
 INPUT:
 
-- ``dict``      -- a dictionary of options
-- ``dict_copy`` -- a copy of the dictionary of options for internal names
+- `dict`      -- a dictionary of options
+- `dict_copy` -- a copy of the dictionary of options for internal names
 
 Supported options:
 - `:δ` (time step)
@@ -302,14 +307,17 @@ This function has several purposes:
 
 INPUT:
 
-- ``dict`` -- a dictionary of options
-- ``dict_copy`` -- a copy of the dictionary of options for internal names
-- ``aliases`` -- option aliases; the first name is the one we use internally
+- `dict` -- a dictionary of options
+- `dict_copy` -- a copy of the dictionary of options for internal names
+- `aliases` -- option aliases; the first name is the one we use internally
 """
 function check_aliases!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol})
     # find aliases and check consistency in case several aliases have been used
     print_warning::Bool = false
     for alias in aliases
+        # add alias to global keyword set
+        push!(G_available_keywords, alias)
+
         if haskey(dict, alias)
             # alias was used
             if haskey(dict_copy, aliases[1])
@@ -339,11 +347,11 @@ This function has several purposes:
 
 INPUT:
 
-- ``dict`` -- a dictionary of options
-- ``dict_copy`` -- a copy of the dictionary of options for internal names
-- ``aliases`` -- option aliases; the first name is the one we use internally
-- ``default_value`` -- the default value for the option
-- ``modify_dict`` -- (optional, default true) indicates if `dict` should be modified
+- `dict` -- a dictionary of options
+- `dict_copy` -- a copy of the dictionary of options for internal names
+- `aliases` -- option aliases; the first name is the one we use internally
+- `default_value` -- the default value for the option
+- `modify_dict` -- (optional, default true) indicates if `dict` should be modified
 """
 function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any, modify_dict::Bool=true)
     check_aliases!(dict, dict_copy, aliases)
@@ -355,5 +363,23 @@ function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy:
             dict[aliases[1]] = default_value
         end
         dict_copy[aliases[1]] = default_value
+    end
+end
+
+"""
+    check_valid_option_keywords(dict)
+
+Validate that all input keywords are recognized.
+
+### Input
+
+- `dict` -- input dictionary
+"""
+function check_valid_option_keywords(dict)
+    for kv_pair in dict
+        key::Symbol = kv_pair.first
+        if !in(key, G_available_keywords)
+            error("Unrecognized option '$key' found.")
+        end
     end
 end
