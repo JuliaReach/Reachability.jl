@@ -3,7 +3,7 @@ import Memento: debug
 
 export info, warn, debug, tocc, configure_logger
 
-global G_LOGGER = nothing
+global LOGGER = nothing
 
 const DEFAULT_LOG_LEVEL = "warn"
 
@@ -17,7 +17,7 @@ Prints a message on info level.
 - `msg` - message string
 """
 @inline function info(msg::String)
-    Memento.info(G_LOGGER, msg)
+    Memento.info(LOGGER, msg)
 end
 
 """
@@ -30,7 +30,7 @@ Prints a message on warn level.
 - `msg` - message string
 """
 @inline function warn(msg::String)
-    Memento.warn(G_LOGGER, msg)
+    Memento.warn(LOGGER, msg)
 end
 
 """
@@ -43,7 +43,7 @@ Prints a message on debug level.
 - `msg` - message string
 """
 @inline function debug(msg::String)
-    Memento.debug(G_LOGGER, msg)
+    Memento.debug(LOGGER, msg)
 end
 
 """
