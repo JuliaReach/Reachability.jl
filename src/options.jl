@@ -2,7 +2,7 @@ import Base: merge, getindex
 
 export Options, merge, getindex
 
-G_available_keywords = Set{Symbol}([])
+available_keywords = Set{Symbol}([])
 
 """
     Options
@@ -316,7 +316,7 @@ function check_aliases!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, ali
     print_warning::Bool = false
     for alias in aliases
         # add alias to global keyword set
-        push!(G_available_keywords, alias)
+        push!(available_keywords, alias)
 
         if haskey(dict, alias)
             # alias was used
@@ -378,7 +378,7 @@ Validate that all input keywords are recognized.
 function check_valid_option_keywords(dict)
     for kv_pair in dict
         key::Symbol = kv_pair.first
-        if !in(key, G_available_keywords)
+        if !in(key, available_keywords)
             error(get_unrecognized_key_message(key))
         end
     end
@@ -399,5 +399,5 @@ The error message.
 """
 function get_unrecognized_key_message(key)
     return "Unrecognized option '$key' found. See " *
-        "`keys(Reachability.G_available_keywords.dict)` for all valid keywords."
+        "`keys(Reachability.available_keywords.dict)` for all valid keywords."
 end
