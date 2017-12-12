@@ -108,11 +108,11 @@ julia> dim(Xext)
 ```
 """
 function add_dimension(X::LazySet)::LazySet
-    return X * Singleton([0])
+    return X * ZeroSet()
 end
 
-function add_dimension(X::VoidSet)::VoidSet
-    return VoidSet(dim(X)+1)
+function add_dimension(X::ZeroSet)::ZeroSet
+    return ZeroSet(dim(X)+1)
 end
 
 """

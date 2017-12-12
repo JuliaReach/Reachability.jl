@@ -221,7 +221,7 @@ end
 # constructor with no inputs
 ContinuousSystem(A::AbstractMatrix{Float64},
                  X0::LazySet) =
-    ContinuousSystem(A, X0, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    ContinuousSystem(A, X0, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
 
 # constructor that creates a ConstantNonDeterministicInput
 ContinuousSystem(A::AbstractMatrix{Float64},
@@ -321,7 +321,7 @@ end
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
                X0::LazySet,
                δ::Float64) =
-    DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
 
 # constructor that creates a ConstantNonDeterministicInput
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
