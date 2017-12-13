@@ -143,7 +143,7 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
 
     # early return for homogeneous systems
     inputs = next_set(cont_sys.U, 1)
-    if isa(inputs, VoidSet) && length(cont_sys.U) == 1
+    if isa(inputs, ZeroSet) && length(cont_sys.U) == 1
             Ω0 = cont_sys.X0
             return DiscreteSystem(ϕ, Ω0, δ)
     end
@@ -225,7 +225,7 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
 
     # early return for homogeneous systems
     inputs = next_set(cont_sys.U, 1)
-    if isa(inputs, VoidSet) && length(cont_sys.U) == 1
+    if isa(inputs, ZeroSet) && length(cont_sys.U) == 1
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0)
             return DiscreteSystem(ϕ, Ω0, δ)
     end
@@ -243,10 +243,8 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
 
-    if isa(inputs, VoidSet)
-        if approx_model == "forward"
-            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
-        elseif approx_model == "backward"
+    if isa(inputs, ZeroSet)
+        if approx_model == "forward" || approx_model == "backward"
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
         end
     else

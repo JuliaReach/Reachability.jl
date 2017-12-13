@@ -21,7 +21,7 @@ INPUT:
 OUTPUT:
 
 Array of the cartesian product of two-dimensional sets (HPolygons) for the
-given block indices, and VoidSet's for the rest of them. It is obtained by
+given block indices, and ZeroSet's for the rest of them. It is obtained by
 reachability computation of a discrete affine system with undeterministic
 inputs, which can be either constant or time-varying.
 =#
@@ -49,9 +49,9 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
 
     Xhatk = Vector{LazySet}(b)
     Whatk = Vector{HPolygon}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     inputs = next_set(U)
@@ -63,7 +63,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
     k = 2
     @inbounds while true
         for bi in blocks
-            Xhatk_bi = voidSet2
+            Xhatk_bi = dummy_set
             for bj in 1:b
                 if findfirst(F(bi, bj)) != 0
                     Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
@@ -106,9 +106,9 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     Xhatk = Vector{LazySet}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     ϕpowerk = copy(ϕ)
@@ -116,7 +116,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
     k = 2
     @inbounds while true
         for bi in blocks
-            Xhatk_bi = voidSet2
+            Xhatk_bi = dummy_set
             for bj in 1:b
                 if findfirst(F(bi, bj)) != 0
                     Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
@@ -160,9 +160,9 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
 
     Xhatk = Vector{LazySet}(b)
     Whatk = Vector{HPolygon}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     inputs = next_set(U)
@@ -216,9 +216,9 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     Xhatk = Vector{LazySet}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     ϕpowerk = copy(ϕ)
@@ -262,9 +262,9 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     end
 
     Xhatk = Vector{LazySet}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
@@ -273,7 +273,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     @inbounds while true
         for bi in blocks
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-            Xhatk_bi = voidSet2
+            Xhatk_bi = dummy_set
             for bj in 1:b
                 πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
                 if findfirst(πbi) != 0
@@ -316,9 +316,9 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
 
     Xhatk = Vector{LazySet}(b)
     Whatk = Vector{HPolygon}(b)
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
-         Xhatk[bi] = voidSet2
+         Xhatk[bi] = dummy_set
     end
 
     inputs = next_set(U)
@@ -331,7 +331,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     @inbounds while true
         for bi in blocks
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-            Xhatk_bi = voidSet2
+            Xhatk_bi = dummy_set
             for bj in 1:b
                 πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
                 if findfirst(πbi) != 0

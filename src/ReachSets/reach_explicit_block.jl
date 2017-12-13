@@ -50,11 +50,11 @@ function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
     Whatk_bi::HPolygon = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
 
     k = 2
     @inbounds while true
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             if findfirst(F(bi, bj)) != 0
                 Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
@@ -94,11 +94,11 @@ function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
 
     ϕpowerk = copy(ϕ)
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
 
     k = 2
     @inbounds while true
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             if findfirst(F(bi, bj)) != 0
                 Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
@@ -216,13 +216,13 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
         return
     end
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2
     @inbounds while true
         ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
             if findfirst(πbi) != 0
@@ -258,7 +258,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
         return
     end
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
     inputs = next_set(U)
     Whatk_bi::HPolygon = overapproximate(sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n) * inputs)
     ϕpowerk = SparseMatrixExp(ϕ.M)
@@ -266,7 +266,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
     k = 2
     @inbounds while true
         ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
             if findfirst(πbi) != 0

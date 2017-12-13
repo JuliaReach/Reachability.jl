@@ -48,11 +48,11 @@ function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
     Whatk = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
 
     k = 2
     @inbounds while true
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             if findfirst(F(bi, bj)) != 0
                 Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
@@ -89,13 +89,13 @@ function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    voidSet2 = VoidSet(2)
+    dummy_set = ZeroSet(2)
 
     ϕpowerk = copy(ϕ)
 
     k = 2
     @inbounds while true
-        Xhatk_bi = voidSet2
+        Xhatk_bi = dummy_set
         for bj in 1:b
             if findfirst(F(bi, bj)) != 0
                 Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
