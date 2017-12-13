@@ -78,7 +78,8 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64,
         radius = δ/2.0
         t = radius
         @inbounds for i in 1:N
-            RsetsProj[i] = overapproximate(projection_matrix * (Rsets[i] * BallInf([t], radius)), ɛ)
+            RsetsProj[i] = overapproximate(projection_matrix *
+                CartesianProduct(Rsets[i], BallInf([t], radius)), ɛ)
             t = t + δ
         end
     else
@@ -150,7 +151,8 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
         radius = δ/2.0
         t = radius
         @inbounds for i in 1:N
-            RsetsProj[i] = overapproximate(projection_matrix * (Rsets[i] * BallInf([t], radius)), ɛ)
+            RsetsProj[i] = overapproximate(projection_matrix * 
+                CartesianProduct(Rsets[i], BallInf([t], radius)), ɛ)
             t = t + δ
         end
     else
