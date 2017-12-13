@@ -1,7 +1,7 @@
 import Reachability.ReachSets.discretize
 
 # ===================================================================
-# Discretization of a continuous-time system without input (VoidSet)
+# Discretization of a continuous-time system without input (ZeroSet)
 # ===================================================================
 A = sparse([1, 1, 2, 3, 4], [1, 2, 2, 4, 3], [1., 2., 3., 4., 5.], 4, 4)
 X0 = BallInf(zeros(4), 0.1)
@@ -12,7 +12,7 @@ cont_sys_homog = ContinuousSystem(A, X0)
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=false)
 @test length(discr_sys_homog.U) == 1
 inputs = next_set(discr_sys_homog.U)
-@test isa(inputs, VoidSet) && dim(inputs) == 4
+@test isa(inputs, ZeroSet) && dim(inputs) == 4
 
 # no bloating, use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=true)

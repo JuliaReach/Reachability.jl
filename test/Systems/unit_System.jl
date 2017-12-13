@@ -8,7 +8,7 @@ cont_sys_homog = ContinuousSystem(A, X0)
 # Check if the input is constant
 @test isa(cont_sys_homog.U, Systems.ConstantNonDeterministicInput)
 # Check if the input is empty
-@test isa(next_set(cont_sys_homog.U), VoidSet)
+@test isa(next_set(cont_sys_homog.U), ZeroSet)
 # Check data fields
 @test cont_sys_homog.A == A
 @test cont_sys_homog.X0.center == zeros(4) && cont_sys_homog.X0.radius == 0.1
@@ -55,7 +55,7 @@ discr_sys_homog = DiscreteSystem(A, X0, δ)
 # Check if the input is constant
 @test isa(discr_sys_homog.U, Systems.ConstantNonDeterministicInput)
 # Check if the input is empty
-@test isa(next_set(discr_sys_homog.U), VoidSet)
+@test isa(next_set(discr_sys_homog.U), ZeroSet)
 # Check data fields
 @test discr_sys_homog.A == A
 @test discr_sys_homog.X0.center == zeros(4) && discr_sys_homog.X0.radius == 0.1
