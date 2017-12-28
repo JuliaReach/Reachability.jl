@@ -17,6 +17,7 @@ using LazySets, ..Systems, Expokit
 include("Property.jl")
 include("LinearConstraintProperty.jl")
 include("IntersectionProperty.jl")
+include("SubsetProperty.jl")
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()

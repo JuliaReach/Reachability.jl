@@ -23,6 +23,7 @@ using Reachability.ReachSets,
 
 export LinearConstraintProperty, Clause,
        IntersectionProperty,
+       SubsetProperty,
        Transformations
 
 include("options.jl")
