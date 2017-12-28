@@ -15,6 +15,7 @@ using LazySets, ..Systems, Expokit
 # Property struct and evaluation
 # ==============================
 include("Property.jl")
+include("LinearConstraintProperty.jl")
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()

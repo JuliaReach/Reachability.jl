@@ -21,7 +21,7 @@ using Reachability.ReachSets,
       Reachability.Properties,
       Reachability.Transformations
 
-export Property, Clause, Transformations
+export LinearConstraintProperty, Clause, Transformations
 
 include("options.jl")
 include("solve.jl")

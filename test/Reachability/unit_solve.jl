@@ -17,10 +17,10 @@ ps = project(s);
 
 # check that x1 + x2 <= 2 doesn't hold
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
-          :property=>Property([1., 1.], 2.))
+          :property=>LinearConstraintProperty([1., 1.], 2.))
 @test s.violation == 1
 
 # check that x1 - x2 <= 2 holds
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
-          :property=>Property([1., -1.], 2.))
+          :property=>LinearConstraintProperty([1., -1.], 2.))
 @test s.violation == -1
