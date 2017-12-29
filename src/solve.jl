@@ -44,15 +44,18 @@ answer if the property is satisfied.
 
 ### Fields
 
-- `sat` -- is the property satisfied?
-- `options`  -- the dictionary of options
+- `sat`       -- is the property satisfied?
+- `violation` -- step at which the property is violated (0 otherwise)
+- `options`   -- the dictionary of options
 """
 struct CheckSolution <: AbstractSolution
   sat::Bool
+  violation::Int
   options::Options
 end
 # constructor with no options
-CheckSolution(sat::Bool) = CheckSolution(sat, Options())
+CheckSolution(sat::Bool, violation::Int) =
+    CheckSolution(sat, violation, Options())
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
@@ -176,11 +179,12 @@ function solve(system::AbstractSystem,
 
         if answer == 0
             info("The property is satisfied!")
+            return CheckSolution(true, -1, options)
         else
             info("The property may be violated at index $answer," *
                 " (time point $(answer * options[:δ]))!")
+            return CheckSolution(false, answer, options)
         end
-        return CheckSolution(answer == 0, options)
     else
         error("Unsupported mode.")
     end
