@@ -196,14 +196,14 @@ end
 """
     print_last_interval(RsetsProj)
 
-Prints the max/min values for the last element in the array of HPolygons in the
-second dimension.
+Prints the max/min values for the last element in the array of two-dimensional
+sets in the second dimension.
 
 ### Input
 
-- `RsetsProj` -- (projected) reach set given as an array of HPolygons
+- `RsetsProj` -- (projected) reach set given as an array of two-dimensional sets
 """
-function print_last_interval(RsetsProj::Vector{HPolygon})
+function print_last_interval(RsetsProj::Vector{<:LazySet})
     last_polygon = RsetsProj[end]
     min_val = -ρ([0., -1.], last_polygon)
     max_val = ρ([0., 1.], last_polygon)

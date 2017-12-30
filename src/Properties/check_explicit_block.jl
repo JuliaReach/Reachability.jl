@@ -25,24 +25,24 @@ The first time index where the property is violated, and 0 if the property is sa
 
 
 # sparse, with input
-function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
-                               Xhat0::Vector{HPolygon},
+function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+                               Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     inputs = next_set(U)
     Whatk = overapproximate(G0(bi) * inputs)
@@ -74,20 +74,20 @@ end
 
 
 # sparse, no input
-function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+                               Xhat0::Vector{<:LazySet},
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     dummy_set = ZeroSet(2)
 
@@ -117,23 +117,23 @@ end
 
 # dense, with input
 function check_explicit_block!(ϕ::AbstractMatrix{Float64},
-                               Xhat0::Vector{HPolygon},
+                               Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     arr = Vector{LazySet}(b+1)
     inputs = next_set(U)
@@ -162,19 +162,19 @@ end
 
 # dense, no input
 function check_explicit_block!(ϕ::AbstractMatrix{Float64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+                               Xhat0::Vector{<:LazySet},
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     arr = Vector{LazySet}(b)
     ϕpowerk = copy(ϕ)
@@ -200,21 +200,21 @@ end
 
 # lazymexp, with input
 function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
-                               Xhat0::Vector{HPolygon},
+                               Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
     arr = Vector{LazySet}(b+1)
     inputs = next_set(U)
@@ -246,12 +246,12 @@ end
 
 # lazymexp, no input
 function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
-                               bi::Int64,
-                               prop::Property)::Int64
+                               Xhat0::Vector{<:LazySet},
+                               n::Int,
+                               b::Int,
+                               N::Int,
+                               bi::Int,
+                               prop::Property)::Int
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1

@@ -81,6 +81,7 @@ Supported options:
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
+- `:set_type`      -- set type for overapproximation
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:approx_model`  -- approximation model
 - `:coordinate_transformation` -- coordinate transformation method
@@ -122,6 +123,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type], HPolygon)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
@@ -184,6 +186,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :pade_expm
             expected_type = Bool
+        elseif key == :set_type
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
         elseif key == :lazy_X0
             expected_type = Bool
         elseif key == :coordinate_transformation

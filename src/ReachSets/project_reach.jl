@@ -106,7 +106,7 @@ It is assumed that the variable given in plot_vars belongs to the block computed
 in the sequence of 2d polygons, Rsets.
 """
 function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
-    Rsets::Vector{LazySets.HPolygon}, algorithm::String; ɛ::Float64=Inf,
+    Rsets::Vector{<:LazySets.LazySet}, algorithm::String; ɛ::Float64=Inf,
     projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
     transformation_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing
     )::Vector{HPolygon}
