@@ -45,7 +45,7 @@ answer if the property is satisfied.
 ### Fields
 
 - `sat`       -- is the property satisfied?
-- `violation` -- step at which the property is violated (0 otherwise)
+- `violation` -- step at which the property is violated (-1 otherwise)
 - `options`   -- the dictionary of options
 """
 struct CheckSolution <: AbstractSolution
