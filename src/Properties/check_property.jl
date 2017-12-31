@@ -102,7 +102,7 @@ function check_property(S::Union{DiscreteSystem, ContinuousSystem},
     end
 
     # ambient dimension
-    n = dim(S)
+    n = Systems.dim(S)
     push!(args, n)
 
     # number of blocks, b
