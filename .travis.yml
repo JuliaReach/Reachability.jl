@@ -5,6 +5,7 @@ os:
 julia:
   - 0.6
   - 0.6.1
+  - 0.6.2
   - nightly
 notifications:
   email: false
@@ -16,10 +17,11 @@ before_script:
 #  - julia -e 'Pkg.clone("git://github.com/acroy/Expokit.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/juliareach/LazySets.jl.git")'
 
-## uncomment the following lines to allow failures on nightly julia
-## (tests will run but not make your overall status red)
+## allow failures (tests will run but not make your overall status red)
 matrix:
   allow_failures:
+    - julia: 0.6.1
+    - julia: 0.6.2
     - julia: nightly
 
 ## uncomment the following lines to override the default test script
