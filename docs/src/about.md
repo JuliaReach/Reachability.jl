@@ -54,5 +54,5 @@ These persons have contributed to `Reachability.jl` (in alphabetic order):
 - Christian Schilling
 - Frederic Viry
 
-We are also grateful to Goran Frehse, Sergiy Bogomolov, Alexandre Rocca,
-Nikolaos Kekatos, for enlightening discussions.
+We are also grateful to Goran Frehse, Sergiy Bogomolov, Andreas Podelski, Alexandre Rocca and
+Nikolaos Kekatos for enlightening discussions.

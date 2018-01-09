@@ -7,13 +7,11 @@ FIELDS :
 
 - ``atoms`` -- a vector of linear constraints
 """
-struct Clause
-    atoms::Vector{LinearConstraint}
-
-    Clause(atoms::Vector{LinearConstraint}) = new(atoms)
-
-    Clause(atom::LinearConstraint) = new([atom])
+struct Clause{N<:Real}
+    atoms::Vector{LinearConstraint{N}}
 end
+# constructor from a single atom
+Clause(atom::LinearConstraint{N}) where {N<:Real} = Clause{N}([atom])
 
 """
 Type that represents a property that can be checked.
@@ -24,17 +22,17 @@ FIELDS :
 
 - ``clauses`` -- a vector of `Clause` objects
 """
-struct Property
-    clauses::Vector{Clause}
-
-    Property(clauses::Vector{Clause}) = new(clauses)
-
-    Property(clause::Clause) = new([clause])
-
-    Property(linConst::LinearConstraint) = new([Clause(linConst)])
-
-    Property(linComb::Vector{Float64}, bound::Float64) = new([Clause(LinearConstraint(linComb, bound))])
+struct Property{N<:Real}
+    clauses::Vector{Clause{N}}
 end
+# constructor from a single clause
+Property(clause::Clause{N}) where {N<:Real} = Property{N}([clause])
+# constructor from a single constraint
+Property(linConst::LinearConstraint{N}) where {N<:Real} =
+    Property{N}([Clause(linConst)])
+# constructor from a single constraint in raw form ax+b
+Property(linComb::Vector{N}, bound::N) where {N<:Real} =
+    Property{N}([Clause(LinearConstraint{N}(linComb, bound))])
 
 """
     check_property(sf, prop)

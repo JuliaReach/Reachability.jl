@@ -11,10 +11,10 @@ export AbstractSystem,
        DiscreteSystem,
        NonDeterministicInput,
        ConstantNonDeterministicInput,
-       TimeVaryingNonDeterministicInput
+       TimeVaryingNonDeterministicInput,
+       next_set
 
 import Base: *
-
 
 #=
 Nondeterministic inputs
@@ -27,27 +27,8 @@ constant or time-varying. In both cases it is represented by an iterator.
 """
 abstract type NonDeterministicInput end
 
-
-"""
-    InputState
-
-Type that represents the state of a `NonDeterministicInput`.
-
-### Fields
-
-- `set`   -- current set
-- `index` -- index in the iteration
-"""
-struct InputState
-    # set representation
-    set::LazySet
-    # iteration index
-    index::Int64
-
-    # default constructor
-    InputState(set::LazySet, index::Int64) = new(set, index)
-end
-InputState(set::LazySet) = InputState(set, 1)
+Base.start(::NonDeterministicInput) = 1
+Base.eltype(::Type{NonDeterministicInput}) = LazySet
 
 
 """
@@ -55,15 +36,19 @@ InputState(set::LazySet) = InputState(set, 1)
 
 Type that represents a constant nondeterministic input.
 
-The iteration over this set is such that its `state` is a tuple
-(`set`, `index`), where `set` is the value of the input, represented as a
-`LazySet`, and `index` counts the number of times this iterator was called. Its
-length is infinite, since the input is defined for all times. The index of the
-input state is always constantly 1.
-
 ### Fields
 
 - `U` -- `LazySet`
+
+### Notes
+
+This type supports iteration with an index number as *iterator state*.
+The iteration function `next` takes and returns a tuple (`set`, `index`), where
+`set` is the value of the input, represented as a `LazySet`, and `index` counts
+the number of times this iterator was called.
+
+The iterator length is 1, but for convenience `next` can be called with any
+index.
 
 ### Examples
 
@@ -72,21 +57,46 @@ input state is always constantly 1.
 struct ConstantNonDeterministicInput <: NonDeterministicInput
     # input
     U::LazySet
-
-    # default constructor
-    ConstantNonDeterministicInput(U::LazySet) = new(U)
 end
 
+Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
+Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
+Base.length(inputs::ConstantNonDeterministicInput) = 1
 
-Base.start(NDInput::ConstantNonDeterministicInput) = InputState(NDInput.U)
-Base.next(NDInput::ConstantNonDeterministicInput, state) = InputState(NDInput.U)
-Base.done(NDInput::ConstantNonDeterministicInput, state) = false
-Base.eltype(::Type{ConstantNonDeterministicInput}) = Type{InputState}
-Base.length(NDInput::ConstantNonDeterministicInput) = 1
+"""
+    next_set(inputs, state)
+
+Convenience iteration function that only returns the set.
+
+### Input
+
+- `inputs` - nondeterministic inputs wrapper
+- `state`  - iterator state, i.e., an index
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
+next_set(inputs::ConstantNonDeterministicInput, state::Int64) = inputs.U
+
+"""
+    next_set(inputs)
+
+Convenience iteration function without index that only returns the set.
+
+### Input
+
+- `inputs` - constant nondeterministic inputs wrapper
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
+next_set(inputs::ConstantNonDeterministicInput) = inputs.U
 
 
-function *(M::AbstractMatrix{Float64}, NDInput::ConstantNonDeterministicInput)
-    return ConstantNonDeterministicInput(M * start(NDInput).set)
+function *(M::AbstractMatrix{<:Real}, input::ConstantNonDeterministicInput)
+    return ConstantNonDeterministicInput(M * input.U)
 end
 
 
@@ -95,16 +105,20 @@ end
 
 Type that represents a time-varying nondeterministic input.
 
-The iteration over this set is such that its `state` is a tuple
-(`set`, `index`), where `set` is the value of the input, represented as an array
-of `LazySet`s, and `index` counts the number of times this iterator was called.
-Its length corresponds to the number of elements in the given array. The index
-of the input state increases from 1 and corresponds at each time to the array
-index in the input array.
-
 ### Fields
 
 - `U` -- array containing `LazySet`s
+
+### Notes
+
+This type supports iteration with an index number as *iterator state*.
+The iteration function `next` takes and returns a tuple (`set`, `index`), where
+`set` is the value of the input, represented as a `LazySet`, and `index` counts
+the number of times this iterator was called.
+
+The iterator length corresponds to the number of elements in the given array.
+The index of the input state increases from 1 and corresponds at each time to
+the array index in the input array.
 
 ### Examples
 
@@ -114,19 +128,30 @@ vector of sets
 struct TimeVaryingNonDeterministicInput <: NonDeterministicInput
     # input sequence
     U::Vector{<:LazySet}
-
-    # default constructor
-    TimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) = new(U)
 end
 
+Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
+    (inputs.U[state], state + 1)
+Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
+    (state > length(inputs.U))
+Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
 
-Base.start(NDInput::TimeVaryingNonDeterministicInput) = InputState(NDInput.U[1])
-Base.next(NDInput::TimeVaryingNonDeterministicInput, state) =
-    InputState(NDInput.U[state.index+1], state.index+1)
-Base.done(NDInput::TimeVaryingNonDeterministicInput, state) =
-    state.index > length(NDInput.U)
-Base.eltype(::Type{TimeVaryingNonDeterministicInput}) = Type{InputState}
-Base.length(NDInput::TimeVaryingNonDeterministicInput) = length(NDInput.U)
+"""
+    next_set(inputs, state)
+
+Convenience iteration function that only returns the set.
+
+### Input
+
+- `inputs` - nondeterministic inputs wrapper
+- `state`  - iterator state, i.e., an index
+
+### Output
+
+The nondeterministic input set at the given index.
+"""
+next_set(inputs::TimeVaryingNonDeterministicInput, state::Int64) =
+    inputs.U[state]
 
 
 #=
@@ -196,7 +221,7 @@ end
 # constructor with no inputs
 ContinuousSystem(A::AbstractMatrix{Float64},
                  X0::LazySet) =
-    ContinuousSystem(A, X0, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    ContinuousSystem(A, X0, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
 
 # constructor that creates a ConstantNonDeterministicInput
 ContinuousSystem(A::AbstractMatrix{Float64},
@@ -296,7 +321,7 @@ end
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},
                X0::LazySet,
                δ::Float64) =
-    DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(VoidSet(size(A, 1))))
+    DiscreteSystem(A, X0, δ, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
 
 # constructor that creates a ConstantNonDeterministicInput
 DiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},

@@ -1,14 +1,18 @@
-export ReachSolution, AbstractReachSolution, solve, project
+export AbstractSolution,
+       ReachSolution,
+       CheckSolution,
+       solve,
+       project
 
 """
-    AbstractReachSolution
+    AbstractSolution
 
 Abstract type representing the solution of a rechability problem.
 """
-abstract type AbstractReachSolution end
+abstract type AbstractSolution end
 
 """
-    ReachSolution
+    ReachSolution{S<:LazySet} <: AbstractSolution
 
 Type that wraps a the solution of a reachability problem as a sequence of
 lazy sets, and a dictionary of options.
@@ -18,18 +22,40 @@ lazy sets, and a dictionary of options.
 - `Xk`       -- the list of reachable states
 - `options`  -- the dictionary of options
 
-### Note
+### Notes
 
 If the solution has been projected in 2D, the sequence `Xk` is an array
 of polygons in constraint representation. In high-dimensions this is a sequence
 of cartesian product arrays of low-dimensional sets.
 """
-struct ReachSolution{S<:LazySet} <: AbstractReachSolution
+struct ReachSolution{S<:LazySet} <: AbstractSolution
   Xk::Vector{S}
   options::Options
 end
-ReachSolution(Xk::Vector{S}, options) where {S<:LazySet} = ReachSolution{S}(Xk, options)
-ReachSolution(Xk::Vector{S}) where {S<:LazySet} = ReachSolution{S}(Xk, Options())
+# constructor with no options
+ReachSolution(Xk::Vector{S}) where {S<:LazySet} =
+    ReachSolution{S}(Xk, Options())
+
+"""
+    CheckSolution
+
+Type that wraps a the solution of a property checking problem, which is just the
+answer if the property is satisfied.
+
+### Fields
+
+- `sat`       -- is the property satisfied?
+- `violation` -- step at which the property is violated (-1 otherwise)
+- `options`   -- the dictionary of options
+"""
+struct CheckSolution <: AbstractSolution
+  sat::Bool
+  violation::Int
+  options::Options
+end
+# constructor with no options
+CheckSolution(sat::Bool, violation::Int) =
+    CheckSolution(sat, violation, Options())
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
@@ -43,7 +69,7 @@ If some options are not defined, we may fall back to default values.
 - `options` -- options for solving the problem
 """
 function solve(system::AbstractSystem,
-               options_input::Options)::AbstractReachSolution
+               options_input::Options)::AbstractSolution
 
     # ==========
     # Dimensions
@@ -84,9 +110,8 @@ function solve(system::AbstractSystem,
         info("Transformation...")
         tic()
         (Δ, transformation_matrix) = transform(
-            options[:coordinate_transformation],
             Δ,
-            options[:plot_vars]
+            options[:coordinate_transformation]
             )
         tocc()
     else
@@ -153,10 +178,11 @@ function solve(system::AbstractSystem,
 
         if answer == 0
             info("The property is satisfied!")
-            return true
+            return CheckSolution(true, -1, options)
         else
-            info("The property may be violated at index $answer, (time point $(answer * options[:δ]))!")
-            return false
+            info("The property may be violated at index $answer," *
+                " (time point $(answer * options[:δ]))!")
+            return CheckSolution(false, answer, options)
         end
     else
         error("Unsupported mode.")
@@ -196,7 +222,7 @@ function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
                               )
 end
 
-project(reach_sol::AbstractReachSolution) = project(reach_sol.Xk, reach_sol.options)
+project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 
 project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
         options::Pair{Symbol,<:Any}...) = project(Rsets, Options(Dict{Symbol,Any}(options)))
