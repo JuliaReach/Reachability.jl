@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Library outline",
     "category": "section",
-    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/discretize.md\"\n]\nDepth = 2"
+    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/transformations.md\",\n    \"lib/discretize.md\"\n]\nDepth = 2"
 },
 
 {
@@ -238,6 +238,62 @@ var documenterSearchIndex = {"docs": [
     "title": "Time-varying nondeterministic inputs",
     "category": "section",
     "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step).TimeVaryingNonDeterministicInput\nnext_set(inputs::TimeVaryingNonDeterministicInput, state::Int64)"
+},
+
+{
+    "location": "lib/transformations.html#",
+    "page": "Transformations",
+    "title": "Transformations",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "lib/transformations.html#Transformations-1",
+    "page": "Transformations",
+    "title": "Transformations",
+    "category": "section",
+    "text": "This module provides functions to apply coordinate transformations to Systems using matrix decompositions.Pages = [\"transformations.md\"]\nDepth = 3CurrentModule = Reachability.Transformations"
+},
+
+{
+    "location": "lib/transformations.html#Reachability.Transformations.transform",
+    "page": "Transformations",
+    "title": "Reachability.Transformations.transform",
+    "category": "Function",
+    "text": "transform(S; [method])\n\nInterface function that calls the respective transformation function.\n\nInput\n\nS      – discrete or continuous system\nmethod – (optional, default: 'schur') transformation method name; valid             otions are:\n'schur'\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nNotes\n\nThe functions that are called in the background should return a the transformed system components A, X0, and U, and also an inverse transformation matrix M.\n\n\n\n"
+},
+
+{
+    "location": "lib/transformations.html#Interface-1",
+    "page": "Transformations",
+    "title": "Interface",
+    "category": "section",
+    "text": "This module exports a single function that works as an interface. It dispatches which transformation to apply using a string argument.transform"
+},
+
+{
+    "location": "lib/transformations.html#Reachability.Transformations.schur_transform",
+    "page": "Transformations",
+    "title": "Reachability.Transformations.schur_transform",
+    "category": "Function",
+    "text": "schur_transform(S)\n\nApplies a Schur transformation to a discrete or continuous system.\n\nInput\n\nS – discrete or continuous system\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nAlgorithm\n\nWe use Julia's default schurfact function to compute a Schur decomposition of the coefficients matrix A.\n\n\n\n"
+},
+
+{
+    "location": "lib/transformations.html#Schur-transform-1",
+    "page": "Transformations",
+    "title": "Schur transform",
+    "category": "section",
+    "text": "The real Schur decomposition is of the formU^TAU = beginpmatrix\nT_11  T_12 cdots  T_1b \n0  T_22  cdots  T_2b \nvdots  vdots  ddots  vdots \n0  0  cdots  T_bb\nendpmatrixwhere T_ij are 2x2 matricesschur_transform"
+},
+
+{
+    "location": "lib/transformations.html#Examples-1",
+    "page": "Transformations",
+    "title": "Examples",
+    "category": "section",
+    "text": ""
 },
 
 {
