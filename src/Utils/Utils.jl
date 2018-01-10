@@ -97,12 +97,14 @@ Adds an extra dimension to a LazySet, usually through a Cartesian product.
 
 ### Examples
 
-```julia
-julia> using LazySets
+```jldoctest
 julia> X = BallInf(ones(9), 0.5);
+
 julia> dim(X)
 9
+
 julia> Xext = add_dimension(X);
+
 julia> dim(Xext)
 10
 ```
