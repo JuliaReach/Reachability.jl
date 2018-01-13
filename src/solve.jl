@@ -44,18 +44,18 @@ answer if the property is satisfied.
 
 ### Fields
 
-- `sat`       -- is the property satisfied?
+- `satisfied` -- is the property satisfied?
 - `violation` -- step at which the property is violated (-1 otherwise)
 - `options`   -- the dictionary of options
 """
 struct CheckSolution <: AbstractSolution
-  sat::Bool
+  satisfied::Bool
   violation::Int
   options::Options
 end
 # constructor with no options
-CheckSolution(sat::Bool, violation::Int) =
-    CheckSolution(sat, violation, Options())
+CheckSolution(satisfied::Bool, violation::Int) =
+    CheckSolution(satisfied, violation, Options())
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
