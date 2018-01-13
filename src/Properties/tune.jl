@@ -1,26 +1,26 @@
 """
-This file contains helpers for simplifying benchmarking.
-"""
-module Benchmarks
-
-"""
     tune_δ(algorithm, time_horizon, [precision], [δ], [options])
 
-Finds a value for ``δ`` such that ``algorithm``
-  1. returns true for ``δ`` and
-  2. returns false for (``δ`` + ``precision``).
+Find the threshold step size for a given property.
 
-INPUT:
+### Input
 
-- ``algorithm``    -- the function that is used to evaluate ``δ``;
-                      typically this is the compute function from a model script
-- ``time_horizon`` -- time horizon
-- ``precision``    -- precision of result (s. a.);
+- `algorithm`    -- the function that is used to evaluate ``δ``;
+                    typically this is the compute function from a model script
+- `time_horizon` -- time horizon
+- `precision`    -- precision of result (s. a.);
                       default: 1e-5
-- ``δ``            -- (optional) initial guess for the time step;
+- `δ`            -- (optional) initial guess for the time step;
                       default: 1e-3
-- ``options``      -- (optional) options passed to ``algorithm``;
+- `options`      -- (optional) options passed to ``algorithm``;
                       default: hylaaOptions
+
+### Algorithm
+
+Finds a value for ``δ`` such that `algorithm`:
+
+  1. Returns `true` for ``δ`` and
+  2. Returns `false` for (``δ`` + ``precision``).
 """
 function tune_δ(algorithm::Function,
                 time_horizon::Float64,
@@ -119,7 +119,3 @@ function tune_δ(algorithm::Function,
     info("smallest failing δ found: ", smallest_failing_modified ? smallest_failing : "--")
     return δ
 end
-
-export tune_δ
-
-end # module

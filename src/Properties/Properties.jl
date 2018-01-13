@@ -37,4 +37,9 @@ include("check_property.jl")
 
 export check_property
 
+# ========================================================
+# Algorithms to find some threshold for property checking
+# ========================================================
+export tune_δ
+
 end #module Properties
