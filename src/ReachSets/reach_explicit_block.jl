@@ -27,7 +27,7 @@ nondeterministic inputs.
 
 
 # sparse, with input
-function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+function reach_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
                                Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
                                n::Int,
@@ -36,7 +36,7 @@ function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -77,7 +77,7 @@ end
 
 
 # sparse, no input
-function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+function reach_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
                                Xhat0::Vector{S},
                                n::Int,
                                b::Int,
@@ -85,7 +85,7 @@ function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -121,7 +121,7 @@ end
 
 
 # dense, with input
-function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
+function reach_explicit_block!(ϕ::AbstractMatrix{NUM},
                                Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
                                n::Int,
@@ -130,7 +130,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -141,7 +141,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{NUM}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
@@ -167,7 +167,7 @@ end
 
 
 # dense, no input
-function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
+function reach_explicit_block!(ϕ::AbstractMatrix{NUM},
                                Xhat0::Vector{S},
                                n::Int,
                                b::Int,
@@ -175,7 +175,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -184,7 +184,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{NUM}}(b)
     ϕpowerk = copy(ϕ)
 
     k = 2
@@ -206,7 +206,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
 end
 
 # lazymexp, no input
-function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
+function reach_explicit_block!(ϕ::SparseMatrixExp{NUM},
                                Xhat0::Vector{S},
                                n::Int,
                                b::Int,
@@ -214,7 +214,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -248,7 +248,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
 end
 
 # lazymexp, input
-function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
+function reach_explicit_block!(ϕ::SparseMatrixExp{NUM},
                                Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
                                n::Int,
@@ -257,7 +257,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
                                overapproximate::Function,
                                bi::Int,
                                res::Vector{S}
-                              )::Void where {S<:LazySet}
+                              )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
