@@ -135,7 +135,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{Float64}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
