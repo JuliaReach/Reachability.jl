@@ -135,7 +135,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{Float64}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
@@ -176,7 +176,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{Float64}}(b)
     ϕpowerk = copy(ϕ)
 
     k = 2
@@ -216,7 +216,7 @@ function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
 
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{Float64}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
 
@@ -258,7 +258,7 @@ function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
         return 0
     end
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{Float64}}(b)
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
 

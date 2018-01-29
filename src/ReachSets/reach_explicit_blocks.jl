@@ -47,7 +47,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     Whatk = Vector{HPolygon}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
@@ -105,7 +105,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -158,7 +158,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     Whatk = Vector{HPolygon}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
@@ -172,7 +172,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     ϕpowerk = copy(ϕ)
 
     k = 2
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{Float64}}(b+1)
     @inbounds while true
         for bi in blocks
             for bj in 1:b
@@ -215,7 +215,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -224,7 +224,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     ϕpowerk = copy(ϕ)
 
     k = 2
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{Float64}}(b)
     @inbounds while true
         for bi in blocks
             for bj in 1:b
@@ -261,7 +261,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
         return
     end
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -314,7 +314,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
 
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     Whatk = Vector{HPolygon}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b

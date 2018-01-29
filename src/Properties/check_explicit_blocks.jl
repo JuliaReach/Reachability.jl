@@ -44,8 +44,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
+    Whatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -101,7 +101,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -154,8 +154,8 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
+    Whatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -170,7 +170,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{Float64}}(b+1)
             for bj in 1:b
                 arr[bj] = F(bi, bj) * Xhat0[bj]
             end
@@ -210,7 +210,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -221,7 +221,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{Float64}}(b+1)
             for bj in 1:b
                 arr[bj] = F(bi, bj) * Xhat0[bj]
             end
@@ -255,7 +255,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
         return 0
     end
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -266,7 +266,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{Float64}}(b+1)
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
             for bj in 1:b
                 arr[bj] = ϕpowerk_πbi[:, (2*bj-1):(2*bj)] * Xhat0[bj]
@@ -305,8 +305,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
 
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{Float64}}(b)
+    Whatk = Vector{LazySet{Float64}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -321,7 +321,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{Float64}}(b+1)
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
             for bj in 1:b
                 arr[bj] = ϕpowerk_πbi[:, (2*bj-1):(2*bj)] * Xhat0[bj]
