@@ -168,7 +168,7 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
     if length(cont_sys.U) == 1
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
     else
-        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
+        discretized_U_arr = Vector{LazySet{Float64}}(length(cont_sys.U))
         discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
             inputs = next(cont_sys.U, i)[1]
@@ -262,7 +262,7 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
     if length(cont_sys.U) == 1
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
     else
-        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
+        discretized_U_arr = Vector{LazySet{Float64}}(length(cont_sys.U))
         discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
             inputs = next(cont_sys.U, i)[1]

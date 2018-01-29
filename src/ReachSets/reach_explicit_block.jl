@@ -16,11 +16,11 @@ INPUT:
 - ``N`` -- number of sets computed
 - ``overapproximate`` -- function for overapproximation
 - ``bi`` -- the block index to be computed
-- ``res`` -- storage space for the result, a linear array of CartesianProductArray 
+- ``res`` -- storage space for the result, a linear array of CartesianProductArray
 
 OUTPUT:
 
-Array of two-dimensional sets (HPolygons) for the given block index. 
+Array of two-dimensional sets (HPolygons) for the given block index.
 It is obtained by reachability computation of a discrete affine system with
 undeterministic inputs, which can be either constant or time-varying.
 =#
@@ -138,7 +138,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{Float64}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
@@ -180,7 +180,7 @@ function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{Float64}}(b)
     ϕpowerk = copy(ϕ)
 
     k = 2
@@ -286,4 +286,3 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
 
     nothing
 end
-

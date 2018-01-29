@@ -153,7 +153,7 @@ function add_dimension(cs::ContinuousSystem)::ContinuousSystem
     if cs.U isa ConstantNonDeterministicInput
         Uext = add_dimension(next_set(cs.U))
     elseif cs.U isa TimeVaryingNonDeterministicInput
-        Uext = Vector{LazySet}(length(cs.U))
+        Uext = Vector{LazySet{Float64}}(length(cs.U))
         i = 0
         for u in cs.U
             Uext[i+=1] = add_dimension(u)
