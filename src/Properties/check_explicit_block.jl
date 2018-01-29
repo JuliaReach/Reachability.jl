@@ -25,7 +25,7 @@ The first time index where the property is violated, and 0 if the property is sa
 
 
 # sparse, with input
-function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+function check_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
                                Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
@@ -33,7 +33,7 @@ function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
@@ -74,13 +74,13 @@ end
 
 
 # sparse, no input
-function check_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+function check_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
                                Xhat0::Vector{<:LazySet},
                                n::Int,
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
@@ -116,7 +116,7 @@ end
 
 
 # dense, with input
-function check_explicit_block!(ϕ::AbstractMatrix{Float64},
+function check_explicit_block!(ϕ::AbstractMatrix{NUM},
                                Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
@@ -124,7 +124,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
@@ -135,7 +135,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    arr = Vector{LazySet{Float64}}(b+1)
+    arr = Vector{LazySet{NUM}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
@@ -161,13 +161,13 @@ end
 
 
 # dense, no input
-function check_explicit_block!(ϕ::AbstractMatrix{Float64},
+function check_explicit_block!(ϕ::AbstractMatrix{NUM},
                                Xhat0::Vector{<:LazySet},
                                n::Int,
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
@@ -176,7 +176,7 @@ function check_explicit_block!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{NUM}}(b)
     ϕpowerk = copy(ϕ)
 
     k = 2
@@ -199,7 +199,7 @@ end
 
 
 # lazymexp, with input
-function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
+function check_explicit_block!(ϕ::SparseMatrixExp{NUM},
                                Xhat0::Vector{<:LazySet},
                                U::ConstantNonDeterministicInput,
                                overapproximate::Function,
@@ -207,7 +207,7 @@ function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
@@ -216,7 +216,7 @@ function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
 
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
-    arr = Vector{LazySet}(b+1)
+    arr = Vector{LazySet{NUM}}(b+1)
     inputs = next_set(U)
     arr[b+1] = overapproximate(G0(bi) * inputs)
 
@@ -245,20 +245,20 @@ end
 
 
 # lazymexp, no input
-function check_explicit_block!(ϕ::SparseMatrixExp{Float64},
+function check_explicit_block!(ϕ::SparseMatrixExp{NUM},
                                Xhat0::Vector{<:LazySet},
                                n::Int,
                                b::Int,
                                N::Int,
                                bi::Int,
-                               prop::Property)::Int
+                               prop::Property)::Int where {NUM}
     if !check_property(Xhat0[bi], prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    arr = Vector{LazySet}(b)
+    arr = Vector{LazySet{NUM}}(b)
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
 

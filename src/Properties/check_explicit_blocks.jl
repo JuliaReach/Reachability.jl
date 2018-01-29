@@ -25,7 +25,7 @@ The first time index where the property is violated, and 0 if the property is sa
 
 
 # sparse, with input
-function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
+function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -33,7 +33,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
@@ -44,8 +44,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -86,13 +86,13 @@ end
 
 
 # sparse, no input
-function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
+function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet},
                                 n::Int,
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
@@ -101,7 +101,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -135,7 +135,7 @@ end
 
 
 # dense, with input
-function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
+function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -143,7 +143,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
@@ -154,8 +154,8 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -170,7 +170,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{NUM}}(b+1)
             for bj in 1:b
                 arr[bj] = F(bi, bj) * Xhat0[bj]
             end
@@ -195,13 +195,13 @@ end
 
 
 # dense, no input
-function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
+function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet},
                                 n::Int,
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
@@ -210,7 +210,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -221,7 +221,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{NUM}}(b+1)
             for bj in 1:b
                 arr[bj] = F(bi, bj) * Xhat0[bj]
             end
@@ -242,20 +242,20 @@ end
 
 
 # lazymexp, no input
-function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
+function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet},
                                 n::Int,
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    Xhatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -266,7 +266,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{NUM}}(b+1)
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
             for bj in 1:b
                 arr[bj] = ϕpowerk_πbi[:, (2*bj-1):(2*bj)] * Xhat0[bj]
@@ -288,7 +288,7 @@ end
 
 
 # lazymexp, with input
-function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
+function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -296,7 +296,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                prop::Property)::Int
+                                prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
@@ -305,8 +305,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
 
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
-    Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{LazySet}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -321,7 +321,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
     k = 2
     @inbounds while true
         for bi in blocks
-            arr = Vector{LazySet}(b+1)
+            arr = Vector{LazySet{NUM}}(b+1)
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
             for bj in 1:b
                 arr[bj] = ϕpowerk_πbi[:, (2*bj-1):(2*bj)] * Xhat0[bj]
