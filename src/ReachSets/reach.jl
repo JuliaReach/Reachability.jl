@@ -25,6 +25,8 @@ INPUT:
                               system has no input (linear system), and it case it has one,
                               the input is ignored; otherwise, the given non-deterministic
                               input is passed to the backend
+- `set_type`               -- (optional, default: `HPolygon`) type of set that is used
+                              for overapproximation in 2D
 - `lazy_X0`                -- (optional, default: `false`) if true, transform the
                               set of initial states to the caretsian product of
                               two-dimensional polygons; otherwise, the given input,
@@ -41,14 +43,15 @@ WARNING:
   add an extra variable with no dynamics.
 """
 function reach(S::Union{DiscreteSystem, ContinuousSystem},
-               N::Int64;
+               N::Int;
                algorithm::String="explicit",
                ɛ::Float64=Inf,
                iterative_refinement=false,
                assume_sparse=true,
                assume_homogeneous=false,
+               set_type::Type=HPolygon,
                lazy_X0=false,
-               kwargs...)::Union{Vector{CartesianProductArray}, Vector{HPolygon}}
+               kwargs...)::Union{Vector{CartesianProductArray}, Vector{set_type}}
 
     # unpack arguments
     kwargs_dict = Dict(kwargs)
@@ -67,12 +70,12 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
     if lazy_X0
         Xhat0 = S.X0
     else
-       if iterative_refinement
-            Xhat0 = decompose(S.X0, ɛ)
+        if iterative_refinement
+            Xhat0 = decompose(S.X0, ɛ, set_type)
         else
-            Xhat0 = decompose(S.X0)
+            Xhat0 = decompose(S.X0, set_type)
         end
-        Xhat0 = convert(Vector{LazySets.HPolygon}, Xhat0.sfarray)
+        Xhat0 = Xhat0.sfarray
     end
 
     # shortcut if only the initial set is required
@@ -107,7 +110,7 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
     if iterative_refinement
         push!(args, x -> overapproximate(x, ɛ))
     else
-        push!(args, x -> overapproximate(x))
+        push!(args, x -> overapproximate(x, set_type))
     end
 
     # preallocate output vector and add mode-specific block(s) argument
@@ -117,7 +120,7 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
         elseif length(kwargs_dict[:blocks]) == 1
             bi = kwargs_dict[:blocks][1]
             push!(args, bi)
-            res = Vector{HPolygon}(N)
+            res = Vector{set_type}(N)
             algorithm_backend = "explicit_block"
         else
             blocks = kwargs_dict[:blocks]

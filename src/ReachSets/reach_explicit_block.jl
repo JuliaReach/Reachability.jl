@@ -20,34 +20,35 @@ INPUT:
 
 OUTPUT:
 
-Array of two-dimensional sets (HPolygons) for the given block index. 
+Array of two-dimensional sets for the given block index. 
 It is obtained by reachability computation of a discrete affine system with
-undeterministic inputs, which can be either constant or time-varying.
+nondeterministic inputs.
 =#
 
 
 # sparse, with input
-function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
-                               Xhat0::Vector{HPolygon},
+function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+                               Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     inputs = next_set(U)
-    Whatk_bi::HPolygon = overapproximate(G0(bi) * inputs)
+    Whatk_bi = overapproximate(G0(bi) * inputs)
     ϕpowerk = copy(ϕ)
 
     dummy_set = ZeroSet(2)
@@ -76,21 +77,22 @@ end
 
 
 # sparse, no input
-function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+function reach_explicit_block!(ϕ::SparseMatrixCSC{Float64, Int},
+                               Xhat0::Vector{S},
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     ϕpowerk = copy(ϕ)
 
@@ -120,23 +122,24 @@ end
 
 # dense, with input
 function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
-                               Xhat0::Vector{HPolygon},
+                               Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     arr = Vector{LazySet}(b+1)
     inputs = next_set(U)
@@ -165,20 +168,21 @@ end
 
 # dense, no input
 function reach_explicit_block!(ϕ::AbstractMatrix{Float64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+                               Xhat0::Vector{S},
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     arr = Vector{LazySet}(b)
     ϕpowerk = copy(ϕ)
@@ -203,13 +207,14 @@ end
 
 # lazymexp, no input
 function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
-                               Xhat0::Vector{HPolygon},
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+                               Xhat0::Vector{S},
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -244,14 +249,15 @@ end
 
 # lazymexp, input
 function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
-                               Xhat0::Vector{HPolygon},
+                               Xhat0::Vector{S},
                                U::ConstantNonDeterministicInput,
-                               n::Int64,
-                               b::Int64,
-                               N::Int64,
+                               n::Int,
+                               b::Int,
+                               N::Int,
                                overapproximate::Function,
-                               bi::Int64,
-                               res::Vector{HPolygon})
+                               bi::Int,
+                               res::Vector{S}
+                              )::Void where {S<:LazySet}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -260,7 +266,7 @@ function reach_explicit_block!(ϕ::SparseMatrixExp{Float64},
 
     dummy_set = ZeroSet(2)
     inputs = next_set(U)
-    Whatk_bi::HPolygon = overapproximate(sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n) * inputs)
+    Whatk_bi = overapproximate(sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n) * inputs)
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2

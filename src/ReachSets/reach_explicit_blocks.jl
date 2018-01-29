@@ -20,35 +20,36 @@ INPUT:
 
 OUTPUT:
 
-Array of the cartesian product of two-dimensional sets (HPolygons) for the
-given block indices, and ZeroSet's for the rest of them. It is obtained by
-reachability computation of a discrete affine system with undeterministic
-inputs, which can be either constant or time-varying.
+Array of the cartesian product of two-dimensional sets for the given block
+indices, and ZeroSet's for the rest of them.
+It is obtained by reachability computation of a discrete affine system with
+nondeterministic inputs.
 =#
 
 
 # sparse, with input
-function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
-                                Xhat0::Vector{HPolygon},
+function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
+                                Xhat0::Vector{S},
                                 U::ConstantNonDeterministicInput,
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray{S}}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{HPolygon}(b)
+    Whatk = Vector{S}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -89,21 +90,22 @@ end
 
 
 # sparse, no input
-function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int64},
-                                Xhat0::Vector{HPolygon},
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+function reach_explicit_blocks!(ϕ::SparseMatrixCSC{Float64, Int},
+                                Xhat0::Vector{S},
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     Xhatk = Vector{LazySet}(b)
     dummy_set = ZeroSet(2)
@@ -140,26 +142,27 @@ end
 
 # dense, with input
 function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
-                                Xhat0::Vector{HPolygon},
+                                Xhat0::Vector{S},
                                 U::ConstantNonDeterministicInput,
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int64) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
     Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{HPolygon}(b)
+    Whatk = Vector{S}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set
@@ -200,20 +203,21 @@ end
 
 # dense, no input
 function reach_explicit_blocks!(ϕ::AbstractMatrix{Float64},
-                                Xhat0::Vector{HPolygon},
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+                                Xhat0::Vector{S},
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
         return
     end
 
-    @inline F(bi::Int64, bj::Int64) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
+    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
     Xhatk = Vector{LazySet}(b)
     dummy_set = ZeroSet(2)
@@ -248,13 +252,14 @@ end
 
 # lazymexp, no input
 function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
-                                Xhat0::Vector{HPolygon},
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+                                Xhat0::Vector{S},
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
@@ -298,24 +303,25 @@ end
 
 # lazymexp, with input
 function reach_explicit_blocks!(ϕ::SparseMatrixExp{Float64},
-                                Xhat0::Vector{HPolygon},
+                                Xhat0::Vector{S},
                                 U::ConstantNonDeterministicInput,
-                                n::Int64,
-                                b::Int64,
-                                N::Int64,
+                                n::Int,
+                                b::Int,
+                                N::Int,
                                 overapproximate::Function,
-                                blocks::AbstractVector{Int64},
-                                res::Vector{CartesianProductArray})
+                                blocks::AbstractVector{Int},
+                                res::Vector{CartesianProductArray}
+                               )::Void where {S<:LazySet}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
         nothing
         return
     end
 
-    @inline G0(bi::Int64) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
     Xhatk = Vector{LazySet}(b)
-    Whatk = Vector{HPolygon}(b)
+    Whatk = Vector{S}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
          Xhatk[bi] = dummy_set

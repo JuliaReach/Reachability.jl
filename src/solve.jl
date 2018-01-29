@@ -129,11 +129,12 @@ function solve(system::AbstractSystem,
             options[:N];
             algorithm=options[:algorithm],
             ɛ=options[:ɛ],
-            blocks=options[:blocks],
-            assume_sparse=options[:assume_sparse],
             iterative_refinement=options[:iterative_refinement],
+            assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
-            lazy_X0=options[:lazy_X0]
+            set_type=options[:set_type],
+            lazy_X0=options[:lazy_X0],
+            blocks=options[:blocks]
             )
         tocc()
 
@@ -169,9 +170,11 @@ function solve(system::AbstractSystem,
             algorithm=options[:algorithm],
             ɛ=options[:ɛ],
             blocks=options[:blocks],
-            assume_sparse=options[:assume_sparse],
             iterative_refinement=options[:iterative_refinement],
+            assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
+            set_type=options[:set_type],
+            lazy_X0=options[:lazy_X0],
             property=options[:property]
             )
         tocc()
@@ -189,7 +192,8 @@ function solve(system::AbstractSystem,
     end
 end
 
-solve(system::Union{ContinuousSystem, DiscreteSystem}, options::Pair{Symbol,<:Any}...) = solve(system, Options(Dict{Symbol,Any}(options)))
+solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
+    solve(system, Options(Dict{Symbol,Any}(options)))
 
 """
     project(Rsets, options; [transformation_matrix])
@@ -208,9 +212,8 @@ Projects a sequence of sets according to the settings defined in the options.
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-                 options::Options; transformation_matrix=nothing)
-
+function project(Rsets::Vector{<:LazySet}, options::Options;
+                 transformation_matrix=nothing)
     RsetsProj = project_reach(options[:plot_vars],
                               options[:n],
                               options[:δ],
@@ -224,5 +227,5 @@ end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 
-project(Rsets::Union{Vector{CartesianProductArray}, Vector{HPolygon}},
-        options::Pair{Symbol,<:Any}...) = project(Rsets, Options(Dict{Symbol,Any}(options)))
+project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
+    project(Rsets, Options(Dict{Symbol,Any}(options)))
