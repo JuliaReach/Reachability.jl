@@ -23,7 +23,7 @@ The ``plot_vars`` argument is required even if the optional argument
 as a dimension from this variable.
 """
 function project_reach(plot_vars::Vector{Int64}, n::Int64,
-    δ::Float64, Rsets::Vector{LazySets.CartesianProductArray},
+    δ::Float64, Rsets::Vector{<:LazySets.CartesianProductArray},
     algorithm::String="explicit";
     ɛ::Float64=Inf,
     projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
