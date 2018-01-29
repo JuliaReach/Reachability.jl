@@ -36,7 +36,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray{S}}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -97,7 +97,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -149,7 +149,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -209,7 +209,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -258,7 +258,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
@@ -310,7 +310,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 N::Int,
                                 overapproximate::Function,
                                 blocks::AbstractVector{Int},
-                                res::Vector{CartesianProductArray}
+                                res::Vector{CartesianProductArray{NUM}}
                                )::Void where {S<:LazySet{NUM}} where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
