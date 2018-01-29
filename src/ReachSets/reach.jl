@@ -1,6 +1,7 @@
 """
     reach(S, N; [algorithm], [ɛ], [iterative_refinement], [assume_sparse],
-                [assume_homogeneous], [kwargs]...)
+                [assume_homogeneous], [set_type], [numeric_type], [lazy_X0],
+                [kwargs]...)
 
 Interface to reachability algorithms for an affine system with non-deterministic inputs.
 
@@ -50,8 +51,9 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
                assume_sparse=true,
                assume_homogeneous=false,
                set_type::Type=HPolygon,
+               numeric_type::Type=Float64,
                lazy_X0=false,
-               kwargs...)::Union{Vector{CartesianProductArray}, Vector{set_type}}
+               kwargs...)::Union{Vector{<:CartesianProductArray}, Vector{<:set_type}}
 
     # unpack arguments
     kwargs_dict = Dict(kwargs)
@@ -120,12 +122,12 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
         elseif length(kwargs_dict[:blocks]) == 1
             bi = kwargs_dict[:blocks][1]
             push!(args, bi)
-            res = Vector{set_type}(N)
+            res = Vector{set_type{numeric_type}}(N)
             algorithm_backend = "explicit_block"
         else
             blocks = kwargs_dict[:blocks]
             push!(args, blocks)
-            res = Vector{CartesianProductArray}(N)
+            res = Vector{CartesianProductArray{numeric_type}}(N)
             algorithm_backend = "explicit_blocks"
         end
     else
