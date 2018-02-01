@@ -39,10 +39,11 @@ For discrete-time reachability, use `approx_model="nobloating"`.
 function discretize(cont_sys::ContinuousSystem, δ::Float64;
                     approx_model::String="forward",
                     pade_expm::Bool=false,
-                    lazy_expm::Bool=false)::DiscreteSystem
+                    lazy_expm::Bool=false,
+                    lazy_sih::Bool=true)::DiscreteSystem
 
     if approx_model in ["forward", "backward"]
-        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)
+        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm, lazy_sih)
     elseif approx_model == "firstorder"
         return discr_bloat_firstorder(cont_sys, δ)
     elseif approx_model == "nobloating"
@@ -208,7 +209,10 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
                                    δ::Float64,
                                    approx_model::String,
                                    pade_expm::Bool,
-                                   lazy_expm::Bool)::DiscreteSystem
+                                   lazy_expm::Bool,
+                                   lazy_sih::Bool)::DiscreteSystem
+
+    sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
 
     n = size(cont_sys.A, 1)
 
@@ -248,13 +252,13 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
         end
     else
-        EPsi = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * inputs))
+        EPsi = sih(Phi2Aabs * sih(cont_sys.A * inputs))
         discretized_U = δ * inputs + EPsi
         if approx_model == "forward"
-            EOmegaPlus = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull((cont_sys.A * cont_sys.A) * cont_sys.X0))
+            EOmegaPlus = sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A) * cont_sys.X0))
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaPlus)
         elseif approx_model == "backward"
-            EOmegaMinus = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull((cont_sys.A * cont_sys.A * ϕ) * cont_sys.X0))
+            EOmegaMinus = sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A * ϕ) * cont_sys.X0))
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaMinus)
         end
     end
@@ -266,7 +270,7 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         discretized_U_arr[1] = discretized_U
         for i in 2:length(cont_sys.U)
             inputs = next(cont_sys.U, i)[1]
-            EPsi_i = symmetric_interval_hull(Phi2Aabs * symmetric_interval_hull(cont_sys.A * inputs))
+            EPsi_i = sih(Phi2Aabs * sih(cont_sys.A * inputs))
             discretized_U_arr[i] = δ * inputs + EPsi_i
         end
         return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
