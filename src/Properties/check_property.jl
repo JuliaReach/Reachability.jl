@@ -79,7 +79,7 @@ function check_property(S::Union{DiscreteSystem, ContinuousSystem},
         else
             Xhat0 = decompose(S.X0, set_type)
         end
-        Xhat0 = Xhat0.sfarray
+        Xhat0 = array(Xhat0)
     end
 
     # shortcut if only the initial set is required
