@@ -150,6 +150,7 @@ function solve(system::AbstractSystem,
                                       Rsets,
                                       options[:algorithm];
                                       ɛ=options[:ɛ],
+                                      set_type=options[:set_type],
                                       transformation_matrix=transformation_matrix,
                                       projection_matrix=options[:projection_matrix])
             tocc()
@@ -220,6 +221,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               Rsets,
                               options[:algorithm],
                               ɛ=options[:ɛ],
+                              set_type=options[:set_type],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
                               )
