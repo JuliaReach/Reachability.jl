@@ -40,10 +40,10 @@ To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
 argument. For additional options, consult the Plots.jl reference manual.
 """
 @recipe function plot_sol(sol::ReachSolution{HPolygon};
-                          seriescolor="blue", label="", grid=true, alpha=0.5,
+                          seriescolor=:auto, label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing)
 
-    seriestype := :shape
+    #seriestype := :shape
 
     options = check_aliases_and_add_default_value(sol)
 
@@ -59,10 +59,23 @@ argument. For additional options, consult the Plots.jl reference manual.
         indices = options.dict[:plot_indices]
     end
 
+    #=
     for i in indices
         vlist = hcat(vertices_list(sol.Xk[i])...).'
         @series (x, y) = vlist[:, 1], vlist[:, 2]
     end
+    =#
+
+    # Using single list and NaN separators as suggested in
+    vlist = Array{Array{Float64, 1}, 1}()
+    for i in indices
+        append!(vlist, vertices_list(sol.Xk[i]))
+        push!(vlist, [NaN; NaN])
+    end
+    vlist = hcat(vlist...)'
+    #@series (x, y) = vlist[:, 1], vlist[:, 2]
+    vlist[:, 1], vlist[:, 2]
+
 end
 
 """
