@@ -58,7 +58,7 @@ For a full references list of algorithms implemented in this repository, consult
 These persons have contributed to `Reachability.jl` (in alphabetic order):
 
 - [Marcelo Forets](http://marcelo-forets.fr)
-- Christian Schilling
+- [Christian Schilling](http://swt.informatik.uni-freiburg.de/staff/christian_schilling/)
 - Frederic Viry
 
 We are also grateful to Goran Frehse, Sergiy Bogomolov, Andreas Podelski, Alexandre Rocca and
