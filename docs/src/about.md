@@ -46,6 +46,13 @@ layout. To build the docs, run `make.jl`:
 $ julia --color=yes docs/make.jl
 ```
 
+## References
+
+This repository was originally motivated by the mathematical approach described in *Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices*,  Sergiy Bogomolov, M. F., Goran Frehse, Andreas Podelski, Christian Schilling, Frédéric Viry, in [21st ACM International Conference on Hybrid Systems: Computation and Control](https://www.hscc2018.deib.polimi.it/), 2018 Edition (Porto, Portugal), see the [aXiv pre-print here](https://arxiv.org/abs/1801.09526).
+
+For a full references list of algorithms impleented in this repository, consult [the References wiki](https://github.com/JuliaReach/Reachability.jl/wiki/References).
+
+
 ## Credits
 
 These persons have contributed to `Reachability.jl` (in alphabetic order):
