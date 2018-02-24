@@ -83,6 +83,8 @@ Supported options:
 - `:pade_expm`     -- switch for using Pade approximant method
 - `:set_type`      -- set type for overapproximation
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
+- `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
+                      discretization
 - `:approx_model`  -- approximation model
 - `:coordinate_transformation` -- coordinate transformation method
 - `:assume_homogeneous`        -- switch for ignoring inputs
@@ -125,6 +127,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type], HPolygon)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_sih], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
@@ -189,6 +192,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :set_type
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
         elseif key == :lazy_X0
+            expected_type = Bool
+        elseif key == :lazy_sih
             expected_type = Bool
         elseif key == :coordinate_transformation
             expected_type = String
