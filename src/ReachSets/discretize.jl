@@ -1,16 +1,16 @@
 export discretize
 
 """
-    discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm])
+    discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])
 
 Discretize a continuous system of ODEs with nondeterministic inputs.
 
 ## Input
 
-- `cont_sys`          -- continuous system
-- `δ`                 -- step size
-- `approx_model`      -- the method to compute the approximation model for the
-                         discretization, among:
+- `cont_sys`     -- continuous system
+- `δ`            -- step size
+- `approx_model` -- the method to compute the approximation model for the
+                    discretization, among:
 
     - `forward`    -- use forward-time interpolation
     - `backward`   -- use backward-time interpolation
@@ -18,11 +18,14 @@ Discretize a continuous system of ODEs with nondeterministic inputs.
     - `nobloating` -- do not bloat the initial states
                       (use for discrete-time reachability)
 
-- `pade_expm`         -- (optional, default = `false`) if true, use Pade approximant
-                         method to compute matrix exponentials of sparse matrices;
-                         otherwise use Julia's buil-in `expm`
-- `lazy_expm`         -- (optional, default = `false`) if true, compute the matrix
-                         exponential in a lazy way (suitable for very large systems)
+- `pade_expm`    -- (optional, default = `false`) if true, use Pade approximant
+                    method to compute matrix exponentials of sparse matrices;
+                    otherwise use Julia's buil-in `expm`
+- `lazy_expm`    -- (optional, default = `false`) if true, compute the matrix
+                    exponential in a lazy way (suitable for very large systems)
+- `lazy_sih`     -- (optional, default = `true`) if true, compute the
+                    symmetric interval hull in a lazy way (suitable if only a
+                    few dimensions are of interest)
 
 ## Output
 
@@ -30,10 +33,11 @@ A discrete system.
 
 ## Notes
 
-This function applies an approximation model to transform a continuous affine system
-into a discrete affine system. This transformation allows to do dense time reachability,
-i.e. such that the trajectories of the given continuous system are included in the
-computed flowpipe of the discretized system.
+This function applies an approximation model to transform a continuous affine
+system into a discrete affine system.
+This transformation allows to do dense time reachability, i.e. such that the
+trajectories of the given continuous system are included in the computed
+flowpipe of the discretized system.
 For discrete-time reachability, use `approx_model="nobloating"`.
 """
 function discretize(cont_sys::ContinuousSystem, δ::Float64;
@@ -43,7 +47,8 @@ function discretize(cont_sys::ContinuousSystem, δ::Float64;
                     lazy_sih::Bool=true)::DiscreteSystem
 
     if approx_model in ["forward", "backward"]
-        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm, lazy_sih)
+        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm,
+                                         lazy_expm, lazy_sih)
     elseif approx_model == "firstorder"
         return discr_bloat_firstorder(cont_sys, δ)
     elseif approx_model == "nobloating"
@@ -75,7 +80,8 @@ This uses a first order approximation of the ODE, and matrix norm upper bounds,
 see Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
-function discr_bloat_firstorder(cont_sys::ContinuousSystem, δ::Float64)::DiscreteSystem
+function discr_bloat_firstorder(cont_sys::ContinuousSystem,
+                                δ::Float64)::DiscreteSystem
 
     if !(cont_sys.U isa ConstantNonDeterministicInput)
         error("This discretization algorithm is only implemented for constant inputs")
@@ -151,13 +157,19 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
 
     # compute matrix to transform the inputs
     if lazy_expm
-        P = SparseMatrixExp([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
+        P = SparseMatrixExp([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+                             spzeros(n, 2*n) sparse(δ*I, n, n);
+                             spzeros(n, 3*n)])
         Phi1Adelta = get_columns(P, (n+1):2*n)[1:n, :]
     else
         if pade_expm
-            P = padm([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
+            P = padm([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+                      spzeros(n, 2*n) sparse(δ*I, n, n);
+                      spzeros(n, 3*n)])
         else
-            P = expm(full([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
+            P = expm(full([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+                           spzeros(n, 2*n) sparse(δ*I, n, n);
+                           spzeros(n, 3*n)]))
         end
         Phi1Adelta = P[1:n, (n+1):2*n]
     end
@@ -188,7 +200,8 @@ Compute bloating factors using forward or backward interpolation.
 
 - `cs`           -- a continuous system
 - `δ`            -- step size
-- `approx_model` -- choose the approximation model among `"forward"` and `"backward"`
+- `approx_model` -- choose the approximation model among `"forward"` and
+                    `"backward"`
 - `pade_expm`    -- if true, use Pade approximant method to compute the
                     matrix exponential
 - `lazy_expm`   --  if true, compute the matrix exponential in a lazy way
@@ -196,14 +209,14 @@ Compute bloating factors using forward or backward interpolation.
 
 ## Algorithm
 
-See Frehse et al CAV'11 paper, *SpaceEx: Scalable Verification of Hybrid Systems*,
-see Lemma 3.
+See Frehse et al., CAV'11, *SpaceEx: Scalable Verification of Hybrid Systems*,
+Lemma 3.
 
 Note that in the unlikely case that A is invertible, the result can also
 be obtained directly, as a function of the inverse of A and `e^{At} - I`.
 
-The matrix `P` is such that: `ϕAabs = P[1:n, 1:n]`, `Phi1Aabsdelta = P[1:n, (n+1):2*n]`,
-and `Phi2Aabs = P[1:n, (2*n+1):3*n]`.
+The matrix `P` is such that: `ϕAabs = P[1:n, 1:n]`,
+`Phi1Aabsdelta = P[1:n, (n+1):2*n]`, and `Phi2Aabs = P[1:n, (2*n+1):3*n]`.
 """
 function discr_bloat_interpolation(cont_sys::ContinuousSystem,
                                    δ::Float64,
@@ -236,13 +249,19 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
 
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
-        P = SparseMatrixExp([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
+        P = SparseMatrixExp([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+                             spzeros(n, 2*n) sparse(δ*I, n, n);
+                             spzeros(n, 3*n)])
         Phi2Aabs = get_columns(P, (2*n+1):3*n)[1:n, :]
     else
         if pade_expm
-            P = padm([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)])
+            P = padm([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+                      spzeros(n, 2*n) sparse(δ*I, n, n);
+                      spzeros(n, 3*n)])
         else
-            P = expm(full([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n); spzeros(n, 2*n) sparse(δ*I, n, n); spzeros(n, 3*n)]))
+            P = expm(full([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+                           spzeros(n, 2*n) sparse(δ*I, n, n);
+                           spzeros(n, 3*n)]))
         end
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
@@ -255,10 +274,12 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
         EPsi = sih(Phi2Aabs * sih(cont_sys.A * inputs))
         discretized_U = δ * inputs + EPsi
         if approx_model == "forward"
-            EOmegaPlus = sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A) * cont_sys.X0))
+            EOmegaPlus =
+                sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A) * cont_sys.X0))
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaPlus)
         elseif approx_model == "backward"
-            EOmegaMinus = sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A * ϕ) * cont_sys.X0))
+            EOmegaMinus =
+                sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A * ϕ) * cont_sys.X0))
             Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaMinus)
         end
     end
