@@ -96,7 +96,8 @@ function solve(system::AbstractSystem,
             options[:δ],
             approx_model=options[:approx_model],
             pade_expm=options[:pade_expm],
-            lazy_expm=options[:lazy_expm]
+            lazy_expm=options[:lazy_expm],
+            lazy_sih=options[:lazy_sih]
             )
         tocc()
     else

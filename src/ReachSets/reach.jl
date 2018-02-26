@@ -31,7 +31,7 @@ INPUT:
 - `lazy_X0`                -- (optional, default: `false`) if true, transform the
                               set of initial states to the caretsian product of
                               two-dimensional polygons; otherwise, the given input,
-                              as a lazy set, is passed to the backend 
+                              as a lazy set, is passed to the backend
 - `kwargs`                 -- (optional) additional arguments that are passed to the backend
 
 NOTES:
