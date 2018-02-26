@@ -104,3 +104,7 @@ inputs, input_state = next(discr_sys.U, input_state)
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
+
+# lazy symmetric interval hull
+discr_sys = discretize(cont_sys, δ, lazy_sih=true)
+discr_sys = discretize(cont_sys, δ, lazy_sih=false)

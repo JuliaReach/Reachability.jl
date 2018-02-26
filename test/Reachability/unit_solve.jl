@@ -24,3 +24,9 @@ s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
           :property=>LinearConstraintProperty([1., -1.], 2.))
 @test s.violation == -1
+
+# ===============================
+# Test reachability options
+# ===============================
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :lazy_sih=>true);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :lazy_sih=>false);
