@@ -75,9 +75,16 @@ Supported options:
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
 - `:blocks`        -- blocks of interest
-- `:approx_init`   -- set approximation parameter for the initial states (during
-                      decomposition)
-- `:approx_sets`   -- set approximation parameter for the propagated states
+- `:ε`             -- short hand to set `:ε_init` and `:ε_iter`
+- `:set_type`      -- short hand to set `:set_type_init` and `:set_type_iter`
+- `:ε_init`        -- error bound for the approximation of the initial states
+                      (during decomposition)
+- `:set_type_init` -- set type for the approximation of the initial states
+                      (during decomposition)
+- `:ε_iter`        -- error bound for the approximation of the states ``X_k``,
+                      ``k>0``
+- `:set_type_iter` -- set type for the approximation of the states ``X_k``,
+                      ``k>0``
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
@@ -120,8 +127,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_init], Hyperrectangle)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_sets], Hyperrectangle)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
@@ -135,6 +140,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
+
+    # special options: ε, ε_init, ε_iter, set_type, set_type_init, set_type_iter
+    check_and_add_approximation!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -177,14 +185,21 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::Int  ->  v > 0)
         elseif key == :blocks
             expected_type = AbstractVector{Int64}
-        elseif key == :approx_init
-            expected_type = Union{Float64, Type{HPolygon}, Type{Hyperrectangle}}
-            domain_constraints =
-                (v  ->  (v isa Float64 ? v > 0. : v in [HPolygon, Hyperrectangle]))
-        elseif key == :approx_sets
-            expected_type = Union{Float64, Type{HPolygon}, Type{Hyperrectangle}}
-            domain_constraints =
-                (v  ->  (v isa Float64 ? v > 0. : v in [HPolygon, Hyperrectangle]))
+        elseif key == :ε
+            expected_type = Float64
+            domain_constraints = (v  ->  v > 0.)
+        elseif key == :ε_init
+            expected_type = Float64
+            domain_constraints = (v  ->  v > 0.)
+        elseif key == :ε_iter
+            expected_type = Float64
+            domain_constraints = (v  ->  v > 0.)
+        elseif key == :set_type
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+        elseif key == :set_type_init
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+        elseif key == :set_type_iter
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
         elseif key == :lazy_expm
             expected_type = Bool
         elseif key == :assume_sparse
@@ -303,6 +318,52 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
     else
         error("Need two of the following options: :δ, :N, :T (or at least :T and using default values)")
     end
+end
+
+"""
+    check_and_add_approximation!(dict::Dict{Symbol,Any},
+                                 dict_copy::Dict{Symbol,Any})
+
+Handling of the special options `:ε` and `:set_type` resp. the subcases
+`:ε_init`, `:ε_iter`, `:set_type_init`, and `:set_type_iter`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes:
+
+`:ε` and `:set_type`, if defined, are used as fallbacks (if the more specific
+options are undefined).
+If both `:ε_init` and `:set_type_init` are defined, they must be consistent.
+"""
+function check_and_add_approximation!(dict::Dict{Symbol,Any},
+                                      dict_copy::Dict{Symbol,Any})
+    # fallback options
+    check_aliases!(dict, dict_copy, [:ε])
+    check_aliases!(dict, dict_copy, [:set_type])
+    ε = haskey(dict, :ε) ? dict[:ε] : Inf
+    set_type = haskey(dict, :set_type) ? dict[:set_type] :
+        (ε < Inf ? HPolygon : Hyperrectangle)
+
+    ε_init = (haskey(dict, :set_type_init) && dict[:set_type_init] == HPolygon) ||
+             (!haskey(dict, :set_type_init) && set_type == HPolygon) ? ε : Inf
+    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_init], ε_init)
+
+    set_type_init = dict_copy[:ε_init] < Inf ? HPolygon : set_type
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_init], set_type_init)
+
+    ε_iter = (haskey(dict, :set_type_iter) && dict[:set_type_iter] == HPolygon) ||
+             (!haskey(dict, :set_type_iter) && set_type == HPolygon) ? ε : Inf
+    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_iter], ε_iter)
+
+    set_type_iter = dict_copy[:ε_iter] < Inf ? HPolygon : set_type
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_iter], set_type_iter)
+
+    @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
+        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) (
+            "ε-close approximation is only supported with the HPolygon set type")
 end
 
 

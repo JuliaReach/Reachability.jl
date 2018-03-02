@@ -11,8 +11,10 @@ Projection of a reachability analysis result in 2D.
 - `Rsets`             -- reachable states representation
 - `algorithm`         -- (optional, default: `"explicit"`) reachability
                          algorithm backend, see `available_algorithms`
-- `approx_sets`       -- (optional, default: `Hyperrectangle`) set approximation
-                         parameter for the propagated states
+- `ε`                 -- (optional, default: `Inf`) error bound for the
+                         approximation
+- `set_type`          -- (optional, default: `Hyperrectangle`) set type for the
+                         approximation
 - `projection_matrix` -- (optional, default: `nothing`) projection matrix; if
                          not passed, the function computes `projection_matrix`
                          from `plot_vars`
@@ -28,7 +30,7 @@ a dimension from this variable.
 function project_reach(plot_vars::Vector{Int64}, n::Int64,
     δ::Float64, Rsets::Vector{<:LazySets.CartesianProductArray{numeric_type}},
     algorithm::String="explicit";
-    approx_sets::Union{Float64, Type{<:LazySet}}=Hyperrectangle,
+    ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
     transformation_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing
     )::Vector{<:LazySet} where {numeric_type<:Real}
@@ -75,12 +77,12 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64,
     N = length(Rsets)
 
     # allocate output and define overapproximation function
-    if approx_sets isa Float64
-        oa = x -> overapproximate(x, HPolygon, approx_sets)
+    if ε < Inf
+        oa = x -> overapproximate(x, HPolygon, ε)
         RsetsProj = Vector{HPolygon{numeric_type}}(N)
     else
-        oa = x -> overapproximate(x, approx_sets)
-        RsetsProj = Vector{approx_sets{numeric_type}}(N)
+        oa = x -> overapproximate(x, set_type)
+        RsetsProj = Vector{set_type{numeric_type}}(N)
     end
 
     if got_time
@@ -116,7 +118,7 @@ in the sequence of 2D sets `Rsets`.
 """
 function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     Rsets::Vector{<:LazySets.LazySet{numeric_type}}, algorithm::String;
-    approx_sets::Union{Float64, Type{<:LazySet}}=Hyperrectangle,
+    ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
     transformation_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing
     )::Vector{<:LazySet} where {numeric_type<:Real}
@@ -155,12 +157,12 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     N = length(Rsets)
 
     # allocate output and define overapproximation function
-    if approx_sets isa Float64
-        oa = x -> overapproximate(x, HPolygon, approx_sets)
+    if ε < Inf
+        oa = x -> overapproximate(x, HPolygon, ε)
         RsetsProj = Vector{HPolygon{numeric_type}}(N)
     else
-        oa = x -> overapproximate(x, approx_sets)
-        RsetsProj = Vector{approx_sets{numeric_type}}(N)
+        oa = x -> overapproximate(x, set_type)
+        RsetsProj = Vector{set_type{numeric_type}}(N)
     end
 
     if got_time # x variable is 'time'

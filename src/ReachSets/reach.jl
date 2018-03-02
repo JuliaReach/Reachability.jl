@@ -1,6 +1,7 @@
 """
-    reach(S, N; [algorithm], [approx_init], [approx_sets], [assume_sparse],
-          [assume_homogeneous], [numeric_type], [lazy_X0], [kwargs]...)
+    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
+          [set_type_iter], [assume_sparse], [assume_homogeneous],
+          [numeric_type], [lazy_X0], [kwargs]...)
 
 Interface to reachability algorithms for an LTI system.
 
@@ -11,11 +12,16 @@ Interface to reachability algorithms for an LTI system.
 - `algorithm`          -- (optional, default: `"explicit"`), reachability
                           algorithm backend; see `available_algorithms` for all
                           admissible options
-- `approx_init`        -- (optional, default: `Hyperrectangle`) set
-                          approximation parameter for the initial states (during
+- `:ε_init`            -- (optional, default: `Inf`) error bound for the
+                          approximation of the initial states (during
                           decomposition)
-- `approx_sets`        -- (optional, default: `Hyperrectangle`) set
-                          approximation parameter for the propagated states
+- `:set_type_init`     -- (optional, default: `Hyperrectangle`) set type for the
+                          approximation of the initial states (during
+                          decomposition)
+- `:ε_iter`            -- (optional, default: `Inf`) error bound for the
+                          approximation of the states ``X_k``, ``k>0``
+- `:set_type_iter`     -- (optional, default: `Hyperrectangle`) set type for the
+                          approximation of the states ``X_k``, ``k>0``
 - `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
                           that the coefficients matrix (exponential) is sparse;
                           otherwise, it is transformed to a full matrix
@@ -33,7 +39,8 @@ Interface to reachability algorithms for an LTI system.
 
 ### Notes
 
-A dictionary with available algorithms is available via `Reachability.available_algorithms`.
+A dictionary with available algorithms is available via
+`Reachability.available_algorithms`.
 
 WARNING:
 
@@ -43,8 +50,10 @@ extra variable with no dynamics.
 function reach(S::AbstractSystem,
                N::Int;
                algorithm::String="explicit",
-               approx_init::Union{Float64, Type{<:LazySet}}=Hyperrectangle,
-               approx_sets::Union{Float64, Type{<:LazySet}}=Hyperrectangle,
+               ε_init::Float64=Inf,
+               set_type_init::Type{<:LazySet}=Hyperrectangle,
+               ε_iter::Float64=Inf,
+               set_type_iter::Type{<:LazySet}=Hyperrectangle,
                assume_sparse=true,
                assume_homogeneous=false,
                numeric_type::Type=Float64,
@@ -67,10 +76,8 @@ function reach(S::AbstractSystem,
     # Cartesian decomposition of the initial set
     if lazy_X0
         Xhat0 = S.X0
-    elseif approx_init isa Float64
-        Xhat0 = array(decompose(S.X0, ɛ=approx_init))
     else
-        Xhat0 = array(decompose(S.X0, set_type=approx_init))
+        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
     end
 
     # shortcut if only the initial set is required
@@ -99,10 +106,10 @@ function reach(S::AbstractSystem,
     push!(args, N)
 
     # overapproximation function (with or without iterative refinement)
-    if approx_sets isa Float64
-        push!(args, x -> overapproximate(x, HPolygon, approx_sets))
+    if ε_iter < Inf
+        push!(args, x -> overapproximate(x, set_type_iter, ε_iter))
     else
-        push!(args, x -> overapproximate(x, approx_sets))
+        push!(args, x -> overapproximate(x, set_type_iter))
     end
 
     # preallocate output vector and add mode-specific block(s) argument
