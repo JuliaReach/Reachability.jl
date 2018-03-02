@@ -75,11 +75,12 @@ Supported options:
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
 - `:blocks`        -- blocks of interest
-- `:ɛ`             -- precision threshold
+- `:approx_init`   -- set approximation parameter for the initial states (during
+                      decomposition)
+- `:approx_sets`   -- set approximation parameter for the propagated states
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
-- `:set_type`      -- set type for overapproximation
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
@@ -119,11 +120,11 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:ɛ], Inf)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_init], Hyperrectangle)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_sets], Hyperrectangle)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type], HPolygon)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_sih], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
@@ -176,17 +177,20 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::Int  ->  v > 0)
         elseif key == :blocks
             expected_type = AbstractVector{Int64}
-        elseif key == :ɛ
-            expected_type = Float64
-            domain_constraints = (v::Float64  ->  v > 0.)
+        elseif key == :approx_init
+            expected_type = Union{Float64, Type{HPolygon}, Type{Hyperrectangle}}
+            domain_constraints =
+                (v  ->  (v isa Float64 ? v > 0. : v in [HPolygon, Hyperrectangle]))
+        elseif key == :approx_sets
+            expected_type = Union{Float64, Type{HPolygon}, Type{Hyperrectangle}}
+            domain_constraints =
+                (v  ->  (v isa Float64 ? v > 0. : v in [HPolygon, Hyperrectangle]))
         elseif key == :lazy_expm
             expected_type = Bool
         elseif key == :assume_sparse
             expected_type = Bool
         elseif key == :pade_expm
             expected_type = Bool
-        elseif key == :set_type
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
         elseif key == :lazy_X0
             expected_type = Bool
         elseif key == :lazy_sih

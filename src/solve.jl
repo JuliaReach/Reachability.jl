@@ -138,10 +138,10 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            ɛ=options[:ɛ],
+            approx_init=options[:approx_init],
+            approx_sets=options[:approx_sets],
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
-            set_type=options[:set_type],
             lazy_X0=options[:lazy_X0],
             blocks=options[:blocks]
             )
@@ -153,15 +153,8 @@ function solve(system::AbstractSystem,
         if options[:apply_projection]
             info("Projection...")
             tic()
-            RsetsProj = project_reach(options[:plot_vars],
-                                      dimension,
-                                      options[:δ],
-                                      Rsets,
-                                      options[:algorithm];
-                                      ɛ=options[:ɛ],
-                                      set_type=options[:set_type],
-                                      transformation_matrix=transformation_matrix,
-                                      projection_matrix=options[:projection_matrix])
+            RsetsProj = project(Rsets, options;
+                                transformation_matrix=transformation_matrix)
             tocc()
             return ReachSolution(RsetsProj, options)
         end
@@ -178,11 +171,11 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            ɛ=options[:ɛ],
             blocks=options[:blocks],
+            approx_init=options[:approx_init],
+            approx_sets=options[:approx_sets],
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
-            set_type=options[:set_type],
             lazy_X0=options[:lazy_X0],
             property=options[:property]
             )
@@ -228,8 +221,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               options[:δ],
                               Rsets,
                               options[:algorithm],
-                              ɛ=options[:ɛ],
-                              set_type=options[:set_type],
+                              approx_sets=options[:approx_sets],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
                               )

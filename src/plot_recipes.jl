@@ -14,7 +14,7 @@ Plots the solution of a reachability problem in high-dimensions.
 end
 
 """
-    plot_sol(sol::ReachSolution{HPolygon}; ...)
+    plot_sol(sol::ReachSolution{<:AbstractPolytope}; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
 
@@ -39,7 +39,7 @@ Plots the solution of a reachability problem in 2D with the given options.
 To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
 argument. For additional options, consult the Plots.jl reference manual.
 """
-@recipe function plot_sol(sol::ReachSolution{HPolygon};
+@recipe function plot_sol(sol::ReachSolution{<:AbstractPolytope};
                           seriescolor=:auto,
                           fillcolor=:auto,
                           seriestype=:shape,
@@ -80,7 +80,7 @@ argument. For additional options, consult the Plots.jl reference manual.
 end
 
 """
-    check_aliases_and_add_default_value(sol::ReachSolution{HPolygon})
+    check_aliases_and_add_default_value(sol::ReachSolution)
 
 Creates a copy of an options structure where aliases have been converted to the
 symbol that we use internally.
@@ -91,7 +91,7 @@ symbol that we use internally.
 - `plot_vars` -- (optional) variables for plotting
 - `alias`     -- (optional) output_variables
 """
-function check_aliases_and_add_default_value(sol::ReachSolution{HPolygon})::Options
+function check_aliases_and_add_default_value(sol::ReachSolution)::Options
     dict = sol.options.dict
     options_copy = Options()
     dict_copy = options_copy.dict
