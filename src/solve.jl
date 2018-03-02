@@ -67,6 +67,15 @@ If some options are not defined, we may fall back to default values.
 
 - `system`  -- a (discrete or continuoues) system specification
 - `options` -- options for solving the problem
+
+### Output
+
+A solution object whose content depends on the input options.
+
+### Notes
+
+To see all available input options, see
+`keys(Reachability.available_keywords.dict)`.
 """
 function solve(system::AbstractSystem,
                options_input::Options)::AbstractSolution

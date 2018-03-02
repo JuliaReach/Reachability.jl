@@ -68,13 +68,12 @@ Supported options:
 
 - `:verbosity`     -- controls logging output
 - `:mode`          -- main analysis mode
-- `:approx_model`  -- switch for bloating/continuous time analysis
+- `:approx_model`  -- model for bloating/continuous time analysis
 - `:property`      -- a safety property
 - `:δ`             -- time step; alias: `:sampling_time`
 - `:N`             -- number of time steps
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
-- `:n`             -- system's dimension
 - `:blocks`        -- blocks of interest
 - `:iterative_refinement` -- switch for refining precision/directions
 - `:ɛ`             -- precision threshold, see also: `:iterative_refinement`
@@ -85,13 +84,16 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
-- `:approx_model`  -- approximation model
 - `:coordinate_transformation` -- coordinate transformation method
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
 - `:apply_projection`          -- switch for applying projection
 - `:plot_vars`                 -- variables for projection and plotting;
                                   alias: `:output_variables`
+
+Internal options (inputs are ignored and overwritten):
+
+- `:n`             -- system's dimension
 
 We add default values for almost all undefined options, i.e., modify the input
 options. The benefit is that the user can print the options that were actually
@@ -106,12 +108,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     dict_copy = options_copy.dict
 
     # first read the verbosity option and set global log level accordingly
-    if haskey(dict, :verbosity)
-        LOGGER = configure_logger(dict[:verbosity])
-        dict_copy[:verbosity] = dict[:verbosity]
-    else
-        LOGGER = configure_logger()
-    end
+    LOGGER = haskey(dict, :verbosity) ?
+        configure_logger(dict[:verbosity]) :
+        configure_logger()
+    check_aliases_and_add_default_value!(dict, dict_copy, [:verbosity], getlevel(LOGGER))
 
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
