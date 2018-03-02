@@ -73,9 +73,9 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
         Xhat0 = S.X0
     else
         if iterative_refinement
-            Xhat0 = decompose(S.X0, ɛ, set_type)
+            Xhat0 = decompose(S.X0, set_type=set_type, ɛ=ɛ)
         else
-            Xhat0 = decompose(S.X0, set_type)
+            Xhat0 = decompose(S.X0, set_type=set_type)
         end
         Xhat0 = array(Xhat0)
     end
