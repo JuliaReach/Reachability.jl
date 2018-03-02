@@ -75,8 +75,7 @@ Supported options:
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
 - `:blocks`        -- blocks of interest
-- `:iterative_refinement` -- switch for refining precision/directions
-- `:ɛ`             -- precision threshold, see also: `:iterative_refinement`
+- `:ɛ`             -- precision threshold
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
@@ -120,7 +119,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:iterative_refinement], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:ɛ], Inf)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
@@ -178,8 +176,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::Int  ->  v > 0)
         elseif key == :blocks
             expected_type = AbstractVector{Int64}
-        elseif key == :iterative_refinement
-            expected_type = Bool
         elseif key == :ɛ
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)

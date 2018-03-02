@@ -1,55 +1,48 @@
 """
-    check_property(S, N; [algorithm], [ɛ], [iterative_refinement], [assume_sparse],
-                [assume_homogeneous], [kwargs]...)
+    check_property(S, N; [algorithm], [ɛ], [assume_sparse],
+                   [assume_homogeneous], [set_type], [lazy_X0], [kwargs]...)
 
-Property checking algorithm of an affine system.
+Interface to property checking algorithms for an LTI system.
 
-INPUT:
+### Input
 
-- ``S``                    -- affine system, discrete or continuous
-- ``N``                    -- number of computed sets
-- ``algorithm``            -- (optional, default: ``'explicit'``), algorithm backend;
-                              see ``available_algorithms`` for all admissible options
-- ``ɛ``                    -- (optional, default: Inf) vector for error tolerances on
-                              each block; if iterative_refinement is set to false,
-                              this value is only used to decompose the initial states,
-                              and ignored afterwards
-- ``iterative_refinement`` -- (optional default: false) if true, perform iterative
-                              refinement with the given tolerance ɛ; otherwise,
-                              only box directions are computed; currently we do not
-                              support this option
-- ``assume_sparse``        -- (optional, default: true) if true, it is assumed that the
-                              coefficients matrix (exponential) is sparse; otherwise,
-                              it is transformed to a full matrix
-- ``assume_homogeneous``   -- (optional, default: false) if true, it is assumed that the
-                              system has no input (linear system), and it case it has one,
-                              the input is ignored; otherwise, the given non-deterministic
-                              input is passed to the backend
-- `set_type`               -- (optional, default: `HPolygon`) type of set that is used
-                              for overapproximation in 2D
-- `lazy_X0`                -- (optional, default: `false`) if true, transform the
-                              set of initial states to the caretsian product of
-                              two-dimensional polygons; otherwise, the given input,
-                              as a lazy set, is passed to the backend
-- ``kwargs``               -- (optional) additional arguments that are passed to the backend
+- `S`                  -- LTI system, discrete or continuous
+- `N`                  -- number of computed sets
+- `algorithm`          -- (optional, default: `"explicit"`), algorithm backend;
+                          see `available_algorithms` for all admissible options
+- `ɛ`                  -- (optional, default: `Inf`) vector for error tolerance
+                          on each block
+- `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
+                          that the coefficients matrix (exponential) is sparse;
+                          otherwise, it is transformed to a full matrix
+- `assume_homogeneous` -- (optional, default: `false`) if true, it is assumed
+                          that the system has no input (linear system), and it
+                          case it has one, the input is ignored
+- `set_type`           -- (optional, default: `Hyperrectangle`) type of set that
+                          is used for overapproximation in block dimensions
+- `lazy_X0`            -- (optional, default: `false`) if true, transform the
+                          set of initial states to the caretsian product of
+                          two-dimensional polygons; otherwise, the given input,
+                          as a lazy set, is passed to the backend
+- `kwargs`             -- (optional) additional arguments that are passed to
+                          the backend
 
-NOTES:
+### Notes
 
-- A dictionary with available algorithms is available at ``Properties.available_algorithms``.
+A dictionary with available algorithms is available via `Properties.available_algorithms`.
 
 WARNING:
 
-- Only systems of even dimension are parsed; for odd dimension please manually
-  add an extra variable with no dynamics.
+Only systems of even dimension are parsed; for odd dimension, manually add an
+extra variable with no dynamics.
 """
-function check_property(S::Union{DiscreteSystem, ContinuousSystem},
+function check_property(S::AbstractSystem,
                         N::Int;
                         algorithm::String="explicit",
                         ɛ::Float64=Inf,
-                        iterative_refinement=false,
                         assume_sparse=true,
                         assume_homogeneous=false,
-                        set_type::Type=HPolygon,
+                        set_type::Type=Hyperrectangle,
                         lazy_X0=false,
                         kwargs...)::Int
 
@@ -74,12 +67,7 @@ function check_property(S::Union{DiscreteSystem, ContinuousSystem},
     if lazy_X0
         Xhat0 = S.X0
     else
-        if iterative_refinement
-            Xhat0 = decompose(S.X0, set_type=set_type, ɛ=ɛ)
-        else
-            Xhat0 = decompose(S.X0, set_type=set_type)
-        end
-        Xhat0 = array(Xhat0)
+        Xhat0 = array(decompose(S.X0, set_type=set_type, ɛ=ɛ))
     end
 
     # shortcut if only the initial set is required
@@ -97,10 +85,10 @@ function check_property(S::Union{DiscreteSystem, ContinuousSystem},
         push!(args, S.U)
 
         # overapproximation function (with or without iterative refinement)
-        if iterative_refinement
-            push!(args, x -> overapproximate(x, ɛ))
-        else
+        if ɛ == Inf
             push!(args, x -> overapproximate(x, set_type))
+        else
+            push!(args, x -> overapproximate(x, ɛ))
         end
     end
 
@@ -108,12 +96,9 @@ function check_property(S::Union{DiscreteSystem, ContinuousSystem},
     n = Systems.dim(S)
     push!(args, n)
 
-    # number of blocks, b
-    b = div(n, 2)
-    if n % 2 != 0
-        error("the number of dimensions should be even")
-    end
-    push!(args, b)
+    # size of each block
+    @assert (n % 2 == 0) "the number of dimensions should be even"
+    push!(args, div(n, 2))
 
     # number of computed sets
     push!(args, N)
