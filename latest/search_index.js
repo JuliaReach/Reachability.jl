@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "User interface",
     "title": "Reachability.solve",
     "category": "Function",
-    "text": "solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)\n\nSolves a reachability problem s.t. the given options. If some options are not defined, we may fall back to default values.\n\nInput\n\nsystem  – a (discrete or continuoues) system specification\noptions – options for solving the problem\n\n\n\n"
+    "text": "solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)\n\nSolves a reachability problem s.t. the given options. If some options are not defined, we may fall back to default values.\n\nInput\n\nsystem  – a (discrete or continuoues) system specification\noptions – options for solving the problem\n\nOutput\n\nA solution object whose content depends on the input options.\n\nNotes\n\nTo see all available input options, see keys(Reachability.available_keywords.dict).\n\n\n\n"
 },
 
 {
