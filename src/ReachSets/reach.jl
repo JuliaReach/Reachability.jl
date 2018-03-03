@@ -1,59 +1,64 @@
 """
-    reach(S, N; [algorithm], [ɛ], [iterative_refinement], [assume_sparse],
-                [assume_homogeneous], [set_type], [numeric_type], [lazy_X0],
-                [kwargs]...)
+    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
+          [set_type_iter], [assume_sparse], [assume_homogeneous],
+          [numeric_type], [lazy_X0], [kwargs]...)
 
-Interface to reachability algorithms for an affine system with non-deterministic inputs.
+Interface to reachability algorithms for an LTI system.
 
-INPUT:
+### Input
 
-- `S`                      -- affine system, discrete or continuous
-- `N`                      -- number of computed sets
-- `algorithm`              -- (optional, default: `explicit`), reachability
-                              algorithm backend; see `available_algorithms` for all
-                              admissible options
-- `ɛ`                      -- (optional, default: Inf) vector for error tolerances on each
-                              block; if iterative_refinement is set to false, this
-                              value is only used to decompose the initial states,
-                              and ignored afterwards
-- `iterative_refinement`   -- (optional default: `false`) if true, perform iterative
-                              refinement with the given tolerance ɛ; otherwise,
-                              only box directions are computed
-- `assume_sparse`          -- (optional, default: `true`) if true, it is assumed that the
-                              coefficients matrix (exponential) is sparse; otherwise,
-                              it is transformed to a full matrix
-- `assume_homogeneous`     -- (optional, default: `false`) if true, it is assumed that the
-                              system has no input (linear system), and it case it has one,
-                              the input is ignored; otherwise, the given non-deterministic
-                              input is passed to the backend
-- `set_type`               -- (optional, default: `HPolygon`) type of set that is used
-                              for overapproximation in 2D
-- `lazy_X0`                -- (optional, default: `false`) if true, transform the
-                              set of initial states to the caretsian product of
-                              two-dimensional polygons; otherwise, the given input,
-                              as a lazy set, is passed to the backend
-- `kwargs`                 -- (optional) additional arguments that are passed to the backend
+- `S`                  -- LTI system, discrete or continuous
+- `N`                  -- number of computed sets
+- `algorithm`          -- (optional, default: `"explicit"`), reachability
+                          algorithm backend; see `available_algorithms` for all
+                          admissible options
+- `:ε_init`            -- (optional, default: `Inf`) error bound for the
+                          approximation of the initial states (during
+                          decomposition)
+- `:set_type_init`     -- (optional, default: `Hyperrectangle`) set type for the
+                          approximation of the initial states (during
+                          decomposition)
+- `:ε_iter`            -- (optional, default: `Inf`) error bound for the
+                          approximation of the states ``X_k``, ``k>0``
+- `:set_type_iter`     -- (optional, default: `Hyperrectangle`) set type for the
+                          approximation of the states ``X_k``, ``k>0``
+- `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
+                          that the coefficients matrix (exponential) is sparse;
+                          otherwise, it is transformed to a full matrix
+- `assume_homogeneous` -- (optional, default: `false`) if true, it is assumed
+                          that the system has no input (linear system), and in
+                          case it has one, the input is ignored
+- `numeric_type`       -- (optional, default: `Float64`) numeric type of the
+                          resulting set
+- `lazy_X0`            -- (optional, default: `false`) if true, transform the
+                          set of initial states to the caretsian product of
+                          two-dimensional polygons; otherwise, the given input,
+                          as a lazy set, is passed to the backend
+- `kwargs`             -- (optional) additional arguments that are passed to the
+                          backend
 
-NOTES:
+### Notes
 
-- A dictionary with available algorithms is available at `Reachability.available_algorithms`.
+A dictionary with available algorithms is available via
+`Reachability.available_algorithms`.
 
 WARNING:
 
-- Only systems of even dimension are parsed; if it is not your case, manually
-  add an extra variable with no dynamics.
+Only systems of even dimension are parsed; for odd dimension, manually add an
+extra variable with no dynamics.
 """
-function reach(S::Union{DiscreteSystem, ContinuousSystem},
+function reach(S::AbstractSystem,
                N::Int;
                algorithm::String="explicit",
-               ɛ::Float64=Inf,
-               iterative_refinement=false,
+               ε_init::Float64=Inf,
+               set_type_init::Type{<:LazySet}=Hyperrectangle,
+               ε_iter::Float64=Inf,
+               set_type_iter::Type{<:LazySet}=Hyperrectangle,
                assume_sparse=true,
                assume_homogeneous=false,
-               set_type::Type=HPolygon,
                numeric_type::Type=Float64,
                lazy_X0=false,
-               kwargs...)::Union{Vector{<:CartesianProductArray}, Vector{<:set_type}}
+               kwargs...)::Vector{<:LazySet}
 
     # unpack arguments
     kwargs_dict = Dict(kwargs)
@@ -72,12 +77,7 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
     if lazy_X0
         Xhat0 = S.X0
     else
-        if iterative_refinement
-            Xhat0 = decompose(S.X0, set_type=set_type, ɛ=ɛ)
-        else
-            Xhat0 = decompose(S.X0, set_type=set_type)
-        end
-        Xhat0 = array(Xhat0)
+        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
     end
 
     # shortcut if only the initial set is required
@@ -98,21 +98,18 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
     n = Systems.dim(S)
     push!(args, n)
 
-    # number of blocks
-    b = div(n, 2)
-    if n % 2 != 0
-        error("the number of dimensions should be even")
-    end
-    push!(args, b)
+    # size of each block
+    @assert (n % 2 == 0) "the number of dimensions should be even"
+    push!(args, div(n, 2))
 
     # number of computed sets
     push!(args, N)
 
     # overapproximation function (with or without iterative refinement)
-    if iterative_refinement
-        push!(args, x -> overapproximate(x, ɛ))
+    if ε_iter < Inf
+        push!(args, x -> overapproximate(x, set_type_iter, ε_iter))
     else
-        push!(args, x -> overapproximate(x, set_type))
+        push!(args, x -> overapproximate(x, set_type_iter))
     end
 
     # preallocate output vector and add mode-specific block(s) argument
@@ -122,7 +119,7 @@ function reach(S::Union{DiscreteSystem, ContinuousSystem},
         elseif length(kwargs_dict[:blocks]) == 1
             bi = kwargs_dict[:blocks][1]
             push!(args, bi)
-            res = Vector{set_type{numeric_type}}(N)
+            res = Vector{LazySet{numeric_type}}(N)
             algorithm_backend = "explicit_block"
         else
             blocks = kwargs_dict[:blocks]

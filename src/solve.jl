@@ -138,11 +138,12 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            ɛ=options[:ɛ],
-            iterative_refinement=options[:iterative_refinement],
+            ε_init=options[:ε_init],
+            set_type_init=options[:set_type_init],
+            ε_iter=options[:ε_iter],
+            set_type_iter=options[:set_type_iter],
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
-            set_type=options[:set_type],
             lazy_X0=options[:lazy_X0],
             blocks=options[:blocks]
             )
@@ -154,15 +155,8 @@ function solve(system::AbstractSystem,
         if options[:apply_projection]
             info("Projection...")
             tic()
-            RsetsProj = project_reach(options[:plot_vars],
-                                      dimension,
-                                      options[:δ],
-                                      Rsets,
-                                      options[:algorithm];
-                                      ɛ=options[:ɛ],
-                                      set_type=options[:set_type],
-                                      transformation_matrix=transformation_matrix,
-                                      projection_matrix=options[:projection_matrix])
+            RsetsProj = project(Rsets, options;
+                                transformation_matrix=transformation_matrix)
             tocc()
             return ReachSolution(RsetsProj, options)
         end
@@ -179,12 +173,13 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            ɛ=options[:ɛ],
             blocks=options[:blocks],
-            iterative_refinement=options[:iterative_refinement],
+            ε_init=options[:ε_init],
+            set_type_init=options[:set_type_init],
+            ε_iter=options[:ε_iter],
+            set_type_iter=options[:set_type_iter],
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
-            set_type=options[:set_type],
             lazy_X0=options[:lazy_X0],
             property=options[:property]
             )
@@ -230,8 +225,8 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               options[:δ],
                               Rsets,
                               options[:algorithm],
-                              ɛ=options[:ɛ],
-                              set_type=options[:set_type],
+                              ε=options[:ε_iter],
+                              set_type=options[:set_type_iter],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
                               )

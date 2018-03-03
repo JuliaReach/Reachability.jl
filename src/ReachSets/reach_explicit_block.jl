@@ -28,15 +28,15 @@ nondeterministic inputs.
 
 # sparse, with input
 function reach_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                U::ConstantNonDeterministicInput,
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -78,14 +78,14 @@ end
 
 # sparse, no input
 function reach_explicit_block!(ϕ::SparseMatrixCSC{NUM, Int},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -122,15 +122,15 @@ end
 
 # dense, with input
 function reach_explicit_block!(ϕ::AbstractMatrix{NUM},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                U::ConstantNonDeterministicInput,
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -168,14 +168,14 @@ end
 
 # dense, no input
 function reach_explicit_block!(ϕ::AbstractMatrix{NUM},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -207,14 +207,14 @@ end
 
 # lazymexp, no input
 function reach_explicit_block!(ϕ::SparseMatrixExp{NUM},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing
@@ -249,15 +249,15 @@ end
 
 # lazymexp, input
 function reach_explicit_block!(ϕ::SparseMatrixExp{NUM},
-                               Xhat0::Vector{S},
+                               Xhat0::Vector{<:LazySet{NUM}},
                                U::ConstantNonDeterministicInput,
                                n::Int,
                                b::Int,
                                N::Int,
                                overapproximate::Function,
                                bi::Int,
-                               res::Vector{S}
-                              )::Void where {S<:LazySet{NUM}} where {NUM}
+                               res::Vector{<:LazySet{NUM}}
+                              )::Void where {NUM}
     res[1] = Xhat0[bi]
     if N == 1
         nothing

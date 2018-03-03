@@ -26,7 +26,7 @@ The first time index where the property is violated, and 0 if the property is sa
 
 # sparse, with input
 function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
                                 n::Int,
@@ -87,7 +87,7 @@ end
 
 # sparse, no input
 function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 b::Int,
                                 N::Int,
@@ -136,7 +136,7 @@ end
 
 # dense, with input
 function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
                                 n::Int,
@@ -196,7 +196,7 @@ end
 
 # dense, no input
 function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 b::Int,
                                 N::Int,
@@ -243,7 +243,7 @@ end
 
 # lazymexp, no input
 function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 b::Int,
                                 N::Int,
@@ -289,7 +289,7 @@ end
 
 # lazymexp, with input
 function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
-                                Xhat0::Vector{<:LazySet},
+                                Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
                                 n::Int,
