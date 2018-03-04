@@ -21,7 +21,7 @@ using Reachability.ReachSets,
       Reachability.Properties,
       Reachability.Transformations
 
-export LinearConstraintProperty, Clause,
+export Properties, LinearConstraintProperty, Clause,
        IntersectionProperty,
        SubsetProperty,
        Transformations
