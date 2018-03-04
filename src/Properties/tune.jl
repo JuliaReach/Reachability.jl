@@ -6,28 +6,23 @@ Find the threshold step size for a given property.
 ### Input
 
 - `algorithm`    -- the function that is used to evaluate ``δ``;
-                    typically this is the compute function from a model script
+                    the call should be: `algorithm(N, δ)`
 - `time_horizon` -- time horizon
-- `precision`    -- precision of result (s. a.);
-                      default: 1e-5
-- `δ`            -- (optional) initial guess for the time step;
-                      default: 1e-3
-- `options`      -- (optional) options passed to ``algorithm``;
-                      default: hylaaOptions
+- `precision`    -- (optiona, default: 1e-5) precision of result (s. a.)
+- `δ`            -- (optional, default: 1e-1) initial guess for the time step
 
 ### Algorithm
 
 Finds a value for ``δ`` such that `algorithm`:
 
   1. Returns `true` for ``δ`` and
-  2. Returns `false` for (``δ`` + ``precision``).
+  2. Returns `false` for (``δ`` + `precision`).
 """
 function tune_δ(algorithm::Function,
                 time_horizon::Float64,
                 precision::Float64=1e-5,
-                δ::Float64=1e-3,
-                options::Options=hylaaOptions
-               )::Float64
+                δ::Float64=1e-1
+                )::Float64
     biggest_working = 0.
     smallest_failing = time_horizon
     smallest_failing_modified = false
@@ -52,7 +47,7 @@ function tune_δ(algorithm::Function,
 
         # check property
         tic()
-        answer = algorithm(N, δ, options)
+        answer = algorithm(N, δ)
         runtime = toq()
         if answer
             # success
