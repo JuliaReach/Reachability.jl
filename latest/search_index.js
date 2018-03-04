@@ -76,7 +76,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/interface.html#Reachability.solve",
     "page": "User interface",
     "title": "Reachability.solve",
-    "category": "Function",
+    "category": "function",
     "text": "solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)\n\nSolves a reachability problem s.t. the given options. If some options are not defined, we may fall back to default values.\n\nInput\n\nsystem  – a (discrete or continuoues) system specification\noptions – options for solving the problem\n\nOutput\n\nA solution object whose content depends on the input options.\n\nNotes\n\nTo see all available input options, see keys(Reachability.available_keywords.dict).\n\n\n\n"
 },
 
@@ -108,7 +108,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.AbstractSystem",
     "page": "Systems",
     "title": "Reachability.Systems.AbstractSystem",
-    "category": "Type",
+    "category": "type",
     "text": "Abstract type representing a system of affine ODEs.\n\n\n\n"
 },
 
@@ -124,7 +124,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.DiscreteSystem",
     "page": "Systems",
     "title": "Reachability.Systems.DiscreteSystem",
-    "category": "Type",
+    "category": "type",
     "text": "DiscreteSystem <: AbstractSystem\n\nType that represents a system of discrete-time affine ODEs with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu_k  mathcalU_k, where mathcalU_k_k is a set-valued sequence defined over 0   (N-1) N  for some 0\n\nFields\n\nA  – square matrix, possibly of type SparseMatrixExp\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\nExamples\n\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},                  X0::LazySet,                  δ::Float64,                  U::NonDeterministicInput) – default constructor\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64) – constructor with no inputs\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
 },
 
@@ -132,7 +132,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.DiscreteSystem}",
     "page": "Systems",
     "title": "Reachability.Systems.dim",
-    "category": "Method",
+    "category": "method",
     "text": "dim(S)\n\nDimension of a discrete system.\n\nInput\n\nS – discrete system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
 },
 
@@ -148,7 +148,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.ContinuousSystem",
     "page": "Systems",
     "title": "Reachability.Systems.ContinuousSystem",
-    "category": "Type",
+    "category": "type",
     "text": "ContinuousSystem <: AbstractSystem\n\nType that represents a system of continuous-time affine ODEs with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu(t)  mathcalU(t), where mathcalU(cdot) is a piecewise-constant set-valued function, i.e. we consider that it can be approximated by a possibly time-varying discrete sequence mathcalU_k _k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\nExamples\n\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::NonDeterministicInput) – default constructor\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet) – constructor with no inputs\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
 },
 
@@ -156,7 +156,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.ContinuousSystem}",
     "page": "Systems",
     "title": "Reachability.Systems.dim",
-    "category": "Method",
+    "category": "method",
     "text": "dim(S)\n\nDimension of a continuous system.\n\nInput\n\nS – continuous system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
 },
 
@@ -172,7 +172,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.NonDeterministicInput",
     "page": "Systems",
     "title": "Reachability.Systems.NonDeterministicInput",
-    "category": "Type",
+    "category": "type",
     "text": "Abstract type representing a nondeterministic input. The input can be either constant or time-varying. In both cases it is represented by an iterator.\n\n\n\n"
 },
 
@@ -188,7 +188,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.ConstantNonDeterministicInput",
     "page": "Systems",
     "title": "Reachability.Systems.ConstantNonDeterministicInput",
-    "category": "Type",
+    "category": "type",
     "text": "ConstantNonDeterministicInput <: NonDeterministicInput\n\nType that represents a constant nondeterministic input.\n\nFields\n\nU – LazySet\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length is 1, but for convenience next can be called with any index.\n\nExamples\n\nConstantNonDeterministicInput(U::LazySet) – default constructor\n\n\n\n"
 },
 
@@ -196,7 +196,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput,Int64}",
     "page": "Systems",
     "title": "Reachability.Systems.next_set",
-    "category": "Method",
+    "category": "method",
     "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
@@ -204,7 +204,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput}",
     "page": "Systems",
     "title": "Reachability.Systems.next_set",
-    "category": "Method",
+    "category": "method",
     "text": "next_set(inputs)\n\nConvenience iteration function without index that only returns the set.\n\nInput\n\ninputs - constant nondeterministic inputs wrapper\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
@@ -220,7 +220,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.TimeVaryingNonDeterministicInput",
     "page": "Systems",
     "title": "Reachability.Systems.TimeVaryingNonDeterministicInput",
-    "category": "Type",
+    "category": "type",
     "text": "TimeVaryingNonDeterministicInput <: NonDeterministicInput\n\nType that represents a time-varying nondeterministic input.\n\nFields\n\nU – array containing LazySets\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nExamples\n\nTimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) – constructor from a vector of sets\n\n\n\n"
 },
 
@@ -228,7 +228,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.TimeVaryingNonDeterministicInput,Int64}",
     "page": "Systems",
     "title": "Reachability.Systems.next_set",
-    "category": "Method",
+    "category": "method",
     "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
@@ -260,7 +260,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/transformations.html#Reachability.Transformations.transform",
     "page": "Transformations",
     "title": "Reachability.Transformations.transform",
-    "category": "Function",
+    "category": "function",
     "text": "transform(S; [method])\n\nInterface function that calls the respective transformation function.\n\nInput\n\nS      – discrete or continuous system\nmethod – (optional, default: \'schur\') transformation method name; valid             otions are:\n\'schur\'\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nNotes\n\nThe functions that are called in the background should return a the transformed system components A, X0, and U, and also an inverse transformation matrix M.\n\n\n\n"
 },
 
@@ -276,7 +276,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/transformations.html#Reachability.Transformations.schur_transform",
     "page": "Transformations",
     "title": "Reachability.Transformations.schur_transform",
-    "category": "Function",
+    "category": "function",
     "text": "schur_transform(S)\n\nApplies a Schur transformation to a discrete or continuous system.\n\nInput\n\nS – discrete or continuous system\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nAlgorithm\n\nWe use Julia\'s default schurfact function to compute a Schur decomposition of the coefficients matrix A.\n\n\n\n"
 },
 
@@ -308,7 +308,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/discretize.html#Reachability.ReachSets.discretize",
     "page": "Discretization",
     "title": "Reachability.ReachSets.discretize",
-    "category": "Function",
+    "category": "function",
     "text": "discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])\n\nDiscretize a continuous system of ODEs with nondeterministic inputs.\n\nInput\n\ncont_sys     – continuous system\nδ            – step size\napprox_model – the method to compute the approximation model for the                   discretization, among:\nforward    – use forward-time interpolation\nbackward   – use backward-time interpolation\nfirstorder – use first order approximation of the ODE\nnobloating – do not bloat the initial states                 (use for discrete-time reachability)\npade_expm    – (optional, default = false) if true, use Pade approximant                   method to compute matrix exponentials of sparse matrices;                   otherwise use Julia\'s buil-in expm\nlazy_expm    – (optional, default = false) if true, compute the matrix                   exponential in a lazy way (suitable for very large systems)\nlazy_sih     – (optional, default = true) if true, compute the                   symmetric interval hull in a lazy way (suitable if only a                   few dimensions are of interest)\n\nOutput\n\nA discrete system.\n\nNotes\n\nThis function applies an approximation model to transform a continuous affine system into a discrete affine system. This transformation allows to do dense time reachability, i.e. such that the trajectories of the given continuous system are included in the computed flowpipe of the discretized system. For discrete-time reachability, use approx_model=\"nobloating\".\n\n\n\n"
 },
 
@@ -324,7 +324,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/discretize.html#Reachability.ReachSets.discr_bloat_firstorder",
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_bloat_firstorder",
-    "category": "Function",
+    "category": "function",
     "text": "bloat_firstorder(cont_sys, δ)\n\nCompute bloating factors using first order approximation.\n\nInput\n\ncont_sys – a continuous affine system\nδ        – step size\n\nNotes\n\nIn this algorithm, the infinity norm is used. See also: discr_bloat_interpolation for more accurate (less conservative) bounds.\n\nAlgorithm\n\nThis uses a first order approximation of the ODE, and matrix norm upper bounds, see Le Guernic, C., & Girard, A., 2010, Reachability analysis of linear systems using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.\n\n\n\n"
 },
 
@@ -332,7 +332,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/discretize.html#Reachability.ReachSets.discr_bloat_interpolation",
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_bloat_interpolation",
-    "category": "Function",
+    "category": "function",
     "text": "discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)\n\nCompute bloating factors using forward or backward interpolation.\n\nInput\n\ncs           – a continuous system\nδ            – step size\napprox_model – choose the approximation model among \"forward\" and                   \"backward\"\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm   –  if true, compute the matrix exponential in a lazy way                   suitable for very large systems)\n\nAlgorithm\n\nSee Frehse et al., CAV\'11, SpaceEx: Scalable Verification of Hybrid Systems, Lemma 3.\n\nNote that in the unlikely case that A is invertible, the result can also be obtained directly, as a function of the inverse of A and e^{At} - I.\n\nThe matrix P is such that: ϕAabs = P[1:n, 1:n], Phi1Aabsdelta = P[1:n, (n+1):2*n], and Phi2Aabs = P[1:n, (2*n+1):3*n].\n\n\n\n"
 },
 
@@ -348,7 +348,7 @@ var documenterSearchIndex = {"docs": [
     "location": "lib/discretize.html#Reachability.ReachSets.discr_no_bloat",
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_no_bloat",
-    "category": "Function",
+    "category": "function",
     "text": "discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)\n\nDiscretize a continuous system without bloating of the initial states, suitable for discrete-time reachability.\n\nInput\n\ncont_sys     – a continuous system\nδ            – step size\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm    – if true, compute the matrix exponential in a lazy way                   (suitable for very large systems)\n\nOutput\n\nA discrete system.\n\nAlgorithm\n\nThe transformation implemented here is the following:\n\nA -> Phi := exp(A*delta)\nU -> V := M*U\nX0 -> X0hat := X0\n\nwhere M corresponds to Phi1(A, delta) in Eq. (8) of SpaceEx: Scalable Verification of Hybrid Systems.\n\nIn particular, there is no bloating, i.e. we don\'t bloat the initial states and dont multiply the input by the step size δ, as required for the dense time case.\n\n\n\n"
 },
 
