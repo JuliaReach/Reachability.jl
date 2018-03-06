@@ -26,6 +26,9 @@ It is obtained by reachability computation of a discrete affine system with
 nondeterministic inputs.
 =#
 
+# helper function
+@inline G0(bi::AbstractVector{Int}) =
+        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
 # sparse, with input
 function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -43,9 +46,6 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         nothing
         return
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
@@ -157,9 +157,6 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
         nothing
         return
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
@@ -320,9 +317,6 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
         nothing
         return
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)

@@ -23,6 +23,9 @@ OUTPUT:
 The first time index where the property is violated, and 0 if the property is satisfied.
 =#
 
+# helper function
+@inline G0(bi::AbstractVector{Int}) =
+        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
 # sparse, with input
 function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -39,9 +42,6 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     elseif N == 1
         return 0
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
@@ -150,9 +150,6 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     elseif N == 1
         return 0
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
@@ -305,9 +302,6 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     elseif N == 1
         return 0
     end
-
-    @inline G0(bi::AbstractVector{Int}) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
