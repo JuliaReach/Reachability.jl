@@ -44,34 +44,34 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         return
     end
 
-    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline G0(bi::AbstractVector{Int}) =
+        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     inputs = next_set(U)
-    @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * inputs)
+    @inbounds for i in blocks
+        bi = partition[i]
+        Whatk[i] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
     k = 2
     @inbounds while true
-        for bi in blocks
-            Xhatk_bi = dummy_set
-            for bj in 1:b
-                if findfirst(F(bi, bj)) != 0
-                    Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
+        for i in blocks
+            bi = partition[i]
+            Xhatk_bi = ZeroSet(length(bi))
+            for (j, bj) in enumerate(partition)
+                if findfirst(ϕpowerk[bi, bj]) != 0
+                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
                 end
             end
-            Xhatk[bi] = overapproximate(Xhatk_bi + Whatk[bi])
+            Xhatk[i] = overapproximate(Xhatk_bi + Whatk[i])
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
@@ -79,8 +79,9 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             break
         end
 
-        for bi in blocks
-            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * inputs)
+        for i in blocks
+            bi = partition[i]
+            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -106,27 +107,25 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         return
     end
 
-    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     ϕpowerk = copy(ϕ)
 
     k = 2
     @inbounds while true
-        for bi in blocks
-            Xhatk_bi = dummy_set
-            for bj in 1:b
-                if findfirst(F(bi, bj)) != 0
-                    Xhatk_bi = Xhatk_bi + F(bi, bj) * Xhat0[bj]
+        for i in blocks
+            bi = partition[i]
+            Xhatk_bi = ZeroSet(length(bi))
+            for (j, bj) in enumerate(partition)
+                if findfirst(ϕpowerk[bi, bj]) != 0
+                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
                 end
             end
-            Xhatk[bi] = overapproximate(Xhatk_bi)
+            Xhatk[i] = overapproximate(Xhatk_bi)
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
@@ -159,33 +158,33 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
         return
     end
 
-    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
-    @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
+    @inline G0(bi::AbstractVector{Int}) =
+        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     inputs = next_set(U)
-    @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * inputs)
+    @inbounds for i in blocks
+        bi = partition[i]
+        Whatk[i] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
     k = 2
     arr = Vector{LazySet{NUM}}(b+1)
     @inbounds while true
-        for bi in blocks
-            for bj in 1:b
-                arr[bj] = F(bi, bj) * Xhat0[bj]
+        for i in blocks
+            bi = partition[i]
+            for (j, bj) in enumerate(partition)
+                arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
-            arr[b+1] = Whatk[bi]
-            Xhatk[bi] = overapproximate(MinkowskiSumArray(arr))
+            arr[b+1] = Whatk[i]
+            Xhatk[i] = overapproximate(MinkowskiSumArray(arr))
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
@@ -193,8 +192,9 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
             break
         end
 
-        for bi in blocks
-            Whatk[bi] = overapproximate(Whatk[bi] + Gk(bi) * inputs)
+        for i in blocks
+            bi = partition[i]
+            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -220,13 +220,10 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
         return
     end
 
-    @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
-
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     ϕpowerk = copy(ϕ)
@@ -234,11 +231,12 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     k = 2
     arr = Vector{LazySet{NUM}}(b)
     @inbounds while true
-        for bi in blocks
-            for bj in 1:b
-                arr[bj] = F(bi, bj) * Xhat0[bj]
+        for i in blocks
+            bi = partition[i]
+            for (j, bj) in enumerate(partition)
+                arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
-            Xhatk[bi] = overapproximate(MinkowskiSumArray(arr))
+            Xhatk[i] = overapproximate(MinkowskiSumArray(arr))
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
@@ -272,25 +270,25 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2
     @inbounds while true
-        for bi in blocks
-            ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-            Xhatk_bi = dummy_set
-            for bj in 1:b
-                πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
+        for i in blocks
+            bi = partition[i]
+            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+            Xhatk_bi = ZeroSet(length(bi))
+            for (j, bj) in enumerate(partition)
+                πbi = ϕpowerk_πbi[:, bj]
                 if findfirst(πbi) != 0
-                    Xhatk_bi = Xhatk_bi + πbi * Xhat0[bj]
+                    Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
-            Xhatk[bi] = overapproximate(Xhatk_bi)
+            Xhatk[i] = overapproximate(Xhatk_bi)
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
@@ -323,35 +321,37 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
         return
     end
 
-    @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
+    @inline G0(bi::AbstractVector{Int}) =
+        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
     b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    dummy_set = ZeroSet(2)
-    @inbounds for bi in 1:b
-         Xhatk[bi] = dummy_set
+    @inbounds for (i, bi) in enumerate(partition)
+         Xhatk[i] = ZeroSet(length(bi))
     end
 
     inputs = next_set(U)
-    @inbounds for bi in blocks
-        Whatk[bi] = overapproximate(G0(bi) * inputs)
+    @inbounds for i in blocks
+        bi = partition[i]
+        Whatk[i] = overapproximate(G0(bi) * inputs)
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2
     @inbounds while true
-        for bi in blocks
-            ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
-            Xhatk_bi = dummy_set
-            for bj in 1:b
-                πbi = ϕpowerk_πbi[:, (2*bj-1):(2*bj)]
+        for i in blocks
+            bi = partition[i]
+            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+            Xhatk_bi = ZeroSet(length(bi))
+            for (j, bj) in enumerate(partition)
+                πbi = ϕpowerk_πbi[:, bj]
                 if findfirst(πbi) != 0
-                    Xhatk_bi = Xhatk_bi + πbi * Xhat0[bj]
+                    Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
-            Xhatk[bi] = overapproximate(Xhatk_bi + Whatk[bi])
-            Whatk[bi] = overapproximate(Whatk[bi] + ϕpowerk_πbi * inputs)
+            Xhatk[i] = overapproximate(Xhatk_bi + Whatk[i])
+            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk_πbi * inputs)
         end
         res[k] = CartesianProductArray(copy(Xhatk))
 
