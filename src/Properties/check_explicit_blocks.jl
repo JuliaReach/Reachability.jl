@@ -33,6 +33,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -92,6 +93,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -143,6 +145,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -201,6 +204,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -248,6 +252,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
@@ -296,6 +301,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 b::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
+                                partition::AbstractVector{<:AbstractVector{Int}},
                                 prop::Property)::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1

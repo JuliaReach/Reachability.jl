@@ -12,15 +12,15 @@ Interface to reachability algorithms for an LTI system.
 - `algorithm`          -- (optional, default: `"explicit"`), reachability
                           algorithm backend; see `available_algorithms` for all
                           admissible options
-- `:ε_init`            -- (optional, default: `Inf`) error bound for the
+- `ε_init`             -- (optional, default: `Inf`) error bound for the
                           approximation of the initial states (during
                           decomposition)
-- `:set_type_init`     -- (optional, default: `Hyperrectangle`) set type for the
+- `set_type_init`      -- (optional, default: `Hyperrectangle`) set type for the
                           approximation of the initial states (during
                           decomposition)
-- `:ε_iter`            -- (optional, default: `Inf`) error bound for the
+- `ε_iter`             -- (optional, default: `Inf`) error bound for the
                           approximation of the states ``X_k``, ``k>0``
-- `:set_type_iter`     -- (optional, default: `Hyperrectangle`) set type for the
+- `set_type_iter`      -- (optional, default: `Hyperrectangle`) set type for the
                           approximation of the states ``X_k``, ``k>0``
 - `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
                           that the coefficients matrix (exponential) is sparse;
@@ -121,8 +121,8 @@ function reach(S::AbstractSystem,
             res = Vector{LazySet{numeric_type}}(N)
             algorithm_backend = "explicit_block"
         else
-            blocks = kwargs_dict[:blocks]
-            push!(args, blocks)
+            push!(args, kwargs_dict[:blocks])
+            push!(args, kwargs_dict[:partition])
             res = Vector{CartesianProductArray{numeric_type}}(N)
             algorithm_backend = "explicit_blocks"
         end

@@ -161,7 +161,9 @@ function solve(system::AbstractSystem,
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0],
-            blocks=options[:blocks]
+            blocks=options[:blocks],
+            partition=options[:partition],
+            block_types=options[:block_types]
             )
         tocc()
 
@@ -189,7 +191,6 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            blocks=options[:blocks],
             ε_init=options[:ε_init],
             set_type_init=options[:set_type_init],
             ε_iter=options[:ε_iter],
@@ -197,6 +198,9 @@ function solve(system::AbstractSystem,
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0],
+            blocks=options[:blocks],
+            partition=options[:partition],
+            block_types=options[:block_types],
             property=options[:property]
             )
         tocc()
