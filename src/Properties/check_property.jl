@@ -101,12 +101,7 @@ function check_property(S::AbstractSystem,
     end
 
     # ambient dimension
-    n = Systems.dim(S)
-    push!(args, n)
-
-    # size of each block
-    @assert (n % 2 == 0) "the number of dimensions should be even"
-    push!(args, div(n, 2))
+    push!(args, Systems.dim(S))
 
     # number of computed sets
     push!(args, N)

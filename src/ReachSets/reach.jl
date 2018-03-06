@@ -96,23 +96,18 @@ function reach(S::AbstractSystem,
         push!(args, S.U)
     end
 
-    # ambient dimension
-    n = Systems.dim(S)
-    push!(args, n)
-
-    # size of each block
-    @assert (n % 2 == 0) "the number of dimensions should be even"
-    push!(args, div(n, 2))
-
-    # number of computed sets
-    push!(args, N)
-
     # overapproximation function (with or without iterative refinement)
     if ε_iter < Inf
         push!(args, x -> overapproximate(x, set_type_iter, ε_iter))
     else
         push!(args, x -> overapproximate(x, set_type_iter))
     end
+
+    # ambient dimension
+    push!(args, Systems.dim(S))
+
+    # number of computed sets
+    push!(args, N)
 
     # preallocate output vector and add mode-specific block(s) argument
     if algorithm == "explicit"

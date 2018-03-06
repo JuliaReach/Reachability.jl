@@ -31,10 +31,9 @@ nondeterministic inputs.
 function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -49,6 +48,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
@@ -93,10 +93,9 @@ end
 # sparse, no input
 function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -109,6 +108,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
@@ -146,10 +146,9 @@ end
 function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -164,6 +163,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
     @inline Gk(bi::Int) = ϕpowerk[(2*bi-1):(2*bi), :]
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
@@ -207,10 +207,9 @@ end
 # dense, no input
 function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -223,6 +222,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
 
     @inline F(bi::Int, bj::Int) = ϕpowerk[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
@@ -257,10 +257,9 @@ end
 # lazymexp, no input
 function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -271,6 +270,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
         return
     end
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
     @inbounds for bi in 1:b
@@ -310,10 +310,9 @@ end
 function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
-                                n::Int,
-                                b::Int,
-                                N::Int,
                                 overapproximate::Function,
+                                n::Int,
+                                N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
@@ -326,6 +325,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
 
     @inline G0(bi::Int) = sparse(1:2, (2*bi-1):(2*bi), [1., 1.], 2, n)
 
+    b = length(partition)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
     dummy_set = ZeroSet(2)
