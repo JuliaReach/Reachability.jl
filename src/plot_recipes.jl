@@ -1,5 +1,5 @@
 """
-    plot_sol(sol::ReachSolution{CartesianProductArray}; ...)
+    plot_sol(sol::ReachSolution{<:CartesianProductArray}, ...)
 
 Plots the solution of a reachability problem in high-dimensions.
 
@@ -8,9 +8,9 @@ Plots the solution of a reachability problem in high-dimensions.
 - `sol` -- the solution of a reachability problem
            as a cartesian product array
 """
-@recipe function plot_sol(sol::ReachSolution{CartesianProductArray})
+@recipe function plot_sol(sol::ReachSolution{<:CartesianProductArray})
 
-    error("There is no user recipe defined for a ReachSolution{CartesianProductArray}; you need to project first into 2D using `project`")
+    error("There is no user recipe defined for $(typeof(sol)); you need to project first into 2D using `project`")
 end
 
 """
