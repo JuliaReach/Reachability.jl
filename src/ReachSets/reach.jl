@@ -72,6 +72,9 @@ function reach(S::AbstractSystem,
     # Cartesian decomposition of the initial set
     if lazy_X0
         Xhat0 = S.X0
+    elseif !isempty(kwargs_dict[:block_types])
+        Xhat0 = array(decompose(S.X0, ɛ=ε_init,
+                                block_types=kwargs_dict[:block_types]))
     elseif set_type_init == LazySets.Interval
         Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init,
                                 blocks=ones(Int, dim(S.X0))))
