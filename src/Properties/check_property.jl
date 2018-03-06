@@ -68,6 +68,9 @@ function check_property(S::AbstractSystem,
     # Cartesian decomposition of the initial set
     if lazy_X0
         Xhat0 = S.X0
+    elseif set_type_init == LazySets.Interval
+        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init,
+                                blocks=ones(Int, dim(S.X0))))
     else
         Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
     end
