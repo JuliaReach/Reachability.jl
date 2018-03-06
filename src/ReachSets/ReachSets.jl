@@ -103,13 +103,15 @@ include("discretize.jl")
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("reach_explicit_block.jl")
-push!(available_algorithms, "explicit_block"=>Dict("func"=>reach_explicit_block!,
-                                                   "is_explicit"=>true))
+# include("reach_explicit_block.jl")
+# push!(available_algorithms, "explicit_block"=>Dict("func"=>reach_explicit_block!,
+#                                                    "is_explicit"=>true))
+#
+# include("reach_explicit_blocks.jl")
+# push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_explicit_blocks!,
+#                                                     "is_explicit"=>true))
 
-include("reach_explicit_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_explicit_blocks!,
-                                                    "is_explicit"=>true))
+include("reach_block.jl")
 
 export available_algorithms
 
