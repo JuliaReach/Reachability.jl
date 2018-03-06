@@ -195,11 +195,14 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
         elseif key == :set_type
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :set_type_init
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :set_type_iter
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :lazy_expm
             expected_type = Bool
         elseif key == :assume_sparse
