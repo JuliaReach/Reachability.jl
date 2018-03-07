@@ -153,12 +153,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
 
-    # special options: partition, block_types, block_types_init, block_types_iter
-    check_and_add_partition_block_types!(dict, dict_copy)
-
     # special options: ε, ε_init, ε_iter, ε_proj,
     #                  set_type, set_type_init, set_type_iter, set_type_proj
     check_and_add_approximation!(dict, dict_copy)
+
+    # special options: partition, block_types, block_types_init, block_types_iter
+    check_and_add_partition_block_types!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -432,18 +432,36 @@ subcases `:block_types_init` and `:block_types_iter`.
 """
 function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                               dict_copy::Dict{Symbol,Any})
-    block_types = haskey(dict, :block_types) ? dict[:block_types] : nothing
-    check_aliases!(dict, dict_copy, [:block_types])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
-                                         block_types)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
-                                         block_types)
-
     check_aliases!(dict, dict_copy, [:partition])
     if !haskey(dict_copy, :partition)
         # TODO allow partial information and infer the other (also with :vars)
         error("need option :partition specified")
     end
+
+    block_types = haskey(dict, :block_types) ? dict[:block_types] :
+        haskey(dict_copy, :set_type) ?
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict_copy[:set_type] => dict_copy[:partition]
+            ) : nothing
+    check_aliases!(dict, dict_copy, [:block_types])
+
+    block_types_init = haskey(dict, :block_types_init) ?
+        dict[:block_types_init] :
+        haskey(dict_copy, :set_type_init) ?
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict_copy[:set_type_init] => dict_copy[:partition]
+            ) : nothing
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
+                                         block_types_init)
+
+    block_types_iter = haskey(dict, :block_types_iter) ?
+        dict[:block_types_iter] :
+        haskey(dict_copy, :set_type_iter) ?
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict_copy[:set_type_iter] => dict_copy[:partition]
+            ) : nothing
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
+                                         block_types_iter)
 
     # TODO add check that arguments are consistent
 
