@@ -93,6 +93,10 @@ Supported options:
                       ``k>0``
 - `:set_type_iter` -- set type for the approximation of the states ``X_k``,
                       ``k>0``
+- `:ε_proj`        -- error bound for the approximation of the states during
+                      projection
+- `:set_type_proj` -- set type for the approximation of the states during
+                      projection
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
@@ -149,11 +153,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
 
-    # special options: ε, ε_init, ε_iter, set_type, set_type_init, set_type_iter
-    check_and_add_approximation!(dict, dict_copy)
-
     # special options: partition, block_types, block_types_init, block_types_iter
     check_and_add_partition_block_types!(dict, dict_copy)
+
+    # special options: ε, ε_init, ε_iter, ε_proj,
+    #                  set_type, set_type_init, set_type_iter, set_type_proj
+    check_and_add_approximation!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -219,6 +224,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :ε_iter
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
+        elseif key == :ε_proj
+            expected_type = Float64
+            domain_constraints = (v  ->  v > 0.)
         elseif key == :set_type
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
@@ -226,6 +234,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
         elseif key == :set_type_iter
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
+        elseif key == :set_type_proj
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
         elseif key == :lazy_expm
@@ -356,7 +367,8 @@ end
                                  dict_copy::Dict{Symbol,Any})
 
 Handling of the special options `:ε` and `:set_type` resp. the subcases
-`:ε_init`, `:ε_iter`, `:set_type_init`, and `:set_type_iter`.
+`:ε_init`, `:ε_iter`, `:ε_proj`, `:set_type_init`, `:set_type_iter`, and
+`:set_type_proj`.
 
 ### Input
 
@@ -392,8 +404,17 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
     set_type_iter = dict_copy[:ε_iter] < Inf ? HPolygon : set_type
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_iter], set_type_iter)
 
+    ε_proj = (haskey(dict, :set_type_proj) && dict[:set_type_proj] == HPolygon) ||
+             (!haskey(dict, :set_type_proj) && set_type == HPolygon) ? ε :
+             min(dict_copy[:ε_init], dict_copy[:ε_iter], ε)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], ε_proj)
+
+    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon : set_type
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], set_type_proj)
+
     @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
-        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) (
+        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) &&
+        (dict_copy[:ε_proj] == Inf || dict_copy[:set_type_proj] == HPolygon) (
             "ε-close approximation is only supported with the HPolygon set type")
 end
 

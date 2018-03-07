@@ -247,8 +247,8 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               options[:δ],
                               Rsets,
                               options[:algorithm],
-                              ε=options[:ε_iter],
-                              set_type=options[:set_type_iter],
+                              ε=options[:ε_proj],
+                              set_type=options[:set_type_proj],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
                               )
