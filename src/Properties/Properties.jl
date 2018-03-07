@@ -9,7 +9,7 @@ module Properties
 import LazySets.Approximations:decompose,
                                overapproximate
 
-using LazySets, ..Systems, Expokit
+using LazySets, ..Systems, ..Utils, Expokit
 
 # ==============================
 # Property struct and evaluation
