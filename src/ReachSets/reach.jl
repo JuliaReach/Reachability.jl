@@ -72,9 +72,9 @@ function reach(S::AbstractSystem,
     # Cartesian decomposition of the initial set
     if lazy_X0
         Xhat0 = S.X0
-    elseif !isempty(kwargs_dict[:block_types])
+    elseif !isempty(kwargs_dict[:block_types_init])
         Xhat0 = array(decompose(S.X0, ɛ=ε_init,
-                                block_types=kwargs_dict[:block_types]))
+                                block_types=kwargs_dict[:block_types_init]))
     elseif set_type_init == LazySets.Interval
         Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init,
                                 blocks=ones(Int, dim(S.X0))))
@@ -97,10 +97,15 @@ function reach(S::AbstractSystem,
     end
 
     # overapproximation function (with or without iterative refinement)
-    if ε_iter < Inf
-        push!(args, x -> overapproximate(x, set_type_iter, ε_iter))
+    if haskey(kwargs_dict, :block_types_iter)
+        block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
+        push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
+                              overapproximate(x, HPolygon, ε_iter) :
+                              overapproximate(x, block_types_iter[i]))
+    elseif ε_iter < Inf
+        push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
     else
-        push!(args, x -> overapproximate(x, set_type_iter))
+        push!(args, (i, x) -> overapproximate(x, set_type_iter))
     end
 
     # ambient dimension

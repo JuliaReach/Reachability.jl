@@ -163,7 +163,8 @@ function solve(system::AbstractSystem,
             lazy_X0=options[:lazy_X0],
             blocks=options[:blocks],
             partition=options[:partition],
-            block_types=options[:block_types]
+            block_types_init=options[:block_types_init],
+            block_types_iter=options[:block_types_iter]
             )
         tocc()
 
@@ -200,7 +201,8 @@ function solve(system::AbstractSystem,
             lazy_X0=options[:lazy_X0],
             blocks=options[:blocks],
             partition=options[:partition],
-            block_types=options[:block_types],
+            block_types_init=options[:block_types_init],
+            block_types_iter=options[:block_types_iter],
             property=options[:property]
             )
         tocc()

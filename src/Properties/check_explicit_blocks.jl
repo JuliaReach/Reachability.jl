@@ -53,7 +53,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -77,7 +77,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
         for i in blocks
             bi = partition[i]
-            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk[bi, :] * inputs)
+            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -161,7 +161,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -184,7 +184,7 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
 
         for i in blocks
             bi = partition[i]
-            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk[bi, :] * inputs)
+            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -313,7 +313,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
@@ -337,7 +337,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
 
         for i in blocks
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
-            Whatk[i] = overapproximate(Whatk[i] + ϕpowerk_πbi * inputs)
+            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk_πbi * inputs)
         end
         ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1

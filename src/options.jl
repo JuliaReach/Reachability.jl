@@ -77,7 +77,12 @@ Supported options:
 - `:vars`          -- variables of interest
 - `:partition`     -- block partition; elements are 2D vectors containing the
                       start and end of a block
-- `:block_types`   -- blocks of interest
+- `:block_types`   -- short hand to set `:block_types_init` and
+                      `:block_types_iter`
+- `:block_types_init` -- set type for the approximation of the initial states
+                         for each block
+- `:block_types_iter` -- set type for the approximation of the states ``X_k``,
+                         ``k>0``, for each block
 - `:ε`             -- short hand to set `:ε_init` and `:ε_iter`
 - `:set_type`      -- short hand to set `:set_type_init` and `:set_type_iter`
 - `:ε_init`        -- error bound for the approximation of the initial states
@@ -147,7 +152,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # special options: ε, ε_init, ε_iter, set_type, set_type_init, set_type_iter
     check_and_add_approximation!(dict, dict_copy)
 
-    # special options: partition and block_types
+    # special options: partition, block_types, block_types_init, block_types_iter
     check_and_add_partition_block_types!(dict, dict_copy)
 
     # validate that all input keywords are recognized
@@ -193,6 +198,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types
+            expected_type =
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+        elseif key == :block_types_init
+            expected_type =
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+        elseif key == :block_types_iter
             expected_type =
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
         elseif key == :blocks
@@ -390,7 +401,8 @@ end
     check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                          dict_copy::Dict{Symbol,Any})
 
-Handling of the special options `:partition` and `:block_types`.
+Handling of the special options `:partition` and `:block_types` resp. the
+subcases `:block_types_init` and `:block_types_iter`.
 
 ### Input
 
@@ -399,9 +411,14 @@ Handling of the special options `:partition` and `:block_types`.
 """
 function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                               dict_copy::Dict{Symbol,Any})
+    block_types = haskey(dict, :block_types) ? dict[:block_types] : nothing
+    check_aliases!(dict, dict_copy, [:block_types])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
+                                         block_types)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
+                                         block_types)
+
     check_aliases!(dict, dict_copy, [:partition])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types],
-        Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}())
     if !haskey(dict_copy, :partition)
         # TODO allow partial information and infer the other (also with :vars)
         error("need option :partition specified")
