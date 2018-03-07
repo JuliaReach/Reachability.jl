@@ -27,7 +27,7 @@ nondeterministic inputs.
 =#
 
 # helper function
-@inline G0(bi::AbstractVector{Int}) =
+@inline G0(bi::AbstractVector{Int}, n::Int) =
         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
 # sparse, with input
@@ -57,7 +57,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi) * inputs)
+        Whatk[i] = overapproximate(G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -168,7 +168,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi) * inputs)
+        Whatk[i] = overapproximate(G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -328,7 +328,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     inputs = next_set(U)
     @inbounds for i in blocks
         bi = partition[i]
-        Whatk[i] = overapproximate(G0(bi) * inputs)
+        Whatk[i] = overapproximate(G0(bi, n) * inputs)
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
