@@ -8,15 +8,15 @@ The variants have the following structure:
 
 INPUT:
 
-- ``ϕ`` -- sparse matrix of a discrete affine system
-- ``Xhat0`` -- initial set as a cartesian product over 2d blocks
-- ``U`` -- input set of undeterministic inputs
-- ``overapproximate`` -- function for overapproximation
-- ``n`` -- ambient dimension
-- ``b`` -- number of blocks
-- ``N`` -- number of sets computed
-- ``blocks`` -- the block indices to be computed
-- ``prop`` -- property to be checked
+- `ϕ` -- sparse matrix of a discrete affine system
+- `Xhat0` -- initial set as a cartesian product over 2d blocks
+- `U` -- input set of undeterministic inputs
+- `overapproximate` -- function for overapproximation
+- `n` -- ambient dimension
+- `N` -- number of sets computed
+- `blocks` -- the block indices to be computed
+- `partition` -- the partition into blocks
+- `prop` -- property to be checked
 
 OUTPUT:
 
@@ -36,19 +36,17 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -94,18 +92,16 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = copy(ϕ)
 
@@ -144,19 +140,17 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -165,15 +159,16 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     end
     ϕpowerk = copy(ϕ)
 
+    arr_length = length(partition) + 1
     k = 2
     @inbounds while true
         for i in blocks
             bi = partition[i]
-            arr = Vector{LazySet{NUM}}(b+1)
+            arr = Vector{LazySet{NUM}}(arr_length)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
-            arr[b+1] = Whatk[i]
+            arr[arr_length] = Whatk[i]
             Xhatk[i] = MinkowskiSumArray(arr)
         end
         if !check_property(CartesianProductArray(Xhatk), prop)
@@ -201,26 +196,25 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = copy(ϕ)
 
+    arr_length = length(partition)
     k = 2
     @inbounds while true
         for i in blocks
             bi = partition[i]
-            arr = Vector{LazySet{NUM}}(b+1)
+            arr = Vector{LazySet{NUM}}(arr_length)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
@@ -247,26 +241,25 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
+    arr_length = length(partition)
     k = 2
     @inbounds while true
         for i in blocks
             bi = partition[i]
-            arr = Vector{LazySet{NUM}}(b+1)
+            arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk_πbi[:, bj] * Xhat0[j]
@@ -296,19 +289,17 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 N::Int,
                                 blocks::AbstractVector{Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
-                                prop::Property)::Int where {NUM}
+                                prop::Property
+                               )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0), prop)
         return 1
     elseif N == 1
         return 0
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -317,16 +308,17 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
+    arr_length = length(partition) + 1
     k = 2
     @inbounds while true
         for i in blocks
             bi = partition[i]
-            arr = Vector{LazySet{NUM}}(b+1)
+            arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk_πbi[:, bj] * Xhat0[j]
             end
-            arr[b+1] = Whatk[i]
+            arr[arr_length] = Whatk[i]
             Xhatk[i] = MinkowskiSumArray(arr)
         end
         if !check_property(CartesianProductArray(Xhatk), prop)
