@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, ..Systems
+using LazySets, Systems
 
 # Visualization
 export print_sparsity,

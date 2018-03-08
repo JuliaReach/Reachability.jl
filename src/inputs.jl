@@ -1,16 +1,16 @@
 using Systems
 
-export NonDeterministicInput,
+export ContinuousSystem, DiscreteSystem,
+       NonDeterministicInput,
        ConstantNonDeterministicInput,
        TimeVaryingNonDeterministicInput,
        next_set
 
 import Base: *
 
-#=
+#=======================
 Nondeterministic inputs
-=#
-
+=======================#
 
 """
 Abstract type representing a nondeterministic input. The input can be either
@@ -50,9 +50,11 @@ struct ConstantNonDeterministicInput <: NonDeterministicInput
     U::LazySet
 end
 
-Base.next(inputs::ConstantNonDeterministicInput, state) = (inputs.U, state + 1)
-Base.done(inputs::ConstantNonDeterministicInput, state) = state > 1
-Base.length(inputs::ConstantNonDeterministicInput) = 1
+const CNDI = ConstantNonDeterministicInput
+
+Base.next(inputs::CNDI, state) = (inputs.U, state + 1)
+Base.done(inputs::CNDI, state) = state > 1
+Base.length(inputs::CNDI) = 1
 
 """
     next_set(inputs, state)
@@ -68,7 +70,7 @@ Convenience iteration function that only returns the set.
 
 The nondeterministic input set at the given index.
 """
-next_set(inputs::ConstantNonDeterministicInput, state::Int64) = inputs.U
+next_set(inputs::CNDI, state::Int64) = inputs.U
 
 """
     next_set(inputs)
@@ -83,13 +85,9 @@ Convenience iteration function without index that only returns the set.
 
 The nondeterministic input set at the given index.
 """
-next_set(inputs::ConstantNonDeterministicInput) = inputs.U
+next_set(inputs::CNDI) = inputs.U
 
-
-function *(M::AbstractMatrix{<:Real}, input::ConstantNonDeterministicInput)
-    return ConstantNonDeterministicInput(M * input.U)
-end
-
+Base.*(M::AbstractMatrix{<:Real}, input::CNDI) =  CNDI(M * input.U)
 
 """
     TimeVaryingNonDeterministicInput <: NonDeterministicInput
@@ -121,11 +119,11 @@ struct TimeVaryingNonDeterministicInput <: NonDeterministicInput
     U::Vector{<:LazySet}
 end
 
-Base.next(inputs::TimeVaryingNonDeterministicInput, state) =
-    (inputs.U[state], state + 1)
-Base.done(inputs::TimeVaryingNonDeterministicInput, state) =
-    (state > length(inputs.U))
-Base.length(inputs::TimeVaryingNonDeterministicInput) = length(inputs.U)
+const TVNDI = TimeVaryingNonDeterministicInput
+
+Base.next(inputs::TVNDI, state) = (inputs.U[state], state + 1)
+Base.done(inputs::TVNDI, state) = (state > length(inputs.U))
+Base.length(inputs::TVNDI) = length(inputs.U)
 
 """
     next_set(inputs, state)
@@ -141,18 +139,11 @@ Convenience iteration function that only returns the set.
 
 The nondeterministic input set at the given index.
 """
-next_set(inputs::TimeVaryingNonDeterministicInput, state::Int64) =
-    inputs.U[state]
+next_set(inputs::TVNDI, state::Int64) = inputs.U[state]
 
-
-#=
+#=======================
 Systems
-=#
-
-struct AffineODE <: AbstractSystem
-    ivp::IVP
-    δ::Float64
-end
+=======================#
 
 #=
 """
@@ -203,17 +194,21 @@ struct ContinuousSystem <: AbstractSystem
     U::NonDeterministicInput
 
     # default constructor
-    ContinuousSystem(A::AbstractMatrix{Float64},
-                     X0::LazySet,
-                     U::NonDeterministicInput) =
+    new InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, B, nothing, U), X0)
+     = new(A, X0, U)
+
+    ConstrainedLinearControlContinuousSystem(A::AbstractMatrix{Float64},
+                                 X0::LazySet,
+                                  U::NonDeterministicInput) =
         new(A, X0, U)
 end
 =#
 
-# constructor with no inputs
-ContinuousSystem(A::AbstractMatrix{Float64},
-                 X0::LazySet) =
-    ContinuousSystem(A, X0, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
+
+# homogeneous and no input
+ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LinearContinuousSystem(A), CNDI(ZeroSet(size(A, 1))
+
+# ContinuousSystem(A, X0, ConstantNonDeterministicInput(ZeroSet(size(A, 1))))
 
 # constructor that creates a ConstantNonDeterministicInput
 ContinuousSystem(A::AbstractMatrix{Float64},
