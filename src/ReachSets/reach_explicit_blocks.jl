@@ -8,15 +8,15 @@ The variants have the following structure:
 
 INPUT:
 
-- ``ϕ`` -- sparse matrix of a discrete affine system
-- ``Xhat0`` -- initial set as a cartesian product over 2d blocks
-- ``U`` -- input set of undeterministic inputs
-- ``n`` -- ambient dimension
-- ``b`` -- number of blocks
-- ``N`` -- number of sets computed
-- ``overapproximate`` -- function for overapproximation
-- ``blocks`` -- the block indices to be computed
-- ``res`` -- storage space for the result, a linear array of CartesianProductArray
+- `ϕ` -- sparse matrix of a discrete affine system
+- `Xhat0` -- initial set as a cartesian product over 2d blocks
+- `U` -- input set of undeterministic inputs
+- `n` -- ambient dimension
+- `N` -- number of sets computed
+- `overapproximate` -- function for overapproximation
+- `blocks` -- the block indices to be computed
+- `partition` -- the partition into blocks
+- `res` -- storage space for the result, a linear array of CartesianProductArray
 
 OUTPUT:
 
@@ -43,16 +43,12 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -87,7 +83,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         k += 1
     end
 
-    nothing
+    return nothing
 end
 
 
@@ -103,15 +99,11 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = copy(ϕ)
 
@@ -137,7 +129,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         k += 1
     end
 
-    nothing
+    return nothing
 end
 
 
@@ -154,16 +146,12 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -172,15 +160,16 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     end
     ϕpowerk = copy(ϕ)
 
+    arr_length = length(partition) + 1
+    arr = Vector{LazySet{NUM}}(arr_length)
     k = 2
-    arr = Vector{LazySet{NUM}}(b+1)
     @inbounds while true
         for i in blocks
             bi = partition[i]
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
-            arr[b+1] = Whatk[i]
+            arr[arr_length] = Whatk[i]
             Xhatk[i] = overapproximate(i, MinkowskiSumArray(arr))
         end
         res[k] = CartesianProductArray(copy(Xhatk))
@@ -197,7 +186,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
         k += 1
     end
 
-    nothing
+    return nothing
 end
 
 
@@ -213,20 +202,16 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = copy(ϕ)
 
+    arr = Vector{LazySet{NUM}}(length(partition))
     k = 2
-    arr = Vector{LazySet{NUM}}(b)
     @inbounds while true
         for i in blocks
             bi = partition[i]
@@ -245,7 +230,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
         k += 1
     end
 
-    nothing
+    return nothing
 end
 
 
@@ -261,15 +246,11 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
@@ -297,7 +278,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    nothing
+    return nothing
 end
 
 
@@ -314,16 +295,12 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0)
     if N == 1
-        nothing
-        return
+        return nothing
     end
 
-    b = length(partition)
+    b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     Whatk = Vector{LazySet{NUM}}(b)
-    @inbounds for (i, bi) in enumerate(partition)
-         Xhatk[i] = ZeroSet(length(bi))
-    end
 
     inputs = next_set(U)
     @inbounds for i in blocks
@@ -357,5 +334,5 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    nothing
+    return nothing
 end
