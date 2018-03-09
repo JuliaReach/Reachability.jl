@@ -49,16 +49,16 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     Whatk = Vector{LazySet{NUM}}(b)
 
     inputs = next_set(U)
-    @inbounds for i in blocks
-        bi = partition[i]
-        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
+    @inbounds for i in 1:b
+        bi = partition[blocks[i]]
+        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 if findfirst(ϕpowerk[bi, bj]) != 0
@@ -73,9 +73,10 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             break
         end
 
-        for i in blocks
-            bi = partition[i]
-            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk[bi, :] * inputs)
+        for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] =
+                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -107,8 +108,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 if findfirst(ϕpowerk[bi, bj]) != 0
@@ -153,17 +154,17 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     Whatk = Vector{LazySet{NUM}}(b)
 
     inputs = next_set(U)
-    @inbounds for i in blocks
-        bi = partition[i]
-        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
+    @inbounds for i in 1:b
+        bi = partition[blocks[i]]
+        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
     arr_length = length(partition) + 1
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
@@ -177,9 +178,10 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
             break
         end
 
-        for i in blocks
-            bi = partition[i]
-            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk[bi, :] * inputs)
+        for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] =
+                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -212,8 +214,8 @@ function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
     arr_length = length(partition)
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
@@ -257,8 +259,8 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     arr_length = length(partition)
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
@@ -302,17 +304,17 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
     Whatk = Vector{LazySet{NUM}}(b)
 
     inputs = next_set(U)
-    @inbounds for i in blocks
-        bi = partition[i]
-        Whatk[i] = overapproximate(i, G0(bi, n) * inputs)
+    @inbounds for i in 1:b
+        bi = partition[blocks[i]]
+        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
     end
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     arr_length = length(partition) + 1
     k = 2
     @inbounds while true
-        for i in blocks
-            bi = partition[i]
+        for i in 1:b
+            bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
@@ -327,9 +329,10 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
             break
         end
 
-        for i in blocks
+        for i in 1:b
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
-            Whatk[i] = overapproximate(i, Whatk[i] + ϕpowerk_πbi * inputs)
+            Whatk[i] =
+                overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
         end
         ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
