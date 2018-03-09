@@ -189,6 +189,12 @@ function solve(system::AbstractSystem,
         return ReachSolution(Rsets, options)
 
     elseif options[:mode] == "check"
+        # ============================================
+        # Input -> Output variable mapping in property
+        # ============================================
+        options.dict[:property] = inout_map_property(options[:property],
+            options[:partition], options[:blocks], options[:n])
+
         # =================
         # Property checking
         # =================

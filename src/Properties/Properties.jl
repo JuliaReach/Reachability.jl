@@ -15,9 +15,18 @@ using LazySets, ..Systems, ..Utils, Expokit
 # Property struct and evaluation
 # ==============================
 include("Property.jl")
+export Property,
+       inout_map_property
+
 include("LinearConstraintProperty.jl")
+export LinearConstraintProperty,
+       Clause
+
 include("IntersectionProperty.jl")
+export IntersectionProperty
+
 include("SubsetProperty.jl")
+export SubsetProperty
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()
@@ -34,7 +43,6 @@ push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_explicit_block
                                                     "is_explicit"=>true))
 
 include("check_property.jl")
-
 export check_property
 
 # ====================================================
