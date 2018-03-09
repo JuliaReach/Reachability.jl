@@ -254,7 +254,7 @@ dictionary entry.
 """
 function project(Rsets::Vector{<:LazySet}, options::Options;
                  transformation_matrix=nothing)
-    plot_vars = options[:plot_vars]
+    plot_vars = copy(options[:plot_vars])
     for i in length(plot_vars)
         if plot_vars[i] != 0
             plot_vars[i] = options[:inout_map][plot_vars[i]]
