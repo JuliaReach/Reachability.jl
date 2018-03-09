@@ -95,6 +95,15 @@ import LazySets.Approximations:symmetric_interval_hull,
 # ========================================
 include("discretize.jl")
 
+export discretize
+
+# =======================================
+# Mapping from input to output variables
+# =======================================
+include("inout_map_reach.jl")
+
+export inout_map_reach
+
 # ========================
 # Reachability Algorithms
 # ========================

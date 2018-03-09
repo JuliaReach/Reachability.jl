@@ -145,6 +145,12 @@ function solve(system::AbstractSystem,
     end
 
     if options[:mode] == "reach"
+        # ================================
+        # Input -> Output variable mapping
+        # ================================
+        options.dict[:inout_map] =
+            inout_map_reach(options[:partition], options[:blocks], options[:n])
+
         # ============================
         # Reachable states computation
         # ============================
@@ -242,7 +248,13 @@ dictionary entry.
 """
 function project(Rsets::Vector{<:LazySet}, options::Options;
                  transformation_matrix=nothing)
-    RsetsProj = project_reach(options[:plot_vars],
+    plot_vars = options[:plot_vars]
+    for i in length(plot_vars)
+        if plot_vars[i] != 0
+            plot_vars[i] = options[:inout_map][plot_vars[i]]
+        end
+    end
+    RsetsProj = project_reach(plot_vars,
                               options[:n],
                               options[:δ],
                               Rsets,
@@ -251,7 +263,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               set_type=options[:set_type_proj],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
-                              )
+                             )
 end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
