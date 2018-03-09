@@ -389,6 +389,14 @@ function check_and_add_plot_vars!(dict::Dict{Symbol,Any},
             plot_vars = [vars[1], vars[2]]
         end
         dict_copy[:plot_vars] = plot_vars
+    else
+        # sanity check
+        vars = dict_copy[:vars]
+        for i in dict_copy[:plot_vars]
+            if i != 0 && i ∉ vars
+                error("$(dict_copy[:plot_vars]) is not a subset of the variables $vars")
+            end
+        end
     end
 end
 
