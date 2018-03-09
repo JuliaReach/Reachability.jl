@@ -21,17 +21,23 @@ function inout_map_reach(partition::AbstractVector{<:AbstractVector{Int}},
                          n::Int)
     inout = Vector{Int}(n)
     blocks_idx = 1
+    next_block_idx = blocks[blocks_idx]
     out_idx = 1
     for (i, bi) in enumerate(partition)
-        if blocks[blocks_idx] != i
-            @assert blocks[blocks_idx] > i
-            # block/variables not present in output
-            inout[bi] = 0
-        else
+        if next_block_idx == i
             # block/variables present in output
             inout[bi] = out_idx:(out_idx + length(bi) - 1)
             out_idx += length(bi)
-            blocks_idx += 1
+            if blocks_idx < length(blocks)
+                blocks_idx += 1
+                next_block_idx = blocks[blocks_idx]
+            else
+                next_block_idx = 0
+            end
+        else
+            @assert next_block_idx > i || next_block_idx == 0
+            # block/variables not present in output
+            inout[bi] = 0
         end
     end
     return inout
