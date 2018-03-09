@@ -32,13 +32,8 @@ export SubsetProperty
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("check_explicit_block.jl")
-push!(available_algorithms, "explicit_block"=>Dict("func"=>check_explicit_block!,
-                                                   "is_full"=>false,
-                                                   "is_explicit"=>true))
-
-include("check_explicit_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_explicit_blocks!,
+include("check_blocks.jl")
+push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_blocks!,
                                                     "is_full"=>false,
                                                     "is_explicit"=>true))
 

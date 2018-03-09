@@ -112,12 +112,8 @@ export inout_map_reach
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("reach_explicit_block.jl")
-push!(available_algorithms, "explicit_block"=>Dict("func"=>reach_explicit_block!,
-                                                   "is_explicit"=>true))
-
-include("reach_explicit_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_explicit_blocks!,
+include("reach_blocks.jl")
+push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
 
 export available_algorithms

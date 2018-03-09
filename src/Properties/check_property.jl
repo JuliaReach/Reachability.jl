@@ -113,17 +113,9 @@ function check_property(S::AbstractSystem,
 
     # add mode-specific block(s) argument
     if algorithm == "explicit"
-        if !(:blocks in keys(kwargs_dict))
-            error("This algorithm needs a specified block argument.")
-        elseif length(kwargs_dict[:blocks]) == 1
-            bi = kwargs_dict[:blocks][1]
-            push!(args, bi)
-            algorithm_backend = "explicit_block"
-        else
-            push!(args, kwargs_dict[:blocks])
-            push!(args, kwargs_dict[:partition])
-            algorithm_backend = "explicit_blocks"
-        end
+        push!(args, kwargs_dict[:blocks])
+        push!(args, kwargs_dict[:partition])
+        algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)
     end

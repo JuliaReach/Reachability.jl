@@ -1,5 +1,5 @@
 #=
-    check_explicit_blocks!(ϕ, Xhat0, U, overapproximate, n, b, N, blocks, prop)
+    check_blocks!(ϕ, Xhat0, U, overapproximate, n, b, N, blocks, prop)
 
 Property checking of a given number of two-dimensional blocks of an affine
 system with nondeterministic inputs.
@@ -28,7 +28,7 @@ The first time index where the property is violated, and 0 if the property is sa
         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
 # sparse, with input
-function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
+function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -87,7 +87,7 @@ end
 
 
 # sparse, no input
-function check_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
+function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 N::Int,
@@ -133,7 +133,7 @@ end
 
 
 # dense, with input
-function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
+function check_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -192,7 +192,7 @@ end
 
 
 # dense, no input
-function check_explicit_blocks!(ϕ::AbstractMatrix{NUM},
+function check_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 N::Int,
@@ -237,7 +237,7 @@ end
 
 
 # lazymexp, no input
-function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
+function check_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 n::Int,
                                 N::Int,
@@ -283,7 +283,7 @@ end
 
 
 # lazymexp, with input
-function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
+function check_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,

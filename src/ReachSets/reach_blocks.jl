@@ -1,5 +1,5 @@
 #=
-    reach_explicit_blocks!(ϕ, Xhat0, U, n, b, N, overapproximate, blocks, res)
+    reach_blocks!(ϕ, Xhat0, U, n, b, N, overapproximate, blocks, res)
 
 Reachability computation of a given number of two-dimensional blocks of an
 affine system with undeterministic inputs.
@@ -31,7 +31,7 @@ nondeterministic inputs.
         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
 
 # sparse, with input
-function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
+function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -89,7 +89,7 @@ end
 
 
 # sparse, no input
-function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
+function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 overapproximate::Function,
                                 n::Int,
@@ -135,7 +135,7 @@ end
 
 
 # dense, with input
-function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
+function reach_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
@@ -193,7 +193,7 @@ end
 
 
 # dense, no input
-function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
+function reach_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 overapproximate::Function,
                                 n::Int,
@@ -237,7 +237,7 @@ end
 
 
 # lazymexp, no input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
+function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 overapproximate::Function,
                                 n::Int,
@@ -285,7 +285,7 @@ end
 
 
 # lazymexp, with input
-function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
+function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
                                 U::ConstantNonDeterministicInput,
                                 overapproximate::Function,
