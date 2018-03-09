@@ -148,11 +148,13 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
+
+    # special option: plot_vars
+    check_and_add_plot_vars!(dict, dict_copy)
 
     # special options: ε, ε_init, ε_iter, ε_proj,
     #                  set_type, set_type_init, set_type_iter, set_type_proj
@@ -360,6 +362,33 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
         end
     else
         error("Need two of the following options: :δ, :N, :T (or at least :T and using default values)")
+    end
+end
+
+"""
+Handling of the special option `:plot_vars`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes:
+
+If no value is given, we take the first two dimensions from `:vars`.
+If `:vars` has only one element, we use time for the other.
+"""
+function check_and_add_plot_vars!(dict::Dict{Symbol,Any},
+                                 dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
+    if !haskey(dict_copy, :plot_vars)
+        vars = dict_copy[:vars]
+        if length(vars) == 1
+            plot_vars = [0, vars[1]]
+        else
+            plot_vars = [vars[1], vars[2]]
+        end
+        dict_copy[:plot_vars] = plot_vars
     end
 end
 
