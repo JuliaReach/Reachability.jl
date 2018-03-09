@@ -107,12 +107,13 @@ Supported options:
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
 - `:apply_projection`          -- switch for applying projection
-- `:plot_vars`                 -- variables for projection and plotting;
-                                  alias: `:output_variables`
+- `:plot_vars`     -- variables for projection and plotting;
+                      alias: `:output_variables`
 
-Internal options (inputs are ignored and overwritten):
+Internal options (inputs are ignored or even illegal):
 
 - `:n`             -- system's dimension
+- `:blocks`        -- list of all interesting block indices in the partition
 
 We add default values for almost all undefined options, i.e., modify the input
 options. The benefit is that the user can print the options that were actually
@@ -441,7 +442,7 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
     block_types = haskey(dict, :block_types) ? dict[:block_types] :
         haskey(dict_copy, :set_type) ?
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type] => dict_copy[:partition]
+                dict_copy[:set_type] => copy(dict_copy[:partition])
             ) : nothing
     check_aliases!(dict, dict_copy, [:block_types])
 
@@ -449,7 +450,7 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         dict[:block_types_init] :
         haskey(dict_copy, :set_type_init) ?
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_init] => dict_copy[:partition]
+                dict_copy[:set_type_init] => copy(dict_copy[:partition])
             ) : nothing
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
                                          block_types_init)
@@ -458,7 +459,7 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         dict[:block_types_iter] :
         haskey(dict_copy, :set_type_iter) ?
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_iter] => dict_copy[:partition]
+                dict_copy[:set_type_iter] => copy(dict_copy[:partition])
             ) : nothing
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
                                          block_types_iter)
@@ -491,6 +492,7 @@ function compute_blocks(vars, partition)
         end
     end
     @assert var_idx == length(vars) + 1
+    sizehint!(blocks, length(blocks))
     return blocks
 end
 
