@@ -41,7 +41,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
@@ -98,7 +98,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
@@ -145,7 +145,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
@@ -202,7 +202,7 @@ function reach_explicit_blocks!(ϕ::AbstractMatrix{NUM},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
@@ -246,7 +246,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
@@ -295,7 +295,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
                                 partition::AbstractVector{<:AbstractVector{Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0)
+    res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
     end
