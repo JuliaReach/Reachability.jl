@@ -260,8 +260,9 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
             plot_vars[i] = options[:inout_map][plot_vars[i]]
         end
     end
+    reduced_n = sum(x -> x != 0, options[:inout_map])
     RsetsProj = project_reach(plot_vars,
-                              options[:n],
+                              reduced_n,
                               options[:δ],
                               Rsets,
                               options[:algorithm],
