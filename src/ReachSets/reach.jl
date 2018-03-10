@@ -67,11 +67,7 @@ function reach(S::AbstractSystem,
     args = []
 
     #coefficients matrix
-    if assume_sparse
-        push!(args, sparse(S.A))
-    else
-        push!(args, S.A)
-    end
+    push!(args, S.A)
 
     # Cartesian decomposition of the initial set
     if lazy_X0
