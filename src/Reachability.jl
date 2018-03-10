@@ -4,16 +4,17 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
+using Reexport, RecipesBase, Memento
+@reexport using LazySets
+
 include("logging.jl")
+include("systems.jl")
 include("Utils/Utils.jl")
 include("ReachSets/ReachSets.jl")
 include("Properties/Properties.jl")
 include("Transformations/Transformations.jl")
 
-using Reexport, RecipesBase, Memento
-
-@reexport using LazySets,
-                Reachability.Utils
+@reexport using Reachability.Utils
 
 using Reachability.ReachSets,
       Reachability.Properties,
