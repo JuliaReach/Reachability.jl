@@ -293,7 +293,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
             break
         end
 
-        ϕpowerk.M = ϕpowerk.M + ϕ.M
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
     end
 
@@ -353,7 +353,7 @@ function reach_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
             break
         end
 
-        ϕpowerk.M = ϕpowerk.M + ϕ.M
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
     end
 
