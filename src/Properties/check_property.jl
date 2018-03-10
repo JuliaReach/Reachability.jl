@@ -63,15 +63,7 @@ function check_property(S::AbstractSystem,
     args = []
 
     #coefficients matrix
-    if assume_sparse
-        push!(args, S.A)
-    else
-        try
-            push!(args, full(S.A))
-        catch
-            push!(args, S.A)
-        end
-    end
+    push!(args, S.A)
 
     # Cartesian decomposition of the initial set
     if lazy_X0

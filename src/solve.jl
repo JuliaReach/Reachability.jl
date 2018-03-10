@@ -128,6 +128,13 @@ function solve(system::AbstractSystem,
         transformation_matrix = nothing
     end
 
+    # ==============================
+    # Sparse/dense matrix conversion
+    # ==============================
+    try
+        Δ.A = options[:assume_sparse] ? sparse(Δ.A) : full(Δ.A)
+    end
+
     if options[:mode] == "reach"
         # ============================
         # Reachable states computation
