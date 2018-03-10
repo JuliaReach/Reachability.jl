@@ -279,7 +279,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
             break
         end
 
-        ϕpowerk.M = ϕpowerk.M + ϕ.M
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
     end
 
@@ -339,7 +339,7 @@ function check_explicit_blocks!(ϕ::SparseMatrixExp{NUM},
             ϕpowerk_πbi = get_rows(ϕpowerk, (2*bi-1):(2*bi))
             Whatk[bi] = overapproximate(Whatk[bi] + ϕpowerk_πbi * inputs)
         end
-        ϕpowerk.M = ϕpowerk.M + ϕ.M
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
     end
 
