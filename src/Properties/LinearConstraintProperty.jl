@@ -67,7 +67,7 @@ function inout_map_property(prop::LinearConstraintProperty{N},
     function check_projection(a, proj)
         p = 1
         for i in 1:length(a)
-            if i == proj[p]
+            if p <= length(proj) && i == proj[p]
                 # dimension is not projected away
                 p += 1
             elseif a[i] != 0
