@@ -11,7 +11,7 @@ Type that represents a disjunction of linear constraints.
 - ``atoms`` -- a vector of linear constraints
 """
 struct Clause{N<:Real}
-    atoms::Vector{LinearConstraint{N}}
+    atoms::AbstractVector{LinearConstraint{N}}
 end
 # constructor from a single atom
 Clause(atom::LinearConstraint{N}) where {N<:Real} = Clause{N}([atom])
@@ -29,7 +29,7 @@ disjunctions of linear constraints.
 - ``clauses`` -- a vector of `Clause` objects
 """
 struct LinearConstraintProperty{N<:Real} <: Property
-    clauses::Vector{Clause{N}}
+    clauses::AbstractVector{Clause{N}}
 end
 # constructor from a single clause
 LinearConstraintProperty(clause::Clause{N}) where {N<:Real} =
@@ -38,7 +38,7 @@ LinearConstraintProperty(clause::Clause{N}) where {N<:Real} =
 LinearConstraintProperty(linConst::LinearConstraint{N}) where {N<:Real} =
     LinearConstraintProperty{N}([Clause(linConst)])
 # constructor from a single constraint in raw form ax+b
-LinearConstraintProperty(linComb::Vector{N}, bound::N) where {N<:Real} =
+LinearConstraintProperty(linComb::AbstractVector{N}, bound::N) where {N<:Real} =
     LinearConstraintProperty{N}([Clause(LinearConstraint{N}(linComb, bound))])
 
 """
