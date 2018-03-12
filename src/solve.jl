@@ -132,7 +132,16 @@ function solve(system::AbstractSystem,
     # Sparse/dense matrix conversion
     # ==============================
     try
-        Δ.A = options[:assume_sparse] ? sparse(Δ.A) : full(Δ.A)
+        if options[:assume_sparse] && !(Δ.A isa SparseMatrixCSC)
+            A = sparse(Δ.A)
+        elseif options[:assume_sparse] && !(Δ.A isa Matrix)
+            A = full(Δ.A)
+        else
+            A = nothing
+        end
+        if A != nothing
+            Δ = DiscreteSystem(A, Δ.X0, Δ.δ, Δ.U)
+        end
     end
 
     if options[:mode] == "reach"
