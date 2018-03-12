@@ -330,6 +330,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         end
 
         for i in 1:b
+            bi = partition[blocks[i]]
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             Whatk[i] =
                 overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
