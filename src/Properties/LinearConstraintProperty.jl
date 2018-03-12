@@ -78,6 +78,8 @@ function inout_map_property(prop::LinearConstraintProperty{N},
         return true
     end
 
+    @assert dim(prop.clauses[1].atoms[1]) == n "the property has dimension $(dim(prop.clauses[1].atoms[1])) but should have dimension $n"
+
     proj = projection_map(partition, blocks)
 
     # create modified property

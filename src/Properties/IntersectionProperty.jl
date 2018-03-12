@@ -50,6 +50,7 @@ function inout_map_property(prop::IntersectionProperty{N},
                             blocks::AbstractVector{Int},
                             n::Int
                            )::IntersectionProperty{N} where {N<:Real}
+    @assert dim(prop.bad) == n "the property has dimension $(dim(prop.bad)) but should have dimension $n"
     proj = projection_map(partition, blocks)
     if length(proj) == n
         # no change in the dimension, copy the old property (keep the set)

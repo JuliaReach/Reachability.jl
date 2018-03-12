@@ -50,6 +50,7 @@ function inout_map_property(prop::SubsetProperty{N},
                             blocks::AbstractVector{Int},
                             n::Int
                            )::SubsetProperty{N} where {N<:Real}
+    @assert dim(prop.safe) == n "the property has dimension $(dim(prop.safe)) but should have dimension $n"
     proj = projection_map(partition, blocks)
     if length(proj) == n
         # no change in the dimension, copy the old property (keep the set)
