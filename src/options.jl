@@ -477,27 +477,27 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
     end
 
     block_types = haskey(dict, :block_types) ? dict[:block_types] :
-        haskey(dict_copy, :set_type) ?
+        haskey(dict, :set_type) ?
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type] => copy(dict_copy[:partition])
+                dict[:set_type] => copy(dict_copy[:partition])
             ) : nothing
     check_aliases!(dict, dict_copy, [:block_types])
 
     block_types_init = haskey(dict, :block_types_init) ?
         dict[:block_types_init] :
-        haskey(dict_copy, :set_type_init) ?
+        block_types != nothing ? block_types :
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_init] => copy(dict_copy[:partition])
-            ) : nothing
+                dict[:set_type_init] => copy(dict_copy[:partition])
+            )
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
                                          block_types_init)
 
     block_types_iter = haskey(dict, :block_types_iter) ?
         dict[:block_types_iter] :
-        haskey(dict_copy, :set_type_iter) ?
+        block_types != nothing ? block_types :
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_iter] => copy(dict_copy[:partition])
-            ) : nothing
+                dict[:set_type_iter] => copy(dict_copy[:partition])
+            )
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
                                          block_types_iter)
 
