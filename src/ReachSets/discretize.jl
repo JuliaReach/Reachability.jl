@@ -1,5 +1,3 @@
-export discretize
-
 """
     discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])
 

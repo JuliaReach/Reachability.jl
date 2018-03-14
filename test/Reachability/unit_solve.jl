@@ -3,12 +3,14 @@
 # ===============================
 using Reachability
 A = randn(4, 4); X0 = BallInf(ones(4), 0.1)
-s = solve(ContinuousSystem(A, X0), :T=>0.1);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
+          :vars=>[1,3]);
 
 # ===============================
 # Test projection
 # ===============================
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :blocks=>[1,2], :apply_projection=>false);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
+          :vars=>[1,3], :apply_projection=>false);
 ps = project(s);
 
 # ===============
@@ -21,17 +23,21 @@ A = [ 0.0509836  0.168159  0.95246   0.33644
       0.38318    0.616014  0.518412  0.778765]
 
 # check that x1 + x2 <= 2 doesn't hold
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
-          :property=>LinearConstraintProperty([1., 1.], 2.))
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check",
+          :partition=>[1:2, 3:4], :vars=>[1,2,3],
+          :property=>LinearConstraintProperty([1., 1., 0., 0.], 2.))
 @test s.violation == 1
 
 # check that x1 - x2 <= 2 holds
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check", :blocks=>[1],
-          :property=>LinearConstraintProperty([1., -1.], 2.))
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check",
+          :partition=>[1:2, 3:4], :vars=>[1,2,3],
+          :property=>LinearConstraintProperty([1., -1., 0., 0.], 2.))
 @test s.violation == -1
 
 # ===============================
 # Test reachability options
 # ===============================
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :lazy_sih=>true);
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :lazy_sih=>false);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
+          :vars=>[1,3], :lazy_sih=>true);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
+          :vars=>[1,3], :lazy_sih=>false);

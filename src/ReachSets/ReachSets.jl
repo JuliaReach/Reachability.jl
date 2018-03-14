@@ -95,6 +95,15 @@ import LazySets.Approximations:symmetric_interval_hull,
 # ========================================
 include("discretize.jl")
 
+export discretize
+
+# =======================================
+# Mapping from input to output variables
+# =======================================
+include("inout_map_reach.jl")
+
+export inout_map_reach
+
 # ========================
 # Reachability Algorithms
 # ========================
@@ -103,12 +112,8 @@ include("discretize.jl")
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("reach_explicit_block.jl")
-push!(available_algorithms, "explicit_block"=>Dict("func"=>reach_explicit_block!,
-                                                   "is_explicit"=>true))
-
-include("reach_explicit_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_explicit_blocks!,
+include("reach_blocks.jl")
+push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
 
 export available_algorithms
