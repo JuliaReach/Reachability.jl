@@ -69,7 +69,7 @@ argument. For additional options, consult the Plots.jl reference manual.
     end
 
     # Using single list and NaN separators
-    sort = !(sol.Xk[1] isa AbstractPolygon)
+    vlist = Vector{Vector{Float64}}()
     for i in indices
         append!(vlist, convex_hull(vertices_list(sol.Xk[i])))
         push!(vlist, [NaN; NaN])
