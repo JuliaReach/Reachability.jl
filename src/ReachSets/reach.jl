@@ -129,7 +129,10 @@ function reach(S::AbstractSystem,
     push!(args, res)
 
     # call the adequate function with the given arguments list
+    info("- Computing successors")
+    tic()
     available_algorithms[algorithm_backend]["func"](args...)
+    tocc()
 
     # return the result
     return res

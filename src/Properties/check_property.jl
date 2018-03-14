@@ -127,7 +127,10 @@ function check_property(S::AbstractSystem,
     push!(args, kwargs_dict[:property])
 
     # call the adequate function with the given arguments list
+    info("- Computing successors")
+    tic()
     answer = available_algorithms[algorithm_backend]["func"](args...)
+    tocc()
 
     # return the result
     return answer
