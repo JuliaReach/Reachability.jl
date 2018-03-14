@@ -66,6 +66,8 @@ function check_property(S::AbstractSystem,
     push!(args, S.A)
 
     # Cartesian decomposition of the initial set
+    info("- Decomposing X0")
+    tic()
     if lazy_X0
         Xhat0 = S.X0
     elseif !isempty(kwargs_dict[:block_types_init])
@@ -77,6 +79,7 @@ function check_property(S::AbstractSystem,
     else
         Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
     end
+    tocc()
 
     # shortcut if only the initial set is required
     if N == 1
@@ -124,7 +127,10 @@ function check_property(S::AbstractSystem,
     push!(args, kwargs_dict[:property])
 
     # call the adequate function with the given arguments list
+    info("- Computing successors")
+    tic()
     answer = available_algorithms[algorithm_backend]["func"](args...)
+    tocc()
 
     # return the result
     return answer

@@ -89,6 +89,7 @@ using LazySets, ..Systems, Expokit, ..Utils
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
                                overapproximate
+import Reachability.tocc
 
 # ========================================
 # Discretize and compute bloating factors

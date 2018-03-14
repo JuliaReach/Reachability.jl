@@ -172,6 +172,7 @@ function solve(system::AbstractSystem,
             block_types_init=options[:block_types_init],
             block_types_iter=options[:block_types_iter]
             )
+        info("- Total")
         tocc()
 
         # ==========
@@ -217,6 +218,7 @@ function solve(system::AbstractSystem,
             block_types_iter=options[:block_types_iter],
             property=options[:property]
             )
+        info("- Total")
         tocc()
 
         if answer == 0
