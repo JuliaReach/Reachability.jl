@@ -159,6 +159,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
         Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
+    ϕpowerk_cache = similar(ϕ)
 
     arr_length = length(partition) + 1
     k = 2
@@ -183,7 +184,8 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
             Whatk[i] =
                 overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
         end
-        ϕpowerk = ϕpowerk * ϕ
+        A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
+        copy!(ϕpowerk, ϕpowerk_cache)
         k += 1
     end
 
@@ -210,6 +212,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
     Xhatk = Vector{LazySet{NUM}}(b)
 
     ϕpowerk = copy(ϕ)
+    ϕpowerk_cache = similar(ϕ)
 
     arr_length = length(partition)
     k = 2
@@ -228,7 +231,8 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
             break
         end
 
-        ϕpowerk = ϕpowerk * ϕ
+        A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
+        copy!(ϕpowerk, ϕpowerk_cache)
         k += 1
     end
 
