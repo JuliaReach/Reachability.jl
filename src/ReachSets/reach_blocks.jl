@@ -58,7 +58,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     ϕpowerk = copy(ϕ)
 
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -109,7 +111,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     ϕpowerk = copy(ϕ)
 
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -165,7 +169,9 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     arr_length = length(partition) + 1
     arr = Vector{LazySet{NUM}}(arr_length)
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)
@@ -187,7 +193,6 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         end
         A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
         copy!(ϕpowerk, ϕpowerk_cache)
-
         k += 1
     end
 
@@ -218,7 +223,9 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
     arr = Vector{LazySet{NUM}}(length(partition))
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)
@@ -262,7 +269,9 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
@@ -317,7 +326,9 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     ϕpowerk = SparseMatrixExp(ϕ.M)
 
     k = 2
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
