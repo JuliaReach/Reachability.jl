@@ -447,7 +447,9 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
              min(dict_copy[:ε_init], dict_copy[:ε_iter], ε)
     check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], ε_proj)
 
-    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon : set_type
+    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon :
+        set_type == Interval && length(dict_copy[:plot_vars]) > 1 ?
+        Hyperrectangle : set_type
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], set_type_proj)
 
     @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
