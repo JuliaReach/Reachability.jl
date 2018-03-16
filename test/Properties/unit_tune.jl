@@ -8,8 +8,9 @@ S = ContinuousSystem(A, X0, U)
 time_horizon = 20.0
 precision = 1e-4
 initial_δ = 0.5
-algorithm(N, δ) = solve(S, :mode => "check", :blocks => [1, 2],
-                           :plot_vars => [1, 3], :δ => δ, :T => time_horizon,
+algorithm(N, δ) = solve(S, :mode => "check", :partition=>[1:2, 3:4],
+                           :vars => [1, 3], :plot_vars => [1, 3], :δ => δ,
+                           :T => time_horizon,
                            :property=>LinearConstraintProperty([24., 0., 1, 0],  375.)).satisfied
 
 Properties.tune_δ(algorithm, 20.0, precision, initial_δ)

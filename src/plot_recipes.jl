@@ -70,9 +70,8 @@ argument. For additional options, consult the Plots.jl reference manual.
 
     # Using single list and NaN separators
     vlist = Vector{Vector{Float64}}()
-    sort = !(sol.Xk[1] isa AbstractPolygon)
     for i in indices
-        append!(vlist, LazySets.monotone_chain!(vertices_list(sol.Xk[i]), sort=sort))
+        append!(vlist, convex_hull(vertices_list(sol.Xk[i])))
         push!(vlist, [NaN; NaN])
     end
     vlist = hcat(vlist...)'

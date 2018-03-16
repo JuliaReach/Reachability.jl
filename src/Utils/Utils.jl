@@ -15,7 +15,8 @@ export print_sparsity,
 
 # Block Structure
 export @block_id,
-       add_dimension
+       add_dimension,
+       block_to_set_map
 
 # Usability
 export @filename_to_png,
@@ -347,6 +348,35 @@ file relative to its own location.
 """
 macro relpath(name::String)
     return :(join(split(@__FILE__, "/")[1:end-1], "/") * "/" * $name)
+end
+
+"""
+    block_to_set_map(dict::Dict{Type{<:LazySet},
+                                AbstractVector{<:AbstractVector{Int}}})
+
+Invert a map (set type -> block structure) to a map (block index -> set type).
+
+### Input
+
+- `dict` -- map (set type -> block structure)
+
+### Ouput
+
+Vector mapping a block index to the respective set type.
+"""
+function block_to_set_map(dict::Dict{Type{<:LazySet},
+                                     AbstractVector{<:AbstractVector{Int}}})
+    # we assume that blocks do not overlap
+    set_type = Vector{Type{<:LazySet}}()
+    initial_block_indices = Vector{Int}()
+    @inbounds for (key, val) in dict
+        for bi in val
+            push!(set_type, key)
+            push!(initial_block_indices, bi[1])
+        end
+    end
+    s = sortperm(initial_block_indices)
+    return set_type[s]
 end
 
 end # module

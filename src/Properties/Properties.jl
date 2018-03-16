@@ -8,33 +8,37 @@ module Properties
 
 import LazySets.Approximations:decompose,
                                overapproximate
+import Reachability.tocc
 
-using LazySets, ..Systems, Expokit
+using LazySets, ..Systems, ..Utils, Expokit
 
 # ==============================
 # Property struct and evaluation
 # ==============================
 include("Property.jl")
+export Property,
+       inout_map_property
+
 include("LinearConstraintProperty.jl")
+export LinearConstraintProperty,
+       Clause
+
 include("IntersectionProperty.jl")
+export IntersectionProperty
+
 include("SubsetProperty.jl")
+export SubsetProperty
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("check_explicit_block.jl")
-push!(available_algorithms, "explicit_block"=>Dict("func"=>check_explicit_block!,
-                                                   "is_full"=>false,
-                                                   "is_explicit"=>true))
-
-include("check_explicit_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_explicit_blocks!,
+include("check_blocks.jl")
+push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_blocks!,
                                                     "is_full"=>false,
                                                     "is_explicit"=>true))
 
 include("check_property.jl")
-
 export check_property
 
 # ====================================================

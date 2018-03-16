@@ -74,7 +74,15 @@ Supported options:
 - `:N`             -- number of time steps
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
-- `:blocks`        -- blocks of interest
+- `:vars`          -- variables of interest
+- `:partition`     -- block partition; elements are 2D vectors containing the
+                      start and end of a block
+- `:block_types`   -- short hand to set `:block_types_init` and
+                      `:block_types_iter`
+- `:block_types_init` -- set type for the approximation of the initial states
+                         for each block
+- `:block_types_iter` -- set type for the approximation of the states ``X_k``,
+                         ``k>0``, for each block
 - `:ε`             -- short hand to set `:ε_init` and `:ε_iter`
 - `:set_type`      -- short hand to set `:set_type_init` and `:set_type_iter`
 - `:ε_init`        -- error bound for the approximation of the initial states
@@ -85,6 +93,10 @@ Supported options:
                       ``k>0``
 - `:set_type_iter` -- set type for the approximation of the states ``X_k``,
                       ``k>0``
+- `:ε_proj`        -- error bound for the approximation of the states during
+                      projection
+- `:set_type_proj` -- set type for the approximation of the states during
+                      projection
 - `:lazy_expm`     -- lazy matrix exponential
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
@@ -95,12 +107,13 @@ Supported options:
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
 - `:apply_projection`          -- switch for applying projection
-- `:plot_vars`                 -- variables for projection and plotting;
-                                  alias: `:output_variables`
+- `:plot_vars`     -- variables for projection and plotting;
+                      alias: `:output_variables`
 
-Internal options (inputs are ignored and overwritten):
+Internal options (inputs are ignored or even illegal):
 
 - `:n`             -- system's dimension
+- `:blocks`        -- list of all interesting block indices in the partition
 
 We add default values for almost all undefined options, i.e., modify the input
 options. The benefit is that the user can print the options that were actually
@@ -125,8 +138,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:approx_model], "forward")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:blocks], [1])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:vars], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
@@ -136,13 +148,20 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
 
-    # special options: ε, ε_init, ε_iter, set_type, set_type_init, set_type_iter
+    # special option: plot_vars
+    check_and_add_plot_vars!(dict, dict_copy)
+
+    # special options: ε, ε_init, ε_iter, ε_proj,
+    #                  set_type, set_type_init, set_type_iter, set_type_proj
     check_and_add_approximation!(dict, dict_copy)
+
+    # special options: partition, block_types, block_types_init, block_types_iter
+    check_and_add_partition_block_types!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -172,19 +191,33 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
         elseif key == :N
-            expected_type = Int64
-            domain_constraints = (v::Int64  ->  v > 0)
+            expected_type = Int
+            domain_constraints = (v::Int  ->  v > 0)
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
         elseif key == :algorithm
             expected_type = String
             domain_constraints = (v::String  ->  v in ["explicit"])
-        elseif key == :n
-            expected_type = Int
-            domain_constraints = (v::Int  ->  v > 0)
+        elseif key == :vars
+            expected_type = AbstractVector{Int}
+            domain_constraints =
+                (v::AbstractVector{Int}  ->  length(v) > 0 && all(x -> x > 0, v))
+        elseif key == :partition
+            expected_type = AbstractVector{<:AbstractVector{Int}}
+        elseif key == :block_types
+            expected_type =
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+        elseif key == :block_types_init
+            expected_type =
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+        elseif key == :block_types_iter
+            expected_type =
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
         elseif key == :blocks
-            expected_type = AbstractVector{Int64}
+            expected_type = AbstractVector{Int}
+            domain_constraints =
+                (v::AbstractVector{Int}  ->  length(v) > 0 && all(x -> x > 0, v))
         elseif key == :ε
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
@@ -194,12 +227,21 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :ε_iter
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
+        elseif key == :ε_proj
+            expected_type = Float64
+            domain_constraints = (v  ->  v > 0.)
         elseif key == :set_type
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :set_type_init
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :set_type_iter
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle}}
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
+        elseif key == :set_type_proj
+            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
+                                  Type{LazySets.Interval}}
         elseif key == :lazy_expm
             expected_type = Bool
         elseif key == :assume_sparse
@@ -216,12 +258,15 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :assume_homogeneous
             expected_type = Bool
         elseif key == :projection_matrix
-            expected_type = Union{SparseMatrixCSC{Float64, Int64}, Void}
+            expected_type = Union{SparseMatrixCSC{Float64, Int}, Void}
         elseif key == :apply_projection
             expected_type = Bool
         elseif key == :plot_vars
-            expected_type = Vector{Int64}
-            domain_constraints = (v::Vector{Int64}  ->  length(v) == 2)
+            expected_type = Vector{Int}
+            domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
+        elseif key == :n
+            expected_type = Int
+            domain_constraints = (v::Int  ->  v > 0)
         else
             error(get_unrecognized_key_message(key))
         end
@@ -274,7 +319,7 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
     end
     if haskey(dict_copy, :N)
         value = dict_copy[:N]
-        if !(value isa Int64 && value > 0)
+        if !(value isa Int && value > 0)
             error("$value is not a valid value for option :N.")
         end
         defined += 1
@@ -301,7 +346,7 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
             dict_copy[:δ] = δ
         end
         if !haskey(dict_copy, :N)
-            N = (Int64)(ceil(dict_copy[:T] / dict_copy[:δ]))
+            N = (Int)(ceil(dict_copy[:T] / dict_copy[:δ]))
             dict[:N] = N
             dict_copy[:N] = N
         end
@@ -311,7 +356,7 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
             dict_copy[:T] = T
         end
     elseif defined == 3
-        N_computed = (Int64)(ceil(dict_copy[:T] / dict_copy[:δ]))
+        N_computed = (Int)(ceil(dict_copy[:T] / dict_copy[:δ]))
         if N_computed != dict_copy[:N]
             error("Values for :δ ($(dict_copy[:δ])), :N ($(dict_copy[:N])), and :T ($(dict_copy[:T])) were defined, but they are inconsistent.")
         end
@@ -321,11 +366,47 @@ function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,An
 end
 
 """
+Handling of the special option `:plot_vars`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes:
+
+If no value is given, we take the first two dimensions from `:vars`.
+If `:vars` has only one element, we use time for the other.
+"""
+function check_and_add_plot_vars!(dict::Dict{Symbol,Any},
+                                 dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
+    if !haskey(dict_copy, :plot_vars)
+        vars = dict_copy[:vars]
+        if length(vars) == 1
+            plot_vars = [0, vars[1]]
+        else
+            plot_vars = [vars[1], vars[2]]
+        end
+        dict_copy[:plot_vars] = plot_vars
+    else
+        # sanity check
+        vars = dict_copy[:vars]
+        for i in dict_copy[:plot_vars]
+            if i != 0 && i ∉ vars
+                error("$(dict_copy[:plot_vars]) is not a subset of the variables $vars")
+            end
+        end
+    end
+end
+
+"""
     check_and_add_approximation!(dict::Dict{Symbol,Any},
                                  dict_copy::Dict{Symbol,Any})
 
 Handling of the special options `:ε` and `:set_type` resp. the subcases
-`:ε_init`, `:ε_iter`, `:set_type_init`, and `:set_type_iter`.
+`:ε_init`, `:ε_iter`, `:ε_proj`, `:set_type_init`, `:set_type_iter`, and
+`:set_type_proj`.
 
 ### Input
 
@@ -361,11 +442,98 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
     set_type_iter = dict_copy[:ε_iter] < Inf ? HPolygon : set_type
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_iter], set_type_iter)
 
+    ε_proj = (haskey(dict, :set_type_proj) && dict[:set_type_proj] == HPolygon) ||
+             (!haskey(dict, :set_type_proj) && set_type == HPolygon) ? ε :
+             min(dict_copy[:ε_init], dict_copy[:ε_iter], ε)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], ε_proj)
+
+    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon :
+        set_type == Interval && length(dict_copy[:plot_vars]) > 1 ?
+        Hyperrectangle : set_type
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], set_type_proj)
+
     @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
-        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) (
+        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) &&
+        (dict_copy[:ε_proj] == Inf || dict_copy[:set_type_proj] == HPolygon) (
             "ε-close approximation is only supported with the HPolygon set type")
 end
 
+"""
+    check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
+                                         dict_copy::Dict{Symbol,Any})
+
+Handling of the special options `:partition` and `:block_types` resp. the
+subcases `:block_types_init` and `:block_types_iter`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+"""
+function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
+                                              dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:partition])
+    if !haskey(dict_copy, :partition)
+        # TODO allow partial information and infer the other (also with :vars)
+        error("need option :partition specified")
+    end
+
+    block_types = haskey(dict, :block_types) ? dict[:block_types] :
+        haskey(dict, :set_type) ?
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict[:set_type] => copy(dict_copy[:partition])
+            ) : nothing
+    check_aliases!(dict, dict_copy, [:block_types])
+
+    block_types_init = haskey(dict, :block_types_init) ?
+        dict[:block_types_init] :
+        block_types != nothing ? block_types :
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict[:set_type_init] => copy(dict_copy[:partition])
+            )
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
+                                         block_types_init)
+
+    block_types_iter = haskey(dict, :block_types_iter) ?
+        dict[:block_types_iter] :
+        block_types != nothing ? block_types :
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                dict[:set_type_iter] => copy(dict_copy[:partition])
+            )
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
+                                         block_types_iter)
+
+    # TODO add check that arguments are consistent
+
+    # compute :blocks
+    if haskey(dict, :blocks)
+        error("option :blocks is not allowed")
+    end
+    dict_copy[:blocks] = compute_blocks(dict_copy[:vars], dict_copy[:partition])
+end
+
+function compute_blocks(vars, partition)
+    blocks = Vector{Int}()
+    sizehint!(blocks, length(vars))
+    next = 0
+    var_idx = 1
+    for (i, block) in enumerate(partition)
+        next += length(block)
+        if vars[var_idx] <= next
+            push!(blocks, i)
+            var_idx += 1
+            while var_idx <= length(vars) && vars[var_idx] <= next
+                var_idx += 1
+            end
+            if var_idx > length(vars)
+                break
+            end
+        end
+    end
+    @assert var_idx == length(vars) + 1
+    sizehint!(blocks, length(blocks))
+    return blocks
+end
 
 """
     check_aliases!(dict, dict_copy, aliases)

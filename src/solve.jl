@@ -128,7 +128,29 @@ function solve(system::AbstractSystem,
         transformation_matrix = nothing
     end
 
+    # ==============================
+    # Sparse/dense matrix conversion
+    # ==============================
+    try
+        if options[:assume_sparse] && !(Δ.A isa SparseMatrixCSC)
+            A = sparse(Δ.A)
+        elseif options[:assume_sparse] && !(Δ.A isa Matrix)
+            A = full(Δ.A)
+        else
+            A = nothing
+        end
+        if A != nothing
+            Δ = DiscreteSystem(A, Δ.X0, Δ.δ, Δ.U)
+        end
+    end
+
     if options[:mode] == "reach"
+        # ================================
+        # Input -> Output variable mapping
+        # ================================
+        options.dict[:inout_map] =
+            inout_map_reach(options[:partition], options[:blocks], options[:n])
+
         # ============================
         # Reachable states computation
         # ============================
@@ -145,8 +167,12 @@ function solve(system::AbstractSystem,
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0],
-            blocks=options[:blocks]
+            blocks=options[:blocks],
+            partition=options[:partition],
+            block_types_init=options[:block_types_init],
+            block_types_iter=options[:block_types_iter]
             )
+        info("- Total")
         tocc()
 
         # ==========
@@ -164,6 +190,12 @@ function solve(system::AbstractSystem,
         return ReachSolution(Rsets, options)
 
     elseif options[:mode] == "check"
+        # ============================================
+        # Input -> Output variable mapping in property
+        # ============================================
+        options.dict[:property] = inout_map_property(options[:property],
+            options[:partition], options[:blocks], options[:n])
+
         # =================
         # Property checking
         # =================
@@ -173,7 +205,6 @@ function solve(system::AbstractSystem,
             Δ,
             options[:N];
             algorithm=options[:algorithm],
-            blocks=options[:blocks],
             ε_init=options[:ε_init],
             set_type_init=options[:set_type_init],
             ε_iter=options[:ε_iter],
@@ -181,8 +212,13 @@ function solve(system::AbstractSystem,
             assume_sparse=options[:assume_sparse],
             assume_homogeneous=options[:assume_homogeneous],
             lazy_X0=options[:lazy_X0],
+            blocks=options[:blocks],
+            partition=options[:partition],
+            block_types_init=options[:block_types_init],
+            block_types_iter=options[:block_types_iter],
             property=options[:property]
             )
+        info("- Total")
         tocc()
 
         if answer == 0
@@ -220,16 +256,23 @@ dictionary entry.
 """
 function project(Rsets::Vector{<:LazySet}, options::Options;
                  transformation_matrix=nothing)
-    RsetsProj = project_reach(options[:plot_vars],
-                              options[:n],
+    plot_vars = copy(options[:plot_vars])
+    for i in 1:length(plot_vars)
+        if plot_vars[i] != 0
+            plot_vars[i] = options[:inout_map][plot_vars[i]]
+        end
+    end
+    reduced_n = sum(x -> x != 0, options[:inout_map])
+    RsetsProj = project_reach(plot_vars,
+                              reduced_n,
                               options[:δ],
                               Rsets,
                               options[:algorithm],
-                              ε=options[:ε_iter],
-                              set_type=options[:set_type_iter],
+                              ε=options[:ε_proj],
+                              set_type=options[:set_type_proj],
                               transformation_matrix=transformation_matrix,
                               projection_matrix=options[:projection_matrix]
-                              )
+                             )
 end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)

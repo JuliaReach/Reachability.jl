@@ -12,15 +12,15 @@ Interface to reachability algorithms for an LTI system.
 - `algorithm`          -- (optional, default: `"explicit"`), reachability
                           algorithm backend; see `available_algorithms` for all
                           admissible options
-- `:ε_init`            -- (optional, default: `Inf`) error bound for the
+- `ε_init`             -- (optional, default: `Inf`) error bound for the
                           approximation of the initial states (during
                           decomposition)
-- `:set_type_init`     -- (optional, default: `Hyperrectangle`) set type for the
+- `set_type_init`      -- (optional, default: `Hyperrectangle`) set type for the
                           approximation of the initial states (during
                           decomposition)
-- `:ε_iter`            -- (optional, default: `Inf`) error bound for the
+- `ε_iter`             -- (optional, default: `Inf`) error bound for the
                           approximation of the states ``X_k``, ``k>0``
-- `:set_type_iter`     -- (optional, default: `Hyperrectangle`) set type for the
+- `set_type_iter`      -- (optional, default: `Hyperrectangle`) set type for the
                           approximation of the states ``X_k``, ``k>0``
 - `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
                           that the coefficients matrix (exponential) is sparse;
@@ -67,18 +67,23 @@ function reach(S::AbstractSystem,
     args = []
 
     #coefficients matrix
-    if assume_sparse
-        push!(args, sparse(S.A))
-    else
-        push!(args, S.A)
-    end
+    push!(args, S.A)
 
     # Cartesian decomposition of the initial set
+    info("- Decomposing X0")
+    tic()
     if lazy_X0
         Xhat0 = S.X0
+    elseif !isempty(kwargs_dict[:block_types_init])
+        Xhat0 = array(decompose(S.X0, ɛ=ε_init,
+                                block_types=kwargs_dict[:block_types_init]))
+    elseif set_type_init == LazySets.Interval
+        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init,
+                                blocks=ones(Int, dim(S.X0))))
     else
         Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
     end
+    tocc()
 
     # shortcut if only the initial set is required
     if N == 1
@@ -94,46 +99,40 @@ function reach(S::AbstractSystem,
         push!(args, S.U)
     end
 
-    # ambient dimension
-    n = Systems.dim(S)
-    push!(args, n)
+    # overapproximation function (with or without iterative refinement)
+    if haskey(kwargs_dict, :block_types_iter)
+        block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
+        push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
+                              overapproximate(x, HPolygon, ε_iter) :
+                              overapproximate(x, block_types_iter[i]))
+    elseif ε_iter < Inf
+        push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
+    else
+        push!(args, (i, x) -> overapproximate(x, set_type_iter))
+    end
 
-    # size of each block
-    @assert (n % 2 == 0) "the number of dimensions should be even"
-    push!(args, div(n, 2))
+    # ambient dimension
+    push!(args, Systems.dim(S))
 
     # number of computed sets
     push!(args, N)
 
-    # overapproximation function (with or without iterative refinement)
-    if ε_iter < Inf
-        push!(args, x -> overapproximate(x, set_type_iter, ε_iter))
-    else
-        push!(args, x -> overapproximate(x, set_type_iter))
-    end
-
     # preallocate output vector and add mode-specific block(s) argument
     if algorithm == "explicit"
-        if !(:blocks in keys(kwargs_dict))
-            error("This algorithm needs a specified block argument.")
-        elseif length(kwargs_dict[:blocks]) == 1
-            bi = kwargs_dict[:blocks][1]
-            push!(args, bi)
-            res = Vector{LazySet{numeric_type}}(N)
-            algorithm_backend = "explicit_block"
-        else
-            blocks = kwargs_dict[:blocks]
-            push!(args, blocks)
-            res = Vector{CartesianProductArray{numeric_type}}(N)
-            algorithm_backend = "explicit_blocks"
-        end
+        push!(args, kwargs_dict[:blocks])
+        push!(args, kwargs_dict[:partition])
+        res = Vector{CartesianProductArray{numeric_type}}(N)
+        algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)
     end
     push!(args, res)
 
     # call the adequate function with the given arguments list
+    info("- Computing successors")
+    tic()
     available_algorithms[algorithm_backend]["func"](args...)
+    tocc()
 
     # return the result
     return res
