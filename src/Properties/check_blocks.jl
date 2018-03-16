@@ -56,7 +56,9 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     ϕpowerk = copy(ϕ)
 
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -107,7 +109,9 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     ϕpowerk = copy(ϕ)
 
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -163,7 +167,9 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
 
     arr_length = length(partition) + 1
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
@@ -216,7 +222,9 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
 
     arr_length = length(partition)
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
@@ -262,7 +270,9 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
 
     arr_length = length(partition)
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
@@ -316,7 +326,9 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
 
     arr_length = length(partition) + 1
     k = 2
+    p = Progress(N-1, 1, "Computing successors ")
     @inbounds while true
+        update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
