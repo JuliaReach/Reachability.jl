@@ -259,7 +259,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
 
-    ϕpowerk = SparseMatrixExp(ϕ.M)
+    ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
     k = 2
     @inbounds while true
@@ -314,7 +314,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         bi = partition[blocks[i]]
         Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
     end
-    ϕpowerk = SparseMatrixExp(ϕ.M)
+    ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
     k = 2
     @inbounds while true
