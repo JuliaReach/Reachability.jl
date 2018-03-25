@@ -120,7 +120,7 @@ function reach(S::AbstractSystem,
     # preallocate output vector and add mode-specific block(s) argument
     if algorithm == "explicit"
         push!(args, kwargs_dict[:blocks])
-        push!(args, kwargs_dict[:partition])
+        push!(args, convert_partition(kwargs_dict[:partition]))
         res = Vector{CartesianProductArray{numeric_type}}(N)
         algorithm_backend = "explicit_blocks"
     else

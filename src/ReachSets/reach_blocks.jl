@@ -26,9 +26,15 @@ It is obtained by reachability computation of a discrete affine system with
 nondeterministic inputs.
 =#
 
-# helper function
-@inline G0(bi::AbstractVector{Int}, n::Int) =
+# helper functions
+@inline proj(bi::UnitRange{Int}, n::Int) =
         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
+@inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
+@inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
+@inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::UnitRange{Int}) =
+    ϕpowerk_πbi[:, bj]
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse, with input
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -38,7 +44,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -53,7 +59,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -78,7 +84,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         for i in 1:b
             bi = partition[blocks[i]]
             Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
+                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -95,7 +101,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -142,7 +148,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -157,7 +163,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
     ϕpowerk_cache = similar(ϕ)
@@ -183,7 +189,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         for i in 1:b
             bi = partition[blocks[i]]
             Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
+                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
         end
         A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
         copy!(ϕpowerk, ϕpowerk_cache)
@@ -202,7 +208,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -248,7 +254,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -268,7 +274,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                πbi = ϕpowerk_πbi[:, bj]
+                πbi = block(ϕpowerk_πbi, bj)
                 if findfirst(πbi) != 0
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
@@ -297,7 +303,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 res::Vector{CartesianProductArray{NUM}}
                                )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
@@ -312,7 +318,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
@@ -323,7 +329,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                πbi = ϕpowerk_πbi[:, bj]
+                πbi = block(ϕpowerk_πbi, bj)
                 if findfirst(πbi) != 0
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
