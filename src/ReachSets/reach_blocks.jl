@@ -69,8 +69,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                if findfirst(ϕpowerk[bi, bj]) != 0
-                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
+                block = ϕpowerk[bi, bj]
+                if findfirst(block) != 0
+                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
             Xhatk[i] = overapproximate(blocks[i], Xhatk_bi + Whatk[i])
@@ -120,8 +121,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                if findfirst(ϕpowerk[bi, bj]) != 0
-                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
+                block = ϕpowerk[bi, bj]
+                if findfirst(block) != 0
+                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
             Xhatk[i] = overapproximate(blocks[i], Xhatk_bi)
