@@ -23,9 +23,15 @@ OUTPUT:
 The first time index where the property is violated, and 0 if the property is satisfied.
 =#
 
-# helper function
-@inline G0(bi::AbstractVector{Int}, n::Int) =
-        sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
+# helper functions
+@inline proj(bi::UnitRange{Int}, n::Int) =
+         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
+@inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
+@inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
+@inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::UnitRange{Int}) =
+    ϕpowerk_πbi[:, bj]
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse, with input
 function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -35,7 +41,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -51,7 +57,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
 
@@ -61,8 +67,9 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                if findfirst(ϕpowerk[bi, bj]) != 0
-                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
+                block = ϕpowerk[bi, bj]
+                if findfirst(block) != 0
+                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
             Xhatk[i] = Xhatk_bi + Whatk[i]
@@ -76,7 +83,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         for i in 1:b
             bi = partition[blocks[i]]
             Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
+                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
         end
         ϕpowerk = ϕpowerk * ϕ
         k += 1
@@ -92,7 +99,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -112,8 +119,9 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
-                if findfirst(ϕpowerk[bi, bj]) != 0
-                    Xhatk_bi = Xhatk_bi + ϕpowerk[bi, bj] * Xhat0[j]
+                block = ϕpowerk[bi, bj]
+                if findfirst(block) != 0
+                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
             Xhatk[i] = Xhatk_bi
@@ -140,7 +148,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -156,7 +164,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = copy(ϕ)
     ϕpowerk_cache = similar(ϕ)
@@ -182,7 +190,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
         for i in 1:b
             bi = partition[blocks[i]]
             Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
+                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
         end
         A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
         copy!(ϕpowerk, ϕpowerk_cache)
@@ -199,7 +207,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -246,7 +254,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -268,7 +276,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
             arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
-                arr[j] = ϕpowerk_πbi[:, bj] * Xhat0[j]
+                arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
             end
             Xhatk[i] = MinkowskiSumArray(arr)
         end
@@ -294,7 +302,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
                                 n::Int,
                                 N::Int,
                                 blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:AbstractVector{Int}},
+                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                                 prop::Property
                                )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
@@ -310,7 +318,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
     inputs = next_set(U)
     @inbounds for i in 1:b
         bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
     end
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
@@ -322,7 +330,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
             arr = Vector{LazySet{NUM}}(arr_length)
             ϕpowerk_πbi = get_rows(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
-                arr[j] = ϕpowerk_πbi[:, bj] * Xhat0[j]
+                arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
             end
             arr[arr_length] = Whatk[i]
             Xhatk[i] = MinkowskiSumArray(arr)
