@@ -95,9 +95,8 @@ function reach(S::AbstractSystem,
     end
     push!(args, Xhat0)
 
-    if !assume_homogeneous
-        push!(args, S.U)
-    end
+    # inputs
+    push!(args, assume_homogeneous ? nothing : S.U)
 
     # overapproximation function (with or without iterative refinement)
     if haskey(kwargs_dict, :block_types_iter)
