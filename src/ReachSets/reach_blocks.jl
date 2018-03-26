@@ -32,9 +32,9 @@ nondeterministic inputs.
 @inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
 @inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
 @inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::UnitRange{Int}) =
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::UnitRange{Int}) =
     ϕpowerk_πbi[:, bj]
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bi::Int) = ϕpowerk_πbi[:, [bj]]
+@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse, with input
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
