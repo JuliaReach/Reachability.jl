@@ -84,7 +84,7 @@ AUTHORS:
 """
 module ReachSets
 
-using LazySets, ..Systems, Expokit, ..Utils
+using LazySets, ..Systems, Expokit, ..Utils, ProgressMeter
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
