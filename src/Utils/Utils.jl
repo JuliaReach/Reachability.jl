@@ -16,7 +16,8 @@ export print_sparsity,
 # Block Structure
 export @block_id,
        add_dimension,
-       block_to_set_map
+       block_to_set_map,
+       convert_partition
 
 # Usability
 export @filename_to_png,
@@ -377,6 +378,63 @@ function block_to_set_map(dict::Dict{Type{<:LazySet},
     end
     s = sortperm(initial_block_indices)
     return set_type[s]
+end
+
+"""
+    convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Union{
+        Vector{Int}, Vector{UnitRange{Int}}, Vector{Union{UnitRange{Int}, Int}}}
+
+Convert a partition data structure to a more efficient representation where a 1D
+block is represented by the index and a higher-dimensional block is represented
+by a `UnitRange{Int}`.
+
+### Input
+
+- `partition` -- partition data structure (a vector of integer vectors)
+
+### Output
+
+New partition representation.
+"""
+function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Union{
+        Vector{Int},
+        Vector{UnitRange{Int}},
+        Vector{Union{UnitRange{Int}, Int}}}
+    # are there 1D blocks and/or kD blocks?
+    has_1D_blocks = false
+    has_kD_blocks = false
+    for (i, block) in enumerate(partition)
+        if length(block) == 1
+            has_1D_blocks = true
+            if has_kD_blocks
+                break
+            end
+        else
+            has_kD_blocks = true
+            if has_1D_blocks
+                break
+            end
+        end
+    end
+
+    # use optimal partition type
+    if !has_1D_blocks
+        partition_out = Vector{UnitRange{Int}}(length(partition))
+    elseif !has_kD_blocks
+        partition_out = Vector{Int}(length(partition))
+    else
+        partition_out = Vector{Union{UnitRange{Int}, Int}}(length(partition))
+    end
+
+    # convert old partition representation to new one
+    for (i, block) in enumerate(partition)
+        if length(block) == 1
+            partition_out[i] = block[1]
+        else
+            partition_out[i] = block[1]:block[end]
+        end
+    end
+    return partition_out
 end
 
 end # module
