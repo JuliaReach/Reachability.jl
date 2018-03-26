@@ -33,10 +33,10 @@ The first time index where the property is violated, and 0 if the property is sa
     ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
-# sparse, with input
+# sparse
 function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                U::ConstantNonDeterministicInput,
+                                U::Union{ConstantNonDeterministicInput, Void},
                                 overapproximate::Function,
                                 n::Int,
                                 N::Int,
@@ -52,17 +52,19 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    Whatk = Vector{LazySet{NUM}}(b)
-
-    inputs = next_set(U)
-    @inbounds for i in 1:b
-        bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
-    end
     ϕpowerk = copy(ϕ)
 
+    if U != nothing
+        Whatk = Vector{LazySet{NUM}}(b)
+        inputs = next_set(U)
+        @inbounds for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+        end
+    end
+
     k = 2
-    p = Progress(N-1, 1, "Computing successors ")
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
         for i in 1:b
@@ -74,66 +76,21 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
-            Xhatk[i] = Xhatk_bi + Whatk[i]
+            Xhatk[i] = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
         end
+
         if !check_property(CartesianProductArray(Xhatk), prop)
             return k
         elseif k == N
             break
         end
 
-        for i in 1:b
-            bi = partition[blocks[i]]
-            Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
-        end
-        ϕpowerk = ϕpowerk * ϕ
-        k += 1
-    end
-
-    return 0
-end
-
-
-# sparse, no input
-function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
-    elseif N == 1
-        return 0
-    end
-
-    b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
-
-    ϕpowerk = copy(ϕ)
-
-    k = 2
-    p = Progress(N-1, 1, "Computing successors ")
-    @inbounds while true
-        update!(p, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            Xhatk_bi = ZeroSet(length(bi))
-            for (j, bj) in enumerate(partition)
-                block = ϕpowerk[bi, bj]
-                if findfirst(block) != 0
-                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
-                end
+        if U != nothing
+            for i in 1:b
+                bi = partition[blocks[i]]
+                Whatk[i] = overapproximate(blocks[i],
+                                           Whatk[i] + row(ϕpowerk, bi) * inputs)
             end
-            Xhatk[i] = Xhatk_bi
-        end
-        if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
-        elseif k == N
-            break
         end
 
         ϕpowerk = ϕpowerk * ϕ
@@ -143,11 +100,10 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     return 0
 end
 
-
-# dense, with input
+# dense
 function check_blocks!(ϕ::AbstractMatrix{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                U::ConstantNonDeterministicInput,
+                                U::Union{ConstantNonDeterministicInput, Void},
                                 overapproximate::Function,
                                 n::Int,
                                 N::Int,
@@ -163,19 +119,21 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
 
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    Whatk = Vector{LazySet{NUM}}(b)
-
-    inputs = next_set(U)
-    @inbounds for i in 1:b
-        bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
-    end
     ϕpowerk = copy(ϕ)
     ϕpowerk_cache = similar(ϕ)
 
-    arr_length = length(partition) + 1
+    if U != nothing
+        Whatk = Vector{LazySet{NUM}}(b)
+        inputs = next_set(U)
+        @inbounds for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+        end
+    end
+
+    arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     k = 2
-    p = Progress(N-1, 1, "Computing successors ")
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
         for i in 1:b
@@ -184,67 +142,24 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
             for (j, bj) in enumerate(partition)
                 arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
             end
-            arr[arr_length] = Whatk[i]
-            Xhatk[i] = MinkowskiSumArray(arr)
-        end
-        if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
-        elseif k == N
-            break
-        end
-
-        for i in 1:b
-            bi = partition[blocks[i]]
-            Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + row(ϕpowerk, bi) * inputs)
-        end
-        A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
-        copy!(ϕpowerk, ϕpowerk_cache)
-        k += 1
-    end
-
-    return 0
-end
-
-
-# dense, no input
-function check_blocks!(ϕ::AbstractMatrix{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
-    elseif N == 1
-        return 0
-    end
-
-    b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
-
-    ϕpowerk = copy(ϕ)
-    ϕpowerk_cache = similar(ϕ)
-
-    arr_length = length(partition)
-    k = 2
-    p = Progress(N-1, 1, "Computing successors ")
-    @inbounds while true
-        update!(p, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            arr = Vector{LazySet{NUM}}(arr_length)
-            for (j, bj) in enumerate(partition)
-                arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
+            if U != nothing
+                arr[arr_length] = Whatk[i]
             end
             Xhatk[i] = MinkowskiSumArray(arr)
         end
+
         if !check_property(CartesianProductArray(Xhatk), prop)
             return k
         elseif k == N
             break
+        end
+
+        if U != nothing
+            for i in 1:b
+                bi = partition[blocks[i]]
+                Whatk[i] = overapproximate(blocks[i],
+                                           Whatk[i] + row(ϕpowerk, bi) * inputs)
+            end
         end
 
         A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
@@ -255,59 +170,10 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
     return 0
 end
 
-
-# lazymexp, no input
+# lazy_expm
 function check_blocks!(ϕ::SparseMatrixExp{NUM},
                                 Xhat0::Vector{<:LazySet{NUM}},
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
-    elseif N == 1
-        return 0
-    end
-
-    b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
-
-    ϕpowerk = SparseMatrixExp(copy(ϕ.M))
-
-    arr_length = length(partition)
-    k = 2
-    p = Progress(N-1, 1, "Computing successors ")
-    @inbounds while true
-        update!(p, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            arr = Vector{LazySet{NUM}}(arr_length)
-            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
-            for (j, bj) in enumerate(partition)
-                arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
-            end
-            Xhatk[i] = MinkowskiSumArray(arr)
-        end
-        if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
-        elseif k == N
-            break
-        end
-
-        ϕpowerk.M .= ϕpowerk.M + ϕ.M
-        k += 1
-    end
-
-    return 0
-end
-
-
-# lazymexp, with input
-function check_blocks!(ϕ::SparseMatrixExp{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::ConstantNonDeterministicInput,
+                                U::Union{ConstantNonDeterministicInput, Void},
                                 overapproximate::Function,
                                 n::Int,
                                 N::Int,
@@ -323,18 +189,20 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
 
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
-    Whatk = Vector{LazySet{NUM}}(b)
-
-    inputs = next_set(U)
-    @inbounds for i in 1:b
-        bi = partition[blocks[i]]
-        Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
-    end
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
-    arr_length = length(partition) + 1
+    if U != nothing
+        Whatk = Vector{LazySet{NUM}}(b)
+        inputs = next_set(U)
+        @inbounds for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+        end
+    end
+
+    arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     k = 2
-    p = Progress(N-1, 1, "Computing successors ")
+    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
         for i in 1:b
@@ -344,21 +212,27 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
             for (j, bj) in enumerate(partition)
                 arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
             end
-            arr[arr_length] = Whatk[i]
+            if U != nothing
+                arr[arr_length] = Whatk[i]
+            end
             Xhatk[i] = MinkowskiSumArray(arr)
         end
+
         if !check_property(CartesianProductArray(Xhatk), prop)
             return k
         elseif k == N
             break
         end
 
-        for i in 1:b
-            bi = partition[blocks[i]]
-            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
-            Whatk[i] =
-                overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+        if U != nothing
+            for i in 1:b
+                bi = partition[blocks[i]]
+                ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+                Whatk[i] =
+                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+            end
         end
+
         ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1
     end

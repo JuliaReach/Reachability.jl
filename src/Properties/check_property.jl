@@ -92,20 +92,19 @@ function check_property(S::AbstractSystem,
     end
     push!(args, Xhat0)
 
-    if !assume_homogeneous
-        push!(args, S.U)
+    # inputs
+    push!(args, assume_homogeneous ? nothing : S.U)
 
-        # overapproximation function (with or without iterative refinement)
-        if haskey(kwargs_dict, :block_types_iter)
-            block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
-            push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
-                                  overapproximate(x, HPolygon, ε_iter) :
-                                  overapproximate(x, block_types_iter[i]))
-        elseif ε_iter < Inf
-            push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
-        else
-            push!(args, (i, x) -> overapproximate(x, set_type_iter))
-        end
+    # overapproximation function (with or without iterative refinement)
+    if haskey(kwargs_dict, :block_types_iter)
+        block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
+        push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
+                              overapproximate(x, HPolygon, ε_iter) :
+                              overapproximate(x, block_types_iter[i]))
+    elseif ε_iter < Inf
+        push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
+    else
+        push!(args, (i, x) -> overapproximate(x, set_type_iter))
     end
 
     # ambient dimension
