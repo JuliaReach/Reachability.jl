@@ -32,9 +32,12 @@ nondeterministic inputs.
 @inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
 @inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
 @inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::UnitRange{Int}) =
+@inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) =
+    get_rows(ϕpowerk, bi)
+@inline row(ϕpowerk::SparseMatrixExp, bi::Int) = get_row(ϕpowerk, bi)
+@inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) =
     ϕpowerk_πbi[:, bj]
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::Int) = ϕpowerk_πbi[:, [bj]]
+@inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -206,7 +209,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
-            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+            ϕpowerk_πbi = row(ϕpowerk, bi)
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 πbi = block(ϕpowerk_πbi, bj)
