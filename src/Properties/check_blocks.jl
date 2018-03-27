@@ -29,6 +29,9 @@ The first time index where the property is violated, and 0 if the property is sa
 @inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
 @inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
 @inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
+@inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) =
+    get_rows(ϕpowerk, bi)
+@inline row(ϕpowerk::SparseMatrixExp, bi::Int) = get_row(ϕpowerk, bi)
 @inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::UnitRange{Int}) =
     ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::Int) = ϕpowerk_πbi[:, [bj]]
@@ -208,7 +211,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(arr_length)
-            ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+            ϕpowerk_πbi = row(ϕpowerk, bi)
             for (j, bj) in enumerate(partition)
                 arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
             end
@@ -227,7 +230,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         if U != nothing
             for i in 1:b
                 bi = partition[blocks[i]]
-                ϕpowerk_πbi = get_rows(ϕpowerk, bi)
+                ϕpowerk_πbi = row(ϕpowerk, bi)
                 Whatk[i] =
                     overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
             end
