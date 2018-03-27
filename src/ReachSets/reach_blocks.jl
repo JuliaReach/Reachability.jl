@@ -35,9 +35,9 @@ nondeterministic inputs.
 @inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) =
     get_rows(ϕpowerk, bi)
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = get_row(ϕpowerk, bi)
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::UnitRange{Int}) =
+@inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) =
     ϕpowerk_πbi[:, bj]
-@inline block(ϕpowerk_πbi::SparseMatrixCSC, bj::Int) = ϕpowerk_πbi[:, [bj]]
+@inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
