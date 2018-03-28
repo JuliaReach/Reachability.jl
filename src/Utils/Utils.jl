@@ -348,7 +348,13 @@ file relative to its own location.
 - `name` -- file name
 """
 macro relpath(name::String)
-    return :(join(split(@__FILE__, "/")[1:end-1], "/") * "/" * $name)
+    return quote
+        pathdir = join(split(@__FILE__, "/")[1:end-1], "/")
+        if !isempty(pathdir)
+            pathdir = pathdir * "/"
+        end
+        pathdir * $name
+    end
 end
 
 """
