@@ -16,12 +16,16 @@ To control the number of threads used by your BLAS library, use the function
 `Base.LinAlg.BLAS.set_num_threads(n)`, where `n` is an integer. Furthermore,
 the function `get_num_threads()` defined below will return the current value.
 
+*Note.* If you are using Julia v"0.7-" (run the command `VERSION` to find this),
+instead of `Base.LinAlg` below use `LinearAlgebra`, and this module should have
+been loaded in the current scope with `using LinearAlgebra`.
+
 ```julia
 #
 # This function is a part of Julia. License is MIT: https://julialang.org/license
 #
 function get_num_threads() # anonymous so it will be serialized when called
-    blas = LinearAlgebra.BLAS.vendor()
+    blas = Base.LinAlg.BLAS.vendor()
     # Wrap in a try to catch unsupported blas versions
     try
         if blas == :openblas
