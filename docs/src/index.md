@@ -43,7 +43,8 @@ Pages = [
     "lib/interface.md",
     "lib/systems.md",
     "lib/transformations.md",
-    "lib/discretize.md"
+    "lib/discretize.md",
+    "lib/distributed.md"
 ]
 Depth = 2
 ```

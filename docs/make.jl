@@ -13,7 +13,8 @@ makedocs(
         "User interface" => "lib/interface.md",
         "Systems" => "lib/systems.md",
         "Transformations" => "lib/transformations.md",
-        "Discretization" => "lib/discretize.md"],
+        "Discretization" => "lib/discretize.md",
+        "Distributed computations" => "lib/distributed.md"],
         "About" => "about.md"
     ]
 )
