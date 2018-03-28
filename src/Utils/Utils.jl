@@ -349,10 +349,11 @@ file relative to its own location.
 """
 macro relpath(name::String)
     return quote
-        try
-            pathdir = join(split(@__FILE__, "/")[1:end-1], "/")
-        catch
+        f = @__FILE__
+        if f isa Void
             pathdir = ""
+        else
+            pathdir = join(split(f, "/")[1:end-1], "/")
         end
         if !isempty(pathdir)
             pathdir = pathdir * "/"
