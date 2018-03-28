@@ -350,7 +350,7 @@ file relative to its own location.
 macro relpath(name::String)
     return quote
         f = @__FILE__
-        if f isa Void
+        if f == nothing
             pathdir = ""
         else
             pathdir = join(split(f, "/")[1:end-1], "/")
