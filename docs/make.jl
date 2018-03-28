@@ -1,6 +1,8 @@
+ENV["GKSwstype"] = "100"  # set 'GR environment' to 'no output' (for Travis CI)
 using Documenter, Reachability
 
 makedocs(
+    doctest=true, # use this flag to skip doctests (saves time!)
     modules = [Reachability],
     format = :html,
     assets = ["assets/juliareach.css"],
@@ -21,6 +23,6 @@ deploydocs(
     target = "build",
     osname = "linux",
     julia  = "0.6",
-    deps = Deps.pip("mkdocs", "python-markdown-math"),
+    deps = nothing,
     make = nothing
 )
