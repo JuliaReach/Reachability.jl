@@ -103,6 +103,7 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
+- `:threads_BLAS`  -- number of threads used by OpenBLAS
 - `:coordinate_transformation` -- coordinate transformation method
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
@@ -144,6 +145,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_sih], true)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:threads_BLAS], 1)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
@@ -252,6 +254,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_sih
             expected_type = Bool
+        elseif key == :threads_BLAS
+            expected_type = Int
+            domain_constraints = (v  ->  v > 0)
         elseif key == :coordinate_transformation
             expected_type = String
             domain_constraints = (v::String  ->  v in ["", "schur"])

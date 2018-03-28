@@ -88,11 +88,14 @@ function solve(system::AbstractSystem,
          system = add_dimension(system)
     end
     options_input.dict[:n] = dimension
+
     # =======
     # Options
     # =======
     # solver-specific options (adds default values for unspecified options)
     options = validate_solver_options_and_add_default_values!(options_input)
+    # set number of threads used by the BLAS backend
+    Base.LinAlg.BLAS.set_num_threads(options_input.dict[:threads_BLAS])
 
     # ===================
     # Time discretization
