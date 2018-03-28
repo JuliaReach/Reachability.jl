@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Library outline",
     "category": "section",
-    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/transformations.md\",\n    \"lib/discretize.md\"\n]\nDepth = 2"
+    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/transformations.md\",\n    \"lib/discretize.md\",\n    \"lib/distributed.md\"\n]\nDepth = 2"
 },
 
 {
@@ -358,6 +358,30 @@ var documenterSearchIndex = {"docs": [
     "title": "Discrete-time reachability",
     "category": "section",
     "text": "discr_no_bloat"
+},
+
+{
+    "location": "lib/distributed.html#",
+    "page": "Distributed computations",
+    "title": "Distributed computations",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "lib/distributed.html#Distributed-computations-1",
+    "page": "Distributed computations",
+    "title": "Distributed computations",
+    "category": "section",
+    "text": "This section of the manual describes functions to make use of distributed computation.Pages = [\"distributed.md\"]CurrentModule = Reachability"
+},
+
+{
+    "location": "lib/distributed.html#Using-multiple-threads-1",
+    "page": "Distributed computations",
+    "title": "Using multiple threads",
+    "category": "section",
+    "text": "To control the number of threads used by your BLAS library, use the function Base.LinAlg.BLAS.set_num_threads(n), where n is an integer. Furthermore, the function get_num_threads() defined below will return the current value.Note. If you are using Julia v\"0.7-\" (run the command VERSION to find this), instead of Base.LinAlg below use LinearAlgebra, and this module should have been loaded in the current scope with using LinearAlgebra.#\n# This function is a part of Julia. License is MIT: https://julialang.org/license\n#\nfunction get_num_threads() # anonymous so it will be serialized when called\n    blas = Base.LinAlg.BLAS.vendor()\n    # Wrap in a try to catch unsupported blas versions\n    try\n        if blas == :openblas\n            return ccall((:openblas_get_num_threads, Base.libblas_name), Cint, ())\n        elseif blas == :openblas64\n            return ccall((:openblas_get_num_threads64_, Base.libblas_name), Cint, ())\n        elseif blas == :mkl\n            return ccall((:MKL_Get_Max_Num_Threads, Base.libblas_name), Cint, ())\n        end\n\n        # OSX BLAS looks at an environment variable\n        if Sys.isapple()\n            return ENV[\"VECLIB_MAXIMUM_THREADS\"]\n        end\n    end\n\n    return nothing\nend"
 },
 
 {
