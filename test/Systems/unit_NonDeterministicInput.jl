@@ -1,11 +1,8 @@
-import Reachability.Systems: ConstantNonDeterministicInput, TimeVaryingNonDeterministicInput
-
 # Testing constant non-deterministic input
 c = zeros(4); r = 0.1
-U = BallInf(c, r)
-U = ConstantNonDeterministicInput(U)
+U = ConstantInput(BallInf(c, r))
 
-@test length(U) == 1
+#@test length(U) == 1 # constant input => infinitely constant, length not implemented
 inputs = next_set(U)
 input_remains_constant = inputs.center == c && inputs.radius == r
 @test input_remains_constant
@@ -18,7 +15,7 @@ end
 c = [zeros(4), 1. + ones(4), 2. + ones(4)]
 r = [0.1, 0.2, 0.3]
 
-U = TimeVaryingNonDeterministicInput([BallInf(c[i], r[i]) for i in 1:3])
+U = VaryingInput([BallInf(c[i], r[i]) for i in 1:3])
 
 @test length(U) == 3
 input_is_varying = true

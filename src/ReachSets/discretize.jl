@@ -38,11 +38,12 @@ trajectories of the given continuous system are included in the computed
 flowpipe of the discretized system.
 For discrete-time reachability, use `approx_model="nobloating"`.
 """
-function discretize(cont_sys::ContinuousSystem, δ::Float64;
+function discretize(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
+                    δ::Float64;
                     approx_model::String="forward",
                     pade_expm::Bool=false,
                     lazy_expm::Bool=false,
-                    lazy_sih::Bool=true)::DiscreteSystem
+                    lazy_sih::Bool=true)
 
     if approx_model in ["forward", "backward"]
         return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm,
@@ -78,23 +79,44 @@ This uses a first order approximation of the ODE, and matrix norm upper bounds,
 see Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
-function discr_bloat_firstorder(cont_sys::ContinuousSystem,
-                                δ::Float64)::DiscreteSystem
+function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
+                                δ::Float64)
 
-    if !(cont_sys.U isa ConstantNonDeterministicInput)
-        error("This discretization algorithm is only implemented for constant inputs")
+    A, X0 = cont_sys.s.A, cont_sys.x0
+    Anorm = norm(full(A), Inf)
+    ϕ = expm(full(A))
+    RX0 = norm(X0, Inf)
+
+    if inputdim(cont_sys) == 0
+        # linear case
+        α = (exp(δ*Anorm) - 1. - δ*Anorm) * RX0
+        Ω0 = CH(X0, ϕ * X0 + Ball2(zeros(size(ϕ, 1)), α))
+        return DiscreteSystem(ϕ, Ω0)
+    else
+        # affine case; TODO: unify Constant and Varying input branches?
+        Uset = inputset(cont_sys)
+        if Uset isa ConstantInput
+            U = next(Uset, 1)[1]
+            RU = norm(U, Inf)
+            α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
+            β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
+            Ω0 = CH(X0, ϕ * X0 + δ * U + Ball2(zeros(size(ϕ, 1)), α))
+            discr_U =  δ * U + Ball2(zeros(size(ϕ, 1)), β)
+            return DiscreteSystem(ϕ, Ω0, discr_U)
+        elseif Uset isa VaryingInput
+            discr_U = Vector{LazySet}(length(Uset))
+            for (i, Ui) in enumerate(Uset)
+                RU = norm(Ui, Inf)
+                α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
+                β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
+                Ω0 = CH(X0, ϕ * X0 + δ * Ui + Ball2(zeros(size(ϕ, 1)), α))
+                discr_U[i] =  δ * Ui + Ball2(zeros(size(ϕ, 1)), β)
+            end
+            return DiscreteSystem(ϕ, Ω0, discr_U)
+        end
     end
 
-    Anorm = norm(full(cont_sys.A), Inf)
-    RX0 = norm(cont_sys.X0, Inf)
-    inputs = next_set(cont_sys.U)
-    RU = norm(inputs, Inf)
-    α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
-    β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
-    ϕ = expm(full(cont_sys.A))
-    Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ*inputs + Ball2(zeros(size(ϕ, 1)), α))
-    discr_U =  δ * inputs + Ball2(zeros(size(ϕ, 1)), β)
-    return DiscreteSystem(ϕ, Ω0, δ, discr_U)
+
 end
 
 """
@@ -130,42 +152,44 @@ Verification of Hybrid Systems.*
 In particular, there is no bloating, i.e. we don't bloat the initial states and
 dont multiply the input by the step size δ, as required for the dense time case.
 """
-function discr_no_bloat(cont_sys::ContinuousSystem,
+function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
                         δ::Float64,
                         pade_expm::Bool,
-                        lazy_expm::Bool)::DiscreteSystem
+                        lazy_expm::Bool)
 
-    n = size(cont_sys.A, 1)
+    A, X0 = cont_sys.s.A, cont_sys.x0
+    n = size(A, 1)
     if lazy_expm
-        ϕ = SparseMatrixExp(cont_sys.A * δ)
+        ϕ = SparseMatrixExp(A * δ)
     else
         if pade_expm
-            ϕ = padm(cont_sys.A * δ)
+            ϕ = padm(A * δ)
         else
-            ϕ = expm(full(cont_sys.A * δ))
+            ϕ = expm(full(A * δ))
         end
     end
 
     # early return for homogeneous systems
-    inputs = next_set(cont_sys.U, 1)
-    if isa(inputs, ZeroSet) && length(cont_sys.U) == 1
-            Ω0 = cont_sys.X0
-            return DiscreteSystem(ϕ, Ω0, δ)
+    if cont_sys isa IVP{<:LinearContinuousSystem}
+        Ω0 = X0
+        return DiscreteSystem(ϕ, Ω0)
     end
+    U = inputset(cont_sys)
+    inputs = next_set(U, 1)
 
     # compute matrix to transform the inputs
     if lazy_expm
-        P = SparseMatrixExp([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+        P = SparseMatrixExp([A*δ sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
                              spzeros(n, 3*n)])
         Phi1Adelta = get_columns(P, (n+1):2*n)[1:n, :]
     else
         if pade_expm
-            P = padm([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+            P = padm([A*δ sparse(δ*I, n, n) spzeros(n, n);
                       spzeros(n, 2*n) sparse(δ*I, n, n);
                       spzeros(n, 3*n)])
         else
-            P = expm(full([cont_sys.A*δ sparse(δ*I, n, n) spzeros(n, n);
+            P = expm(full([A*δ sparse(δ*I, n, n) spzeros(n, n);
                            spzeros(n, 2*n) sparse(δ*I, n, n);
                            spzeros(n, 3*n)]))
         end
@@ -174,18 +198,13 @@ function discr_no_bloat(cont_sys::ContinuousSystem,
 
     discretized_U = Phi1Adelta * inputs
 
-    Ω0 = cont_sys.X0
+    Ω0 = X0
 
-    if length(cont_sys.U) == 1
-        return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
+    if U isa ConstantInput
+        return DiscreteSystem(ϕ, Ω0, discretized_U)
     else
-        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
-        discretized_U_arr[1] = discretized_U
-        for i in 2:length(cont_sys.U)
-            inputs = next(cont_sys.U, i)[1]
-            discretized_U_arr[i] = Phi1Adelta * inputs
-        end
-        return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
+        discretized_U = VaryingInput([Phi1Adelta * Ui for Ui in U])
+        return DiscreteSystem(ϕ, Ω0, discretized_U)
     end
 end
 
@@ -216,48 +235,50 @@ be obtained directly, as a function of the inverse of A and `e^{At} - I`.
 The matrix `P` is such that: `ϕAabs = P[1:n, 1:n]`,
 `Phi1Aabsdelta = P[1:n, (n+1):2*n]`, and `Phi2Aabs = P[1:n, (2*n+1):3*n]`.
 """
-function discr_bloat_interpolation(cont_sys::ContinuousSystem,
+function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
                                    δ::Float64,
                                    approx_model::String,
                                    pade_expm::Bool,
                                    lazy_expm::Bool,
-                                   lazy_sih::Bool)::DiscreteSystem
+                                   lazy_sih::Bool)
 
     sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
 
-    n = size(cont_sys.A, 1)
+    A, X0 = cont_sys.s.A, cont_sys.x0
+    n = size(A, 1)
 
     # compute matrix ϕ = exp(Aδ)
     if lazy_expm
-        ϕ = SparseMatrixExp(cont_sys.A*δ)
+        ϕ = SparseMatrixExp(A*δ)
     else
         if pade_expm
-            ϕ = padm(cont_sys.A*δ)
+            ϕ = padm(A*δ)
         else
-            ϕ = expm(full(cont_sys.A*δ))
+            ϕ = expm(full(A*δ))
         end
     end
 
     # early return for homogeneous systems
-    inputs = next_set(cont_sys.U, 1)
-    if isa(inputs, ZeroSet) && length(cont_sys.U) == 1
-            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0)
-            return DiscreteSystem(ϕ, Ω0, δ)
+    if cont_sys isa IVP{<:LinearContinuousSystem}
+         Ω0 = CH(X0, ϕ * X0)
+        return DiscreteSystem(ϕ, Ω0)
     end
+    U = inputset(cont_sys)
+    inputs = next_set(U, 1)
 
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
-        P = SparseMatrixExp([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+        P = SparseMatrixExp([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
                              spzeros(n, 3*n)])
         Phi2Aabs = get_columns(P, (2*n+1):3*n)[1:n, :]
     else
         if pade_expm
-            P = padm([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+            P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                       spzeros(n, 2*n) sparse(δ*I, n, n);
                       spzeros(n, 3*n)])
         else
-            P = expm(full([abs.(cont_sys.A*δ) sparse(δ*I, n, n) spzeros(n, n);
+            P = expm(full([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                            spzeros(n, 2*n) sparse(δ*I, n, n);
                            spzeros(n, 3*n)]))
         end
@@ -266,32 +287,24 @@ function discr_bloat_interpolation(cont_sys::ContinuousSystem,
 
     if isa(inputs, ZeroSet)
         if approx_model == "forward" || approx_model == "backward"
-            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + δ * inputs)
+            Ω0 = CH(X0, ϕ * X0 + δ * inputs)
         end
     else
-        EPsi = sih(Phi2Aabs * sih(cont_sys.A * inputs))
+        EPsi = sih(Phi2Aabs * sih(A * inputs))
         discretized_U = δ * inputs + EPsi
         if approx_model == "forward"
-            EOmegaPlus =
-                sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A) * cont_sys.X0))
-            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaPlus)
+            EOmegaPlus = sih(Phi2Aabs * sih((A * A) * X0))
+            Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaPlus)
         elseif approx_model == "backward"
-            EOmegaMinus =
-                sih(Phi2Aabs * sih((cont_sys.A * cont_sys.A * ϕ) * cont_sys.X0))
-            Ω0 = CH(cont_sys.X0, ϕ * cont_sys.X0 + discretized_U + EOmegaMinus)
+            EOmegaMinus = sih(Phi2Aabs * sih((A * A * ϕ) * X0))
+            Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaMinus)
         end
     end
 
-    if length(cont_sys.U) == 1
-        return DiscreteSystem(ϕ, Ω0, δ, discretized_U)
+    if U isa ConstantInput
+        return DiscreteSystem(ϕ, Ω0, discretized_U)
     else
-        discretized_U_arr = Vector{LazySet}(length(cont_sys.U))
-        discretized_U_arr[1] = discretized_U
-        for i in 2:length(cont_sys.U)
-            inputs = next(cont_sys.U, i)[1]
-            EPsi_i = sih(Phi2Aabs * sih(cont_sys.A * inputs))
-            discretized_U_arr[i] = δ * inputs + EPsi_i
-        end
-        return DiscreteSystem(ϕ, Ω0, δ, discretized_U_arr)
+        discretized_U = [δ * Ui + sih(Phi2Aabs * sih(A * Ui)) for Ui in U]
+        return DiscreteSystem(ϕ, Ω0, discretized_U)
     end
 end

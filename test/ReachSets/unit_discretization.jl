@@ -5,23 +5,25 @@ import Reachability.ReachSets.discretize
 # ===================================================================
 A = sparse([1, 1, 2, 3, 4], [1, 2, 2, 4, 3], [1., 2., 3., 4., 5.], 4, 4)
 X0 = BallInf(zeros(4), 0.1)
+#U = ZeroSet(size(A, 1))
 cont_sys_homog = ContinuousSystem(A, X0)
 δ = 0.01
 
 # no bloating, do not use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=false)
-@test length(discr_sys_homog.U) == 1
-inputs = next_set(discr_sys_homog.U)
-@test isa(inputs, ZeroSet) && dim(inputs) == 4
+@test inputdim(discr_sys_homog) == 0 # there is no input set!
 
 # no bloating, use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="nobloating", pade_expm=true)
+@test inputdim(discr_sys_homog) == 0
 
 # bloating, do not use Pade approximation
 discr_sys_homog = discretize(cont_sys_homog, δ, pade_expm=false)
+@test inputdim(discr_sys_homog) == 0
 
-# bloating, use Pade approximation
-discr_sys_homog = discretize(cont_sys_homog, δ, pade_expm=true)
+# bloating, first order
+discr_sys_homog = discretize(cont_sys_homog, δ, approx_model="firstorder")
+@test inputdim(discr_sys_homog) == 0
 
 # ===============================================================
 # Discretization of a continuous-time system with constant input
@@ -31,27 +33,32 @@ cont_sys = ContinuousSystem(A, X0, U)
 
 # no bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=false)
-@test length(discr_sys.U) == 1
-inputs = next_set(discr_sys.U)
+@test inputdim(discr_sys) == 4
+#@test length(discr_sys.U) == 1 # a constant input has no length method!
+inputs = next_set(inputset(discr_sys)) # getter: inputset(discr_sys) = discr_sys.s.U
 @test dim(inputs) == 4
 @test isa(inputs, LinearMap)
 @test isa(inputs.X, Ball2) && inputs.X.center == ones(4) && inputs.X.radius == 0.5
 
 # no bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
+@test inputdim(discr_sys) == 4
 
 # bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=false)
-@test length(discr_sys.U) == 1
-inputs = next_set(discr_sys.U)
+@test inputdim(discr_sys) == 4
+
+#@test length(discr_sys.U) == 1
+inputs = next_set(inputset(discr_sys))
 @test dim(inputs) == 4
 @test isa(inputs, MinkowskiSum)
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)
+@test inputdim(discr_sys) == 4
 
-# us
 discr_sys = discretize(cont_sys, δ, approx_model="firstorder")
+@test inputdim(discr_sys) == 4
 
 # ===================================================================
 # Discretization of a continuous-time system with time-varying input
@@ -61,20 +68,21 @@ cont_sys = ContinuousSystem(A, X0, Ui)
 
 # no bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=false)
-@test length(discr_sys.U) == 3
+Ui_d = inputset(discr_sys)
+@test length(Ui_d) == 3
 
-input_state = start(discr_sys.U)
-inputs, input_state = next(discr_sys.U, input_state)
+input_state = start(Ui_d)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, LinearMap)
 @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*ones(4) && inputs.X.radius == 0.2
 
-inputs, input_state = next(discr_sys.U, input_state)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, LinearMap)
 @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*2*ones(4) && inputs.X.radius == 0.2*2
 
-inputs, input_state = next(discr_sys.U, input_state)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, LinearMap)
 @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*3*ones(4) && inputs.X.radius == 0.2*3
@@ -84,23 +92,27 @@ discr_sys = discretize(cont_sys, δ, approx_model="nobloating", pade_expm=true)
 
 # bloating, do not use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=false)
-@test length(discr_sys.U) == 3
+Ui_d = inputset(discr_sys)
+@test length(Ui_d) == 3
 
-input_state = start(discr_sys.U)
-inputs, input_state = next(discr_sys.U, input_state)
+input_state = start(Ui_d)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, MinkowskiSum)
-@test isa(inputs.X.X, Ball2) && inputs.X.X.center == 0.01*ones(4) && inputs.X.X.radius == 0.2
+X = inputs.X.X
+@test isa(X, Ball2) && X.center == 0.01*ones(4) && X.radius == 0.2
 
-inputs, input_state = next(discr_sys.U, input_state)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, MinkowskiSum)
-@test isa(inputs.X.X, Ball2) && inputs.X.X.center == 0.01*2*ones(4) && inputs.X.X.radius == 0.2*2
+X = inputs.X.X
+@test isa(X, Ball2) && X.center == 0.01*2*ones(4) && X.radius == 0.2*2
 
-inputs, input_state = next(discr_sys.U, input_state)
+inputs, input_state = next(Ui_d, input_state)
 @test dim(inputs) == 4
 @test isa(inputs, MinkowskiSum)
-@test isa(inputs.X.X, Ball2) && inputs.X.X.center == 0.01*3*ones(4) && inputs.X.X.radius == 0.2*3
+X = inputs.X.X
+@test isa(X, Ball2) && X.center == 0.01*3*ones(4) && X.radius == 0.2*3
 
 # bloating, use Pade approximation
 discr_sys = discretize(cont_sys, δ, pade_expm=true)

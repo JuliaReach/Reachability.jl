@@ -63,21 +63,23 @@ function check_property(S::AbstractSystem,
     args = []
 
     #coefficients matrix
-    push!(args, S.A)
+    A = S.s.A
+    push!(args, A)
 
     # Cartesian decomposition of the initial set
+    X0 = S.x0
     info("- Decomposing X0")
     tic()
     if lazy_X0
-        Xhat0 = S.X0
+        Xhat0 = X0
     elseif !isempty(kwargs_dict[:block_types_init])
-        Xhat0 = array(decompose(S.X0, ɛ=ε_init,
+        Xhat0 = array(decompose(X0, ɛ=ε_init,
                                 block_types=kwargs_dict[:block_types_init]))
     elseif set_type_init == LazySets.Interval
-        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init,
-                                blocks=ones(Int, dim(S.X0))))
+        Xhat0 = array(decompose(X0, set_type=set_type_init, ɛ=ε_init,
+                                blocks=ones(Int, dim(X0))))
     else
-        Xhat0 = array(decompose(S.X0, set_type=set_type_init, ɛ=ε_init))
+        Xhat0 = array(decompose(X0, set_type=set_type_init, ɛ=ε_init))
     end
     tocc()
 
@@ -92,24 +94,28 @@ function check_property(S::AbstractSystem,
     end
     push!(args, Xhat0)
 
-    if !assume_homogeneous
-        push!(args, S.U)
+    # inputs
+    if !assume_homogeneous && inputdim(S) > 0
+        U = inputset(S)
+    else
+        U = nothing
+    end
+    push!(args, U)
 
-        # overapproximation function (with or without iterative refinement)
-        if haskey(kwargs_dict, :block_types_iter)
-            block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
-            push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
-                                  overapproximate(x, HPolygon, ε_iter) :
-                                  overapproximate(x, block_types_iter[i]))
-        elseif ε_iter < Inf
-            push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
-        else
-            push!(args, (i, x) -> overapproximate(x, set_type_iter))
-        end
+    # overapproximation function (with or without iterative refinement)
+    if haskey(kwargs_dict, :block_types_iter)
+        block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
+        push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
+                              overapproximate(x, HPolygon, ε_iter) :
+                              overapproximate(x, block_types_iter[i]))
+    elseif ε_iter < Inf
+        push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
+    else
+        push!(args, (i, x) -> overapproximate(x, set_type_iter))
     end
 
     # ambient dimension
-    push!(args, Systems.dim(S))
+    push!(args, statedim(S))
 
     # number of computed sets
     push!(args, N)
@@ -117,7 +123,7 @@ function check_property(S::AbstractSystem,
     # add mode-specific block(s) argument
     if algorithm == "explicit"
         push!(args, kwargs_dict[:blocks])
-        push!(args, kwargs_dict[:partition])
+        push!(args, convert_partition(kwargs_dict[:partition]))
         algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)

@@ -4,7 +4,7 @@ Module to apply coordinate transformations.
 """
 module Transformations
 
-using LazySets, ..Systems
+using LazySets, ..Utils, Systems
 
 export transform
 
@@ -33,14 +33,12 @@ A tuple containing:
 The functions that are called in the background should return a the transformed
 system components `A`, `X0`, and `U`, and also an inverse transformation matrix `M`.
 """
-function transform(S::T;
-                   method::String="schur")::Tuple{T, AbstractMatrix} where
-                                            {T<:Union{DiscreteSystem, ContinuousSystem}}
+function transform(S::InitialValueProblem; method::String="schur")
 
     if method == "schur"
         return schur_transform(S)
     else
-        error("The transformation method $method is undefined")
+        error("the transformation method $method is undefined")
     end
 end
 
@@ -66,8 +64,7 @@ We use Julia's default `schurfact` function to compute a
 [Schur decomposition](https://en.wikipedia.org/wiki/Schur_decomposition)
 of the coefficients matrix ``A``.
 """
-function schur_transform(S::T)::Tuple{T, AbstractMatrix} where
-                                     {T<:Union{DiscreteSystem, ContinuousSystem}}
+function schur_transform(S::InitialValueProblem)
 
     A_new, T_new = schur(full(S.A)) # full (dense) matrix is required
 
@@ -76,17 +73,17 @@ function schur_transform(S::T)::Tuple{T, AbstractMatrix} where
     Z_inverse = T_new.'
 
     # apply transformation to the initial states
-    X0_new = Z_inverse * S.X0
+    X0_new = Z_inverse * S.x0
 
     # apply transformation to the inputs
-    U_new = Z_inverse * S.U
+    U_new = Z_inverse * S.s.U
 
     # obtain the transformation matrix for reverting the transformation again
     T_inverse = F[:vectors]
 
-    if S isa DiscreteSystem
-        return (DiscreteSystem(A_new, X0_new, S.δ, U_new), T_inverse)
-    elseif S isa ContinuousSystem
+    if S.s isa DiscreteSystem
+        return (DiscreteSystem(A_new, X0_new, U_new), T_inverse)
+    elseif S.s isa ContinuousSystem
         return (ContinuousSystem(A_new, X0_new, U_new), T_inverse)
     end
 end

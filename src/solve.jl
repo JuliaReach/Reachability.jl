@@ -83,7 +83,7 @@ function solve(system::AbstractSystem,
     # ==========
     # Dimensions
     # ==========
-    dimension = Systems.dim(system)
+    dimension = statedim(system)
     if isodd(dimension)
          system = add_dimension(system)
     end
@@ -97,7 +97,7 @@ function solve(system::AbstractSystem,
     # ===================
     # Time discretization
     # ===================
-    if system isa ContinuousSystem
+    if system isa InitialValueProblem{<:AbstractContinuousSystem}
         info("Time discretization...")
         tic()
         Δ = discretize(
@@ -119,10 +119,7 @@ function solve(system::AbstractSystem,
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         tic()
-        (Δ, transformation_matrix) = transform(
-            Δ,
-            options[:coordinate_transformation]
-            )
+        (Δ, transformation_matrix) = transform(Δ, options[:coordinate_transformation])
         tocc()
     else
         transformation_matrix = nothing
@@ -140,7 +137,7 @@ function solve(system::AbstractSystem,
             A = nothing
         end
         if A != nothing
-            Δ = DiscreteSystem(A, Δ.X0, Δ.δ, Δ.U)
+            Δ = DiscreteSystem(A, Δ.X0, Δ.U)
         end
     end
 

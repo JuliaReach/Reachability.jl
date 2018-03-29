@@ -10,7 +10,7 @@ import LazySets.Approximations:decompose,
                                overapproximate
 import Reachability.tocc
 
-using LazySets, ..Systems, ..Utils, Expokit
+using LazySets, Systems, ..Utils, Expokit, ProgressMeter
 
 # ==============================
 # Property struct and evaluation
