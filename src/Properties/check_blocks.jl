@@ -29,11 +29,9 @@ The first time index where the property is violated, and 0 if the property is sa
 @inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
 @inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
 @inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
-@inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) =
-    get_rows(ϕpowerk, bi)
-@inline row(ϕpowerk::SparseMatrixExp, bi::Int) = get_row(ϕpowerk, bi)
-@inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) =
-    ϕpowerk_πbi[:, bj]
+@inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) = get_rows(ϕpowerk, bi)
+@inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
+@inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse
