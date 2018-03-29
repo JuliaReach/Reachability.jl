@@ -44,3 +44,6 @@ s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
 
 s = solve(ContinuousSystem(sparse(A), X0), :T=>0.1, :partition=>[1:2, 3:4],
           :vars=>[1,3], :lazy_expm=>true);
+
+s = solve(ContinuousSystem(sparse(A), X0), :T=>0.1, :partition=>[[i] for i in 1:4],
+          :set_type=>Interval, :vars=>[1,3], :lazy_expm=>true);
