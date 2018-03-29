@@ -44,7 +44,8 @@ argument. For additional options, consult the Plots.jl reference manual.
                           fillcolor=:auto,
                           seriestype=:shape,
                           label="", grid=true, alpha=0.5,
-                          indices=nothing, vars=nothing)
+                          indices=nothing, vars=nothing,
+                          formatter=identity)
 
     options = check_aliases_and_add_default_value(sol)
 
