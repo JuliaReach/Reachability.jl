@@ -6,7 +6,6 @@ export ContinuousSystem,
        next_set
 
 # name alises
-const Atype = Union{AbstractMatrix, SparseMatrixExp}
 const LCS = LinearContinuousSystem
 const LDS = LinearDiscreteSystem
 const CLCCS = ConstrainedLinearControlContinuousSystem
@@ -17,22 +16,22 @@ import Base: *
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
 
 # no input: x' = Ax, x(0) = X0
-ContinuousSystem(A::Atype, X0::LazySet) = IVP(LCS(A), X0)
-DiscreteSystem(A::Atype, X0::LazySet) = IVP(LDS(A), X0)
+ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LCS(A), X0)
+DiscreteSystem(A::AbstractMatrix, X0::LazySet) = IVP(LDS(A), X0)
 
 # with constant input: x' = Ax + u, x(0) = X0, u(t) = U
-ContinuousSystem(A::Atype, X0::LazySet, U::ConstantInput) = IVP(CLCCS(A, eye(A), nothing, U), X0)
-ContinuousSystem(A::Atype, X0::LazySet, U::LazySet) = ContinuousSystem(A, X0, ConstantInput(U))
+ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::ConstantInput) = IVP(CLCCS(A, eye(A), nothing, U), X0)
+ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::LazySet) = ContinuousSystem(A, X0, ConstantInput(U))
 
-DiscreteSystem(A::Atype, X0::LazySet, U::ConstantInput) = IVP(CLCDS(A, eye(A), nothing, U), X0)
-DiscreteSystem(A::Atype, X0::LazySet, U::LazySet) = DiscreteSystem(A, X0, ConstantInput(U))
+DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::ConstantInput) = IVP(CLCDS(A, eye(A), nothing, U), X0)
+DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::LazySet) = DiscreteSystem(A, X0, ConstantInput(U))
 
 # with time-varying input: x' = Ax + u, x(0) = X0, u(t) = U(t)
-ContinuousSystem(A::Atype, X0::LazySet, U::VaryingInput) = IVP(CLCCS(A, eye(A), nothing, U), X0)
-ContinuousSystem(A::Atype, X0::LazySet, U::Vector{<:LazySet}) = ContinuousSystem(A, X0, VaryingInput(U))
+ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCCS(A, eye(A), nothing, U), X0)
+ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = ContinuousSystem(A, X0, VaryingInput(U))
 
-DiscreteSystem(A::Atype, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, eye(A), nothing, U), X0)
-DiscreteSystem(A::Atype, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
+DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, eye(A), nothing, U), X0)
+DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
 
 # convenience functions
 next_set(inputs::ConstantInput) = next(inputs, 1)[1]
