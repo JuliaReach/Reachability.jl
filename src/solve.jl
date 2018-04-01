@@ -130,12 +130,11 @@ function solve(system::AbstractSystem,
     # ==============================
     A = Δ.s.A
     if options[:assume_sparse]
-        if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(Δ.s.A)})
-            info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(Δ.s.A)) and will be ignored")
-        else
-            A = sparse(Δ.s.A)
+        if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(A)})
+            info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(A)) and will be ignored")
+        elseif !(A isa AbstractSparseMatrix)
+            Δ = DiscreteSystem(sparse(A), Δ.x0, inputset(Δ))
         end
-        Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
     end
 
     if options[:mode] == "reach"
