@@ -105,35 +105,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "lib/systems.html#Reachability.Systems.AbstractSystem",
-    "page": "Systems",
-    "title": "Reachability.Systems.AbstractSystem",
-    "category": "type",
-    "text": "Abstract type representing a system of affine ODEs.\n\n\n\n"
-},
-
-{
     "location": "lib/systems.html#Types-of-systems-1",
     "page": "Systems",
     "title": "Types of systems",
     "category": "section",
-    "text": "Every system inherits from AbstractSystem.AbstractSystemWe support the following two concrete types of systems. "
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.DiscreteSystem",
-    "page": "Systems",
-    "title": "Reachability.Systems.DiscreteSystem",
-    "category": "type",
-    "text": "DiscreteSystem <: AbstractSystem\n\nType that represents a system of discrete-time affine ODEs with nondeterministic inputs,\n\nx_k+1 = A x_k + u_k\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu_k  mathcalU_k, where mathcalU_k_k is a set-valued sequence defined over 0   (N-1) N  for some 0\n\nFields\n\nA  – square matrix, possibly of type SparseMatrixExp\nX0 – set of initial states\nU  – nondeterministic inputs\nδ  – discretization step\n\nExamples\n\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},                  X0::LazySet,                  δ::Float64,                  U::NonDeterministicInput) – default constructor\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64) – constructor with no inputs\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nDiscreteSystem(A::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float64}},              X0::LazySet,              δ::Float64,              U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.DiscreteSystem}",
-    "page": "Systems",
-    "title": "Reachability.Systems.dim",
-    "category": "method",
-    "text": "dim(S)\n\nDimension of a discrete system.\n\nInput\n\nS – discrete system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
+    "text": "Systems.jl provides some convenience types and methods to work with mathematical systems models. Every system inherits from AbstractSystem.We support the following two concrete types of systems."
 },
 
 {
@@ -145,35 +121,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "lib/systems.html#Reachability.Systems.ContinuousSystem",
-    "page": "Systems",
-    "title": "Reachability.Systems.ContinuousSystem",
-    "category": "type",
-    "text": "ContinuousSystem <: AbstractSystem\n\nType that represents a system of continuous-time affine ODEs with nondeterministic inputs,\n\nx(t) = Ax(t) + u(t),\n\nwhere:\n\nA is a square matrix\nx(0)  mathcalX_0 and mathcalX_0 is a convex set\nu(t)  mathcalU(t), where mathcalU(cdot) is a piecewise-constant set-valued function, i.e. we consider that it can be approximated by a possibly time-varying discrete sequence mathcalU_k _k\n\nFields\n\nA  – square matrix\nX0 – set of initial states\nU  – nondeterministic inputs\n\nExamples\n\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::NonDeterministicInput) – default constructor\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet) – constructor with no inputs\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::LazySet) – constructor that creates a ConstantNonDeterministicInput\nContinuousSystem(A::AbstractMatrix{Float64},                   X0::LazySet,                   U::Vector{<:LazySet}) – constructor that creates a TimeVaryingNonDeterministicInput\n\n\n\n"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.dim-Tuple{Reachability.Systems.ContinuousSystem}",
-    "page": "Systems",
-    "title": "Reachability.Systems.dim",
-    "category": "method",
-    "text": "dim(S)\n\nDimension of a continuous system.\n\nInput\n\nS – continuous system\n\nOutput\n\nThe dimension of the system.\n\n\n\n"
-},
-
-{
     "location": "lib/systems.html#Continuous-system-1",
     "page": "Systems",
     "title": "Continuous system",
     "category": "section",
     "text": "A continuous system consists of a matrix representing the system dynamics, a set of initial states, and a set of nondeterministic inputs.ContinuousSystem\ndim(S::ContinuousSystem)"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.NonDeterministicInput",
-    "page": "Systems",
-    "title": "Reachability.Systems.NonDeterministicInput",
-    "category": "type",
-    "text": "Abstract type representing a nondeterministic input. The input can be either constant or time-varying. In both cases it is represented by an iterator.\n\n\n\n"
 },
 
 {
@@ -185,51 +137,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "lib/systems.html#Reachability.Systems.ConstantNonDeterministicInput",
-    "page": "Systems",
-    "title": "Reachability.Systems.ConstantNonDeterministicInput",
-    "category": "type",
-    "text": "ConstantNonDeterministicInput <: NonDeterministicInput\n\nType that represents a constant nondeterministic input.\n\nFields\n\nU – LazySet\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length is 1, but for convenience next can be called with any index.\n\nExamples\n\nConstantNonDeterministicInput(U::LazySet) – default constructor\n\n\n\n"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput,Int64}",
-    "page": "Systems",
-    "title": "Reachability.Systems.next_set",
-    "category": "method",
-    "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.ConstantNonDeterministicInput}",
-    "page": "Systems",
-    "title": "Reachability.Systems.next_set",
-    "category": "method",
-    "text": "next_set(inputs)\n\nConvenience iteration function without index that only returns the set.\n\nInput\n\ninputs - constant nondeterministic inputs wrapper\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
-},
-
-{
     "location": "lib/systems.html#Constant-nondeterministic-inputs-1",
     "page": "Systems",
     "title": "Constant nondeterministic inputs",
     "category": "section",
     "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time.ConstantNonDeterministicInput\nnext_set(inputs::ConstantNonDeterministicInput, state::Int64)\nnext_set(inputs::ConstantNonDeterministicInput)"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.TimeVaryingNonDeterministicInput",
-    "page": "Systems",
-    "title": "Reachability.Systems.TimeVaryingNonDeterministicInput",
-    "category": "type",
-    "text": "TimeVaryingNonDeterministicInput <: NonDeterministicInput\n\nType that represents a time-varying nondeterministic input.\n\nFields\n\nU – array containing LazySets\n\nNotes\n\nThis type supports iteration with an index number as iterator state. The iteration function next takes and returns a tuple (set, index), where set is the value of the input, represented as a LazySet, and index counts the number of times this iterator was called.\n\nThe iterator length corresponds to the number of elements in the given array. The index of the input state increases from 1 and corresponds at each time to the array index in the input array.\n\nExamples\n\nTimeVaryingNonDeterministicInput(U::Vector{<:LazySet}) – constructor from a vector of sets\n\n\n\n"
-},
-
-{
-    "location": "lib/systems.html#Reachability.Systems.next_set-Tuple{Reachability.Systems.TimeVaryingNonDeterministicInput,Int64}",
-    "page": "Systems",
-    "title": "Reachability.Systems.next_set",
-    "category": "method",
-    "text": "next_set(inputs, state)\n\nConvenience iteration function that only returns the set.\n\nInput\n\ninputs - nondeterministic inputs wrapper\nstate  - iterator state, i.e., an index\n\nOutput\n\nThe nondeterministic input set at the given index.\n\n\n\n"
 },
 
 {
