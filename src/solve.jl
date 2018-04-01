@@ -128,17 +128,14 @@ function solve(system::AbstractSystem,
     # ==============================
     # Sparse/dense matrix conversion
     # ==============================
-    try
-        if options[:assume_sparse] && !(Δ.s.A isa SparseMatrixCSC)
-            A = sparse(Δ.s.A)
-        elseif options[:assume_sparse] && !(Δ.s.A isa Matrix)
-            A = full(Δ.s.A)
+    A = Δ.s.A
+    if options[:assume_sparse]
+        if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(Δ.s.A)})
+            info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(Δ.s.A)) and will be ignored")
         else
-            A = nothing
+            A = sparse(Δ.s.A)
         end
-        if A != nothing
-            Δ = DiscreteSystem(A, Δ.x0, Δ.s.U)
-        end
+        Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
     end
 
     if options[:mode] == "reach"
