@@ -16,6 +16,7 @@ git:
 before_script:
 #  - julia -e 'Pkg.clone("git://github.com/acroy/Expokit.jl.git")'
   - julia -e 'Pkg.clone("git://github.com/juliareach/LazySets.jl.git")'
+  - julia -e 'Pkg.clone("git://github.com/juliareach/Systems.jl.git")'
 
 ## allow failures (tests will run but not make your overall status red)
 matrix:

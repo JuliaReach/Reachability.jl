@@ -83,7 +83,7 @@ function solve(system::AbstractSystem,
     # ==========
     # Dimensions
     # ==========
-    dimension = Systems.dim(system)
+    dimension = statedim(system)
     if isodd(dimension)
          system = add_dimension(system)
     end
@@ -97,7 +97,7 @@ function solve(system::AbstractSystem,
     # ===================
     # Time discretization
     # ===================
-    if system isa ContinuousSystem
+    if system isa InitialValueProblem{<:AbstractContinuousSystem}
         info("Time discretization...")
         tic()
         Δ = discretize(
@@ -119,10 +119,7 @@ function solve(system::AbstractSystem,
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         tic()
-        (Δ, transformation_matrix) = transform(
-            Δ,
-            options[:coordinate_transformation]
-            )
+        (Δ, transformation_matrix) = transform(Δ, options[:coordinate_transformation])
         tocc()
     else
         transformation_matrix = nothing
@@ -131,17 +128,14 @@ function solve(system::AbstractSystem,
     # ==============================
     # Sparse/dense matrix conversion
     # ==============================
-    try
-        if options[:assume_sparse] && !(Δ.A isa SparseMatrixCSC)
-            A = sparse(Δ.A)
-        elseif options[:assume_sparse] && !(Δ.A isa Matrix)
-            A = full(Δ.A)
+    A = Δ.s.A
+    if options[:assume_sparse]
+        if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(Δ.s.A)})
+            info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(Δ.s.A)) and will be ignored")
         else
-            A = nothing
+            A = sparse(Δ.s.A)
         end
-        if A != nothing
-            Δ = DiscreteSystem(A, Δ.X0, Δ.δ, Δ.U)
-        end
+        Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
     end
 
     if options[:mode] == "reach"

@@ -14,13 +14,11 @@ CurrentModule = Reachability.Systems
 
 ## Types of systems
 
-Every system inherits from `AbstractSystem`.
+[Systems.jl](https://github.com/JuliaReach/Systems.jl) provides some convenience
+types and methods to work with mathematical systems models. Every system inherits
+from `AbstractSystem`.
 
-```@docs
-AbstractSystem
-```
-
-We support the following two concrete types of systems. 
+We support the following two concrete types of systems.
 
 ### Discrete system
 

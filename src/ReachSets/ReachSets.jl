@@ -21,7 +21,7 @@ The following dependencies are optional and provide additional functionality:
 |Optional module name | Features|
 |------|------|
 |`Expokit.jl` | Fast computation of matrix exponential of very large and very sparse matrices.|
-|`Polyhedra.jl`, `CDDLib.jl` | Julia Polyhedra library and the CDD backend.| 
+|`Polyhedra.jl`, `CDDLib.jl` | Julia Polyhedra library and the CDD backend.|
 
 The visualization routines are deferred to the corresponding `LazySets.jl`, such as
 `plot_polygon`, implemented in `Polygon.jl`.
@@ -57,18 +57,18 @@ Frédéric Viry. 2017, to be submitted.
 ## Projections
 
 The final goal of any reachability computation is a sequence of points (vertices)
-describing the evolution of one or more variables in time, as a function of 
+describing the evolution of one or more variables in time, as a function of
 other variables, or a linear combination of them. This information is required
 for plotting the output in two or three dimensions.
 
 This module provides the function ``project_reach`` for the purpose of projecting
 a high-dimensional explicit or lazy set computation into a low number of variables
 efficiently. Additionally, the time variable can be passed (use `0`), and an arbitrary
-linear combination of state variables can be handled as well. 
+linear combination of state variables can be handled as well.
 
 ## Helper functions and macros
 
-This module provides commonly used 
+This module provides commonly used
 
 |Macro or function name| Description|
 |-----|-----|
@@ -84,7 +84,7 @@ AUTHORS:
 """
 module ReachSets
 
-using LazySets, ..Systems, Expokit, ..Utils, ProgressMeter
+using LazySets, Systems, Expokit, ..Utils, ProgressMeter
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
