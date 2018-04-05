@@ -36,15 +36,15 @@ The first time index where the property is violated, and 0 if the property is sa
 
 # sparse
 function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       prop::Property
+                       )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
         return 1
     elseif N == 1
@@ -103,15 +103,15 @@ end
 
 # dense
 function check_blocks!(ϕ::AbstractMatrix{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       prop::Property
+                       )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
         return 1
     elseif N == 1
@@ -173,15 +173,15 @@ end
 
 # lazy_expm
 function check_blocks!(ϕ::SparseMatrixExp{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                prop::Property
-                               )::Int where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       prop::Property
+                       )::Int where {NUM}
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
         return 1
     elseif N == 1

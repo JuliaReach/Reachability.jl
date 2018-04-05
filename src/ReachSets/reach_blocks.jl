@@ -39,15 +39,15 @@ nondeterministic inputs.
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                res::Vector{CartesianProductArray{NUM}}
-                               )::Void where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       res::Vector{CartesianProductArray{NUM}}
+                       )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
@@ -105,15 +105,15 @@ end
 
 # dense
 function reach_blocks!(ϕ::AbstractMatrix{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                res::Vector{CartesianProductArray{NUM}}
-                               )::Void where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       res::Vector{CartesianProductArray{NUM}}
+                       )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
@@ -174,15 +174,15 @@ end
 
 # lazy_expm
 function reach_blocks!(ϕ::SparseMatrixExp{NUM},
-                                Xhat0::Vector{<:LazySet{NUM}},
-                                U::Union{ConstantNonDeterministicInput, Void},
-                                overapproximate::Function,
-                                n::Int,
-                                N::Int,
-                                blocks::AbstractVector{Int},
-                                partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                                res::Vector{CartesianProductArray{NUM}}
-                               )::Void where {NUM}
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       res::Vector{CartesianProductArray{NUM}}
+                       )::Void where {NUM}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing

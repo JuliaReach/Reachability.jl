@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, ..Systems
+using LazySets
 
 # Visualization
 export print_sparsity,
@@ -22,6 +22,9 @@ export @block_id,
 # Usability
 export @filename_to_png,
        @relpath
+
+# Extension of Systems for use inside Reachability.jl
+include("systems.jl")
 
 """
     @filename_to_png
@@ -58,112 +61,6 @@ julia> @block_id 4
 """
 macro block_id(v::Int64)
     return :(div($v, 2) + mod($v, 2))
-end
-
-"""
-    add_dimension(A)
-
-Adds an extra zero row and column to a matrix.
-
-### Input
-
-- `A` -- matrix
-
-### Examples
-
-```julia
-julia> A = [0.4 0.25; 0.46 -0.67]
-2×2 Array{Float64,2}:
- 0.4    0.25
- 0.46  -0.67
-julia> add_dimension(A)
-3×3 Array{Float64,2}:
- 0.4    0.25  0.0
- 0.46  -0.67  0.0
- 0.0    0.0   0.0
-```
-"""
-function add_dimension(A::AbstractMatrix{Float64})::AbstractMatrix{Float64}
-    n = size(A, 1)
-    return vcat(hcat(A, zeros(n)), zeros(n+1).')
-end
-
-"""
-    add_dimension(X)
-
-Adds an extra dimension to a LazySet, usually through a Cartesian product.
-
-### Input
-
-- `X` -- a lazy set
-
-### Examples
-
-```jldoctest
-julia> X = BallInf(ones(9), 0.5);
-
-julia> dim(X)
-9
-
-julia> Xext = add_dimension(X);
-
-julia> dim(Xext)
-10
-```
-"""
-function add_dimension(X::LazySet)::LazySet
-    return X * ZeroSet(1)
-end
-
-function add_dimension(X::ZeroSet)::ZeroSet
-    return ZeroSet(dim(X)+1)
-end
-
-"""
-    add_dimension(cont_sys)
-
-Adds an extra dimension to a continuous system.
-
-### Input
-
-- `cs` -- continuous system
-
-### Examples
-
-```julia
-julia> A = sprandn(3, 3, 0.5);
-julia> X0 = BallInf(zeros(3), 1.0);
-julia> s = ContinuousSystem(A, X0);
-julia> sext = add_dimension(s);
-julia> Systems.dim(sext)
-4
-```
-
-If there is an input set, it is also extended:
-
-```julia
-julia> U = ConstantNonDeterministicInput(Ball2(ones(3), 0.1));
-julia> s = ContinuousSystem(A, X0, U);
-julia> sext = add_dimension(s);
-julia> dim(next_set(sext.U))
-4
-```
-"""
-function add_dimension(cs::ContinuousSystem)::ContinuousSystem
-    Aext = add_dimension(cs.A)
-    X0ext = add_dimension(cs.X0)
-    if cs.U isa ConstantNonDeterministicInput
-        Uext = add_dimension(next_set(cs.U))
-    elseif cs.U isa TimeVaryingNonDeterministicInput
-        Uext = Vector{LazySet}(length(cs.U))
-        i = 0
-        for u in cs.U
-            Uext[i+=1] = add_dimension(u)
-        end
-    else
-        error("Unsupported inputs type $(typeof(cs.U)).")
-    end
-    return ContinuousSystem(Aext, X0ext, Uext)
 end
 
 """
