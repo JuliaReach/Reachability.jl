@@ -83,11 +83,8 @@ function solve(system::AbstractSystem,
     # ==========
     # Dimensions
     # ==========
-    dimension = Systems.dim(system)
-    if isodd(dimension)
-         system = add_dimension(system)
-    end
-    options_input.dict[:n] = dimension
+    options_input.dict[:n] = Systems.dim(system)
+
     # =======
     # Options
     # =======

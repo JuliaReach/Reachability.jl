@@ -478,11 +478,14 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         error("need option :partition specified")
     end
 
-    block_types = haskey(dict, :block_types) ? dict[:block_types] :
-        haskey(dict, :set_type) ?
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict[:set_type] => copy(dict_copy[:partition])
-            ) : nothing
+    block_types = nothing
+    if haskey(dict, :block_types)
+        block_types = convert(Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}, dict[:block_types])
+    else
+        if haskey(dict, :set_type)
+            block_types = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(dict[:set_type] => copy(dict_copy[:partition]))
+        end
+    end
     check_aliases!(dict, dict_copy, [:block_types])
 
     block_types_init = haskey(dict, :block_types_init) ?

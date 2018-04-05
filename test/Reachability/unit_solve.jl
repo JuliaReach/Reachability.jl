@@ -47,3 +47,12 @@ s = solve(ContinuousSystem(sparse(A), X0), :T=>0.1, :partition=>[1:2, 3:4],
 
 s = solve(ContinuousSystem(sparse(A), X0), :T=>0.1, :partition=>[[i] for i in 1:4],
           :set_type=>Interval, :vars=>[1,3], :lazy_expm=>true);
+
+# ===============================
+# System with an add dimension
+# ===============================
+
+A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4, 5],
+          :block_types=>Dict(HPolygon=>[1:2, 3:4], Interval=>[[5]]),
+          :vars=>[1,3]);
