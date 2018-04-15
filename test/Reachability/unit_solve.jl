@@ -6,6 +6,10 @@ A = randn(4, 4); X0 = BallInf(ones(4), 0.1)
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
           :vars=>[1,3]);
 
+# the default partition is used. uses Interval for set_type_init and set_type_iter
+# but Hyperrectangle for set_type_proj
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :vars=>[1,3]);
+
 # ===============================
 # Test projection
 # ===============================
