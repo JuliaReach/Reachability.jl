@@ -182,7 +182,7 @@ function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem
         P = SparseMatrixExp([A*δ sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
                              spzeros(n, 3*n)])
-        Phi1Adelta = get_columns(P, (n+1):2*n)[1:n, :]
+        Phi1Adelta = sparse(get_columns(P, (n+1):2*n)[1:n, :])
     else
         if pade_expm
             P = padm([A*δ sparse(δ*I, n, n) spzeros(n, n);
@@ -271,7 +271,7 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         P = SparseMatrixExp([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
                              spzeros(n, 3*n)])
-        Phi2Aabs = get_columns(P, (2*n+1):3*n)[1:n, :]
+        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
     else
         if pade_expm
             P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
