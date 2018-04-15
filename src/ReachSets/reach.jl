@@ -41,11 +41,6 @@ Interface to reachability algorithms for an LTI system.
 
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
-
-WARNING:
-
-Only systems of even dimension are parsed; for odd dimension, manually add an
-extra variable with no dynamics.
 """
 function reach(S::AbstractSystem,
                N::Int;
