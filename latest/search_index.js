@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Discrete system",
     "category": "section",
-    "text": "A discrete system consists of a matrix representing the system dynamics, a set of initial states, a set of nondeterministic inputs, and a discretization step δ.DiscreteSystem\ndim(S::DiscreteSystem)"
+    "text": "A discrete system consists of a matrix representing the system dynamics, a set of initial states, a set of nondeterministic inputs, and a discretization step δ."
 },
 
 {
@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Continuous system",
     "category": "section",
-    "text": "A continuous system consists of a matrix representing the system dynamics, a set of initial states, and a set of nondeterministic inputs.ContinuousSystem\ndim(S::ContinuousSystem)"
+    "text": "A continuous system consists of a matrix representing the system dynamics, a set of initial states, and a set of nondeterministic inputs."
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Nondeterministic inputs",
     "category": "section",
-    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.NonDeterministicInputThe inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the input set may change. We support iteration through the inputs over time."
+    "text": "The above systems may contain nondeterministic inputs, which are wrapped in special types. Every nondeterministic input representation inherits from NonDeterministicInput.The inputs are closely related to a DiscreteSystem in the sense that for each discrete time step the input set may change. We support iteration through the inputs over time."
 },
 
 {
@@ -141,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Constant nondeterministic inputs",
     "category": "section",
-    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time.ConstantNonDeterministicInput\nnext_set(inputs::ConstantNonDeterministicInput, state::Int64)\nnext_set(inputs::ConstantNonDeterministicInput)"
+    "text": "Constant nondeterministic inputs are chosen from a set of values that does not change over time. Note that, while the set is constant, the inputs themselves vary over time."
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Time-varying nondeterministic inputs",
     "category": "section",
-    "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step).TimeVaryingNonDeterministicInput\nnext_set(inputs::TimeVaryingNonDeterministicInput, state::Int64)"
+    "text": "Time-varying nondeterministic inputs are chosen from a set of values that changes over time (with each time step)."
 },
 
 {
