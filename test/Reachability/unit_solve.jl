@@ -51,8 +51,7 @@ s = solve(ContinuousSystem(sparse(A), X0), :T=>0.1, :partition=>[[i] for i in 1:
 # ===============================
 # System with an odd dimension
 # ===============================
-
 A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
 system = ContinuousSystem(A, X0)
-options = Options(Dict(:T=>0.1, :partition=>convert(AbstractVector{<:AbstractVector{Int}}, [1:2, 3:4, [5]]), :block_types=>Dict(HPolygon=>[1:2, 3:4], Interval=>[[5]]), :vars=>[1,3]))
+options = Options(Dict(:T=>0.1, :partition=>[1:2, 3:4, [5]], :block_types=>Dict(HPolygon=>[1:2, 3:4], Interval=>[[5]]), :vars=>[1,3]))
 s = solve(system, options)

@@ -206,8 +206,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types
-            expected_type = Dict
-                #Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+            expected_type = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
         elseif key == :block_types_init
             expected_type =
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
