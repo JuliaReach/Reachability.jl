@@ -206,8 +206,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types
-            expected_type =
-                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+            expected_type = Union{Void,
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}}
         elseif key == :block_types_init
             expected_type =
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
@@ -478,12 +478,18 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         error("need option :partition specified")
     end
 
-    block_types = haskey(dict, :block_types) ? dict[:block_types] :
-        haskey(dict, :set_type) ?
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict[:set_type] => copy(dict_copy[:partition])
-            ) : nothing
-    check_aliases!(dict, dict_copy, [:block_types])
+    block_types = nothing
+    if haskey(dict, :block_types)
+        for (key, value) in dict[:block_types]
+            @assert key <: LazySet "the keys of the `partition` dictionary should be lazy sets"
+            @assert typeof(value) <: AbstractVector{<:AbstractVector{Int}} "the keys of the `partition` dictionary should be vectors of vectors"
+        end
+        block_types = convert(Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}, dict[:block_types])
+    elseif haskey(dict, :set_type)
+        block_types = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(dict[:set_type] => copy(dict_copy[:partition]))
+    end
+    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types], block_types)
+    dict_copy[:block_types] = block_types
 
     block_types_init = haskey(dict, :block_types_init) ?
         dict[:block_types_init] :
