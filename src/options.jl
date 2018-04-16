@@ -425,8 +425,21 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
     check_aliases!(dict, dict_copy, [:ε])
     check_aliases!(dict, dict_copy, [:set_type])
     ε = haskey(dict, :ε) ? dict[:ε] : Inf
-    set_type = haskey(dict, :set_type) ? dict[:set_type] :
-        (ε < Inf ? HPolygon : Hyperrectangle)
+
+    if haskey(dict, :set_type)
+        set_type = dict[:set_type]
+    else
+        if ε < Inf
+            set_type = HPolygon
+        else
+            if !haskey(dict, :partition)
+                set_type = Interval
+                set_type_proj = Interval
+            else
+                set_type = Hyperrectangle
+            end
+        end
+    end
 
     ε_init = (haskey(dict, :set_type_init) && dict[:set_type_init] == HPolygon) ||
              (!haskey(dict, :set_type_init) && set_type == HPolygon) ? ε : Inf
@@ -474,8 +487,8 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                               dict_copy::Dict{Symbol,Any})
     check_aliases!(dict, dict_copy, [:partition])
     if !haskey(dict_copy, :partition)
-        # TODO allow partial information and infer the other (also with :vars)
-        error("need option :partition specified")
+        partition = [[i] for i in 1:dict[:n]]
+        dict_copy[:partition] =  partition
     end
 
     block_types = nothing
