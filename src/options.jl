@@ -487,10 +487,8 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                               dict_copy::Dict{Symbol,Any})
     check_aliases!(dict, dict_copy, [:partition])
     if !haskey(dict_copy, :partition)
-        # TODO allow partial information and infer the other (also with :vars)
         partition = [[i] for i in 1:dict[:n]]
         dict_copy[:partition] =  partition
-
     end
 
     block_types = nothing
