@@ -13,4 +13,4 @@ algorithm(N, δ) = solve(S, :mode => "check", :partition=>[1:2, 3:4],
                            :T => time_horizon,
                            :property=>LinearConstraintProperty([24., 0., 1, 0],  375.)).satisfied
 
-Properties.tune_δ(algorithm, 20.0, precision, initial_δ)
+Properties.tune_δ(algorithm, time_horizon, precision, initial_δ)
