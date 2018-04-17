@@ -5,27 +5,34 @@ Find the threshold step size for a given property.
 
 ### Input
 
-- `algorithm`    -- the function that is used to evaluate ``δ``;
-                    the call should be: `algorithm(N, δ)`
-- `time_horizon` -- time horizon
-- `precision`    -- (optiona, default: 1e-5) precision of result (s. a.)
-- `δ`            -- (optional, default: 1e-1) initial guess for the time step
+- `algorithm`        -- the function that is used to evaluate ``δ``;
+                        the call should be: `algorithm(N, δ)`
+- `time_horizon`     -- time horizon
+- `precision`        -- (optional, default: 1e-5) precision of result (s. a.)
+- `δ`                -- (optional, default: 1e-1) initial guess for the time
+                        step
+- `rel_step_size`    -- (optional, default: 0.1) relative step size
+- `biggest_working`  -- (optional, default: 0.) biggest known working ``δ``
+- `smallest_failing` -- (optional, default: `time_horizon`) smallest known
+                        failing ``δ``
 
 ### Algorithm
 
-Finds a value for ``δ`` such that `algorithm`:
+Finds a value for ``δ`` such that `algorithm`
 
-  1. Returns `true` for ``δ`` and
-  2. Returns `false` for (``δ`` + `precision`).
+  1. returns `true` for ``δ`` and
+  2. returns `false` for (``δ`` + `precision`).
 """
 function tune_δ(algorithm::Function,
                 time_horizon::Float64,
                 precision::Float64=1e-5,
-                δ::Float64=1e-1
+                δ::Float64=1e-1,
+                rel_step_size::Float64=0.1;
+                biggest_working=0.,
+                smallest_failing=time_horizon
                 )::Float64
-    biggest_working = 0.
-    smallest_failing = time_horizon
-    smallest_failing_modified = false
+    biggest_working_modified = biggest_working != 0.
+    smallest_failing_modified = smallest_failing != time_horizon
 
     step = 0.
     runtime_best = -1.
@@ -40,10 +47,10 @@ function tune_δ(algorithm::Function,
         info("Iteration ", i)
         info("δ: ", δ)
 
-        assert((δ > biggest_working && δ < smallest_failing) || (!smallest_failing_modified && δ == smallest_failing))
+        @assert (δ >= biggest_working && δ <= smallest_failing) "invalid δ: $δ (not in [$biggest_working, $smallest_failing])"
 
         # choose N according to δ
-        N = ceil(Int64, time_horizon / δ)
+        N = ceil(Int, time_horizon / δ)
 
         # check property
         tic()
@@ -52,58 +59,34 @@ function tune_δ(algorithm::Function,
         if answer
             # success
             biggest_working = δ
+            biggest_working_modified = true
             runtime_best = runtime
-
-            if δ >= time_horizon
-                # exceeded time horizon -> terminate
-                break
-            end
-
-            # refine δ
-            if !smallest_failing_modified
-                # no upper bound yet, choose δ that is 50 % bigger
-                δ_new = min(δ * 1.5, time_horizon)
-            else
-                if step <= 0.
-                    # previous iteration was no increase, choose new step
-                    # choose step that 10 % closer in the uncertainty interval
-                    step = (smallest_failing - δ) * 0.1
-                end
-                δ_new = δ + step
-                while δ_new >= smallest_failing
-                    # reached upper bound, reduce step by 50 %
-                    step = step * 0.5
-                    δ_new = δ + step
-                end
-                assert(step > 0.)
-            end
-            assert(δ_new > δ)
         else
             # failure
             smallest_failing = δ
             smallest_failing_modified = true
-
-            # refine δ
-            if biggest_working == 0.
-                # no lower bound yet, choose δ that is 50 % smaller
-                δ_new = δ * 0.5
-            else
-                if step >= 0.
-                    # previous iteration was no decrease, choose new step
-                    # choose step that 10 % closer in the uncertainty interval
-                    step = (biggest_working - δ) * 0.1
-                end
-                δ_new = δ + step
-                while δ_new <= biggest_working
-                    # reached upper bound, reduce step by 50 %
-                    step = step * 0.5
-                    δ_new = δ + step
-                end
-                assert(step < 0.)
-            end
-            assert(δ_new < δ)
         end
+
+        # choose new δ
         if smallest_failing - biggest_working <= precision
+            # reached precision window -> terminate
+            break
+        elseif biggest_working_modified && smallest_failing_modified
+            # choose δ in the center of the uncertainty interval
+            δ_new = smallest_failing + (biggest_working - smallest_failing) / 2.
+        elseif biggest_working_modified
+            # no upper bound yet, choose δ that is bigger wrt. the relative ball
+            δ_new = min(δ * (1. + rel_step_size), time_horizon)
+        else
+            @assert smallest_failing_modified
+            # no lower bound yet, choose δ that is bigger wrt. the relative ball
+            δ_new = max(δ * (1. - rel_step_size), 0.)
+        end
+
+        # round δ down wrt. precision
+        inverse_precision = round(Int, 1. / precision)
+        δ_new = floor(δ_new * inverse_precision) / inverse_precision
+        if δ_new >= smallest_failing || δ_new <= biggest_working
             # reached precision window -> terminate
             break
         end
