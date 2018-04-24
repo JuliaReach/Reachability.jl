@@ -1,9 +1,10 @@
 import Base: info, warn, toc
 import Memento: debug
 
-export info, warn, debug, tocc, configure_logger
+export info, warn, debug, tocc,
+       configure_logger, add_file_logger
 
-global LOGGER = nothing
+global LOGGER = Memento.getlogger(current_module())
 
 const DEFAULT_LOG_LEVEL = "warn"
 
@@ -89,4 +90,20 @@ function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
         error("Illegal verbosity input $level.")
     end
     return Memento.config(level_string; fmt="[{level}] {msg}")
+end
+
+"""
+    add_file_logger(filename)
+
+Sets up an additional logger to a file.
+
+### Input
+
+- `filename` -- (optional, default: `tempname()`) the log file name
+"""
+function add_file_logger(filename::String=tempname())::Void
+    formatter = Memento.DefaultFormatter("[{date}|{level}] {msg}")
+    handler = Memento.DefaultHandler(filename, formatter)
+    push!(LOGGER, handler)
+    return nothing
 end
