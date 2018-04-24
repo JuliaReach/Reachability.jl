@@ -4,7 +4,7 @@ import Memento: debug
 export info, warn, debug, tocc,
        configure_logger, add_file_logger
 
-global LOGGER = nothing
+global LOGGER = Memento.getlogger(current_module())
 
 const DEFAULT_LOG_LEVEL = "warn"
 
