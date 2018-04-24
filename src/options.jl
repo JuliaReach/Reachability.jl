@@ -67,6 +67,7 @@ unspecified options.
 Supported options:
 
 - `:verbosity`     -- controls logging output
+- `:logfile`       -- name of a log file
 - `:mode`          -- main analysis mode
 - `:approx_model`  -- model for bloating/continuous time analysis
 - `:property`      -- a safety property
@@ -132,6 +133,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         configure_logger(dict[:verbosity]) :
         configure_logger()
     check_aliases_and_add_default_value!(dict, dict_copy, [:verbosity], getlevel(LOGGER))
+    if haskey(dict, :logfile)
+        add_file_logger(dict[:logfile])
+        check_aliases!(dict, dict_copy, [:logfile])
+    end
 
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
@@ -175,6 +180,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         domain_constraints = (v  ->  true)
         if key == :verbosity
             expected_type = Union{String, Int}
+        elseif key == :logfile
+            expected_type = String
         elseif key == :mode
             expected_type = String
             domain_constraints = (v::String  ->  v in ["reach", "check"])
