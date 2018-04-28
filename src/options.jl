@@ -515,7 +515,7 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         dict[:block_types_init] :
         block_types != nothing ? block_types :
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict[:set_type_init] => copy(dict_copy[:partition])
+                dict_copy[:set_type_init] => copy(dict_copy[:partition])
             )
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
                                          block_types_init)
@@ -524,7 +524,7 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
         dict[:block_types_iter] :
         block_types != nothing ? block_types :
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict[:set_type_iter] => copy(dict_copy[:partition])
+                dict_copy[:set_type_iter] => copy(dict_copy[:partition])
             )
     check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
                                          block_types_iter)
@@ -611,13 +611,14 @@ This function has several purposes:
 
 INPUT:
 
-- `dict` -- a dictionary of options
-- `dict_copy` -- a copy of the dictionary of options for internal names
-- `aliases` -- option aliases; the first name is the one we use internally
+- `dict`          -- a dictionary of options
+- `dict_copy`     -- a copy of the dictionary of options for internal names
+- `aliases`       -- option aliases; the first name is the one we use internally
 - `default_value` -- the default value for the option
-- `modify_dict` -- (optional, default true) indicates if `dict` should be modified
+- `modify_dict`   -- (optional, default: `false`) indicates if `dict` should be
+                     modified
 """
-function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any, modify_dict::Bool=true)
+function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any, modify_dict::Bool=false)
     check_aliases!(dict, dict_copy, aliases)
 
     if !haskey(dict_copy, aliases[1])
