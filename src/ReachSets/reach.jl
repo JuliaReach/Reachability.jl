@@ -61,9 +61,14 @@ function reach(S::AbstractSystem,
     # list containing the arguments passed to any reachability function
     args = []
 
-    #coefficients matrix
+    # coefficients matrix
     A = S.s.A
     push!(args, A)
+
+    # determine analysis mode (sparse/dense) for lazy_expm mode
+    if A isa SparseMatrixExp
+        push!(args, Val(assume_sparse))
+    end
 
     # Cartesian decomposition of the initial set
     X0 = S.x0

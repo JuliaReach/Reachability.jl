@@ -172,8 +172,9 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     return nothing
 end
 
-# lazy_expm
+# lazy_expm sparse
 function reach_blocks!(ϕ::SparseMatrixExp{NUM},
+                       assume_sparse::Val{true},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
@@ -217,6 +218,71 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             end
             Xhatk[i] = overapproximate(blocks[i],
                 U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            if U != nothing
+                Whatk[i] =
+                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+            end
+        end
+        res[k] = CartesianProductArray(copy(Xhatk))
+
+        if k == N
+            break
+        end
+
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
+        k += 1
+    end
+
+    return nothing
+end
+
+
+# lazy_expm dense
+function reach_blocks!(ϕ::SparseMatrixExp{NUM},
+                       assume_sparse::Val{false},
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       res::Vector{CartesianProductArray{NUM}}
+                       )::Void where {NUM}
+    res[1] = CartesianProductArray(Xhat0[blocks])
+    if N == 1
+        return nothing
+    end
+
+    b = length(blocks)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    ϕpowerk = SparseMatrixExp(copy(ϕ.M))
+
+    if U != nothing
+        Whatk = Vector{LazySet{NUM}}(b)
+        inputs = next_set(U)
+        @inbounds for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+        end
+    end
+
+    arr_length = (U == nothing) ? length(partition) : length(partition) + 1
+    arr = Vector{LazySet{NUM}}(arr_length)
+    k = 2
+    p = Progress(N, 1, "Computing successors ")
+    @inbounds while true
+        update!(p, k)
+        for i in 1:b
+            bi = partition[blocks[i]]
+            ϕpowerk_πbi = row(ϕpowerk, bi)
+            for (j, bj) in enumerate(partition)
+                arr[j] = block(ϕpowerk_πbi, bj) * Xhat0[j]
+            end
+            if U != nothing
+                arr[arr_length] = Whatk[i]
+            end
+            Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
             if U != nothing
                 Whatk[i] =
                     overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)

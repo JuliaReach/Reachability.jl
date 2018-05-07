@@ -171,8 +171,75 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
     return 0
 end
 
-# lazy_expm
+# lazy_expm sparse
 function check_blocks!(ϕ::SparseMatrixExp{NUM},
+                       assume_sparse::Val{true},
+                       Xhat0::Vector{<:LazySet{NUM}},
+                       U::Union{ConstantInput, Void},
+                       overapproximate::Function,
+                       n::Int,
+                       N::Int,
+                       blocks::AbstractVector{Int},
+                       partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       prop::Property
+                       )::Int where {NUM}
+    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
+        return 1
+    elseif N == 1
+        return 0
+    end
+
+    b = length(blocks)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    ϕpowerk = SparseMatrixExp(copy(ϕ.M))
+
+    if U != nothing
+        Whatk = Vector{LazySet{NUM}}(b)
+        inputs = next_set(U)
+        @inbounds for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+        end
+    end
+
+    k = 2
+    p = Progress(N, 1, "Computing successors ")
+    @inbounds while true
+        update!(p, k)
+        for i in 1:b
+            bi = partition[blocks[i]]
+            ϕpowerk_πbi = row(ϕpowerk, bi)
+            Xhatk_bi = ZeroSet(length(bi))
+            for (j, bj) in enumerate(partition)
+                πbi = block(ϕpowerk_πbi, bj)
+                if findfirst(πbi) != 0
+                    Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
+                end
+            end
+            Xhatk[i] = overapproximate(blocks[i],
+                U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            if U != nothing
+                Whatk[i] =
+                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+            end
+        end
+
+        if !check_property(CartesianProductArray(Xhatk), prop)
+            return k
+        elseif k == N
+            break
+        end
+
+        ϕpowerk.M .= ϕpowerk.M + ϕ.M
+        k += 1
+    end
+
+    return 0
+end
+
+# lazy_expm dense
+function check_blocks!(ϕ::SparseMatrixExp{NUM},
+                       assume_sparse::Val{false},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
@@ -217,21 +284,16 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
                 arr[arr_length] = Whatk[i]
             end
             Xhatk[i] = MinkowskiSumArray(arr)
+            if U != nothing
+                Whatk[i] =
+                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+            end
         end
 
         if !check_property(CartesianProductArray(Xhatk), prop)
             return k
         elseif k == N
             break
-        end
-
-        if U != nothing
-            for i in 1:b
-                bi = partition[blocks[i]]
-                ϕpowerk_πbi = row(ϕpowerk, bi)
-                Whatk[i] =
-                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
-            end
         end
 
         ϕpowerk.M .= ϕpowerk.M + ϕ.M
