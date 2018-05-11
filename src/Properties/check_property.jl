@@ -134,6 +134,9 @@ function check_property(S::AbstractSystem,
         error("Unsupported algorithm: ", algorithm)
     end
 
+    # add eager/lazy checking option
+    push!(args, kwargs_dict[:eager_checking])
+
     # add property
     push!(args, kwargs_dict[:property])
 
