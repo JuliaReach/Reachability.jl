@@ -23,7 +23,7 @@ export @block_id,
 export @filename_to_png,
        @relpath
 
-# Extension of Systems for use inside Reachability.jl
+# Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
 """
