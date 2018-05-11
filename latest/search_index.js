@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Types of systems",
     "category": "section",
-    "text": "Systems.jl provides some convenience types and methods to work with mathematical systems models. Every system inherits from AbstractSystem.We support the following two concrete types of systems."
+    "text": "MathematicalSystems.jl provides some convenience types and methods to work with mathematical systems models. Every system inherits from AbstractSystem.We support the following two concrete types of systems."
 },
 
 {
