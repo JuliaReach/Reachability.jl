@@ -4,7 +4,7 @@ Module to apply coordinate transformations.
 """
 module Transformations
 
-using LazySets, ..Utils, Systems
+using LazySets, ..Utils, MathematicalSystems
 
 export transform
 
