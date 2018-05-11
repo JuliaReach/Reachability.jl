@@ -108,6 +108,7 @@ Supported options:
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
 - `:apply_projection`          -- switch for applying projection
+- `:eager_checking`            -- switch for early terminating property checks
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 
@@ -153,6 +154,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -267,6 +269,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :projection_matrix
             expected_type = Union{SparseMatrixCSC{Float64, Int}, Void}
         elseif key == :apply_projection
+            expected_type = Bool
+        elseif key == :eager_checking
             expected_type = Bool
         elseif key == :plot_vars
             expected_type = Vector{Int}
