@@ -1,4 +1,4 @@
-using Systems, LazySets
+using MathematicalSystems, LazySets
 
 export ContinuousSystem,
        DiscreteSystem,

@@ -14,7 +14,7 @@ CurrentModule = Reachability.Systems
 
 ## Types of systems
 
-[Systems.jl](https://github.com/JuliaReach/Systems.jl) provides some convenience
+[MathematicalSystems.jl](https://github.com/JuliaReach/MathematicalSystems.jl) provides some convenience
 types and methods to work with mathematical systems models. Every system inherits
 from `AbstractSystem`.
 

@@ -14,7 +14,7 @@ ReachSets.jl relies in the following modules:
 |Module name|Features|
 |-----------|--------|
 |`LazySets.jl`|Set-based representations and operations in the lazy framework. Support vector and support function calculus.|
-|`Systems.jl`|Representation and transformation of affine systems with non-deterministic inputs.|
+|`MathematicalSystems.jl`|Representation and transformation of affine systems with non-deterministic inputs.|
 
 The following dependencies are optional and provide additional functionality:
 
@@ -84,7 +84,7 @@ AUTHORS:
 """
 module ReachSets
 
-using LazySets, Systems, Expokit, ..Utils, ProgressMeter
+using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
