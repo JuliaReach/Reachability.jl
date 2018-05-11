@@ -206,6 +206,7 @@ function solve(system::AbstractSystem,
             partition=options[:partition],
             block_types_init=options[:block_types_init],
             block_types_iter=options[:block_types_iter],
+            eager_checking=options[:eager_checking],
             property=options[:property]
             )
         info("- Total")

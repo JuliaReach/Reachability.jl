@@ -43,10 +43,15 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        N::Int,
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       eager_checking::Bool,
                        prop::Property
                        )::Int where {NUM}
+    violation_index = 0
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
+        if eager_checking
+            return 1
+        end
+        violation_index = 1
     elseif N == 1
         return 0
     end
@@ -81,7 +86,14 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         end
 
         if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
+            if eager_checking
+                return k
+            elseif violation_index == 0
+                violation_index = k
+            end
+            if k == N
+                break
+            end
         elseif k == N
             break
         end
@@ -98,7 +110,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         k += 1
     end
 
-    return 0
+    return violation_index
 end
 
 # dense
@@ -110,10 +122,15 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
                        N::Int,
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       eager_checking::Bool,
                        prop::Property
                        )::Int where {NUM}
+    violation_index = 0
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
+        if eager_checking
+            return 1
+        end
+        violation_index = 1
     elseif N == 1
         return 0
     end
@@ -150,7 +167,14 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
         end
 
         if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
+            if eager_checking
+                return k
+            elseif violation_index == 0
+                violation_index = k
+            end
+            if k == N
+                break
+            end
         elseif k == N
             break
         end
@@ -168,7 +192,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
         k += 1
     end
 
-    return 0
+    return violation_index
 end
 
 # lazy_expm sparse
@@ -181,10 +205,15 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
                        N::Int,
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       eager_checking::Bool,
                        prop::Property
                        )::Int where {NUM}
+    violation_index = 0
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
+        if eager_checking
+            return 1
+        end
+        violation_index = 1
     elseif N == 1
         return 0
     end
@@ -225,7 +254,14 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         end
 
         if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
+            if eager_checking
+                return k
+            elseif violation_index == 0
+                violation_index = k
+            end
+            if k == N
+                break
+            end
         elseif k == N
             break
         end
@@ -234,7 +270,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return 0
+    return violation_index
 end
 
 # lazy_expm dense
@@ -247,10 +283,15 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
                        N::Int,
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       eager_checking::Bool,
                        prop::Property
                        )::Int where {NUM}
+    violation_index = 0
     if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
-        return 1
+        if eager_checking
+            return 1
+        end
+        violation_index = 1
     elseif N == 1
         return 0
     end
@@ -291,7 +332,14 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         end
 
         if !check_property(CartesianProductArray(Xhatk), prop)
-            return k
+            if eager_checking
+                return k
+            elseif violation_index == 0
+                violation_index = k
+            end
+            if k == N
+                break
+            end
         elseif k == N
             break
         end
@@ -300,5 +348,5 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return 0
+    return violation_index
 end
