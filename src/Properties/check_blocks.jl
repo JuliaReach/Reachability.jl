@@ -1,5 +1,5 @@
 #=
-    check_blocks!(ϕ, Xhat0, U, overapproximate, n, b, N, blocks, prop)
+    check_blocks(ϕ, Xhat0, U, overapproximate, n, b, N, blocks, prop)
 
 Property checking of a given number of two-dimensional blocks of an affine
 system with nondeterministic inputs.
@@ -35,7 +35,7 @@ The first time index where the property is violated, and 0 if the property is sa
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
 
 # sparse
-function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
+function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
@@ -114,7 +114,7 @@ function check_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 end
 
 # dense
-function check_blocks!(ϕ::AbstractMatrix{NUM},
+function check_blocks(ϕ::AbstractMatrix{NUM},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
@@ -196,7 +196,7 @@ function check_blocks!(ϕ::AbstractMatrix{NUM},
 end
 
 # lazy_expm sparse
-function check_blocks!(ϕ::SparseMatrixExp{NUM},
+function check_blocks(ϕ::SparseMatrixExp{NUM},
                        assume_sparse::Val{true},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
@@ -274,7 +274,7 @@ function check_blocks!(ϕ::SparseMatrixExp{NUM},
 end
 
 # lazy_expm dense
-function check_blocks!(ϕ::SparseMatrixExp{NUM},
+function check_blocks(ϕ::SparseMatrixExp{NUM},
                        assume_sparse::Val{false},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},

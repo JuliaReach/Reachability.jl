@@ -34,7 +34,7 @@ available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
 include("check_blocks.jl")
-push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_blocks!,
+push!(available_algorithms, "explicit_blocks"=>Dict("func"=>check_blocks,
                                                     "is_full"=>false,
                                                     "is_explicit"=>true))
 
