@@ -270,7 +270,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :assume_homogeneous
             expected_type = Bool
         elseif key == :projection_matrix
-            expected_type = Union{SparseMatrixCSC{Float64, Int}, Void}
+            expected_type = Union{AbstractMatrix, Void}
         elseif key == :apply_projection
             expected_type = Bool
         elseif key == :eager_checking

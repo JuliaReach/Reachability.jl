@@ -31,8 +31,8 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64,
     δ::Float64, Rsets::Vector{<:LazySets.CartesianProductArray{numeric_type}},
     algorithm::String="explicit";
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
-    projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
-    transformation_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing
+    projection_matrix::Union{AbstractMatrix, Void}=nothing,
+    transformation_matrix::Union{AbstractMatrix, Void}=nothing
     )::Vector{<:LazySet} where {numeric_type<:Real}
 
     # parse input
@@ -119,8 +119,8 @@ in the sequence of 2D sets `Rsets`.
 function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     Rsets::Vector{<:LazySets.LazySet{numeric_type}}, algorithm::String;
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
-    projection_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing,
-    transformation_matrix::Union{SparseMatrixCSC{Float64,Int64}, Void}=nothing
+    projection_matrix::Union{AbstractMatrix, Void}=nothing,
+    transformation_matrix::Union{AbstractMatrix, Void}=nothing
     )::Vector{<:LazySet} where {numeric_type<:Real}
 
     # parse input
