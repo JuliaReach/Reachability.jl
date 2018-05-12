@@ -76,20 +76,25 @@ function check_property(S::AbstractSystem,
     partition = convert_partition(kwargs_dict[:partition])
 
     # Cartesian decomposition of the initial set
-    info("- Decomposing X0")
-    tic()
-    if lazy_X0
-        Xhat0 = S.x0
-    elseif !isempty(kwargs_dict[:block_types_init])
-        Xhat0 = array(decompose(S.x0, ɛ=ε_init,
-                                block_types=kwargs_dict[:block_types_init]))
-    elseif set_type_init == LazySets.Interval
-        Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init,
-                                blocks=ones(Int, n)))
+    if length(partition) == 1 && length(partition[1]) == n
+        info("- No decomposition of X0 needed")
+        Xhat0 = [S.x0]
     else
-        Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init))
+        info("- Decomposing X0")
+        tic()
+        if lazy_X0
+            Xhat0 = S.x0
+        elseif !isempty(kwargs_dict[:block_types_init])
+            Xhat0 = array(decompose(S.x0, ɛ=ε_init,
+                                    block_types=kwargs_dict[:block_types_init]))
+        elseif set_type_init == LazySets.Interval
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init,
+                                    blocks=ones(Int, n)))
+        else
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init))
+        end
+        tocc()
     end
-    tocc()
 
     # shortcut if only the initial set is required
     if N == 1
