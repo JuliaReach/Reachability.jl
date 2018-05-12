@@ -208,7 +208,8 @@ function solve(system::AbstractSystem,
             block_types_init=options[:block_types_init],
             block_types_iter=options[:block_types_iter],
             eager_checking=options[:eager_checking],
-            property=options[:property]
+            property=options[:property],
+            lazy_inputs_interval=options[:lazy_inputs_interval]
             )
         info("- Total")
         tocc()
