@@ -11,7 +11,7 @@ INPUT:
 - `ϕ` -- sparse matrix of a discrete affine system
 - `Xhat0` -- initial set as a cartesian product over 2d blocks
 - `U` -- input set of undeterministic inputs
-- `overapproximate` -- function for overapproximation
+- `overapproximate_inputs` -- function for overapproximation of inputs
 - `n` -- ambient dimension
 - `N` -- number of sets computed
 - `blocks` -- the block indices to be computed
@@ -38,7 +38,6 @@ The first time index where the property is violated, and 0 if the property is sa
 function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
-                       overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
@@ -118,7 +117,6 @@ end
 function check_blocks(ϕ::AbstractMatrix{NUM},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
-                       overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
@@ -202,7 +200,6 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        assume_sparse::Val{true},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
-                       overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
@@ -248,8 +245,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
-            Xhatk[i] = overapproximate(blocks[i],
-                U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk[i] = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
             if U != nothing
                 Whatk[i] = overapproximate_inputs(k, blocks[i],
                     Whatk[i] + ϕpowerk_πbi * inputs)
@@ -281,7 +277,6 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        assume_sparse::Val{false},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
-                       overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
