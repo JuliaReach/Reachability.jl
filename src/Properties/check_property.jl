@@ -71,27 +71,35 @@ function check_property(S::AbstractSystem,
         push!(args, Val(assume_sparse))
     end
 
+    n = statedim(S)
+    blocks = kwargs_dict[:blocks]
+    partition = convert_partition(kwargs_dict[:partition])
+
     # Cartesian decomposition of the initial set
-    X0 = S.x0
-    info("- Decomposing X0")
-    tic()
-    if lazy_X0
-        Xhat0 = X0
-    elseif !isempty(kwargs_dict[:block_types_init])
-        Xhat0 = array(decompose(X0, ɛ=ε_init,
-                                block_types=kwargs_dict[:block_types_init]))
-    elseif set_type_init == LazySets.Interval
-        Xhat0 = array(decompose(X0, set_type=set_type_init, ɛ=ε_init,
-                                blocks=ones(Int, dim(X0))))
+    if length(partition) == 1 && length(partition[1]) == n
+        info("- No decomposition of X0 needed")
+        Xhat0 = [S.x0]
     else
-        Xhat0 = array(decompose(X0, set_type=set_type_init, ɛ=ε_init))
+        info("- Decomposing X0")
+        tic()
+        if lazy_X0
+            Xhat0 = S.x0
+        elseif !isempty(kwargs_dict[:block_types_init])
+            Xhat0 = array(decompose(S.x0, ɛ=ε_init,
+                                    block_types=kwargs_dict[:block_types_init]))
+        elseif set_type_init == LazySets.Interval
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init,
+                                    blocks=ones(Int, n)))
+        else
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init))
+        end
+        tocc()
     end
-    tocc()
 
     # shortcut if only the initial set is required
     if N == 1
-        if length(kwargs_dict[:blocks]) == 1
-            Xhat0_mod = Xhat0[kwargs_dict[:blocks][1]]
+        if length(blocks) == 1
+            Xhat0_mod = Xhat0[blocks[1]]
         else
             Xhat0_mod = CartesianProductArray(Xhat0)
         end
@@ -134,15 +142,15 @@ function check_property(S::AbstractSystem,
     push!(args, overapproximate_inputs_fun)
 
     # ambient dimension
-    push!(args, statedim(S))
+    push!(args, n)
 
     # number of computed sets
     push!(args, N)
 
     # add mode-specific block(s) argument
     if algorithm == "explicit"
-        push!(args, kwargs_dict[:blocks])
-        push!(args, convert_partition(kwargs_dict[:partition]))
+        push!(args, blocks)
+        push!(args, partition)
         algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)
