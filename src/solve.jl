@@ -130,7 +130,11 @@ function solve(system::AbstractSystem,
         if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(A)})
             info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(A)) and will be ignored")
         elseif !(A isa AbstractSparseMatrix)
-            Δ = DiscreteSystem(sparse(A), Δ.x0, inputset(Δ))
+            if method_exists(inputset, Tuple{typeof(Δ.s)})
+                Δ = DiscreteSystem(sparse(A), Δ.x0, inputset(Δ))
+            else
+                Δ = DiscreteSystem(sparse(A), Δ.x0)
+            end
         end
     end
 
