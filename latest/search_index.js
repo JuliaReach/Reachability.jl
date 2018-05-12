@@ -349,7 +349,7 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "References",
     "category": "section",
-    "text": "This repository was originally motivated by the mathematical approach described in Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices,  Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Andreas Podelski, Christian Schilling, Frédéric Viry, in 21st ACM International Conference on Hybrid Systems: Computation and Control, 2018 Edition (Porto, Portugal), see the aXiv pre-print here.For a full references list of algorithms implemented in this repository, consult the References wiki."
+    "text": "This repository was originally motivated by the mathematical approach described in Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices,  Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Andreas Podelski, Christian Schilling, Frédéric Viry, in 21st ACM International Conference on Hybrid Systems: Computation and Control, 2018 Edition (Porto, Portugal), see the arXiv pre-print here.For a full references list of algorithms implemented in this repository, consult the References wiki."
 },
 
 {
