@@ -142,6 +142,7 @@ Adds an extra dimension to a continuous system.
 ### Examples
 
 ```jldoctest add_dimension_cont_sys
+julia> using MathematicalSystems
 julia> A = sprandn(3, 3, 0.5);
 julia> X0 = BallInf(zeros(3), 1.0);
 julia> s = ContinuousSystem(A, X0);
@@ -175,12 +176,22 @@ julia> statedim(sext)
 julia> dim(next_set(inputset(sext), 1))
 4
 ```
+
+Extending a varing input set with more than one extra dimension:
+
+```jldoctest add_dimension_cont_sys
+julia> sext = add_dimension(s, 7);
+julia> statedim(sext)
+10
+julia> dim(next_set(inputset(sext), 1))
+10
+```
 """
 function add_dimension(cs, m=1)
     Aext = add_dimension(cs.s.A, m)
     X0ext = add_dimension(cs.x0, m)
     if method_exists(inputset, Tuple{typeof(cs.s)})
-        Uext = map(add_dimension, inputset(cs))
+        Uext = map(x -> add_dimension(x, m), inputset(cs))
         return ContinuousSystem(Aext, X0ext, Uext)
     else
         return ContinuousSystem(Aext, X0ext)
