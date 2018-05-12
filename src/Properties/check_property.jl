@@ -115,7 +115,7 @@ function check_property(S::AbstractSystem,
     end
     push!(args, U)
 
-    # overapproximation function for states (with/without iterative refinement)
+    # raw overapproximation function (with/without iterative refinement)
     if haskey(kwargs_dict, :block_types_iter)
         block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
         overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
@@ -127,7 +127,6 @@ function check_property(S::AbstractSystem,
     else
         overapproximate_fun = (i, x) -> overapproximate(x, set_type_iter)
     end
-    push!(args, overapproximate_fun)
 
     # overapproximate function for inputs
     lazy_inputs_interval = kwargs_dict[:lazy_inputs_interval]
