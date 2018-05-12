@@ -107,17 +107,31 @@ function check_property(S::AbstractSystem,
     end
     push!(args, U)
 
-    # overapproximation function (with or without iterative refinement)
+    # overapproximation function for states (with/without iterative refinement)
     if haskey(kwargs_dict, :block_types_iter)
         block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
-        push!(args, (i, x) -> block_types_iter[i] == HPolygon ?
+        overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
                               overapproximate(x, HPolygon, ε_iter) :
-                              overapproximate(x, block_types_iter[i]))
+                              overapproximate(x, block_types_iter[i])
     elseif ε_iter < Inf
-        push!(args, (i, x) -> overapproximate(x, set_type_iter, ε_iter))
+        overapproximate_fun =
+            (i, x) -> overapproximate(x, set_type_iter, ε_iter)
     else
-        push!(args, (i, x) -> overapproximate(x, set_type_iter))
+        overapproximate_fun = (i, x) -> overapproximate(x, set_type_iter)
     end
+    push!(args, overapproximate_fun)
+
+    # overapproximate function for inputs
+    lazy_inputs_interval = kwargs_dict[:lazy_inputs_interval]
+    if lazy_inputs_interval == 0
+        overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
+    else
+        overapproximate_inputs_fun =
+            (k, i, x) -> (k % lazy_inputs_interval == 0) ?
+                         overapproximate_fun(i, x) :
+                         x
+    end
+    push!(args, overapproximate_inputs_fun)
 
     # ambient dimension
     push!(args, statedim(S))

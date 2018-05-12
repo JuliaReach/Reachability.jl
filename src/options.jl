@@ -109,6 +109,8 @@ Supported options:
 - `:projection_matrix`         -- projection matrix
 - `:apply_projection`          -- switch for applying projection
 - `:eager_checking`            -- switch for early terminating property checks
+- `:lazy_inputs_interval`      -- length of interval in which the inputs are
+                                  handled as a lazy set
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 
@@ -155,6 +157,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_inputs_interval], 0)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -272,6 +275,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :eager_checking
             expected_type = Bool
+        elseif key == :lazy_inputs_interval
+            expected_type = Int
+            domain_constraints = (v::Int  ->  v >= 0)
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)

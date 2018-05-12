@@ -42,6 +42,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
+                       overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
                        blocks::AbstractVector{Int},
@@ -62,7 +63,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
-            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+            Whatk[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
     end
 
@@ -91,8 +92,8 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         if U != nothing
             for i in 1:b
                 bi = partition[blocks[i]]
-                Whatk[i] = overapproximate(blocks[i],
-                                           Whatk[i] + row(ϕpowerk, bi) * inputs)
+                Whatk[i] = overapproximate_inputs(k, blocks[i],
+                    Whatk[i] + row(ϕpowerk, bi) * inputs)
             end
         end
 
@@ -108,6 +109,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
+                       overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
                        blocks::AbstractVector{Int},
@@ -129,7 +131,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
-            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+            Whatk[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
     end
 
@@ -158,8 +160,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         if U != nothing
             for i in 1:b
                 bi = partition[blocks[i]]
-                Whatk[i] = overapproximate(blocks[i],
-                                           Whatk[i] + row(ϕpowerk, bi) * inputs)
+                Whatk[i] = overapproximate_inputs(k, blocks[i],
+                    Whatk[i] + row(ϕpowerk, bi) * inputs)
             end
         end
 
@@ -178,6 +180,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
+                       overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
                        blocks::AbstractVector{Int},
@@ -198,7 +201,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
-            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+            Whatk[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
     end
 
@@ -219,8 +222,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             Xhatk[i] = overapproximate(blocks[i],
                 U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
             if U != nothing
-                Whatk[i] =
-                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+                Whatk[i] = overapproximate_inputs(k, blocks[i],
+                    Whatk[i] + ϕpowerk_πbi * inputs)
             end
         end
         res[k] = CartesianProductArray(copy(Xhatk))
@@ -243,6 +246,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        Xhat0::Vector{<:LazySet{NUM}},
                        U::Union{ConstantInput, Void},
                        overapproximate::Function,
+                       overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
                        blocks::AbstractVector{Int},
@@ -263,7 +267,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
-            Whatk[i] = overapproximate(blocks[i], proj(bi, n) * inputs)
+            Whatk[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
     end
 
@@ -284,8 +288,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             end
             Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
             if U != nothing
-                Whatk[i] =
-                    overapproximate(blocks[i], Whatk[i] + ϕpowerk_πbi * inputs)
+                Whatk[i] = overapproximate_inputs(k, blocks[i],
+                    Whatk[i] + ϕpowerk_πbi * inputs)
             end
         end
         res[k] = CartesianProductArray(copy(Xhatk))
