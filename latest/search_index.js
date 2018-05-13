@@ -101,7 +101,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Systems",
     "title": "Systems",
     "category": "section",
-    "text": "This module provides types to represent systems of affine ODEs in both discrete and continuous time.Pages = [\"systems.md\"]\nDepth = 3CurrentModule = Reachability.Systems"
+    "text": "This module provides types to represent systems of affine ODEs in both discrete and continuous time.Pages = [\"systems.md\"]\nDepth = 3"
 },
 
 {
