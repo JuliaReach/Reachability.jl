@@ -38,17 +38,18 @@ next_set(inputs::ConstantInput) = next(inputs, 1)[1]
 next_set(inputs::AbstractInput, state::Int64) = next(inputs, state)[1]
 
 """
-    add_dimension(A::AbstractMatrix)
+    add_dimension(A::AbstractMatrix, m=1)
 
 Adds an extra zero row and column to a matrix.
 
 ### Input
 
 - `A` -- matrix
+- `m` -- (optional, default: `1`) the number of extra dimensions
 
 ### Examples
 
-```julia
+```jldoctest add_dimension_test
 julia> A = [0.4 0.25; 0.46 -0.67]
 2×2 Array{Float64,2}:
  0.4    0.25
@@ -59,24 +60,34 @@ julia> add_dimension(A)
  0.46  -0.67  0.0
  0.0    0.0   0.0
 ```
+
+```jldoctest add_dimension_test
+julia> add_dimension(A, 2)
+4×4 Array{Float64,2}:
+ 0.4    0.25  0.0  0.0
+ 0.46  -0.67  0.0  0.0
+ 0.0    0.0   0.0  0.0
+ 0.0    0.0   0.0  0.0
+```
 """
-function add_dimension(A::AbstractMatrix)
+function add_dimension(A::AbstractMatrix, m=1)
     n = size(A, 1)
-    return vcat(hcat(A, zeros(n)), zeros(n+1).')
+    return vcat(hcat(A, zeros(n, m)), zeros(m, n+m))
 end
 
 """
-    add_dimension(X::LazySet)::LazySet
+    add_dimension(X::LazySet, m=1)::LazySet
 
-Adds an extra dimension to a LazySet, usually through a Cartesian product.
+Adds an extra dimension to a LazySet through a Cartesian product.
 
 ### Input
 
 - `X` -- a lazy set
+- `m` -- (optional, default: `1`) the number of extra dimensions
 
 ### Examples
 
-```jldoctest
+```jldoctest add_dimension_set
 julia> X = BallInf(ones(9), 0.5);
 
 julia> dim(X)
@@ -95,27 +106,43 @@ julia> dim(add_dimension(X))
 julia> typeof(X)
 LazySets.ZeroSet{Float64}
 ```
+
+More than one dimension can be added passing the second argument:
+
+```jldoctest add_dimension_set
+julia> Xext = add_dimension(BallInf(zeros(10), 0.1), 4);
+
+julia> dim(Xext)
+14
+```
+
+### Notes
+
+In the special case that the given set is a zero set, instead of cartesian product
+a new zero set with extended dimensions is returned.
 """
-function add_dimension(X::LazySet)::LazySet
-    if X isa ZeroSet
-        return ZeroSet(dim(X)+1)
-    else
-        return X * ZeroSet(1)
-    end
+function add_dimension(X::LazySet, m=1)::LazySet
+    return X * ZeroSet(m)
+end
+
+function add_dimension(X::ZeroSet, m=1)::ZeroSet
+    return ZeroSet(dim(X)+m)
 end
 
 """
-    add_dimension(cont_sys)
+    add_dimension(cs, m=1)
 
 Adds an extra dimension to a continuous system.
 
 ### Input
 
 - `cs` -- continuous system
+- `m` -- (optional, default: `1`) the number of extra dimensions
 
 ### Examples
 
-```julia
+```jldoctest add_dimension_cont_sys
+julia> using MathematicalSystems
 julia> A = sprandn(3, 3, 0.5);
 julia> X0 = BallInf(zeros(3), 1.0);
 julia> s = ContinuousSystem(A, X0);
@@ -126,7 +153,7 @@ julia> statedim(sext)
 
 If there is an input set, it is also extended:
 
-```julia
+```jldoctest add_dimension_cont_sys
 julia> U = Ball2(ones(3), 0.1);
 julia> s = ContinuousSystem(A, X0, U);
 julia> sext = add_dimension(s);
@@ -140,7 +167,7 @@ Extending a system with a varying input set:
 
 If there is an input set, it is also extended:
 
-```julia
+```jldoctest add_dimension_cont_sys
 julia> U = [Ball2(ones(3), 0.1 * i) for i in 1:3];
 julia> s = ContinuousSystem(A, X0, U);
 julia> sext = add_dimension(s);
@@ -149,12 +176,22 @@ julia> statedim(sext)
 julia> dim(next_set(inputset(sext), 1))
 4
 ```
+
+Extending a varing input set with more than one extra dimension:
+
+```jldoctest add_dimension_cont_sys
+julia> sext = add_dimension(s, 7);
+julia> statedim(sext)
+10
+julia> dim(next_set(inputset(sext), 1))
+10
+```
 """
-function add_dimension(cs)
-    Aext = add_dimension(cs.s.A)
-    X0ext = add_dimension(cs.x0)
-    if :U in fieldnames(cs.s)
-        Uext = map(add_dimension, inputset(cs))
+function add_dimension(cs, m=1)
+    Aext = add_dimension(cs.s.A, m)
+    X0ext = add_dimension(cs.x0, m)
+    if method_exists(inputset, Tuple{typeof(cs.s)})
+        Uext = map(x -> add_dimension(x, m), inputset(cs))
         return ContinuousSystem(Aext, X0ext, Uext)
     else
         return ContinuousSystem(Aext, X0ext)

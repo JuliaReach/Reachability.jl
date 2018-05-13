@@ -8,10 +8,6 @@ Pages = ["systems.md"]
 Depth = 3
 ```
 
-```@meta
-CurrentModule = Reachability.Systems
-```
-
 ## Types of systems
 
 [MathematicalSystems.jl](https://github.com/JuliaReach/MathematicalSystems.jl) provides some convenience
