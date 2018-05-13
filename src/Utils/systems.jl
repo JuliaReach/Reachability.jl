@@ -122,15 +122,15 @@ In the special case that the given set is a zero set, instead of cartesian produ
 a new zero set with extended dimensions is returned.
 """
 function add_dimension(X::LazySet, m=1)::LazySet
-    if X isa ZeroSet
-        return ZeroSet(dim(X)+m)
-    else
-        return X * ZeroSet(m)
-    end
+    return X * ZeroSet(m)
+end
+
+function add_dimension(X::ZeroSet, m=1)::ZeroSet
+    return ZeroSet(dim(X)+m)
 end
 
 """
-    add_dimension(cont_sys, m=1)
+    add_dimension(cs, m=1)
 
 Adds an extra dimension to a continuous system.
 
