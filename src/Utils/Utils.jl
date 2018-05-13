@@ -303,45 +303,39 @@ by a `UnitRange{Int}`.
 ### Output
 
 New partition representation.
+
+### Notes
+
+We cannot mix `Int` and `UnitRange{Int}`, so we only create `Int` partitions if
+all blocks are 1D.
 """
 function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Union{
         Vector{Int},
-        Vector{UnitRange{Int}},
-        Vector{Union{UnitRange{Int}, Int}}}
-    # are there 1D blocks and/or kD blocks?
-    has_1D_blocks = false
+        Vector{UnitRange{Int}}}
+    # are there kD blocks for k > 1?
     has_kD_blocks = false
     for (i, block) in enumerate(partition)
-        if length(block) == 1
-            has_1D_blocks = true
-            if has_kD_blocks
-                break
-            end
-        else
+        if length(block) > 1
             has_kD_blocks = true
-            if has_1D_blocks
-                break
-            end
+            break
         end
     end
 
     # use optimal partition type
-    if !has_1D_blocks
-        partition_out = Vector{UnitRange{Int}}(length(partition))
-    elseif !has_kD_blocks
+    if !has_kD_blocks
+        # only 1D blocks
         partition_out = Vector{Int}(length(partition))
-    else
-        partition_out = Vector{Union{UnitRange{Int}, Int}}(length(partition))
-    end
-
-    # convert old partition representation to new one
-    for (i, block) in enumerate(partition)
-        if length(block) == 1
+        for (i, block) in enumerate(partition)
             partition_out[i] = block[1]
-        else
+        end
+    else
+        # at least one kD block for k > 1
+        partition_out = Vector{UnitRange{Int}}(length(partition))
+        for (i, block) in enumerate(partition)
             partition_out[i] = block[1]:block[end]
         end
     end
+
     return partition_out
 end
 
