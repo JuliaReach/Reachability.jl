@@ -61,3 +61,11 @@ A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
 system = ContinuousSystem(A, X0)
 options = Options(Dict(:T=>0.1, :partition=>[1:2, 3:4, [5]], :block_types=>Dict(HPolygon=>[1:2, 3:4], Interval=>[[5]]), :vars=>[1,3]))
 s = solve(system, options)
+
+# ===============================
+# System with an odd dimension
+# ===============================
+A = [1 2 1.; 0 0. 1; -2 1 4]
+X0 = BallInf(ones(3), 0.1)
+system = ContinuousSystem(A, X0)
+s = solve(system, :T=>0.1, :vars=>1:3, :partition=>[1:2, 3:3])
