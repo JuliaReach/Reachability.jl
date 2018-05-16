@@ -24,15 +24,9 @@ for scientific computing.
 This package requires Julia v0.6 or later. Refer to the [official documentation](https://julialang.org/downloads)
 on how to install and run Julia in your system.
 
-To install the [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) dependency,
-use the following command inside Julia's REPL:
+The set computations depend on the core library [LazySets.jl](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
 
-```julia
-Pkg.clone("https://github.com/JuliaReach/LazySets.jl")
-```
-
-For further information see the
-[installation section of LazySets.jl](https://github.com/JuliaReach/LazySets.jl#installing).
+The latest stable release of [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) is installed automatically when you install `Reachability.jl`, see installation instructions below. You can always install the development version via `Pkg.clone`; f[installation section of LazySets.jl](https://github.com/JuliaReach/LazySets.jl#installing) for further details.
 
 ### Installation
 
