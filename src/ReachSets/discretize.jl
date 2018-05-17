@@ -43,7 +43,7 @@ function discretize(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
                     approx_model::String="forward",
                     pade_expm::Bool=false,
                     lazy_expm::Bool=false,
-                    lazy_sih::Bool=true)
+                    lazy_sih::Bool=true)::InitialValueProblem{<:AbstractDiscreteSystem}
 
     if approx_model in ["forward", "backward"]
         return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm,

@@ -77,7 +77,7 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve(system::AbstractSystem,
+function solve(system::InitialValueProblem,
                options_input::Options)::AbstractSolution
 
     # ==========
