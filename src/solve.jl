@@ -165,6 +165,7 @@ function solve(system::InitialValueProblem,
             partition=options[:partition],
             block_types_init=options[:block_types_init],
             block_types_iter=options[:block_types_iter],
+            template_directions_iter=options[:template_directions_iter],
             lazy_inputs_interval=options[:lazy_inputs_interval]
             )
         info("- Total")
@@ -211,6 +212,7 @@ function solve(system::InitialValueProblem,
             partition=options[:partition],
             block_types_init=options[:block_types_init],
             block_types_iter=options[:block_types_iter],
+            template_directions_iter=options[:template_directions_iter],
             eager_checking=options[:eager_checking],
             property=options[:property],
             lazy_inputs_interval=options[:lazy_inputs_interval]

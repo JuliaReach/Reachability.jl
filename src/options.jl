@@ -104,6 +104,9 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
+- `:template_directions`       -- short hand to set `template_directions_iter`
+- `:template_directions_iter`  -- directions to use for the approximation of the
+                                  initial states
 - `:coordinate_transformation` -- coordinate transformation method
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
@@ -167,7 +170,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_and_add_plot_vars!(dict, dict_copy)
 
     # special options: ε, ε_init, ε_iter, ε_proj,
-    #                  set_type, set_type_init, set_type_iter, set_type_proj
+    #                  set_type, set_type_init, set_type_iter, set_type_proj,
+    #                  template_directions, template_directions_iter
     check_and_add_approximation!(dict, dict_copy)
 
     # special options: partition, block_types, block_types_init, block_types_iter
@@ -264,6 +268,13 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_sih
             expected_type = Bool
+        elseif key == :template_directions
+            expected_type = Symbol
+            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag])
+        elseif key == :template_directions_iter
+            expected_type = Symbol
+            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
+                                                       :nothing])
         elseif key == :coordinate_transformation
             expected_type = String
             domain_constraints = (v::String  ->  v in ["", "schur"])
@@ -441,21 +452,23 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
     # fallback options
     check_aliases!(dict, dict_copy, [:ε])
     check_aliases!(dict, dict_copy, [:set_type])
+    check_aliases!(dict, dict_copy, [:template_directions])
     ε = haskey(dict, :ε) ? dict[:ε] : Inf
 
+    # fallback set type
     if haskey(dict, :set_type)
+        # use the provided set type
         set_type = dict[:set_type]
+    elseif ε < Inf
+        # use polygons
+        set_type = HPolygon
+    elseif !haskey(dict, :partition)
+        # use intervals
+        set_type = Interval
+        set_type_proj = Interval
     else
-        if ε < Inf
-            set_type = HPolygon
-        else
-            if !haskey(dict, :partition)
-                set_type = Interval
-                set_type_proj = Interval
-            else
-                set_type = Hyperrectangle
-            end
-        end
+        # use hyperrectangles
+        set_type = Hyperrectangle
     end
 
     ε_init = (haskey(dict, :set_type_init) && dict[:set_type_init] == HPolygon) ||
@@ -471,6 +484,12 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
 
     set_type_iter = dict_copy[:ε_iter] < Inf ? HPolygon : set_type
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_iter], set_type_iter)
+
+    template_directions_iter = haskey(dict, :template_directions_iter) ?
+        dict[:template_directions_iter] : haskey(dict, :template_directions) ?
+        dict[:template_directions] : :nothing
+    check_aliases_and_add_default_value!(dict, dict_copy,
+        [:template_directions_iter], template_directions_iter)
 
     ε_proj = (haskey(dict, :set_type_proj) && dict[:set_type_proj] == HPolygon) ||
              (!haskey(dict, :set_type_proj) && set_type == HPolygon) ? ε :
