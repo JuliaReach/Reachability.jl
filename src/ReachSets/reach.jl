@@ -84,13 +84,13 @@ function reach(S::AbstractSystem,
         if lazy_X0
             Xhat0 = S.x0
         elseif !isempty(kwargs_dict[:block_types_init])
-            Xhat0 = array(decompose(S.x0, ɛ=ε_init,
+            Xhat0 = array(decompose(S.x0, ε=ε_init,
                                     block_types=kwargs_dict[:block_types_init]))
         elseif set_type_init == LazySets.Interval
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init,
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
                                     blocks=ones(Int, n)))
         else
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ɛ=ε_init))
+            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
         end
         tocc()
     end
