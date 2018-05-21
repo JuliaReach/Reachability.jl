@@ -115,8 +115,20 @@ function check_property(S::AbstractSystem,
     end
     push!(args, U)
 
-    # raw overapproximation function (with/without iterative refinement)
-    if haskey(kwargs_dict, :block_types_iter)
+    # raw overapproximation function
+    template_directions_symbol = kwargs_dict[:template_directions_iter]
+    if template_directions_symbol == :box
+        dir = Approximations.BoxDirections
+    elseif template_directions_symbol == :oct
+        dir = Approximations.OctDirections
+    elseif template_directions_symbol == :boxdiag
+        dir = Approximations.BoxDiagDirections
+    else
+        dir = nothing
+    end
+    if dir != nothing
+        overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
+    elseif haskey(kwargs_dict, :block_types_iter)
         block_types_iter = block_to_set_map(kwargs_dict[:block_types_iter])
         overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
                               overapproximate(x, HPolygon, ε_iter) :
