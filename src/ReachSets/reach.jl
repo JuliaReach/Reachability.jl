@@ -144,10 +144,20 @@ function reach(S::AbstractSystem,
     if lazy_inputs_interval == 0
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
-        overapproximate_inputs_fun =
-            (k, i, x) -> (k % lazy_inputs_interval == 0) ?
-                         overapproximate_fun(i, x) :
-                         x
+        # first set
+        function _f(k, i, x::LinearMap{MN, NUM}) where {MN, NUM}
+            return LazySets.CacheMinkowskiSum(LazySet{NUM}[x])
+        end
+        # further sets
+        function _f(k, i, x::MinkowskiSum)
+            @assert (x.X isa CacheMinkowskiSum) "expected CacheMinkowskiSum type, got $(typeof(x.X))"
+            push!(array(x.X), x.Y)
+            if k % lazy_inputs_interval == 0
+                return overapproximate_fun(i, x.X)
+            end
+            return x.X
+        end
+        overapproximate_inputs_fun = _f
     end
     push!(args, overapproximate_inputs_fun)
 
