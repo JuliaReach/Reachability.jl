@@ -145,18 +145,29 @@ function check_property(S::AbstractSystem,
     if lazy_inputs_interval == 0
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
-        # first set
+        # first set in a series
         function _f(k, i, x::LinearMap{MN, NUM}) where {MN, NUM}
-            return CacheMinkowskiSum(LazySet{NUM}[x])
+            @assert k == 1 "a LinearMap is only expected in the first iteration"
+            return LazySets.CacheMinkowskiSum(LazySet{NUM}[x])
         end
-        # further sets
-        function _f(k, i, x::MinkowskiSum)
-            @assert (x.X isa CacheMinkowskiSum) "expected CacheMinkowskiSum type, got $(typeof(x.X))"
+        # further sets of the series
+        function _f(k, i,
+                    x::MinkowskiSum{NUM, <:LazySets.CacheMinkowskiSum}) where NUM
             push!(array(x.X), x.Y)
             if k % lazy_inputs_interval == 0
-                return overapproximate_fun(i, x.X)
+                # overapproximate lazy set
+                y = overapproximate_fun(i, x.X)
+                return LazySets.CacheMinkowskiSum(LazySet{NUM}[y])
             end
             return x.X
+        end
+        function _f(k, i, x)
+            # other set types
+            if k % lazy_inputs_interval == 0
+                # overapproximate lazy set
+                return overapproximate_fun(i, x.X)
+            end
+            return x
         end
         overapproximate_inputs_fun = _f
     end
