@@ -113,7 +113,7 @@ Supported options:
 - `:apply_projection`          -- switch for applying projection
 - `:eager_checking`            -- switch for early terminating property checks
 - `:lazy_inputs_interval`      -- length of interval in which the inputs are
-                                  handled as a lazy set
+                                  handled as a lazy set (``-1`` for 'never')
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 
@@ -160,7 +160,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_inputs_interval], 0)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -176,6 +175,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: partition, block_types, block_types_init, block_types_iter
     check_and_add_partition_block_types!(dict, dict_copy)
+
+    # special option: lazy_inputs_interval
+    check_and_add_lazy_inputs_interval!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -288,7 +290,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_inputs_interval
             expected_type = Int
-            domain_constraints = (v::Int  ->  v >= 0)
+            domain_constraints = (v::Int  ->  v >= -1)
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
@@ -588,6 +590,35 @@ function compute_blocks(vars, partition)
     @assert var_idx == length(vars) + 1
     sizehint!(blocks, length(blocks))
     return blocks
+end
+
+"""
+    check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
+                                        dict_copy::Dict{Symbol,Any})
+
+Handling of the special option `:lazy_inputs_interval`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes
+
+The default value is ``0``.
+If the input is ``-1``, we set the output to ``2147483647`` (maximum `Int32`
+value).
+"""
+function check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
+                                             dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:lazy_inputs_interval])
+    if haskey(dict_copy, :lazy_inputs_interval)
+        if dict_copy[:lazy_inputs_interval] == -1
+            dict_copy[:lazy_inputs_interval] = 2147483647 # very big number
+        end
+    else
+        dict_copy[:lazy_inputs_interval] = 0 # set default value
+    end
 end
 
 """
