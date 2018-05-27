@@ -1,3 +1,5 @@
+import LazySets.CacheMinkowskiSum
+
 """
     check_property(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
                    [set_type_iter], [assume_sparse], [assume_homogeneous],
@@ -142,28 +144,29 @@ function check_property(S::AbstractSystem,
 
     # overapproximate function for inputs
     lazy_inputs_interval = kwargs_dict[:lazy_inputs_interval]
-    if lazy_inputs_interval == 0
+    if lazy_inputs_interval == nothing
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
+        @assert lazy_inputs_interval isa Function "illegal internal value " *
+            "$lazy_inputs_interval for option :lazy_inputs_interval"
         # first set in a series
         function _f(k, i, x::LinearMap{MN, NUM}) where {MN, NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
-            return LazySets.CacheMinkowskiSum(LazySet{NUM}[x])
+            return CacheMinkowskiSum(LazySet{NUM}[x])
         end
         # further sets of the series
-        function _f(k, i,
-                    x::MinkowskiSum{NUM, <:LazySets.CacheMinkowskiSum}) where NUM
+        function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
             push!(array(x.X), x.Y)
-            if k % lazy_inputs_interval == 0
+            if lazy_inputs_interval(k)
                 # overapproximate lazy set
                 y = overapproximate_fun(i, x.X)
-                return LazySets.CacheMinkowskiSum(LazySet{NUM}[y])
+                return CacheMinkowskiSum(LazySet{NUM}[y])
             end
             return x.X
         end
         function _f(k, i, x)
             # other set types
-            if k % lazy_inputs_interval == 0
+            if lazy_inputs_interval(k)
                 # overapproximate lazy set
                 return overapproximate_fun(i, x.X)
             end
