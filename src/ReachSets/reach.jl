@@ -153,6 +153,10 @@ function reach(S::AbstractSystem,
         end
         # further sets of the series
         function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
+            if ε_iter == Inf
+                # forget sets if we do not use epsilon-close approximation
+                forget_sets!(x.X)
+            end
             push!(array(x.X), x.Y)
             if lazy_inputs_interval(k)
                 # overapproximate lazy set
