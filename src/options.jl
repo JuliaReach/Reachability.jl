@@ -113,7 +113,8 @@ Supported options:
 - `:apply_projection`          -- switch for applying projection
 - `:eager_checking`            -- switch for early terminating property checks
 - `:lazy_inputs_interval`      -- length of interval in which the inputs are
-                                  handled as a lazy set
+                                  handled as a lazy set (``-1`` for 'never');
+                                  generally may also be a predicate over indices
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 
@@ -160,7 +161,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_inputs_interval], 0)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -176,6 +176,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: partition, block_types, block_types_init, block_types_iter
     check_and_add_partition_block_types!(dict, dict_copy)
+
+    # special option: lazy_inputs_interval
+    check_and_add_lazy_inputs_interval!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -287,8 +290,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :eager_checking
             expected_type = Bool
         elseif key == :lazy_inputs_interval
-            expected_type = Int
-            domain_constraints = (v::Int  ->  v >= 0)
+            expected_type = Union{Int, Function}
+            domain_constraints = (v  ->  (v isa Int && v >= -1) ||
+                                         (v isa Function))
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
@@ -588,6 +592,48 @@ function compute_blocks(vars, partition)
     @assert var_idx == length(vars) + 1
     sizehint!(blocks, length(blocks))
     return blocks
+end
+
+"""
+    check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
+                                        dict_copy::Dict{Symbol,Any})
+
+Handling of the special option `:lazy_inputs_interval`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes
+
+Originally, this option was used to overapproximate a lazy set of inputs at
+every multiple of ``k`` steps, where ``k`` was the controllable option; hence
+the term `interval` in the name.
+Meanwhile, this option was generalized to a predicate over integers.
+The predicate returns `true` iff the lazy set should be overapproximated.
+However, we still support index numbers as input, which are then translated into
+a predicate.
+
+The default value for this option is the predicate that always returns `true`,
+i.e., to always overapproximate (which corresponds to the index ``0``).
+The input ``-1`` is interpreted as the predicate that always returns `false`.
+"""
+function check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
+                                             dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:lazy_inputs_interval])
+    if haskey(dict_copy, :lazy_inputs_interval)
+        if dict_copy[:lazy_inputs_interval] == -1
+            dict_copy[:lazy_inputs_interval] = (k -> false)
+        elseif dict_copy[:lazy_inputs_interval] == 0
+            dict_copy[:lazy_inputs_interval] = (k -> true)
+        elseif dict_copy[:lazy_inputs_interval] isa Int
+            m = dict_copy[:lazy_inputs_interval]
+            dict_copy[:lazy_inputs_interval] = (k -> k % m == 0)
+        end
+    else
+        dict_copy[:lazy_inputs_interval] = (k -> true)
+    end
 end
 
 """
