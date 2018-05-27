@@ -290,9 +290,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :eager_checking
             expected_type = Bool
         elseif key == :lazy_inputs_interval
-            expected_type = Union{Int, Function}
+            expected_type = Union{Int, Function, Void}
             domain_constraints = (v  ->  (v isa Int && v >= -1) ||
-                                         (v isa Function))
+                                         (v isa Function) ||
+                                         (v == nothing))
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
@@ -615,8 +616,13 @@ The predicate returns `true` iff the lazy set should be overapproximated.
 However, we still support index numbers as input, which are then translated into
 a predicate.
 
-The default value for this option is the predicate that always returns `true`,
-i.e., to always overapproximate (which corresponds to the index ``0``).
+The default value for this option is `nothing` or the index ``0``, which results
+in overapproximation in each iteration.
+Note that internally this has a different effect than passing the predicate that
+always returns `true` because functions cannot be checked for equality.
+Thus this option should simply not be set when not wanting this behavior (or the
+value ``0`` should be used).
+
 The input ``-1`` is interpreted as the predicate that always returns `false`.
 """
 function check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
@@ -626,13 +632,13 @@ function check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
         if dict_copy[:lazy_inputs_interval] == -1
             dict_copy[:lazy_inputs_interval] = (k -> false)
         elseif dict_copy[:lazy_inputs_interval] == 0
-            dict_copy[:lazy_inputs_interval] = (k -> true)
+            dict_copy[:lazy_inputs_interval] = nothing
         elseif dict_copy[:lazy_inputs_interval] isa Int
             m = dict_copy[:lazy_inputs_interval]
             dict_copy[:lazy_inputs_interval] = (k -> k % m == 0)
         end
     else
-        dict_copy[:lazy_inputs_interval] = (k -> true)
+        dict_copy[:lazy_inputs_interval] = nothing
     end
 end
 
