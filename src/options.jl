@@ -104,9 +104,12 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
-- `:template_directions`       -- short hand to set `template_directions_iter`
+- `:template_directions`       -- short hand to set `template_directions_init`
+                                  and `template_directions_iter`
+- `:template_directions_init`  -- directions to use for the approximation of the
+                                  initial states (during decomposition)
 - `:template_directions_iter`  -- directions to use for the approximation of the
-                                  initial states
+                                  states ``X_k``, ``k>0``, for each block
 - `:coordinate_transformation` -- coordinate transformation method
 - `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
@@ -171,7 +174,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: ε, ε_init, ε_iter, ε_proj,
     #                  set_type, set_type_init, set_type_iter, set_type_proj,
-    #                  template_directions, template_directions_iter
+    #                  template_directions, template_directions_init,
+    #                  template_directions_iter
     check_and_add_approximation!(dict, dict_copy)
 
     # special options: partition, block_types, block_types_init, block_types_iter
@@ -273,7 +277,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :template_directions
             expected_type = Symbol
-            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag])
+            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
+                                                       :nothing])
+        elseif key == :template_directions_init
+            expected_type = Symbol
+            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
+                                                       :nothing])
         elseif key == :template_directions_iter
             expected_type = Symbol
             domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
@@ -438,8 +447,9 @@ end
                                  dict_copy::Dict{Symbol,Any})
 
 Handling of the special options `:ε` and `:set_type` resp. the subcases
-`:ε_init`, `:ε_iter`, `:ε_proj`, `:set_type_init`, `:set_type_iter`, and
-`:set_type_proj`.
+`:ε_init`, `:ε_iter`, `:ε_proj`, `:set_type_init`, `:set_type_iter`,
+`:set_type_proj`, `:template_directions`, `:template_directions_init`, and
+`:template_directions_iter`.
 
 ### Input
 
@@ -482,6 +492,12 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
 
     set_type_init = dict_copy[:ε_init] < Inf ? HPolygon : set_type
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_init], set_type_init)
+
+    template_directions_init = haskey(dict, :template_directions_init) ?
+        dict[:template_directions_init] : haskey(dict, :template_directions) ?
+        dict[:template_directions] : :nothing
+    check_aliases_and_add_default_value!(dict, dict_copy,
+        [:template_directions_init], template_directions_init)
 
     ε_iter = (haskey(dict, :set_type_iter) && dict[:set_type_iter] == HPolygon) ||
              (!haskey(dict, :set_type_iter) && set_type == HPolygon) ? ε : Inf
