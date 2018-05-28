@@ -17,7 +17,8 @@ export print_sparsity,
 export @block_id,
        add_dimension,
        block_to_set_map,
-       convert_partition
+       convert_partition,
+       compute_block_sizes
 
 # Usability
 export @filename_to_png,
@@ -369,6 +370,29 @@ function interpret_template_direction_symbol(symbol::Symbol)
         dir = nothing
     end
     return dir
+end
+
+"""
+    compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
+                       )::Vector{Int}
+
+Conversion of the blocks representation from partition to block sizes.
+
+### Input
+
+- `partition` -- partition, a vector of block index ranges
+
+### Output
+
+A vector where the ``i``th entry contains the size of the ``i``th block.
+"""
+function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
+                            )::Vector{Int}
+    res = Vector{Int}(length(partition))
+    for (i, block) in enumerate(partition)
+        res[i] = length(block)
+    end
+    return res
 end
 
 end # module
