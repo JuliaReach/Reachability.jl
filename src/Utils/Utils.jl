@@ -23,6 +23,9 @@ export @block_id,
 export @filename_to_png,
        @relpath
 
+# internal conversion
+export interpret_template_direction_symbol
+
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
@@ -337,6 +340,35 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     end
 
     return partition_out
+end
+
+"""
+    interpret_template_direction_symbol(symbol::Symbol)
+
+Return a template direction type for a given symbol.
+
+### Input
+
+- `symbol` -- symbol
+
+### Output
+
+The template direction type if it is known, or `nothing` otherwise.
+"""
+function interpret_template_direction_symbol(symbol::Symbol)
+    if symbol == :box
+        dir = Approximations.BoxDirections
+    elseif symbol == :oct
+        dir = Approximations.OctDirections
+    elseif symbol == :boxdiag
+        dir = Approximations.BoxDiagDirections
+    else
+        if symbol != :nothing
+            warn("ignoring unknown template direction $symbol")
+        end
+        dir = nothing
+    end
+    return dir
 end
 
 end # module
