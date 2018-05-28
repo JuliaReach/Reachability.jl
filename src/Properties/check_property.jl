@@ -76,6 +76,9 @@ function check_property(S::AbstractSystem,
     n = statedim(S)
     blocks = kwargs_dict[:blocks]
     partition = convert_partition(kwargs_dict[:partition])
+    dir = interpret_template_direction_symbol(
+        kwargs_dict[:template_directions_init])
+    block_sizes = compute_block_sizes(partition)
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
@@ -86,6 +89,8 @@ function check_property(S::AbstractSystem,
         tic()
         if lazy_X0
             Xhat0 = S.x0
+        elseif dir != nothing
+            Xhat0 = array(decompose(S.x0, directions=dir, blocks=block_sizes))
         elseif !isempty(kwargs_dict[:block_types_init])
             Xhat0 = array(decompose(S.x0, ε=ε_init,
                                     block_types=kwargs_dict[:block_types_init]))
@@ -118,16 +123,8 @@ function check_property(S::AbstractSystem,
     push!(args, U)
 
     # raw overapproximation function
-    template_directions_symbol = kwargs_dict[:template_directions_iter]
-    if template_directions_symbol == :box
-        dir = Approximations.BoxDirections
-    elseif template_directions_symbol == :oct
-        dir = Approximations.OctDirections
-    elseif template_directions_symbol == :boxdiag
-        dir = Approximations.BoxDiagDirections
-    else
-        dir = nothing
-    end
+    dir = interpret_template_direction_symbol(
+        kwargs_dict[:template_directions_iter])
     if dir != nothing
         overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
     elseif haskey(kwargs_dict, :block_types_iter)
