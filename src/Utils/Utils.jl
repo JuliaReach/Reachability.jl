@@ -17,11 +17,15 @@ export print_sparsity,
 export @block_id,
        add_dimension,
        block_to_set_map,
-       convert_partition
+       convert_partition,
+       compute_block_sizes
 
 # Usability
 export @filename_to_png,
        @relpath
+
+# internal conversion
+export interpret_template_direction_symbol
 
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
@@ -337,6 +341,58 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     end
 
     return partition_out
+end
+
+"""
+    interpret_template_direction_symbol(symbol::Symbol)
+
+Return a template direction type for a given symbol.
+
+### Input
+
+- `symbol` -- symbol
+
+### Output
+
+The template direction type if it is known, or `nothing` otherwise.
+"""
+function interpret_template_direction_symbol(symbol::Symbol)
+    if symbol == :box
+        dir = Approximations.BoxDirections
+    elseif symbol == :oct
+        dir = Approximations.OctDirections
+    elseif symbol == :boxdiag
+        dir = Approximations.BoxDiagDirections
+    else
+        if symbol != :nothing
+            warn("ignoring unknown template direction $symbol")
+        end
+        dir = nothing
+    end
+    return dir
+end
+
+"""
+    compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
+                       )::Vector{Int}
+
+Conversion of the blocks representation from partition to block sizes.
+
+### Input
+
+- `partition` -- partition, a vector of block index ranges
+
+### Output
+
+A vector where the ``i``th entry contains the size of the ``i``th block.
+"""
+function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
+                            )::Vector{Int}
+    res = Vector{Int}(length(partition))
+    for (i, block) in enumerate(partition)
+        res[i] = length(block)
+    end
+    return res
 end
 
 end # module
