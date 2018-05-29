@@ -122,19 +122,46 @@ function solve(system::InitialValueProblem,
         transformation_matrix = nothing
     end
 
-    # ==============================
-    # Sparse/dense matrix conversion
-    # ==============================
+    # ===================================
+    # Sparse/dense/lazy matrix conversion
+    # ===================================
     A = Δ.s.A
+    create_new_system = false
+    if options[:lazy_expm] && options[:make_lazy_expm_explicit]
+        # convert SparseMatrixExp to eplicit matrix
+        info("Making lazy matrix exponential explicit...")
+        tic()
+        n = options.dict[:n]
+        if options[:assume_sparse]
+            B = sparse(Int[], Int[], eltype(A)[], n, n)
+        else
+            B = Matrix{eltype(A)}(n, n)
+        end
+        for i in 1:n
+            B[i, :] = get_row(A, i)
+        end
+        A = B
+        create_new_system = true
+        tocc()
+    end
     if options[:assume_sparse]
-        if A isa SparseMatrixExp || !method_exists(sparse, Tuple{typeof(A)})
-            info("`assume_sparse` option cannot be applied to a matrix of type $(typeof(A)) and will be ignored")
+        if A isa SparseMatrixExp
+            # ignore this case
+        elseif !method_exists(sparse, Tuple{typeof(A)})
+            info("`assume_sparse` option cannot be applied to a matrix of " *
+                 "type $(typeof(A)) and will be ignored")
         elseif !(A isa AbstractSparseMatrix)
-            if method_exists(inputset, Tuple{typeof(Δ.s)})
-                Δ = DiscreteSystem(sparse(A), Δ.x0, inputset(Δ))
-            else
-                Δ = DiscreteSystem(sparse(A), Δ.x0)
-            end
+            # convert to sparse matrix
+            A = sparse(A)
+            create_new_system = true
+        end
+    end
+    if create_new_system
+        # set new matrix
+        if method_exists(inputset, Tuple{typeof(Δ.s)})
+            Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
+        else
+            Δ = DiscreteSystem(A, Δ.x0)
         end
     end
 
