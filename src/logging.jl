@@ -89,7 +89,7 @@ function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
     else
         error("Illegal verbosity input $level.")
     end
-    return Memento.config(level_string; fmt="[{level}] {msg}")
+    return Memento.config!(level_string; fmt="[{level}] {msg}")
 end
 
 """
