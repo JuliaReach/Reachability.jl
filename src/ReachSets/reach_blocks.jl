@@ -316,7 +316,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                       partition::AbstractVector{<:AbstractVector{Int}},
                       res::Vector{CartesianProductArray{NUM}}
                       )::Void where {NUM}
-    print("using lazy x0 dense with input \n")
+
     @inline π(bi, bj) = sparse(1:length(bi), bj, ones(length(bi)), length(bi), n)
 
     res[1] = CartesianProductArray(overapproximate(blocks, π(blocks) * Xhat0)
