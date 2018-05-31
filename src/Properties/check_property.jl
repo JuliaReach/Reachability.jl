@@ -40,11 +40,6 @@ Interface to property checking algorithms for an LTI system.
 
 A dictionary with available algorithms is available via
 `Properties.available_algorithms`.
-
-WARNING:
-
-Only systems of even dimension are parsed; for odd dimension, manually add an
-extra variable with no dynamics.
 """
 function check_property(S::AbstractSystem,
                         N::Int;
