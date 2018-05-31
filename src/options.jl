@@ -98,7 +98,7 @@ Supported options:
                       projection
 - `:set_type_proj` -- set type for the approximation of the states during
                       projection
-- `:lazy_expm`     -- lazy matrix exponential
+- `:lazy_expm`     -- switch for using lazy matrix exponential all the time
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
@@ -118,8 +118,8 @@ Supported options:
 - `:lazy_inputs_interval`      -- length of interval in which the inputs are
                                   handled as a lazy set (``-1`` for 'never');
                                   generally may also be a predicate over indices
-- `:make_lazy_expm_explicit`   -- switch that, in combination with `:lazy_expm`,
-                                  makes a lazy matrix exponential explicit
+- `:lazy_expm_discretize`      -- switch to use lazy matrix exponential in the
+                                  discretization phase (see also `:lazy_expm`)
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 
@@ -166,7 +166,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:apply_projection], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:make_lazy_expm_explicit], false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm_discretize],
+                                         dict_copy[:lazy_expm])
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -306,8 +307,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v  ->  (v isa Int && v >= -1) ||
                                          (v isa Function) ||
                                          (v == nothing))
-        elseif key == :make_lazy_expm_explicit
+        elseif key == :lazy_expm_discretize
             expected_type = Bool
+            if !value && dict_copy[:lazy_expm]
+                error("cannot use option $(:lazy_expm) with deactivated " *
+                      "option $(:lazy_expm_discretize)")
+            end
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)

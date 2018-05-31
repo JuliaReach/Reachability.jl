@@ -102,7 +102,7 @@ function solve(system::InitialValueProblem,
             options[:δ],
             approx_model=options[:approx_model],
             pade_expm=options[:pade_expm],
-            lazy_expm=options[:lazy_expm],
+            lazy_expm=options[:lazy_expm_discretize],
             lazy_sih=options[:lazy_sih]
             )
         tocc()
@@ -127,7 +127,7 @@ function solve(system::InitialValueProblem,
     # ===================================
     A = Δ.s.A
     create_new_system = false
-    if options[:lazy_expm] && options[:make_lazy_expm_explicit]
+    if !options[:lazy_expm] && options[:lazy_expm_discretize]
         # convert SparseMatrixExp to eplicit matrix
         info("Making lazy matrix exponential explicit...")
         tic()
