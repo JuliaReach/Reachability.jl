@@ -304,3 +304,63 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
 
     return nothing
 end
+
+# lazy_X0, dense, with input
+function reach_blocks!(ϕ::AbstractMatrix{NUM},
+                      Xhat0::LazySet{NUM},
+                      U::ConstantNonDeterministicInput,
+                      overapproximate::Function,
+                      n::Int,
+                      N::Int,
+                      blocks::AbstractVector{Int},
+                      partition::AbstractVector{<:AbstractVector{Int}},
+                      res::Vector{CartesianProductArray{NUM}}
+                      )::Void where {NUM}
+
+    @inline π(bi, bj) = sparse(1:length(bi), bj, ones(length(bi)), length(bi), n)
+
+    res[1] = CartesianProductArray(overapproximate(blocks, π(blocks) * Xhat0)
+    if N == 1
+        return nothing
+    end
+
+    b = length(blocks)
+    Xhatk = Vector{LazySet{NUM}}(b)
+    Whatk = Vector{LazySet{NUM}}(b)
+
+    inputs = next_set(U)
+    @inbounds for i in 1:b
+        bi = partition[blocks[i]]
+        Whatk[i] = overapproximate(blocks[i], G0(bi, n) * inputs)
+    end
+    ϕpowerk = copy(ϕ)
+
+    arr_length = length(partition) + 1
+    arr = Vector{LazySet{NUM}}(arr_length)
+    k = 2
+    @inbounds while true
+        for i in 1:b
+            bi = partition[blocks[i]]
+            for (j, bj) in enumerate(partition)
+                arr[j] = ϕpowerk[bi, bj] * (π(bi, bj) * Xhat0)
+            end
+            arr[arr_length] = Whatk[i]
+            Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
+        end
+        res[k] = CartesianProductArray(copy(Xhatk))
+
+        if k == N
+            break
+        end
+
+        for i in 1:b
+            bi = partition[blocks[i]]
+            Whatk[i] =
+                overapproximate(blocks[i], Whatk[i] + ϕpowerk[bi, :] * inputs)
+        end
+        ϕpowerk = ϕpowerk * ϕ
+        k += 1
+    end
+
+    return nothing
+end
