@@ -91,10 +91,8 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
             elseif violation_index == 0
                 violation_index = k
             end
-            if k == N
-                break
-            end
-        elseif k == N
+        end
+        if k == N
             break
         end
 
@@ -172,10 +170,8 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
             elseif violation_index == 0
                 violation_index = k
             end
-            if k == N
-                break
-            end
-        elseif k == N
+        end
+        if k == N
             break
         end
 
@@ -258,10 +254,8 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             elseif violation_index == 0
                 violation_index = k
             end
-            if k == N
-                break
-            end
-        elseif k == N
+        end
+        if k == N
             break
         end
 
@@ -336,10 +330,8 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             elseif violation_index == 0
                 violation_index = k
             end
-            if k == N
-                break
-            end
-        elseif k == N
+        end
+        if k == N
             break
         end
 
