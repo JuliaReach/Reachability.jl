@@ -194,7 +194,8 @@ function solve(system::InitialValueProblem,
             block_types_iter=options[:block_types_iter],
             template_directions_init=options[:template_directions_init],
             template_directions_iter=options[:template_directions_iter],
-            lazy_inputs_interval=options[:lazy_inputs_interval]
+            lazy_inputs_interval=options[:lazy_inputs_interval],
+            output_function=options[:output_function]
             )
         info("- Total")
         tocc()

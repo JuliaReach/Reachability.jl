@@ -180,6 +180,9 @@ function reach(S::AbstractSystem,
     # number of computed sets
     push!(args, N)
 
+    # output function
+    push!(args, kwargs_dict[:output_function])
+
     # preallocate output vector and add mode-specific block(s) argument
     if algorithm == "explicit"
         push!(args, blocks)
