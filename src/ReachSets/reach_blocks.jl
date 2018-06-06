@@ -45,11 +45,13 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0[blocks])
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
+    array = CartesianProductArray(Xhat0[blocks])
+    res[1] = (output_function == nothing) ? array : output_function(array)
     if N == 1
         return nothing
     end
@@ -80,10 +82,13 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
-            Xhatk[i] = overapproximate(blocks[i],
-                U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            lazy_set = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], lazy_set) :
+                lazy_set
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        array = CartesianProductArray(copy(Xhatk))
+        res[k] = (output_function == nothing) ? array : output_function(array)
 
         if k == N
             break
@@ -112,10 +117,11 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
@@ -183,10 +189,11 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
@@ -249,10 +256,11 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
     res[1] = CartesianProductArray(Xhat0[blocks])
     if N == 1
         return nothing
