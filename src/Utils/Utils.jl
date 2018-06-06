@@ -27,6 +27,9 @@ export @filename_to_png,
 # internal conversion
 export interpret_template_direction_symbol
 
+# temporary helper function
+export decompose_helper
+
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
@@ -393,6 +396,23 @@ function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}
         res[i] = length(block)
     end
     return res
+end
+
+"""
+This is a temporary decomposition function that only applies a projection and
+keeps the sets lazy.
+Eventually this should be handled in LazySets.
+"""
+function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
+                          n::Int=dim(S)) where {N}
+    result = Vector{LazySet{N}}(length(blocks))
+    block_start = 1
+    @inbounds for (i, bi) in enumerate(blocks)
+        M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
+        result[i] = M * S
+        block_start += bi
+    end
+    return CartesianProductArray(result)
 end
 
 end # module
