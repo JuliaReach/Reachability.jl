@@ -104,6 +104,7 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
+- `:output_function`           -- output function for reachability
 - `:template_directions`       -- short hand to set `template_directions_init`
                                   and `template_directions_iter`
 - `:template_directions_init`  -- directions to use for the approximation of the
@@ -161,6 +162,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_sih], false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:output_function], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
@@ -279,6 +281,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_sih
             expected_type = Bool
+        elseif key == :output_function
+            expected_type = Union{Function, Void}
         elseif key == :template_directions
             expected_type = Symbol
             domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
