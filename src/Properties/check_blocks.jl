@@ -53,7 +53,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
         end
         violation_index = 1
     elseif N == 1
-        return 0
+        return violation_index
     end
 
     b = length(blocks)
@@ -130,7 +130,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
         end
         violation_index = 1
     elseif N == 1
-        return 0
+        return violation_index
     end
 
     b = length(blocks)
@@ -211,7 +211,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
         end
         violation_index = 1
     elseif N == 1
-        return 0
+        return violation_index
     end
 
     b = length(blocks)
@@ -286,7 +286,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
         end
         violation_index = 1
     elseif N == 1
-        return 0
+        return violation_index
     end
 
     b = length(blocks)
