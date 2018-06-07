@@ -82,10 +82,10 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
-            lazy_set = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
             Xhatk[i] = (output_function == nothing) ?
-                overapproximate(blocks[i], lazy_set) :
-                lazy_set
+                overapproximate(blocks[i], Xhatk_bi_lazy) :
+                Xhatk_bi_lazy
         end
         array = CartesianProductArray(copy(Xhatk))
         res[k] = (output_function == nothing) ? array : output_function(array)
