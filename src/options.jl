@@ -304,9 +304,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Bool
         elseif key == :lazy_inputs_interval
             expected_type = Union{Int, Function, Void}
-            domain_constraints = (v  ->  (v isa Int && v >= -1) ||
-                                         (v isa Function) ||
-                                         (v == nothing))
+            domain_constraints = (v  ->  !(v isa Int) || v >= -1)
         elseif key == :lazy_expm_discretize
             expected_type = Bool
             if !value && dict_copy[:lazy_expm]
