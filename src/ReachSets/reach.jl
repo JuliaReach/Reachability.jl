@@ -87,7 +87,7 @@ function reach(S::AbstractSystem,
         info("- Decomposing X0")
         tic()
         if lazy_X0
-            Xhat0 = S.x0
+            Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
         elseif dir != nothing
             Xhat0 = array(decompose(S.x0, directions=dir, blocks=block_sizes))
         elseif !isempty(kwargs_dict[:block_types_init])
