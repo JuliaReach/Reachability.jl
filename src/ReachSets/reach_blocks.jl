@@ -51,7 +51,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        res::Vector{OUT}
                        )::Void where {NUM, OUT<:LazySet{NUM}}
     array = CartesianProductArray(Xhat0[blocks])
-    res[1] = (output_function == nothing) ? array : output_function(array)
+    res[1] = (output_function == nothing) ?
+        array :
+        LazySets.Approximations.box_approximation(output_function(array))
     if N == 1
         return nothing
     end
@@ -88,7 +90,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                 Xhatk_bi_lazy
         end
         array = CartesianProductArray(copy(Xhatk))
-        res[k] = (output_function == nothing) ? array : output_function(array)
+        res[k] = (output_function == nothing) ?
+            array :
+            LazySets.Approximations.box_approximation(output_function(array))
 
         if k == N
             break
