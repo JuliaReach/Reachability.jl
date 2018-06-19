@@ -187,7 +187,11 @@ function reach(S::AbstractSystem,
     if algorithm == "explicit"
         push!(args, blocks)
         push!(args, partition)
-        res = Vector{CartesianProductArray{numeric_type}}(N)
+        if kwargs_dict[:output_function] == nothing
+            res = Vector{CartesianProductArray{numeric_type}}(N)
+        else
+            res = Vector{LazySet{numeric_type}}(N)
+        end
         algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)
