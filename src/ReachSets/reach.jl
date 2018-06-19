@@ -190,7 +190,7 @@ function reach(S::AbstractSystem,
         if kwargs_dict[:output_function] == nothing
             res = Vector{CartesianProductArray{numeric_type}}(N)
         else
-            res = Vector{LazySet{numeric_type}}(N)
+            res = Vector{Hyperrectangle{numeric_type}}(N)
         end
         algorithm_backend = "explicit_blocks"
     else
