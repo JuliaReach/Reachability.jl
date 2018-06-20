@@ -104,7 +104,8 @@ Supported options:
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:lazy_sih`      -- switch for using a lazy symmetric interval hull during the
                       discretization
-- `:output_function`           -- output function for reachability
+- `:output_function`           -- output function for reachability; an example
+                                  is a linear map `C`: `X -> (C * X)`
 - `:template_directions`       -- short hand to set `template_directions_init`
                                   and `template_directions_iter`
 - `:template_directions_init`  -- directions to use for the approximation of the
