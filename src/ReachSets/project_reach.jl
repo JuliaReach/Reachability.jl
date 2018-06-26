@@ -20,7 +20,7 @@ Projection of a reachability analysis result in 2D.
                          from `plot_vars`
 - `transformation_matrix` -- (optional, default: `nothing`) transformation
                              matrix
-- `output_function  ` -- (optional, default: `false`) switch denoting whether
+- `output_function`   -- (optional, default: `false`) switch denoting whether
                          the passed set is one-dimensional, representing an
                          output function
 
@@ -155,7 +155,7 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
         yaxis = iseven(yaxis) ? 2 : 1
         m = got_time ? 3 : 2
         projection_matrix = sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, m)
-    else
+    elseif !output_function
         error("projection matrix not allowed for this algorithm")
     end
 
