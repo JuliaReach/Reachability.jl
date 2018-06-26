@@ -180,11 +180,21 @@ function reach(S::AbstractSystem,
     # number of computed sets
     push!(args, N)
 
+    # output function: linear map with the given matrix
+    output_function = kwargs_dict[:output_function] != nothing ?
+        (x -> kwargs_dict[:output_function] * x) :
+        nothing
+    push!(args, output_function)
+
     # preallocate output vector and add mode-specific block(s) argument
     if algorithm == "explicit"
         push!(args, blocks)
         push!(args, partition)
-        res = Vector{CartesianProductArray{numeric_type}}(N)
+        if output_function == nothing
+            res = Vector{CartesianProductArray{numeric_type}}(N)
+        else
+            res = Vector{Hyperrectangle{numeric_type}}(N)
+        end
         algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)

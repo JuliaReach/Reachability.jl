@@ -45,11 +45,15 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0[blocks])
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
+    array = CartesianProductArray(Xhat0[blocks])
+    res[1] = (output_function == nothing) ?
+        array :
+        box_approximation(output_function(array))
     if N == 1
         return nothing
     end
@@ -80,10 +84,15 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
-            Xhatk[i] = overapproximate(blocks[i],
-                U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], Xhatk_bi_lazy) :
+                Xhatk_bi_lazy
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        array = CartesianProductArray(copy(Xhatk))
+        res[k] = (output_function == nothing) ?
+            array :
+            box_approximation(output_function(array))
 
         if k == N
             break
@@ -112,11 +121,15 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0[blocks])
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
+    array = CartesianProductArray(Xhat0[blocks])
+    res[1] = (output_function == nothing) ?
+        array :
+        box_approximation(output_function(array))
     if N == 1
         return nothing
     end
@@ -149,9 +162,14 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             if U != nothing
                 arr[arr_length] = Whatk[i]
             end
-            Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], MinkowskiSumArray(arr)) :
+                MinkowskiSumArray(copy(arr))
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        array = CartesianProductArray(copy(Xhatk))
+        res[k] = (output_function == nothing) ?
+            array :
+            box_approximation(output_function(array))
 
         if k == N
             break
@@ -183,11 +201,15 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0[blocks])
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
+    array = CartesianProductArray(Xhat0[blocks])
+    res[1] = (output_function == nothing) ?
+        array :
+        box_approximation(output_function(array))
     if N == 1
         return nothing
     end
@@ -219,14 +241,19 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
-            Xhatk[i] = overapproximate(blocks[i],
-                U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], Xhatk_bi_lazy) :
+                Xhatk_bi_lazy
             if U != nothing
                 Whatk[i] = overapproximate_inputs(k, blocks[i],
                     Whatk[i] + ϕpowerk_πbi * inputs)
             end
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        array = CartesianProductArray(copy(Xhatk))
+        res[k] = (output_function == nothing) ?
+            array :
+            box_approximation(output_function(array))
 
         if k == N
             break
@@ -249,11 +276,15 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
+                       output_function::Union{Function, Void}, # TODO
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{CartesianProductArray{NUM}}
-                       )::Void where {NUM}
-    res[1] = CartesianProductArray(Xhat0[blocks])
+                       res::Vector{OUT}
+                       )::Void where {NUM, OUT<:LazySet{NUM}}
+    array = CartesianProductArray(Xhat0[blocks])
+    res[1] = (output_function == nothing) ?
+        array :
+        box_approximation(output_function(array))
     if N == 1
         return nothing
     end
@@ -286,13 +317,18 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             if U != nothing
                 arr[arr_length] = Whatk[i]
             end
-            Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], MinkowskiSumArray(arr)) :
+                MinkowskiSumArray(copy(arr))
             if U != nothing
                 Whatk[i] = overapproximate_inputs(k, blocks[i],
                     Whatk[i] + ϕpowerk_πbi * inputs)
             end
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        array = CartesianProductArray(copy(Xhatk))
+        res[k] = (output_function == nothing) ?
+            array :
+            box_approximation(output_function(array))
 
         if k == N
             break

@@ -88,7 +88,8 @@ using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
-                               overapproximate
+                               overapproximate,
+                               box_approximation
 import Reachability.tocc
 
 # ========================================

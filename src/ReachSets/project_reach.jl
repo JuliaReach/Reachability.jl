@@ -20,6 +20,9 @@ Projection of a reachability analysis result in 2D.
                          from `plot_vars`
 - `transformation_matrix` -- (optional, default: `nothing`) transformation
                              matrix
+- `output_function`   -- (optional, default: `false`) switch denoting whether
+                         the passed set is one-dimensional, representing an
+                         output function
 
 ### Notes
 
@@ -32,7 +35,8 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64,
     algorithm::String="explicit";
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{AbstractMatrix, Void}=nothing,
-    transformation_matrix::Union{AbstractMatrix, Void}=nothing
+    transformation_matrix::Union{AbstractMatrix, Void}=nothing,
+    output_function::Bool=false
     )::Vector{<:LazySet} where {numeric_type<:Real}
 
     # parse input
@@ -120,7 +124,8 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     Rsets::Vector{<:LazySets.LazySet{numeric_type}}, algorithm::String;
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{AbstractMatrix, Void}=nothing,
-    transformation_matrix::Union{AbstractMatrix, Void}=nothing
+    transformation_matrix::Union{AbstractMatrix, Void}=nothing,
+    output_function::Bool=false
     )::Vector{<:LazySet} where {numeric_type<:Real}
 
     # parse input
@@ -150,7 +155,7 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
         yaxis = iseven(yaxis) ? 2 : 1
         m = got_time ? 3 : 2
         projection_matrix = sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, m)
-    else
+    elseif !output_function
         error("projection matrix not allowed for this algorithm")
     end
 
@@ -165,7 +170,14 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
         RsetsProj = Vector{set_type{numeric_type}}(N)
     end
 
-    if got_time # x variable is 'time'
+    if output_function
+        radius = δ/2.0
+        t = radius
+        @inbounds for i in 1:N
+            RsetsProj[i] = oa(CartesianProduct(BallInf([t], radius), Rsets[i]))
+            t = t + δ
+        end
+    elseif got_time # x variable is 'time'
         radius = δ/2.0
         t = radius
         @inbounds for i in 1:N

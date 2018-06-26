@@ -177,6 +177,9 @@ function solve(system::InitialValueProblem,
         # ============================
         info("Reachable States Computation...")
         tic()
+        output_function = options[:apply_projection] ?
+            nothing :
+            options[:projection_matrix]
         Rsets = reach(
             Δ,
             options[:N];
@@ -194,7 +197,8 @@ function solve(system::InitialValueProblem,
             block_types_iter=options[:block_types_iter],
             template_directions_init=options[:template_directions_init],
             template_directions_iter=options[:template_directions_iter],
-            lazy_inputs_interval=options[:lazy_inputs_interval]
+            lazy_inputs_interval=options[:lazy_inputs_interval],
+            output_function=output_function
             )
         info("- Total")
         tocc()
@@ -202,7 +206,7 @@ function solve(system::InitialValueProblem,
         # ==========
         # Projection
         # ==========
-        if options[:apply_projection]
+        if options[:apply_projection] || options[:projection_matrix] != nothing
             info("Projection...")
             tic()
             RsetsProj = project(Rsets, options;
@@ -291,6 +295,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
         end
     end
     reduced_n = sum(x -> x != 0, options[:inout_map])
+    output_function = !options[:apply_projection]
     RsetsProj = project_reach(plot_vars,
                               reduced_n,
                               options[:δ],
@@ -299,7 +304,8 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               ε=options[:ε_proj],
                               set_type=options[:set_type_proj],
                               transformation_matrix=transformation_matrix,
-                              projection_matrix=options[:projection_matrix]
+                              projection_matrix=options[:projection_matrix],
+                              output_function=output_function
                              )
 end
 
