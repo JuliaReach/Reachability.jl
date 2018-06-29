@@ -177,7 +177,7 @@ function solve(system::InitialValueProblem,
         # ============================
         info("Reachable States Computation...")
         tic()
-        output_function = options[:apply_projection] ?
+        output_function = options[:project_reachset] ?
             nothing :
             options[:projection_matrix]
         Rsets = reach(
@@ -206,7 +206,7 @@ function solve(system::InitialValueProblem,
         # ==========
         # Projection
         # ==========
-        if options[:apply_projection] || options[:projection_matrix] != nothing
+        if options[:project_reachset] || options[:projection_matrix] != nothing
             info("Projection...")
             tic()
             RsetsProj = project(Rsets, options;
@@ -295,7 +295,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
         end
     end
     reduced_n = sum(x -> x != 0, options[:inout_map])
-    output_function = !options[:apply_projection]
+    output_function = !options[:project_reachset]
     RsetsProj = project_reach(plot_vars,
                               reduced_n,
                               options[:δ],
