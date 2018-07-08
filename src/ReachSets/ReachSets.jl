@@ -87,7 +87,9 @@ module ReachSets
 using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter
 
 import LazySets.Approximations:symmetric_interval_hull,
+                               symmetric_interval_hull_parallel,
                                decompose,
+                               decompose_parallel,
                                overapproximate,
                                box_approximation
 import Reachability.tocc
@@ -117,6 +119,12 @@ available_algorithms = Dict{String, Dict{String, Any}}()
 include("reach_blocks.jl")
 push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
+
+# "explicit" backends
+include("reach_blocks_parallel.jl")
+push!(available_algorithms, "explicit_blocks_parallel"=>Dict("func"=>reach_blocks_parallel!,
+                                                        "is_explicit"=>true))
+
 
 include("reach_blocks_wrapping_effect.jl")
 push!(available_algorithms,

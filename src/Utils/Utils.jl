@@ -404,13 +404,22 @@ keeps the sets lazy.
 Eventually this should be handled in LazySets.
 """
 function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
-                          n::Int=dim(S)) where {N}
+                          n::Int=dim(S), parallelize::Bool=false) where {N}
     result = Vector{LazySet{N}}(length(blocks))
     block_start = 1
-    @inbounds for (i, bi) in enumerate(blocks)
-        M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
-        result[i] = M * S
-        block_start += bi
+
+    if(parallelize)
+        @inbounds @sync @parallel for (i, bi) in enumerate(blocks)
+            M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
+            result[i] = M * S
+            block_start += bi
+        end
+    else
+        @inbounds for (i, bi) in enumerate(blocks)
+            M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
+            result[i] = M * S
+            block_start += bi
+        end
     end
     return CartesianProductArray(result)
 end

@@ -79,6 +79,9 @@ function reach(S::AbstractSystem,
         kwargs_dict[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
 
+    is_parallel = algorithm == "explicit_parallel"
+    decompose_fn = is_parallel ? decompose_parallel : decompose;
+
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
@@ -87,17 +90,17 @@ function reach(S::AbstractSystem,
         info("- Decomposing X0")
         tic()
         if lazy_X0
-            Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
+            Xhat0 = array(decompose_helper(S.x0, block_sizes, n, is_parallel))
         elseif dir != nothing
-            Xhat0 = array(decompose(S.x0, directions=dir, blocks=block_sizes))
+            Xhat0 = array(decompose_fn(S.x0, directions=dir, blocks=block_sizes))
         elseif !isempty(kwargs_dict[:block_types_init])
-            Xhat0 = array(decompose(S.x0, ε=ε_init,
+            Xhat0 = array(decompose_fn(S.x0, ε=ε_init,
                                     block_types=kwargs_dict[:block_types_init]))
         elseif set_type_init == LazySets.Interval
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+            Xhat0 = array(decompose_fn(S.x0, set_type=set_type_init, ε=ε_init,
                                     blocks=ones(Int, n)))
         else
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+            Xhat0 = array(decompose_fn(S.x0, set_type=set_type_init, ε=ε_init))
         end
         tocc()
     end
@@ -187,6 +190,7 @@ function reach(S::AbstractSystem,
     push!(args, output_function)
 
     # preallocate output vector and add mode-specific block(s) argument
+    if algorithm == "explicit" || algorithm == "explicit_parallel"
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
@@ -198,6 +202,8 @@ function reach(S::AbstractSystem,
     # choose algorithm backend
     if algorithm == "explicit"
         algorithm_backend = "explicit_blocks"
+    elseif algorithm == "explicit_parallel"
+        algorithm_backend = "explicit_blocks_parallel"
     elseif algorithm == "wrap"
         algorithm_backend = "wrap"
     else
