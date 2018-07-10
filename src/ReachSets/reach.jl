@@ -198,6 +198,8 @@ function reach(S::AbstractSystem,
     # choose algorithm backend
     if algorithm == "explicit"
         algorithm_backend = "explicit_blocks"
+    elseif algorithm == "wrap"
+        algorithm_backend = "wrap"
     else
         error("Unsupported algorithm: ", algorithm)
     end

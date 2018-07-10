@@ -118,6 +118,11 @@ include("reach_blocks.jl")
 push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
 
+include("reach_blocks_wrapping_effect.jl")
+push!(available_algorithms,
+      "wrap"=>Dict("func"=>reach_blocks_wrapping_effect!,
+                   "is_explicit"=>true))
+
 export available_algorithms
 
 # =========================
