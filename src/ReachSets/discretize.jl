@@ -262,14 +262,15 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
 
     if(parallel)
         info("Parallel discr_bloat_interpolation")
-        sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull_parallel
+        sih = lazy_sih ? error("Not implemented") : symmetric_interval_hull_parallel
     else
-        sih = lazy_sih ? error("Not implemented") : symmetric_interval_hull
+        sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
     end
 
     info("case D");
     A, X0 = cont_sys.s.A, cont_sys.x0
     n = size(A, 1)
+    flush(STDOUT);
 
     # compute matrix ϕ = exp(Aδ)
     if lazy_expm
@@ -282,6 +283,9 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         end
     end
 
+    info("A");
+    flush(STDOUT);
+
     # early return for homogeneous systems
     if cont_sys isa IVP{<:LinearContinuousSystem}
          Ω0 = CH(X0, ϕ * X0)
@@ -290,12 +294,16 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
     U = inputset(cont_sys)
     inputs = next_set(U, 1)
 
+    info("B");
+    flush(STDOUT);
+
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
-        P = SparseMatrixExp([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
+        @time mat = [abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
-        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
+                             spzeros(n, 3*n)]
+        @time P = SparseMatrixExp(mat)
+        @time Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n, parallel)[1:n, :])
     else
         if pade_expm
             P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
@@ -309,6 +317,9 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
 
+    info("C");
+    flush(STDOUT);
+    tic()
     if isa(inputs, ZeroSet)
         if approx_model == "forward" || approx_model == "backward"
             Ω0 = CH(X0, ϕ * X0 + δ * inputs)
@@ -324,6 +335,9 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
             Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaMinus)
         end
     end
+    toc()
+    info("D");
+    flush(STDOUT);
 
     if U isa ConstantInput
         return DiscreteSystem(ϕ, Ω0, discretized_U)
