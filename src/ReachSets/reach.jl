@@ -187,14 +187,16 @@ function reach(S::AbstractSystem,
     push!(args, output_function)
 
     # preallocate output vector and add mode-specific block(s) argument
+    push!(args, blocks)
+    push!(args, partition)
+    if output_function == nothing
+        res = Vector{CartesianProductArray{numeric_type}}(N)
+    else
+        res = Vector{Hyperrectangle{numeric_type}}(N)
+    end
+
+    # choose algorithm backend
     if algorithm == "explicit"
-        push!(args, blocks)
-        push!(args, partition)
-        if output_function == nothing
-            res = Vector{CartesianProductArray{numeric_type}}(N)
-        else
-            res = Vector{Hyperrectangle{numeric_type}}(N)
-        end
         algorithm_backend = "explicit_blocks"
     else
         error("Unsupported algorithm: ", algorithm)
