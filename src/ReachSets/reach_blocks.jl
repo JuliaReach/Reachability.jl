@@ -121,7 +121,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
-                       output_function::Union{Function, Void}, # TODO
+                       output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        res::Vector{OUT}
@@ -201,7 +201,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
-                       output_function::Union{Function, Void}, # TODO
+                       output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        res::Vector{OUT}
@@ -276,7 +276,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate_inputs::Function,
                        n::Int,
                        N::Int,
-                       output_function::Union{Function, Void}, # TODO
+                       output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        res::Vector{OUT}
