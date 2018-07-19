@@ -64,7 +64,7 @@ function reach_blocks_parallel!(ϕ::SparseMatrixCSC{NUM, Int},
     end
 
     b = length(blocks)
-    # Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
     ϕpowerk = copy(ϕ)
 
     if U != nothing
@@ -80,35 +80,35 @@ function reach_blocks_parallel!(ϕ::SparseMatrixCSC{NUM, Int},
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
-        XhatkArr = @sync @parallel (vcat) for i in 1:b
+        for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
-
             for (j, bj) in enumerate(partition)
                 block = ϕpowerk[bi, bj]
                 if findfirst(block) != 0
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
-
             Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
-
-            if U != nothing
-                Whatk[i] = overapproximate_inputs(k, blocks[i],
-                    Whatk[i] + row(ϕpowerk, bi) * inputs)
-            end
-
-            (output_function == nothing) ?
+            Xhatk[i] = (output_function == nothing) ?
                 overapproximate(blocks[i], Xhatk_bi_lazy) :
                 Xhatk_bi_lazy
         end
-        array = CartesianProductArray(XhatkArr)
+        array = CartesianProductArray(copy(Xhatk))
         res[k] = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))
 
         if k == N
             break
+        end
+
+        if U != nothing
+            for i in 1:b
+                bi = partition[blocks[i]]
+                Whatk[i] = overapproximate_inputs(k, blocks[i],
+                    Whatk[i] + row(ϕpowerk, bi) * inputs)
+            end
         end
 
         ϕpowerk = ϕpowerk * ϕ
@@ -222,7 +222,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
     end
 
     b = length(blocks)
-    #Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(b)
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
     if U != nothing
@@ -238,7 +238,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
-        XhatkArr = @sync @parallel (vcat) for i in 1:b
+        for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = row(ϕpowerk, bi)
             Xhatk_bi = ZeroSet(length(bi))
@@ -249,17 +249,15 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
                 end
             end
             Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
-
+            Xhatk[i] = (output_function == nothing) ?
+                overapproximate(blocks[i], Xhatk_bi_lazy) :
+                Xhatk_bi_lazy
             if U != nothing
                 Whatk[i] = overapproximate_inputs(k, blocks[i],
                     Whatk[i] + ϕpowerk_πbi * inputs)
             end
-
-            (output_function == nothing) ?
-                overapproximate(blocks[i], Xhatk_bi_lazy) :
-                Xhatk_bi_lazy
         end
-        array = CartesianProductArray(copy(XhatkArr))
+        array = CartesianProductArray(copy(Xhatk))
         res[k] = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))

@@ -299,11 +299,11 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
 
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
-        @time mat = [abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
+        mat = [abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
                              spzeros(n, 3*n)]
-        @time P = SparseMatrixExp(mat)
-        @time Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n, parallel)[1:n, :])
+        P = SparseMatrixExp(mat)
+        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n, parallel)[1:n, :])
     else
         if pade_expm
             P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
