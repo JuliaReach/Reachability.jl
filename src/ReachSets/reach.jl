@@ -88,18 +88,29 @@ function reach(S::AbstractSystem,
         Xhat0 = [S.x0]
     else
         info("- Decomposing X0")
+        flush(STDOUT)
         tic()
         if lazy_X0
+            info("A- Decomposing X0")
+            flush(STDOUT)
             Xhat0 = array(decompose_helper(S.x0, block_sizes, n, is_parallel))
         elseif dir != nothing
+            info("B- Decomposing X0")
+            flush(STDOUT)
             Xhat0 = array(decompose_fn(S.x0, directions=dir, blocks=block_sizes))
         elseif !isempty(kwargs_dict[:block_types_init])
+            info("C- Decomposing X0")
+            flush(STDOUT)
             Xhat0 = array(decompose_fn(S.x0, ε=ε_init,
                                     block_types=kwargs_dict[:block_types_init]))
         elseif set_type_init == LazySets.Interval
+            info("D- Decomposing X0")
+            flush(STDOUT)
             Xhat0 = array(decompose_fn(S.x0, set_type=set_type_init, ε=ε_init,
                                     blocks=ones(Int, n)))
         else
+            info("E- Decomposing X0")
+            flush(STDOUT)
             Xhat0 = array(decompose_fn(S.x0, set_type=set_type_init, ε=ε_init))
         end
         tocc()
