@@ -82,7 +82,7 @@ function reach_blocks_parallel!(ϕ::SparseMatrixCSC{NUM, Int},
     @inbounds while true
         update!(p, k)
 
-        Xhatk, Whatk = advection_shared!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
+        Xhatk, Whatk = distrubte_chunks!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
 
         array = CartesianProductArray(Xhatk)
         res[k] = (output_function == nothing) ?
@@ -100,7 +100,7 @@ function reach_blocks_parallel!(ϕ::SparseMatrixCSC{NUM, Int},
     return nothing
 end
 
-function advection_chunk!(
+function process_chunk!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixCSC{NUM, Int},
@@ -155,7 +155,7 @@ function myrange(size)
     splits[idx]+1:splits[idx+1]
 end
 
-advection_shared_chunk!(
+assign_chunk!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixCSC{NUM, Int},
@@ -168,9 +168,9 @@ advection_shared_chunk!(
     partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
     Xhatk::Vector{LazySet{NUM}},
     Whatk::Vector{LazySet{NUM}}
-    ) where {NUM} = advection_chunk!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk, myrange(length(Xhatk)))
+    ) where {NUM} = process_chunk!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk, myrange(length(Xhatk)))
 
-function advection_shared!(
+function distrubte_chunks!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixCSC{NUM, Int},
@@ -188,7 +188,7 @@ function advection_shared!(
 
     @sync begin
         for (i, p) in enumerate(procs())
-            tasks[i] = remotecall(advection_shared_chunk!, p, k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
+            tasks[i] = remotecall(assign_chunk!, p, k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
         end
     end
 
@@ -322,7 +322,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
     @inbounds while true
         update!(p, k)
 
-        Xhatk, Whatk = advection_shared2!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
+        Xhatk, Whatk = distrubte_chunks2!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
 
         array = CartesianProductArray(copy(Xhatk))
         res[k] = (output_function == nothing) ?
@@ -340,7 +340,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
     return nothing
 end
 
-function advection_chunk2!(
+function process_chunk2!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixExp{NUM},
@@ -385,7 +385,7 @@ function advection_chunk2!(
 
 end
 
-advection_shared_chunk2!(
+assign_chunk2!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixExp{NUM},
@@ -398,9 +398,9 @@ advection_shared_chunk2!(
     partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
     Xhatk::Vector{LazySet{NUM}},
     Whatk::Vector{LazySet{NUM}}
-    ) where {NUM} = advection_chunk2!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk, myrange(length(Xhatk)))
+    ) where {NUM} = process_chunk2!(k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk, myrange(length(Xhatk)))
 
-function advection_shared2!(
+function distrubte_chunks2!(
     k::Int,
     inputs,
     ϕpowerk::SparseMatrixExp{NUM},
@@ -418,7 +418,7 @@ function advection_shared2!(
 
     @sync begin
         for (i, p) in enumerate(procs())
-            tasks[i] = remotecall(advection_shared_chunk2!, p, k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
+            tasks[i] = remotecall(assign_chunk2!, p, k, inputs, ϕpowerk, Xhat0, U, overapproximate, overapproximate_inputs, blocks, output_function, partition, Xhatk, Whatk)
         end
     end
 

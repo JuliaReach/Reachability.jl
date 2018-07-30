@@ -409,6 +409,7 @@ function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
     block_start = 1
 
     if(parallelize)
+        throw("Esto no puede andar!")
         @inbounds @sync @parallel for (i, bi) in enumerate(blocks)
             M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
             result[i] = M * S

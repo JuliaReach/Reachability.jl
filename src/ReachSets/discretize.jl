@@ -105,7 +105,6 @@ function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuo
         # affine case; TODO: unify Constant and Varying input branches?
         Uset = inputset(cont_sys)
         if Uset isa ConstantInput
-            info("case A");
             U = next(Uset, 1)[1]
             RU = norm(U, Inf)
             α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
@@ -114,7 +113,6 @@ function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuo
             discr_U =  δ * U + Ball2(zeros(size(ϕ, 1)), β)
             return DiscreteSystem(ϕ, Ω0, discr_U)
         elseif Uset isa VaryingInput
-            info("case B");
             discr_U = Vector{LazySet}(length(Uset))
             for (i, Ui) in enumerate(Uset)
                 RU = norm(Ui, Inf)
@@ -175,7 +173,7 @@ function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem
 
     A, X0 = cont_sys.s.A, cont_sys.x0
     n = size(A, 1)
-    info("case C");
+
     if lazy_expm
         ϕ = SparseMatrixExp(A * δ)
     else
@@ -267,10 +265,8 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
     end
 
-    info("case D");
     A, X0 = cont_sys.s.A, cont_sys.x0
     n = size(A, 1)
-    flush(STDOUT);
 
     # compute matrix ϕ = exp(Aδ)
     if lazy_expm
@@ -283,9 +279,6 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         end
     end
 
-    info("A");
-    flush(STDOUT);
-
     # early return for homogeneous systems
     if cont_sys isa IVP{<:LinearContinuousSystem}
          Ω0 = CH(X0, ϕ * X0)
@@ -293,9 +286,6 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
     end
     U = inputset(cont_sys)
     inputs = next_set(U, 1)
-
-    info("B");
-    flush(STDOUT);
 
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
@@ -317,9 +307,6 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         Phi2Aabs = P[1:n, (2*n+1):3*n]
     end
 
-    info("C");
-    flush(STDOUT);
-    tic()
     if isa(inputs, ZeroSet)
         if approx_model == "forward" || approx_model == "backward"
             Ω0 = CH(X0, ϕ * X0 + δ * inputs)
@@ -335,9 +322,6 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
             Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaMinus)
         end
     end
-    toc()
-    info("D");
-    flush(STDOUT);
 
     if U isa ConstantInput
         return DiscreteSystem(ϕ, Ω0, discretized_U)
