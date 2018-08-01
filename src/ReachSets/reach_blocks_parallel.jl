@@ -292,7 +292,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
                        )::Void where {NUM, OUT<:LazySet{NUM}}
 
    info("Using parallel execution for lazy_expm sparse case")
-   flush(STDOUT)
+   
     array = CartesianProductArray(Xhat0[blocks])
     res[1] = (output_function == nothing) ?
         array :
@@ -300,13 +300,11 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
     if N == 1
         return nothing
     end
-    info("AUsing parallel execution for lazy_expm sparse case")
-    flush(STDOUT)
+
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(b)
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
-    info("BUsing parallel execution for lazy_expm sparse case")
-    flush(STDOUT)
+
     if U != nothing
         Whatk = Vector{LazySet{NUM}}(b)
         inputs = next_set(U)
@@ -315,8 +313,7 @@ function  reach_blocks_parallel!(ϕ::SparseMatrixExp{NUM},
             Whatk[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
     end
-    info("CUsing parallel execution for lazy_expm sparse case")
-    flush(STDOUT)
+
     k = 2
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
