@@ -142,7 +142,7 @@ function check_property(S::AbstractSystem,
         @assert lazy_inputs_interval isa Function "illegal internal value " *
             "$lazy_inputs_interval for option :lazy_inputs_interval"
         # first set in a series
-        function _f(k, i, x::LinearMap{MN, NUM}) where {MN, NUM}
+        function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
             return CacheMinkowskiSum(LazySet{NUM}[x])
         end

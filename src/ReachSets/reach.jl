@@ -144,7 +144,7 @@ function reach(S::AbstractSystem,
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
         # first set in a series
-        function _f(k, i, x::LinearMap{MN, NUM}) where {MN, NUM}
+        function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
             return CacheMinkowskiSum(LazySet{NUM}[x])
         end
