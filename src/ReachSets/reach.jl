@@ -292,7 +292,7 @@ function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSys
                cur_loc = HS.modes[init_loc_id]
 
                #TODO push_initial_set
-               push!((cur_loc[1], lazy_X0), waiting_list)
+               push!((cur_loc[1], X0), waiting_list)
                i = 0
                while (!isempty(waiting_list) and i < 15) #TODO add variable for max iteration number
 
@@ -318,10 +318,10 @@ function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSys
                         lazy_inputs_interval=kwargs_dict[:lazy_inputs_interval],
                         output_function=kwargs_dict[:output_function]
                         )
-                       for (i, ti) in enumerate(transitions(HS)) #TODO optimize it or add method for outgoing transitions to SX
+                       for (j, tj) in enumerate(transitions(HS)) #TODO optimize it or add method for outgoing transitions to SX
 
-                            if source(HS, ti) == cur_loc_id
-                                destination_loc = HS.modes[target(HS, ti)]
+                            if source(HS, tj) == cur_loc_id
+                                destination_loc = HS.modes[target(HS, tj)]
                                 source_invariant, target_invariant = cur_loc[2], destination_loc[2]
                                 #guard =
                                 ```
