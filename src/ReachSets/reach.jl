@@ -265,7 +265,7 @@ Interface to reachability algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
-function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSystem?
+function d_reach(HS::HybridSystem,
                N::Int;
                X0::LazySet;
                algorithm::String="explicit",
