@@ -66,7 +66,7 @@ function reach(S::AbstractSystem, # Does AbstractSystem a superset of HybridSyst
     args = []
 
     # coefficients matrix
-    A = S.s.A  # Previously
+    A = S.s.A
     push!(args, A)
 
     # determine analysis mode (sparse/dense) for lazy_expm mode
@@ -81,7 +81,7 @@ function reach(S::AbstractSystem, # Does AbstractSystem a superset of HybridSyst
         kwargs_dict[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
 
-    # Check intersection with forbidden states
+
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
@@ -267,7 +267,7 @@ A dictionary with available algorithms is available via
 """
 function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSystem?
                N::Int;
-               X0::BallInf; # TODO is it correct to way to specify initial set for HS?
+               X0::LazySet;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
                set_type_init::Type{<:LazySet}=Hyperrectangle,
@@ -289,13 +289,12 @@ function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSys
                # coefficients matrix
                #TODO get start state. For now we assume that it is the first location
                cur_loc_id = 1
-               cur_loc = HS.modes[init_loc_id]
+               cur_loc = HS.modes[cur_loc_id]
 
-               #TODO push_initial_set
-               push!((cur_loc[1], X0), waiting_list)
+               push!((cur_loc, X0), waiting_list)
                i = 0
                while (!isempty(waiting_list) and i < 15) #TODO add variable for max iteration number
-
+                   cur_loc, X0 = pop!(waiting_list)
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
                    Rsets = reach(
@@ -318,10 +317,8 @@ function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSys
                         lazy_inputs_interval=kwargs_dict[:lazy_inputs_interval],
                         output_function=kwargs_dict[:output_function]
                         )
-                       for (j, tj) in enumerate(transitions(HS)) #TODO optimize it or add method for outgoing transitions to SX
-
-                            if source(HS, tj) == cur_loc_id
-                                destination_loc = HS.modes[target(HS, tj)]
+                       for j in enumerate(out_transitions(HS, cur_loc_id) #TODO optimize it or add method for outgoing transitions to SX
+                                destination_loc = HS.modes[target(HS, j)]
                                 source_invariant, target_invariant = cur_loc[2], destination_loc[2]
                                 #guard =
                                 ```
@@ -330,11 +327,10 @@ function d_reach(HS::HybridSystem, # Does AbstractSystem a superset of HybridSys
                                 Destination_location
                                 # check intersection G_I^+_i^-
                                 if (intersection != empty)
+                                    # TODO Check intersection with forbidden states
                                     push!(waiting_list, (inter_set, loc_id))
                                 ```
-                            end
                         end
-                    cur_loc, X0 = pop!(waiting_list)
                     i += 1
                 end
 
