@@ -4,8 +4,7 @@ os:
   - linux
 julia:
   - 0.6
-  - 0.6.1
-  - 0.6.2
+  - 0.7
   - nightly
 notifications:
   email: false
@@ -21,8 +20,7 @@ git:
 ## allow failures (tests will run but not make your overall status red)
 matrix:
   allow_failures:
-    - julia: 0.6.1
-    - julia: 0.6.2
+    - julia: 0.7  # TODO: fix compatibility
     - julia: nightly
 
 ## uncomment the following lines to override the default test script
