@@ -1,7 +1,7 @@
 import LazySets.CacheMinkowskiSum
 
 """
-    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
+    reach_discrete(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
           [set_type_iter], [assume_sparse], [assume_homogeneous],
           [numeric_type], [lazy_X0], [kwargs]...)
 
@@ -44,7 +44,7 @@ Interface to reachability algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
-function reach(S::AbstractSystem, # Does AbstractSystem a superset of HybridSystem?
+function reach_discrete(S::AbstractDiscreteSystem,
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
@@ -218,122 +218,3 @@ function reach(S::AbstractSystem, # Does AbstractSystem a superset of HybridSyst
     # return the result
     return res
 end
-
-
-
-"""
-    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
-          [set_type_iter], [assume_sparse], [assume_homogeneous],
-          [numeric_type], [lazy_X0], [kwargs]...)
-
-Interface to reachability algorithms for an LTI system.
-
-### Input
-
-- `HS`                 -- Hybrid System
-- `N`                  -- number of computed sets
-- `algorithm`          -- (optional, default: `"explicit"`), reachability
-                          algorithm backend; see `available_algorithms` for all
-                          admissible options
-- `ε_init`             -- (optional, default: `Inf`) error bound for the
-                          approximation of the initial states (during
-                          decomposition)
-- `set_type_init`      -- (optional, default: `Hyperrectangle`) set type for the
-                          approximation of the initial states (during
-                          decomposition)
-- `ε_iter`             -- (optional, default: `Inf`) error bound for the
-                          approximation of the states ``X_k``, ``k>0``
-- `set_type_iter`      -- (optional, default: `Hyperrectangle`) set type for the
-                          approximation of the states ``X_k``, ``k>0``
-- `assume_sparse`      -- (optional, default: `true`) if true, it is assumed
-                          that the coefficients matrix (exponential) is sparse;
-                          otherwise, it is transformed to a full matrix
-- `assume_homogeneous` -- (optional, default: `false`) if true, it is assumed
-                          that the system has no input (linear system), and in
-                          case it has one, the input is ignored
-- `numeric_type`       -- (optional, default: `Float64`) numeric type of the
-                          resulting set
-- `lazy_X0`            -- (optional, default: `false`) if true, transform the
-                          set of initial states to the caretsian product of
-                          two-dimensional polygons; otherwise, the given input,
-                          as a lazy set, is passed to the backend
-- `kwargs`             -- (optional) additional arguments that are passed to the
-                          backend
-
-### Notes
-
-A dictionary with available algorithms is available via
-`Reachability.available_algorithms`.
-"""
-function d_reach(HS::HybridSystem,
-               N::Int;
-               X0::LazySet;
-               algorithm::String="explicit",
-               ε_init::Float64=Inf,
-               set_type_init::Type{<:LazySet}=Hyperrectangle,
-               ε_iter::Float64=Inf,
-               set_type_iter::Type{<:LazySet}=Hyperrectangle,
-               assume_sparse=true,
-               assume_homogeneous=false,
-               numeric_type::Type=Float64,
-               lazy_X0=false,
-               kwargs...)::Vector{<:LazySet}
-               # unpack arguments
-               kwargs_dict = Dict(kwargs)
-
-
-
-               # list containing the arguments passed to any reachability function
-               args = []
-               waiting_list = []
-               # coefficients matrix
-               #TODO get start state. For now we assume that it is the first location
-               cur_loc_id = 1
-               cur_loc = HS.modes[cur_loc_id]
-
-               push!((cur_loc, X0), waiting_list)
-               i = 0
-               while (!isempty(waiting_list) and i < 15) #TODO add variable for max iteration number
-                   cur_loc, X0 = pop!(waiting_list)
-                   S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
-
-                   Rsets = reach(
-                        S,
-                        kwargs_dict[:N];
-                        algorithm=kwargs_dict[:algorithm],
-                        ε_init=kwargs_dict[:ε_init],
-                        set_type_init=kwargs_dict[:set_type_init],
-                        ε_iter=kwargs_dict[:ε_iter],
-                        set_type_iter=kwargs_dict[:set_type_iter],
-                        assume_sparse=kwargs_dict[:assume_sparse],
-                        assume_homogeneous=kwargs_dict[:assume_homogeneous],
-                        lazy_X0=kwargs_dict[:lazy_X0],
-                        blocks=kwargs_dict[:blocks],
-                        partition=kwargs_dict[:partition],
-                        block_types_init=kwargs_dict[:block_types_init],
-                        block_types_iter=kwargs_dict[:block_types_iter],
-                        template_directions_init=kwargs_dict[:template_directions_init],
-                        template_directions_iter=kwargs_dict[:template_directions_iter],
-                        lazy_inputs_interval=kwargs_dict[:lazy_inputs_interval],
-                        output_function=kwargs_dict[:output_function]
-                        )
-                       for j in enumerate(out_transitions(HS, cur_loc_id) #TODO optimize it or add method for outgoing transitions to SX
-                                destination_loc = HS.modes[target(HS, j)]
-                                source_invariant, target_invariant = cur_loc[2], destination_loc[2]
-                                #guard =
-                                ```
-                                get transition_info:
-                                Guard
-                                Destination_location
-                                # check intersection G_I^+_i^-
-                                if (intersection != empty)
-                                    # TODO Check intersection with forbidden states
-                                    push!(waiting_list, (inter_set, loc_id))
-                                ```
-                        end
-                    i += 1
-                end
-
-               # return the result
-               return res
-       end

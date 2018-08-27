@@ -77,7 +77,7 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve(system::InitialValueProblem,
+function solve_cont(system::AbstractContinuousSystem,
                options_input::Options)::AbstractSolution
 
     # ==========
@@ -313,3 +313,55 @@ project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 
 project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
+
+
+
+"""
+    reach_hybrid(HS, options)
+
+Interface to reachability algorithms for an LTI system.
+
+### Input
+
+- `HS`                 -- Hybrid System
+- `options`            -- options for solving the problem
+
+### Notes
+
+A dictionary with available algorithms is available via
+`Reachability.available_algorithms`.
+"""
+function solve_hybrid(HS::HybridSystem,
+               options_input::Options)::Vector{<:LazySet}
+
+               waiting_list = []
+               #TODO get start state. For now we assume that it is the first location
+               cur_loc_id = 1
+               push!((cur_loc_id, X0), waiting_list)
+               i = 0
+               while (!isempty(waiting_list) and i < 15) #TODO add variable for max iteration number
+                   cur_loc_id, X0 = pop!(waiting_list)
+                   cur_loc = HS.modes[cur_loc_id]
+                   S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
+
+                   Rsets = solve_discr(S,options_input)
+                   for j in out_transitions(HS, cur_loc_id)
+                            destination_loc = HS.modes[target(HS, j)]
+                            source_invariant, target_invariant = cur_loc[2], destination_loc[2]
+                            reset_map, guard = HS.resetmaps[cur_loc_id][1], HS.resetmaps[cur_loc_id][2]
+                            ```
+                            # check intersection G & I^-        // I^- - invariant of source location
+                            if (intersection != empty)
+                                #TODO Apply reset
+
+                                #Check intersection with  I^+      //I^+ - invariant of target location
+
+                                # TODO Check intersection with forbidden states
+                                push!(waiting_list, (loc_id, inter_set))
+
+                            ```
+                    end
+                    i += 1
+                end
+        return res
+end
