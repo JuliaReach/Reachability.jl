@@ -327,9 +327,7 @@ Interface to reachability algorithms for an LTI system.
 - `options`            -- options for solving the problem
 
 ### Notes
-
-A dictionary with available algorithms is available via
-`Reachability.available_algorithms`.
+ Idea based on http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf
 """
 function solve_hybrid(HS::HybridSystem,
                options_input::Options)::Vector{<:LazySet}
@@ -349,6 +347,7 @@ function solve_hybrid(HS::HybridSystem,
                             destination_loc = HS.modes[target(HS, j)]
                             source_invariant, target_invariant = cur_loc[2], destination_loc[2]
                             reset_map, guard = HS.resetmaps[cur_loc_id][1], HS.resetmaps[cur_loc_id][2]
+
                             ```
                             # check intersection G & I^-        // I^- - invariant of source location
                             if (intersection != empty)
