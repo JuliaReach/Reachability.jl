@@ -122,10 +122,10 @@ Supported options:
                                   discretization phase (see also `:lazy_expm`)
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
+- `:n`             -- system's dimension
 
 Internal options (inputs are ignored or even illegal):
 
-- `:n`             -- system's dimension
 - `:blocks`        -- list of all interesting block indices in the partition
 
 We add default values for almost all undefined options, i.e., modify the input
@@ -155,7 +155,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:approx_model], "forward")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:vars], nothing)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:vars], 1:options.dict[:n])
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
