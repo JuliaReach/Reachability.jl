@@ -2,13 +2,27 @@
 # Test minimal (default) options
 # ===============================
 using Reachability
-A = randn(4, 4); X0 = BallInf(ones(4), 0.1)
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
-          :vars=>[1,3]);
+
+# linear ODE: x' = Ax
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+
+# initial set
+X0 = BallInf(ones(4), 0.1)
+
+# default options (computes all variables)
+s = solve(InitialValueProblem(LinearContinuousSystem(A), X0), :T=>0.1)
+
+# two variables and custom partition
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4], :vars=>[1,3])
 
 # the default partition is used. uses Interval for set_type_init and set_type_iter
 # but Hyperrectangle for set_type_proj
-s = solve(ContinuousSystem(A, X0), :T=>0.1, :vars=>[1,3]);
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :vars=>[1,3])
+
+
 
 # ===============================
 # Test projection
