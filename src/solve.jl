@@ -1,4 +1,4 @@
-import HybridSystems
+using HybridSystems
 export AbstractSolution,
        ReachSolution,
        CheckSolution,
