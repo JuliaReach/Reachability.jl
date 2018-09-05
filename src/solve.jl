@@ -1,3 +1,4 @@
+import HybridSystems
 export AbstractSolution,
        ReachSolution,
        CheckSolution,
@@ -337,7 +338,7 @@ function solve_hybrid(HS::HybridSystem,
                cur_loc_id = 1
                push!((cur_loc_id, X0), waiting_list)
                i = 0
-               while (!isempty(waiting_list) and i < 15) #TODO add variable for max iteration number
+               while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
                    cur_loc_id, X0 = pop!(waiting_list)
                    cur_loc = HS.modes[cur_loc_id]
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
