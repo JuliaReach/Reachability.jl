@@ -190,7 +190,6 @@ function reach(S::AbstractSystem,
     push!(args, output_function)
 
     # preallocate output vector and add mode-specific block(s) argument
-    if algorithm == "explicit" || algorithm == "explicit_parallel"
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
