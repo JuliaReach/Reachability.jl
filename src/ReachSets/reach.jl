@@ -44,7 +44,7 @@ Interface to reachability algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
-function reach(S::AbstractSystem,
+function reach(S::AbstractDiscreteSystem,
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
@@ -214,3 +214,90 @@ function reach(S::AbstractSystem,
     # return the result
     return res
 end
+
+function reach(S::AbstractContinuousSystem,
+               N::Int;
+               algorithm::String="explicit",
+               ε_init::Float64=Inf,
+               set_type_init::Type{<:LazySet}=Hyperrectangle,
+               ε_iter::Float64=Inf,
+               set_type_iter::Type{<:LazySet}=Hyperrectangle,
+               assume_sparse=true,
+               assume_homogeneous=false,
+               numeric_type::Type=Float64,
+               lazy_X0=false,
+               kwargs...)::Vector{<:LazySet}
+
+    # ===================
+    # Time discretization
+    # ===================
+    if system isa InitialValueProblem{<:AbstractContinuousSystem}
+        info("Time discretization...")
+        tic()
+        Δ = discretize(
+            system,
+            options[:δ],
+            approx_model=options[:approx_model],
+            pade_expm=options[:pade_expm],
+            lazy_expm=options[:lazy_expm_discretize],
+            lazy_sih=options[:lazy_sih]
+            )
+        tocc()
+    else
+        Δ = system
+    end
+    
+
+    reach(Δ, N, algorithm=algorithm, ε_init=ε_init, set_type_init=set_type_init,
+          ε_iter=ε_iter, assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
+          numeric_type=numeric_type, lazy_X0=lazy_X0, kwargs...)
+end
+
+
+function matrix_conversion(Δ, options)
+
+    # ===================================
+    # Sparse/dense/lazy matrix conversion
+    # ===================================
+    A = Δ.s.A
+    create_new_system = false
+    if !options[:lazy_expm] && options[:lazy_expm_discretize]
+        # convert SparseMatrixExp to eplicit matrix
+        info("Making lazy matrix exponential explicit...")
+        tic()
+        n = options.dict[:n]
+        if options[:assume_sparse]
+            B = sparse(Int[], Int[], eltype(A)[], n, n)
+        else
+            B = Matrix{eltype(A)}(n, n)
+        end
+        for i in 1:n
+            B[i, :] = get_row(A, i)
+        end
+        A = B
+        create_new_system = true
+        tocc()
+    end
+    if options[:assume_sparse]
+        if A isa SparseMatrixExp
+            # ignore this case
+        elseif !method_exists(sparse, Tuple{typeof(A)})
+            info("`assume_sparse` option cannot be applied to a matrix of " *
+                 "type $(typeof(A)) and will be ignored")
+        elseif !(A isa AbstractSparseMatrix)
+            # convert to sparse matrix
+            A = sparse(A)
+            create_new_system = true
+        end
+    end
+    if create_new_system
+        # set new matrix
+        if method_exists(inputset, Tuple{typeof(Δ.s)})
+            Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
+        else
+            Δ = DiscreteSystem(A, Δ.x0)
+        end
+    end
+    return Δ
+end
+ 
