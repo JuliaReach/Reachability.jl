@@ -2,7 +2,8 @@ using HybridSystems
 export AbstractSolution,
        ReachSolution,
        CheckSolution,
-       solve,
+       solve_cont,
+       solve_hybrid,
        project
 
 """
@@ -181,7 +182,7 @@ function solve_cont(system::AbstractContinuousSystem,
         output_function = options[:project_reachset] ?
             nothing :
             options[:projection_matrix]
-        Rsets = reach(
+        Rsets = reach_discrete(
             Δ,
             options[:N];
             algorithm=options[:algorithm],
@@ -267,8 +268,8 @@ function solve_cont(system::AbstractContinuousSystem,
     end
 end
 
-solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
-    solve(system, Options(Dict{Symbol,Any}(options)))
+solve_cont(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
+    solve_cont(system, Options(Dict{Symbol,Any}(options)))
 
 """
     project(Rsets, options; [transformation_matrix])
@@ -343,7 +344,7 @@ function solve_hybrid(HS::HybridSystem,
                    cur_loc = HS.modes[cur_loc_id]
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-                   Rsets = solve_discr(S,options_input)
+                   Rsets = solve_cont(S,options_input)
                    for j in out_transitions(HS, cur_loc_id)
                             destination_loc = HS.modes[target(HS, j)]
                             source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.S.X]), HPolytope([hi for hi in destination_loc[2].S.X])
