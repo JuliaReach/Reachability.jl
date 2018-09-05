@@ -353,8 +353,8 @@ function solve_hybrid(HS::HybridSystem,
                             if (hashalfspaces(interSIG) || hashyperplanes(interSIG)) # Polyhydra methods don`t work on Polytope
                                 #TODO Apply reset
                                 interSITIG = intersect(interSIG, target_invariant)  #Check intersection with  I^+      //I^+ - invariant of target location
-                                #TODO intersect interImages with interSITIG -> result is interRes
-
+                                #TODO intersect interImages with interSITIG -> result is interImages
+                                #TODO apply ConvexHull to interImages -> result is interRes
                                 #TODO Check intersection with forbidden states
 
                                 push!((loc_id, interRes), waiting_list)
