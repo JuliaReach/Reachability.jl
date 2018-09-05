@@ -342,23 +342,21 @@ function solve_hybrid(HS::HybridSystem,
                    cur_loc = HS.modes[cur_loc_id]
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-                   Rsets = solve_discr(S,options_input)
+                   Rsets = ConvexHullArray(solve_discr(S,options_input)) #TODO change to TemplateHull
                    for j in out_transitions(HS, cur_loc_id)
                             destination_loc = HS.modes[target(HS, j)]
-                            source_invariant, target_invariant = cur_loc[2], destination_loc[2]
-                            reset_map, guard = HS.resetmaps[cur_loc_id][1], HS.resetmaps[cur_loc_id][2]
+                            source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.S.X]), HPolytope([hi for hi in destination_loc[2].S.X])
+                            reset_map, guard = HS.resetmaps[cur_loc_id][1], HPolytope([hi for hi in HS.resetmaps[cur_loc_id].X]) # what if we have LazySets.Hyperplane in the array?
 
-                            ```
-                            # check intersection G & I^-        // I^- - invariant of source location
-                            if (intersection != empty)
+                            interSIG = intersect(source_invariant, guard)  # takes too much time?   # check intersection G & I^-        // I^- - invariant of source location
+
+                            if (hashalfspaces(interSIG) || hashyperplanes(interSIG)) # Polyhydra methods don`t work on Polytope
                                 #TODO Apply reset
-
-                                #Check intersection with  I^+      //I^+ - invariant of target location
+                                interSITIG = intersect(interSIG, target_invariant)  #Check intersection with  I^+      //I^+ - invariant of target location
 
                                 # TODO Check intersection with forbidden states
-                                push!(waiting_list, (loc_id, inter_set))
-
-                            ```
+                                push!((loc_id, interSITIG), waiting_list)
+                            end
                     end
                     i += 1
                 end
