@@ -33,4 +33,4 @@ X0 = [BallInf(zeros(2), 0.01)]
 
 # calculate reachable states up to time T
 prob = InitialValueProblem(H, X0)
-sol = solve(prob, :T=1.0, :δ=>0.01)
+sol = solve(prob, :T=>1.0, :δ=>0.01)
