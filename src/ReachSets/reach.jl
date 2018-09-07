@@ -1,7 +1,7 @@
 import LazySets.CacheMinkowskiSum
 
 """
-    reach_discrete(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
+    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
           [set_type_iter], [assume_sparse], [assume_homogeneous],
           [numeric_type], [lazy_X0], [kwargs]...)
 
@@ -44,7 +44,7 @@ Interface to reachability algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
-function reach_discrete(S::AbstractDiscreteSystem,
+function reach(S::AbstractSystem,
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,

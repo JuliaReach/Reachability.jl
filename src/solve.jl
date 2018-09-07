@@ -79,7 +79,7 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve_cont(system::AbstractContinuousSystem,
+function solve_cont(system::AbstractSystem,
                options_input::Options)::AbstractSolution
 
     # ==========
@@ -182,7 +182,7 @@ function solve_cont(system::AbstractContinuousSystem,
         output_function = options[:project_reachset] ?
             nothing :
             options[:projection_matrix]
-        Rsets = reach_discrete(
+        Rsets = reach(
             Δ,
             options[:N];
             algorithm=options[:algorithm],
@@ -332,12 +332,13 @@ Interface to reachability algorithms for an LTI system.
  Idea based on http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf
 """
 function solve_hybrid(HS::HybridSystem,
+               X0::LazySet,
                options_input::Options)::Vector{<:LazySet}
 
                waiting_list = []
                #TODO get start state. For now we assume that it is the first location
                cur_loc_id = 1
-               push!((cur_loc_id, X0), waiting_list)
+               push!(waiting_list,(cur_loc_id, X0))
                i = 0
                while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
                    cur_loc_id, X0 = pop!(waiting_list)
@@ -359,7 +360,7 @@ function solve_hybrid(HS::HybridSystem,
                                 #TODO apply ConvexHull to interImages -> result is interRes
                                 #TODO Check intersection with forbidden states
 
-                                push!((loc_id, interRes), waiting_list)
+                                push!(waiting_list,(loc_id, interRes))
                             end
                     end
                     i += 1

@@ -19,7 +19,7 @@ m = [ConstrainedLinearControlContinuousSystem(A, B, X, U)];
 A = [1.0 0.0; 0.0 -0.75]
 B = zeros(2, 0)
 X = [Hyperplane([-1.0, 0.0], 0.0), # x = 0
-     HalfSpace([0.0, 1.0], 0.0)]   # v < 0 
+     HalfSpace([0.0, 1.0], 0.0)]   # v < 0
 U = Vector{LazySet{Float64}}()
 r = [ConstrainedLinearControlDiscreteSystem(A, B, X, U)];
 
@@ -29,8 +29,14 @@ s = [HybridSystems.AutonomousSwitching()];
 H = HybridSystem(a, m, r, s)
 
 # initial condition in mode 1
-X0 = [BallInf(zeros(2), 0.01)]
+X0 = BallInf(zeros(2), 0.01)
 
 # calculate reachable states up to time T
 prob = InitialValueProblem(H, X0)
-sol = solve(prob, :T=>1.0, :δ=>0.01)
+input_options = Options(:mode=>"reach")
+
+
+problem_options = Options(:vars=>[1,2],:T=>1.0,
+                    :δ=>0.01, :plot_vars => [1, 2]);
+options = merge(problem_options, input_options)
+sol = solve_hybrid(H, X0, options)
