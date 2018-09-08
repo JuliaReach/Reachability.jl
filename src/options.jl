@@ -1,4 +1,4 @@
-import Base: merge, getindex, keys, values
+import Base: merge, getindex, keys, values, setindex!
 
 export Options, merge, getindex
 
@@ -9,7 +9,7 @@ available_keywords = Set{Symbol}([])
 
 Type that wraps a dictionary used for options.
 
-FIELDS:
+### Fields
 
 - `dict` -- the wrapped dictionary
 """
@@ -19,7 +19,52 @@ struct Options
     Options(dict::Dict{Symbol,Any}) = new(dict)
 end
 
+"""
+    keys(op::Options)
+
+Return the keys of the given options object.
+
+### Input
+
+- `op`    -- options object
+
+### Examples
+
+Obtain the keys of some options with one element:
+
+````jldoctest options_setindex
+julia> op = Options(:T=>1.0)
+Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
+
+julia> collect(keys(op))
+1-element Array{Symbol,1}:
+ :T
+```
+"""
 keys(op::Options) = keys(op.dict)
+
+"""
+    values(op::Options)
+
+Return the values of the given options object.
+
+### Input
+
+- `op`    -- options object
+
+### Examples
+
+Obtain the values of some options with one element:
+
+````jldoctest options_setindex
+julia> op = Options(:T=>1.0)
+Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
+
+julia> collect(values(op))
+1-element Array{Any,1}:
+ 1.0
+```
+"""
 values(op::Options) = values(op.dict)
 
 """
@@ -29,7 +74,7 @@ Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
 Values are inserted in the order in which the function arguments occur, i.e.,
 for conflicting keys a later object overrides a previous value.
 
-INPUT:
+### Input
 
 - `op1` -- first options object
 - `opn` -- list of options objects
@@ -43,19 +88,43 @@ function merge(op1::Options, opn::Options...)::Options
 end
 
 """
-    getindex(op, sym)
+    getindex(op::Options, sym::Symbol)
 
 Returns the value stored for key `sym`.
 
-INPUT:
+### Input
 
-- `op` -- options object
+- `op`  -- options object
 - `sym` -- key
 """
 function getindex(op::Options, sym::Symbol)
     return getindex(op.dict, sym)
 end
 
+"""
+    setindex!(op, value key)
+
+Store the given value at the given key in the options.
+
+### Input
+
+- `op`    -- options object
+- `value` -- value
+- `key`   -- key
+
+### Examples
+
+Create an empty options object and add an input:
+
+````jldoctest options_setindex
+julia> Options()
+Reachability.Options(Dict{Symbol,Any}())
+
+julia> op[:T] = 1.0
+1.0
+```
+"""
+setindex!(op::Options, value, key) = setindex!(op.dict, value, key)
 
 """
     validate_solver_options_and_add_default_values!(options)
