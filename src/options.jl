@@ -1,4 +1,4 @@
-import Base: merge, getindex
+import Base: merge, getindex, keys, values
 
 export Options, merge, getindex
 
@@ -18,6 +18,9 @@ struct Options
     Options(args::Pair{Symbol,<:Any}...) = new(Dict{Symbol,Any}(args))
     Options(dict::Dict{Symbol,Any}) = new(dict)
 end
+
+keys(op::Options) = keys(op.dict)
+values(op::Options) = values(op.dict)
 
 """
     merge(op1, opn)
