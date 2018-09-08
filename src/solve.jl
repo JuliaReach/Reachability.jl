@@ -57,11 +57,19 @@ end
 CheckSolution(satisfied::Bool, violation::Int) =
     CheckSolution(satisfied, violation, Options())
 
-function default_algorithm(system::InitialValueProblem{S}) where {S}
+function default_algorithm(system::InitialValueProblem)
     algorithm = ""
-    if S ∈ [LinearContinuousSystem, LinearControlContinuousSystem, ConstrainedLinearContinuousSystem, ConstrainedLinearControlContinuousSystem] ||
-       S ∈ [LinearDiscreteSystem, LinearControlDiscreteSystem, ConstrainedLinearDiscreteSystem, ConstrainedLinearControlDiscreteSystem]
-        algorithm = "BFFPSV18"
+    s = system.s
+    if s isa LinearContinuousSystem ||
+       s isa LinearControlContinuousSystem ||
+       s isa ConstrainedLinearContinuousSystem ||
+       s isa ConstrainedLinearContinuousSystem ||
+       s isa LinearDiscreteSystem ||
+       s isa LinearControlDiscreteSystem ||
+       s isa ConstrainedLinearDiscreteSystem ||
+       s isa ConstrainedLinearControlDiscreteSystem
+       
+       algorithm = "BFFPSV18"
     end
     return algorithm
 end
@@ -88,10 +96,13 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve(system::InitialValueProblem, options::Options;
-               algorithm=default_algorithm(system))::AbstractSolution
+function solve(system::InitialValueProblem, options::Options)::AbstractSolution
 
-    if algorithm == "BFFPSV18"
+    if :algorithm ∉ keys(options)
+        options[:algorithm] = default_algorithm(system)
+    end
+
+    if options[:algorithm] == "BFFPSV18"
         init_BFFPSV18!(system, options)
 
         if options[:mode] == "reach"
