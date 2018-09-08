@@ -74,6 +74,8 @@ function default_algorithm(system::InitialValueProblem)
     return algorithm
 end
 
+solve(system::InitialValueProblem, options::Options) = solve!(system, copy(options))
+
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
 
@@ -96,7 +98,7 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve(system::InitialValueProblem, options::Options)::AbstractSolution
+function solve!(system::InitialValueProblem, options::Options)::AbstractSolution
 
     if :algorithm ∉ keys(options)
         options[:algorithm] = default_algorithm(system)
