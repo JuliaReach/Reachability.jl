@@ -7,7 +7,7 @@
 [![Join the chat at https://gitter.im/JuliaReach/Lobby](https://badges.gitter.im/JuliaReach/Lobby.svg)](https://gitter.im/JuliaReach/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 `Reachability` is a software for reach set approximation and safety properties
-of affine ordinary differential equations (ODEs) with nondeterminsitic inputs.
+of affine ordinary differential equations (ODEs) with nondeterministic inputs.
 
 It is written in [Julia](http://julialang.org), a modern high-performance language
 for scientific computing.
