@@ -32,7 +32,7 @@ Return the keys of the given options object.
 
 Obtain the keys of some options with one element:
 
-````jldoctest options_setindex
+```jldoctest options_setindex
 julia> op = Options(:T=>1.0)
 Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
 
@@ -56,7 +56,7 @@ Return the values of the given options object.
 
 Obtain the values of some options with one element:
 
-````jldoctest options_setindex
+```jldoctest options_setindex
 julia> op = Options(:T=>1.0)
 Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
 
@@ -116,7 +116,7 @@ Store the given value at the given key in the options.
 
 Create an empty options object and add an input:
 
-````jldoctest options_setindex
+```jldoctest options_setindex
 julia> Options()
 Reachability.Options(Dict{Symbol,Any}())
 
