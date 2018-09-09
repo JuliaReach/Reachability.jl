@@ -74,7 +74,11 @@ function default_algorithm(system::InitialValueProblem)
     return algorithm
 end
 
-solve(system::InitialValueProblem, options::Options) = solve!(system, Options(copy(options.dict)))
+#=
+function solve(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))
+    solve!(system, Options(copy(options.dict)), algorithm=algorithm)
+end
+=#
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
@@ -98,15 +102,19 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve!(system::InitialValueProblem, options::Options)::AbstractSolution
+function solve!(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))::AbstractSolution
 
+#=
     if :algorithm ∉ keys(options)
         options[:algorithm] = default_algorithm(system)
     end
-
-    if options[:algorithm] == "BFFPSV18"
+=#
+    println(algorithm)
+    if algorithm == "BFFPSV18"
+        println("existe key coord transf?")
+        println(options[:coordinate_transformation])
         init_BFFPSV18!(system, options)
-
+        println(options[:coordinate_transformation])
         if options[:mode] == "reach"
             info("Reachable States Computation...")
             tic()
@@ -194,8 +202,10 @@ function solve!(system::InitialValueProblem, options::Options)::AbstractSolution
     end # algorithm
 end
 
+#=
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
+=#
 
 """
     project(Rsets, options; [transformation_matrix])
@@ -242,7 +252,9 @@ project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
-
+# ===========================================================================
+# Bogomolov, Foretes, Frehse, Podolski, Schillic, Viry 2018
+# ===========================================================================
 function init_BFFPSV18!(system, options)
      # state dimension for (purely continuous or purely discrete systems)
      options.dict[:n] = statedim(system)
