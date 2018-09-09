@@ -74,7 +74,7 @@ function default_algorithm(system::InitialValueProblem)
     return algorithm
 end
 
-solve(system::InitialValueProblem, options::Options) = solve!(system, copy(options))
+solve(system::InitialValueProblem, options::Options) = solve!(system, Options(copy(options.dict)))
 
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
