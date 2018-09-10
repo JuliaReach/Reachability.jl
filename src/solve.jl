@@ -345,15 +345,16 @@ function solve_hybrid(HS::HybridSystem,
                    cur_loc = HS.modes[cur_loc_id]
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-                   Rsets = solve_cont(S,options_input)
+                   Rsets = box_approximation(solve_cont(S,options_input))
                    for j in out_transitions(HS, cur_loc_id)
                             destination_loc = HS.modes[target(HS, j)]
-                            source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.S.X]), HPolytope([hi for hi in destination_loc[2].S.X])
-                            reset_map, guard = HS.resetmaps[cur_loc_id][1], HPolytope([hi for hi in HS.resetmaps[cur_loc_id].X]) # what if we have LazySets.Hyperplane in the array?
+                            source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.X]), HPolytope([hi for hi in destination_loc.X])
+                            reset_map, guard = HS.resetmaps[cur_loc_id].A, HPolytope([hi for hi in HS.resetmaps[cur_loc_id].X]) # what if we have LazySets.Hyperplane in the array?
 
                             interSIG = intersect(source_invariant, guard)  # takes too much time?   # check intersection G & I^-        // I^- - invariant of source location
+                            rsetInters = interSIG ∩ Rsets
                             #TODO intersect interSIG with Rsets -> result is interImages
-                            if (hashalfspaces(interSIG) || hashyperplanes(interSIG)) # Polyhydra methods don`t work on Polytope
+                            #if (hashalfspaces(interSIG) || hashyperplanes(interSIG)) # Polyhydra methods don`t work on Polytope
                                 #TODO Apply reset
                                 interSITIG = intersect(interSIG, target_invariant)  #Check intersection with  I^+      //I^+ - invariant of target location
                                 #TODO intersect interImages with interSITIG -> result is interImages
@@ -361,7 +362,7 @@ function solve_hybrid(HS::HybridSystem,
                                 #TODO Check intersection with forbidden states
 
                                 push!(waiting_list,(loc_id, interRes))
-                            end
+                            #end
                     end
                     i += 1
                 end

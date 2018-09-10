@@ -13,13 +13,15 @@ A = [0.0 1.0; 0.0 0.0]
 B = reshape([0.0, -1.0], (2, 1))
 X = [HalfSpace([1.0, 0.0], 0.0)]
 U = Singleton([1.0])
-m = [ConstrainedLinearControlContinuousSystem(A, B, X, U)];
+m = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
 
 # Reset maps
 A = [1.0 0.0; 0.0 -0.75]
 B = zeros(2, 0)
-X = [Hyperplane([-1.0, 0.0], 0.0), # x = 0
-     HalfSpace([0.0, 1.0], 0.0)]   # v < 0
+
+X = [HalfSpace([0.0, 1.0], 0.0),
+           HalfSpace([-1.0, 0.0], 0.0),# x = 0
+           HalfSpace([1.0, 0.0], 0.0)] # v < 0
 U = Vector{LazySet{Float64}}()
 r = [ConstrainedLinearControlDiscreteSystem(A, B, X, U)];
 
