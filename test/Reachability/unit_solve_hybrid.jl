@@ -38,7 +38,7 @@ prob = InitialValueProblem(H, X0)
 input_options = Options(:mode=>"reach")
 
 
-problem_options = Options(:vars=>[1,2],:T=>1.0,
-                    :δ=>0.01, :plot_vars => [1, 2]);
+problem_options = Options(:vars=>[1,2], :T=>1.0,
+                    :δ=>0.01);
 options = merge(problem_options, input_options)
 sol = solve_hybrid(H, X0, options)

@@ -1,4 +1,5 @@
 using HybridSystems
+using LazySets.Approximations.box_approximation
 export AbstractSolution,
        ReachSolution,
        CheckSolution,
@@ -341,29 +342,44 @@ function solve_hybrid(HS::HybridSystem,
                push!(waiting_list,(cur_loc_id, X0))
                i = 0
                while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
+                   println("Iteration... ", i)
                    cur_loc_id, X0 = pop!(waiting_list)
                    cur_loc = HS.modes[cur_loc_id]
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-                   Rsets = box_approximation(solve_cont(S,options_input))
+                   Rsets = solve_cont(S,options_input)
                    for j in out_transitions(HS, cur_loc_id)
+                            println("Going by transition... ", j)
                             destination_loc = HS.modes[target(HS, j)]
                             source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.X]), HPolytope([hi for hi in destination_loc.X])
                             reset_map, guard = HS.resetmaps[cur_loc_id].A, HPolytope([hi for hi in HS.resetmaps[cur_loc_id].X]) # what if we have LazySets.Hyperplane in the array?
 
-                            interSIG = intersect(source_invariant, guard)  # takes too much time?   # check intersection G & I^-        // I^- - invariant of source location
-                            rsetInters = interSIG ∩ Rsets
-                            #TODO intersect interSIG with Rsets -> result is interImages
-                            #if (hashalfspaces(interSIG) || hashyperplanes(interSIG)) # Polyhydra methods don`t work on Polytope
+                            interSIG = intersect(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
+                            rsetIntersMinus = [intersect(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
+                            is_inter_empty = true;
+                            """for im in rsetIntersMinus
+                                if (!isempty(im))
+                                    is_inter_empty = false;
+                                end
+                            end"""
+                            #if (is_inter_empty)
                                 #TODO Apply reset
-                                interSITIG = intersect(interSIG, target_invariant)  #Check intersection with  I^+      //I^+ - invariant of target location
-                                #TODO intersect interImages with interSITIG -> result is interImages
-                                #TODO apply ConvexHull to interImages -> result is interRes
+                                println("Inside if")
+                                rsetIntersPlus = [intersect(target_invariant, hi) for hi in rsetIntersMinus]
+                                #interSITIG = intersect(rsetHull, target_invariant)  #Check intersection with  I^+, I^+ - invariant of target location
+                                println("after intersection with target invariant ")
+                                println("Before ConvexHull")
+                                rsetHull = ConvexHull(rsetIntersPlus[1], rsetIntersPlus[1])
+                                for inter in rsetIntersPlus
+                                    rsetHull = ConvexHull(rsetHull, inter);
+                                end
+                                println("After ConvexHull")
                                 #TODO Check intersection with forbidden states
-
-                                push!(waiting_list,(loc_id, interRes))
+                                push!(waiting_list,(target(HS, j), rsetHull))
+                                println("Pushed")
                             #end
                     end
+                    println("End of ", i, " step")
                     i += 1
                 end
         return res
