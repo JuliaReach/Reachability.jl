@@ -318,7 +318,6 @@ project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
 
-
 """
     reach_hybrid(HS, options)
 
@@ -330,7 +329,10 @@ Interface to reachability algorithms for an LTI system.
 - `options`            -- options for solving the problem
 
 ### Notes
- Idea based on http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf
+
+Idea based on http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf
+
+The current implementation requires that you have loaded the `Polyhedra` library.
 """
 function solve_hybrid(HS::HybridSystem,
                X0::LazySet,
@@ -351,11 +353,17 @@ function solve_hybrid(HS::HybridSystem,
                    for j in out_transitions(HS, cur_loc_id)
                             println("Going by transition... ", j)
                             destination_loc = HS.modes[target(HS, j)]
-                            source_invariant, target_invariant = HPolytope([hi for hi in cur_loc.X]), HPolytope([hi for hi in destination_loc.X])
-                            reset_map, guard = HS.resetmaps[cur_loc_id].A, HPolytope([hi for hi in HS.resetmaps[cur_loc_id].X]) # what if we have LazySets.Hyperplane in the array?
+                            source_invariant, target_invariant = cur_loc.X, destination_loc.X
+                            reset_map, guard = HS.resetmaps[cur_loc_id].A, HS.resetmaps[cur_loc_id].X
+                            
+                            # TODO temp assumptions
+                            # eg. what if we have LazySets.Hyperplane in the array?
+                            @assert source_invariant isa HPolytope &&
+                                    target_invariant isa HPolytope &&
+                                    guard isa HPolytope
 
-                            interSIG = intersect(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
-                            rsetIntersMinus = [intersect(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
+                            interSIG = intersection(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
+                            rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
                             is_inter_empty = true;
                             """for im in rsetIntersMinus
                                 if (!isempty(im))
@@ -365,7 +373,7 @@ function solve_hybrid(HS::HybridSystem,
                             #if (is_inter_empty)
                                 #TODO Apply reset
                                 println("Inside if")
-                                rsetIntersPlus = [intersect(target_invariant, hi) for hi in rsetIntersMinus]
+                                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
                                 #interSITIG = intersect(rsetHull, target_invariant)  #Check intersection with  I^+, I^+ - invariant of target location
                                 println("after intersection with target invariant ")
                                 println("Before ConvexHull")
