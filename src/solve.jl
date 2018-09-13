@@ -103,7 +103,8 @@ function solve(system::InitialValueProblem,
             approx_model=options[:approx_model],
             pade_expm=options[:pade_expm],
             lazy_expm=options[:lazy_expm_discretize],
-            lazy_sih=options[:lazy_sih]
+            lazy_sih=options[:lazy_sih],
+            parallel=options[:algorithm] == "explicit_parallel"
             )
         tocc()
     else

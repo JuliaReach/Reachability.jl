@@ -43,15 +43,20 @@ function discretize(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
                     approx_model::String="forward",
                     pade_expm::Bool=false,
                     lazy_expm::Bool=false,
-                    lazy_sih::Bool=true)::InitialValueProblem{<:AbstractDiscreteSystem}
+                    lazy_sih::Bool=true,
+                    parallel::Bool=false)::InitialValueProblem{<:AbstractDiscreteSystem}
+
+    if(parallel)
+        info("Parallel discretize")
+    end
 
     if approx_model in ["forward", "backward"]
         return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm,
-                                         lazy_expm, lazy_sih)
+                                         lazy_expm, lazy_sih, parallel)
     elseif approx_model == "firstorder"
-        return discr_bloat_firstorder(cont_sys, δ)
+        return discr_bloat_firstorder(cont_sys, δ, parallel)
     elseif approx_model == "nobloating"
-        return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
+        return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm, parallel)
     else
         error("The approximation model is invalid")
     end
@@ -80,7 +85,11 @@ see Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
 function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
-                                δ::Float64)
+                                δ::Float64, parallel::Bool)
+
+    if(parallel)
+        error("Not implemented");
+    end
 
     A, X0 = cont_sys.s.A, cont_sys.x0
     Anorm = norm(full(A), Inf)
@@ -155,10 +164,16 @@ dont multiply the input by the step size δ, as required for the dense time case
 function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
                         δ::Float64,
                         pade_expm::Bool,
-                        lazy_expm::Bool)
+                        lazy_expm::Bool,
+                        parallel::Bool)
+
+    if(parallel)
+        error("Not implemented");
+    end
 
     A, X0 = cont_sys.s.A, cont_sys.x0
     n = size(A, 1)
+
     if lazy_expm
         ϕ = SparseMatrixExp(A * δ)
     else
@@ -240,9 +255,15 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
                                    approx_model::String,
                                    pade_expm::Bool,
                                    lazy_expm::Bool,
-                                   lazy_sih::Bool)
+                                   lazy_sih::Bool,
+                                   parallel::Bool)
 
-    sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
+    if(parallel)
+        info("Parallel discr_bloat_interpolation")
+        sih = lazy_sih ? error("Not implemented") : symmetric_interval_hull_parallel
+    else
+        sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
+    end
 
     A, X0 = cont_sys.s.A, cont_sys.x0
     n = size(A, 1)
@@ -268,10 +289,11 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
 
     # compute the transformation matrix to bloat the initial states
     if lazy_expm
-        P = SparseMatrixExp([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
+        mat = [abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                              spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
-        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
+                             spzeros(n, 3*n)]
+        P = SparseMatrixExp(mat)
+        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n, parallel)[1:n, :])
     else
         if pade_expm
             P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);

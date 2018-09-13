@@ -297,7 +297,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::Float64  ->  v > 0.)
         elseif key == :algorithm
             expected_type = String
-            domain_constraints = (v::String  ->  v in ["explicit", "wrap"])
+            domain_constraints = (v::String  ->  v in ["explicit", "explicit_parallel", "wrap"])
         elseif key == :vars
             expected_type = AbstractVector{Int}
             domain_constraints =

@@ -7,7 +7,7 @@ This is cheaper than computing the reachable states also for the negative direct
 module Properties
 
 import LazySets.Approximations:decompose,
-                               overapproximate
+        decompose_parallel, overapproximate
 import Reachability.tocc
 
 using LazySets, MathematicalSystems, ..Utils, Expokit, ProgressMeter
