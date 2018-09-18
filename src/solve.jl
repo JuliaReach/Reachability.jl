@@ -369,7 +369,7 @@ function solve_hybrid(HS::HybridSystem,
                             rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
                             filter!(!isempty, rsetIntersMinus)
                             if (!isempty(rsetIntersMinus))
-                                #TODO Apply reset
+                                rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
                                 println("Inside if")
                                 rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus] #Check intersection with  I^+, I^+ - invariant of target location
                                 println("after intersection with target invariant ")
