@@ -365,22 +365,20 @@ function solve_hybrid(HS::HybridSystem,
 
                             interSIG = intersection(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
                             rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
-
-                            #if (filter(x -> !isempty(x), rsetIntersMinus))
+                            filter!(!isempty, rsetIntersMinus)
+                            if (rsetIntersMinus.length)
                                 #TODO Apply reset
                                 println("Inside if")
                                 rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus] #Check intersection with  I^+, I^+ - invariant of target location
                                 println("after intersection with target invariant ")
                                 println("Before ConvexHull")
-                                rsetHull = ConvexHull(rsetIntersPlus[1], rsetIntersPlus[1])
-                                for inter in rsetIntersPlus
-                                    rsetHull = ConvexHull(rsetHull, inter);
-                                end
+                                filter!(!isempty, rsetIntersPlus) #clean up empty intersections
+                                rsetHull = ConvexHullArray(rsetIntersPlus)
                                 println("After ConvexHull")
                                 #TODO Check intersection with forbidden states
                                 push!(waiting_list,(target(HS, trans), rsetHull))
                                 println("Pushed")
-                            #end
+                            end
                             j += 1
                     end
                     println("End of ", i, " step")
