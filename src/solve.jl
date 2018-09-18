@@ -350,12 +350,13 @@ function solve_hybrid(HS::HybridSystem,
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
                    Rsets = solve_cont(S,options_input)
-                   for j in out_transitions(HS, cur_loc_id)
-                            println("Going by transition... ", j)
-                            destination_loc = HS.modes[target(HS, j)]
+                   j = 1
+                   for trans in out_transitions(HS, cur_loc_id)
+                            println("Going by transition... ", trans)
+                            destination_loc = HS.modes[target(HS, trans)]
                             source_invariant, target_invariant = cur_loc.X, destination_loc.X
-                            reset_map, guard = HS.resetmaps[cur_loc_id].A, HS.resetmaps[cur_loc_id].X
-                            
+                            reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
+
                             # TODO temp assumptions
                             # eg. what if we have LazySets.Hyperplane in the array?
                             @assert source_invariant isa HPolytope &&
@@ -364,17 +365,11 @@ function solve_hybrid(HS::HybridSystem,
 
                             interSIG = intersection(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
                             rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
-                            is_inter_empty = true;
-                            """for im in rsetIntersMinus
-                                if (!isempty(im))
-                                    is_inter_empty = false;
-                                end
-                            end"""
-                            #if (is_inter_empty)
+
+                            #if (filter(x -> !isempty(x), rsetIntersMinus))
                                 #TODO Apply reset
                                 println("Inside if")
-                                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
-                                #interSITIG = intersect(rsetHull, target_invariant)  #Check intersection with  I^+, I^+ - invariant of target location
+                                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus] #Check intersection with  I^+, I^+ - invariant of target location
                                 println("after intersection with target invariant ")
                                 println("Before ConvexHull")
                                 rsetHull = ConvexHull(rsetIntersPlus[1], rsetIntersPlus[1])
@@ -383,9 +378,10 @@ function solve_hybrid(HS::HybridSystem,
                                 end
                                 println("After ConvexHull")
                                 #TODO Check intersection with forbidden states
-                                push!(waiting_list,(target(HS, j), rsetHull))
+                                push!(waiting_list,(target(HS, trans), rsetHull))
                                 println("Pushed")
                             #end
+                            j += 1
                     end
                     println("End of ", i, " step")
                     i += 1
