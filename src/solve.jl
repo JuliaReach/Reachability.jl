@@ -366,7 +366,7 @@ function solve_hybrid(HS::HybridSystem,
                             interSIG = intersection(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
                             rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
                             filter!(!isempty, rsetIntersMinus)
-                            if (rsetIntersMinus.length)
+                            if (!isempty(rsetIntersMinus))
                                 #TODO Apply reset
                                 println("Inside if")
                                 rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus] #Check intersection with  I^+, I^+ - invariant of target location
