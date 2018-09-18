@@ -343,6 +343,7 @@ function solve_hybrid(HS::HybridSystem,
                cur_loc_id = 1
                push!(waiting_list,(cur_loc_id, X0))
                i = 0
+               rset = []
                while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
                    println("Iteration... ", i)
                    cur_loc_id, X0 = pop!(waiting_list)
@@ -350,6 +351,7 @@ function solve_hybrid(HS::HybridSystem,
                    S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
                    Rsets = solve_cont(S,options_input)
+                   push!(rset, Rsets.Xk)
                    j = 1
                    for trans in out_transitions(HS, cur_loc_id)
                             println("Going by transition... ", trans)
@@ -384,5 +386,5 @@ function solve_hybrid(HS::HybridSystem,
                     println("End of ", i, " step")
                     i += 1
                 end
-        return res
+        return vcat(rset...)
 end
