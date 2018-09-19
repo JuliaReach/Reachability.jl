@@ -365,12 +365,17 @@ function solve_hybrid(HS::HybridSystem,
         S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
         Rsets = solve_cont(S, options)
-        push!(rset, Rsets.Xk)
+
+        source_invariant = cur_loc.X
+        intersectedRset = [intersection(source_invariant, convert(HPolytope, hi)) for hi in Rsets.Xk]
+        filter!(!isempty, intersectedRset)
+        push!(rset, intersectedRset)
+
         j = 1
         for trans in out_transitions(HS, cur_loc_id)
             info("Going by transition... $(trans)")
             destination_loc = HS.modes[target(HS, trans)]
-            source_invariant, target_invariant = cur_loc.X, destination_loc.X
+            target_invariant = destination_loc.X
             reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
 
             # TODO temp assumptions
@@ -380,21 +385,26 @@ function solve_hybrid(HS::HybridSystem,
                     guard isa HPolytope
 
             # check intersection G & I^-, I^- - invariant of source location
-            interSIG = intersection(source_invariant, guard)
-            rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
+            #interSIG = intersection(source_invariant, guard)
+            rsetIntersMinus = [intersection(guard, convert(HPolytope, hi)) for hi in intersectedRset]
             filter!(!isempty, rsetIntersMinus)
             if (!isempty(rsetIntersMinus))
+                info("Intersection with I\^+")
                 rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
                 #Check intersection with  I^+, I^+ - invariant of target location
                 rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
                 #clean up empty intersections
                 filter!(!isempty, rsetIntersPlus)
                 rsetHull = ConvexHullArray(rsetIntersPlus)
+                for rh in rsetIntersPlus
+                    push!(waiting_list,(target(HS, trans), rh))
+                end
                 #TODO Check intersection with forbidden states
-                push!(waiting_list,(target(HS, trans), rsetHull))
+                #push!(waiting_list,(target(HS, trans), rsetHull))
             end
             j += 1
         end
+
         info("End of $i step")
         i += 1
     end

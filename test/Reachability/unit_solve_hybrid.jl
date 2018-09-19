@@ -2,7 +2,7 @@
 # See: https://juliareach.github.io/SX.jl/latest/examples/bball.html
 # ============================
 
-using HybridSystems, MathematicalSystems, LazySets
+using HybridSystems, MathematicalSystems, LazySets, Plots
 
 # Transition graph (automaton)
 a = LightAutomaton(1)
@@ -28,12 +28,15 @@ s = [HybridSystems.AutonomousSwitching()];
 HS = HybridSystem(a, m, r, s)
 
 # initial condition in mode 1
-X0 = BallInf(zeros(2), 0.01)
+X0 = Hyperrectangle(low=[9.9, 0.0], high=[10.1, 0.0])
 
 # calculate reachable states up to time T
 prob = InitialValueProblem(HS, X0)
 input_options = Options(:mode=>"reach")
 
-problem_options = Options(:vars=>[1,2], :T=>1.0, :δ=>0.01);
-options = merge(problem_options, input_options)
-sol = solve_hybrid(HS, X0, options)
+problem_options = Options(:vars=>[1,2], :T=>10.0, :δ=>0.005, :plot_vars=>[1, 2], :verbosity=>1);
+options_input = merge(problem_options, input_options)
+using Polyhedra
+sol = solve_hybrid(HS, X0, options_input);
+
+plot(sol, indices=1:2:length(sol.Xk))
