@@ -336,7 +336,7 @@ The current implementation requires that you have loaded the `Polyhedra` library
 """
 function solve_hybrid(HS::HybridSystem,
                X0::LazySet,
-               options_input::Options)::Vector{<:LazySet}
+               options_input::Options)::AbstractSolution
 
                waiting_list = []
                #TODO get start state. For now we assume that it is the first location
@@ -386,5 +386,5 @@ function solve_hybrid(HS::HybridSystem,
                     println("End of ", i, " step")
                     i += 1
                 end
-        return vcat(rset...)
+        return ReachSolution(vcat(rset...), options)
 end
