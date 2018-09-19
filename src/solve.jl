@@ -359,7 +359,7 @@ function solve_hybrid(HS::HybridSystem,
     i = 0
     rset = []
     while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
-        println("Iteration... ", i)
+        info("Iteration... $i")
         cur_loc_id, X0 = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
         S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
@@ -368,7 +368,7 @@ function solve_hybrid(HS::HybridSystem,
         push!(rset, Rsets.Xk)
         j = 1
         for trans in out_transitions(HS, cur_loc_id)
-            println("Going by transition... ", trans)
+            info("Going by transition... $(trans)")
             destination_loc = HS.modes[target(HS, trans)]
             source_invariant, target_invariant = cur_loc.X, destination_loc.X
             reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
@@ -395,8 +395,8 @@ function solve_hybrid(HS::HybridSystem,
             end
             j += 1
         end
-        println("End of ", i, " step")
+        info("End of $i step")
         i += 1
     end
-return ReachSolution(vcat(rset...), options)
+    return ReachSolution(vcat(rset...), options)
 end
