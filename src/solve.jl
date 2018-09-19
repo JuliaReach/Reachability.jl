@@ -319,72 +319,84 @@ project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
 
 
 """
-    reach_hybrid(HS, options)
+    solve_hybrid(HS::HybridSystem,
+                 X0::LazySet,
+                 options::Options)::AbstractSolution
 
-Interface to reachability algorithms for an LTI system.
+Interface to reachability algorithms for a hybrid system PWA dynamics.
 
 ### Input
 
-- `HS`                 -- Hybrid System
-- `options`            -- options for solving the problem
+- `HS`      -- hybrid system
+- `X0`      -- initial set
+- `options` -- options for solving the problem
 
 ### Notes
 
-Idea based on http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf
+The current implementation requires that you have loaded the `Polyhedra` library,
+because some concrete operations between polytopes are used.
 
-The current implementation requires that you have loaded the `Polyhedra` library.
+Currently, the following simplifying assumptions are made:
+
+- the starting state (for which `X0` is given) correspond to the first location
+  in the automaton
+- source invariants, target invariants and guards are polytopes in constraint
+  representation
+
+### Algorithm
+
+The algorithm is based on [Flowpipe-Guard Intersection for Reachability Computations
+with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
 function solve_hybrid(HS::HybridSystem,
-               X0::LazySet,
-               options_input::Options)::AbstractSolution
+                      X0::LazySet,
+                      options::Options)::AbstractSolution
 
-               waiting_list = []
-               #TODO get start state. For now we assume that it is the first location
-               cur_loc_id = 1
-               push!(waiting_list,(cur_loc_id, X0))
-               i = 0
-               rset = []
-               while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
-                   println("Iteration... ", i)
-                   cur_loc_id, X0 = pop!(waiting_list)
-                   cur_loc = HS.modes[cur_loc_id]
-                   S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
+    waiting_list = []
+    #TODO get start state. For now we assume that it is the first location
+    cur_loc_id = 1
+    push!(waiting_list,(cur_loc_id, X0))
+    i = 0
+    rset = []
+    while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
+        println("Iteration... ", i)
+        cur_loc_id, X0 = pop!(waiting_list)
+        cur_loc = HS.modes[cur_loc_id]
+        S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-                   Rsets = solve_cont(S,options_input)
-                   push!(rset, Rsets.Xk)
-                   j = 1
-                   for trans in out_transitions(HS, cur_loc_id)
-                            println("Going by transition... ", trans)
-                            destination_loc = HS.modes[target(HS, trans)]
-                            source_invariant, target_invariant = cur_loc.X, destination_loc.X
-                            reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
+        Rsets = solve_cont(S, options)
+        push!(rset, Rsets.Xk)
+        j = 1
+        for trans in out_transitions(HS, cur_loc_id)
+            println("Going by transition... ", trans)
+            destination_loc = HS.modes[target(HS, trans)]
+            source_invariant, target_invariant = cur_loc.X, destination_loc.X
+            reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
 
-                            # TODO temp assumptions
-                            # eg. what if we have LazySets.Hyperplane in the array?
-                            @assert source_invariant isa HPolytope &&
-                                    target_invariant isa HPolytope &&
-                                    guard isa HPolytope
+            # TODO temp assumptions
+            # eg. what if we have LazySets.Hyperplane in the array?
+            @assert source_invariant isa HPolytope &&
+                    target_invariant isa HPolytope &&
+                    guard isa HPolytope
 
-                            interSIG = intersection(source_invariant, guard)  # takes too much time?   # check intersection G & I^-, I^- - invariant of source location
-                            rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
-                            filter!(!isempty, rsetIntersMinus)
-                            if (!isempty(rsetIntersMinus))
-                                rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
-                                println("Inside if")
-                                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus] #Check intersection with  I^+, I^+ - invariant of target location
-                                println("after intersection with target invariant ")
-                                println("Before ConvexHull")
-                                filter!(!isempty, rsetIntersPlus) #clean up empty intersections
-                                rsetHull = ConvexHullArray(rsetIntersPlus)
-                                println("After ConvexHull")
-                                #TODO Check intersection with forbidden states
-                                push!(waiting_list,(target(HS, trans), rsetHull))
-                                println("Pushed")
-                            end
-                            j += 1
-                    end
-                    println("End of ", i, " step")
-                    i += 1
-                end
-        return ReachSolution(vcat(rset...), options)
+            # check intersection G & I^-, I^- - invariant of source location
+            interSIG = intersection(source_invariant, guard)
+            rsetIntersMinus = [intersection(interSIG, convert(HPolytope, hi)) for hi in Rsets.Xk]
+            filter!(!isempty, rsetIntersMinus)
+            if (!isempty(rsetIntersMinus))
+                rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
+                #Check intersection with  I^+, I^+ - invariant of target location
+                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
+                #clean up empty intersections
+                filter!(!isempty, rsetIntersPlus)
+                rsetHull = ConvexHullArray(rsetIntersPlus)
+                #TODO Check intersection with forbidden states
+                push!(waiting_list,(target(HS, trans), rsetHull))
+            end
+            j += 1
+        end
+        println("End of ", i, " step")
+        i += 1
+    end
+return ReachSolution(vcat(rset...), options)
 end
