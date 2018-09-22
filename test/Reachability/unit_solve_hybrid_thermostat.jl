@@ -14,14 +14,14 @@ A = [-0.1]
 B = [30]
 X = HPolytope([HalfSpace([1.0, 0.0], 22.0)]) # x <= 22
 U = Singleton([0.1])
-m_on = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
+m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Mode on
 A = [-0.1]
 B = [30]
 X = HPolytope([HalfSpace([-1.0], 18.0)]) # x >= 18
 U = Singleton([0.1])
-m_off = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
+m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Transition from on to off
 A_off = [1.0 0.0]
@@ -31,7 +31,7 @@ X_off = HPolytope([HalfSpace([-1.0], 21.0)) # x >= 21
 A_on = [1.0 0.0]
 X_on = HPolytope([HalfSpace([1.0], 19.0),  # x <= 19
 
-
+m = [m_on, m_off]
 
 r = [ConstrainedLinearDiscreteSystem(A_on, X_on), ConstrainedLinearDiscreteSystem(A_off, X_off)];
 
