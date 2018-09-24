@@ -4,23 +4,24 @@
 
 using HybridSystems, MathematicalSystems, LazySets, Plots
 
+c_a = 0.1
 # Transition graph (automaton)
 a = LightAutomaton(2)
 add_transition!(a, 1, 2, 1);
 add_transition!(a, 2, 1, 2);
 
 # Mode off
-A = hcat(-0.1)
+A = hcat(-c_a)
 B = hcat(0.0)
 X = HPolytope([HalfSpace([1.0], 22.0)]) # x <= 22
 U = Singleton([0.0])
 m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Mode on
-A = hcat(-0.1)
-B = hcat(30)
+A = hcat(-c_a)
+B = hcat(30.)
 X = HPolytope([HalfSpace([-1.0], 18.0)]) # x >= 18
-U = Singleton([0.1])
+U = Singleton([c_a])
 m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Transition from on to off
@@ -41,7 +42,7 @@ s = [HybridSystems.AutonomousSwitching()];
 HS = HybridSystem(a, m, r, s)
 
 # initial condition in mode 1
-X0 = Singleton([18])
+X0 = Singleton([18.])
 
 # calculate reachable states up to time T
 prob = InitialValueProblem(HS, X0)
