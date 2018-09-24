@@ -26,7 +26,7 @@ m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Transition from on to off
 A_off = hcat(1.0)
-X_off = HPolytope([HalfSpace([-1.0], 21.0)]) # x >= 21
+X_off = HPolytope([HalfSpace([-1.0], -21.0)]) # x >= 21
 
 # Transition from off to on
 A_on = hcat(1.0)
