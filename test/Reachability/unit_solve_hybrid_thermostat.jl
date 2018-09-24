@@ -11,9 +11,9 @@ add_transition!(a, 2, 1, 2);
 
 # Mode off
 A = hcat(-0.1)
-B = hcat(30)
+B = hcat(0.0)
 X = HPolytope([HalfSpace([1.0], 22.0)]) # x <= 22
-U = Singleton([0.1])
+U = Singleton([0.0])
 m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Mode on
