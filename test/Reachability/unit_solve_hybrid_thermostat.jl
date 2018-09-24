@@ -20,7 +20,7 @@ m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 # Mode on
 A = hcat(-c_a)
 B = hcat(30.)
-X = HPolytope([HalfSpace([-1.0], 18.0)]) # x >= 18
+X = HPolytope([HalfSpace([-1.0], -18.0)]) # x >= 18
 U = Singleton([c_a])
 m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
