@@ -1,9 +1,9 @@
 import LazySets.CacheMinkowskiSum
 
 """
-    check_property(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
-                   [set_type_iter], [assume_sparse], [assume_homogeneous],
-                   [lazy_X0], [kwargs]...)
+    check_property(S, N, options; [algorithm], [ε_init], [set_type_init],
+                   [ε_iter], [set_type_iter], [assume_sparse],
+                   [assume_homogeneous], [lazy_X0], [kwargs]...)
 
 Interface to property checking algorithms for an LTI system.
 
@@ -11,6 +11,7 @@ Interface to property checking algorithms for an LTI system.
 
 - `S`                  -- LTI system, discrete or continuous
 - `N`                  -- number of computed sets
+- `options`            -- additional options
 - `algorithm`          -- (optional, default: `"explicit"`), algorithm backend;
                           see `available_algorithms` for all admissible options
 - `ε_init`             -- (optional, default: `Inf`) error bound for the
@@ -41,8 +42,9 @@ Interface to property checking algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Properties.available_algorithms`.
 """
-function check_property(S::AbstractSystem,
-                        N::Int;
+function check_property(S::IVP{<:LinearDiscreteSystem},
+                        N::Int,
+                        options::Options;
                         algorithm::String="explicit",
                         ε_init::Float64=Inf,
                         set_type_init::Type{<:LazySet}=Hyperrectangle,

@@ -174,7 +174,8 @@ function solve!(system::InitialValueProblem, options::Options;
             tic()
             answer = check_property(
                 system,
-                options[:N];
+                options[:N],
+                options;
                 algorithm=options[:algorithm],
                 ε_init=options[:ε_init],
                 set_type_init=options[:set_type_init],
