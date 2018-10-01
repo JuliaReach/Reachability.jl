@@ -1,5 +1,6 @@
-# Bouncing ball example
-# See: https://juliareach.github.io/SX.jl/latest/examples/bball.html
+# Thermostat example
+# See https://fenix.tecnico.ulisboa.pt/downloadFile/3779579688470/lygeros.pdf,
+# Section 1.3.4.
 # ============================
 
 using HybridSystems, MathematicalSystems, LazySets, Polyhedra
