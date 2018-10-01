@@ -2,7 +2,7 @@
 # See: https://juliareach.github.io/SX.jl/latest/examples/bball.html
 # ============================
 
-using HybridSystems, MathematicalSystems, LazySets, Plots, Polyhedra
+using HybridSystems, MathematicalSystems, LazySets, Polyhedra
 
 # Transition graph (automaton)
 a = LightAutomaton(1);
@@ -34,8 +34,6 @@ X0 = Hyperrectangle(low=[10, 0.0], high=[10.2, 0.0]);
 prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 
-problem_options = Options(:vars=>[1,2], :T=>10.0, :δ=>0.01, :plot_vars=>[1, 2], :verbosity=>1);
+problem_options = Options(:vars=>[1,2], :T=>2., :δ=>0.01, :plot_vars=>[1, 2], :verbosity=>1);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
-
-plot(sol, indices=1:2:length(sol.Xk))
