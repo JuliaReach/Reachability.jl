@@ -63,6 +63,9 @@ function reach(S::AbstractDiscreteSystem,
     # list containing the arguments passed to any reachability function
     args = []
 
+    # convert matrix
+    Δ = matrix_conversion(Δ, options)
+
     # coefficients matrix
     A = S.s.A
     push!(args, A)
@@ -215,7 +218,7 @@ function reach(S::AbstractDiscreteSystem,
     return res
 end
 
-function reach(S::AbstractContinuousSystem,
+function reach(system::AbstractContinuousSystem,
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
@@ -246,7 +249,6 @@ function reach(S::AbstractContinuousSystem,
     else
         Δ = system
     end
-    
 
     reach(Δ, N, algorithm=algorithm, ε_init=ε_init, set_type_init=set_type_init,
           ε_iter=ε_iter, assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
@@ -300,4 +302,3 @@ function matrix_conversion(Δ, options)
     end
     return Δ
 end
- 

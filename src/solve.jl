@@ -102,19 +102,10 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve!(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))::AbstractSolution
-
-#=
-    if :algorithm ∉ keys(options)
-        options[:algorithm] = default_algorithm(system)
-    end
-=#
-    println(algorithm)
+function solve!(system::InitialValueProblem, options::Options;
+                algorithm::String=default_algorithm(system))::AbstractSolution
     if algorithm == "BFFPSV18"
-        println("existe key coord transf?")
-        println(options[:coordinate_transformation])
         init_BFFPSV18!(system, options)
-        println(options[:coordinate_transformation])
         if options[:mode] == "reach"
             info("Reachable States Computation...")
             tic()
@@ -197,8 +188,10 @@ function solve!(system::InitialValueProblem, options::Options; algorithm::String
                 return CheckSolution(false, answer, options)
             end
         else
-            error("Unsupported mode.")
+            error("unsupported mode $(options[:mode])")
         end # mode
+    else
+        error("unsupported algorithm $algorithm")
     end # algorithm
 end
 
@@ -253,31 +246,31 @@ project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
 # ===========================================================================
-# Bogomolov, Foretes, Frehse, Podolski, Schillic, Viry 2018
+# Bogomolov, Forets, Frehse, Podelski, Schilling, Viry 2018
 # ===========================================================================
 function init_BFFPSV18!(system, options)
-     # state dimension for (purely continuous or purely discrete systems)
-     options.dict[:n] = statedim(system)
+    # state dimension for (purely continuous or purely discrete systems)
+    options.dict[:n] = statedim(system)
 
-     # solver-specific options (adds default values for unspecified options)
-     validate_solver_options_and_add_default_values!(options)
+    # solver-specific options (adds default values for unspecified options)
+    validate_solver_options_and_add_default_values!(options)
 
-     # coordinate transformation
-     options[:transformation_matrix] = nothing
-     if options[:coordinate_transformation] != ""
-         info("Transformation...")
-         tic(); (Δ, transformation_matrix) = transform(Δ, options[:coordinate_transformation]); tocc()
-         options[:transformation_matrix] = transformation_matrix
-     end
+    # coordinate transformation
+    options[:transformation_matrix] = nothing
+    if options[:coordinate_transformation] != ""
+        info("Transformation...")
+        tic(); (Δ, transformation_matrix) = transform(Δ, options[:coordinate_transformation]); tocc()
+        options[:transformation_matrix] = transformation_matrix
+    end
 
-     # Input -> Output variable mapping
-     options.dict[:inout_map] = inout_map_reach(options[:partition], options[:blocks], options[:n])
+    # Input -> Output variable mapping
+    options.dict[:inout_map] = inout_map_reach(options[:partition], options[:blocks], options[:n])
 
-     if options[:project_reachset]
-         output_function = nothing
+    if options[:project_reachset]
+        output_function = nothing
     else
         options[:projection_matrix]
     end
-    
+
     return options
 end
