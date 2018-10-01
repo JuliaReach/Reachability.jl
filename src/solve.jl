@@ -369,9 +369,8 @@ function solve_hybrid(HS::HybridSystem,
         Rsets = solve_cont(S, options)
 
         source_invariant = cur_loc.X
-        intersectedRset = [intersection(source_invariant, VPolytope(vertices_list(hi))) for hi in Rsets.Xk]
-        filter!(!isempty, intersectedRset)
-        push!(rset, intersectedRset)
+        intersectedRset =
+            intersect_reach_tubes_invariant(Rsets.Xk, source_invariant)
 
         j = 1
         for trans in out_transitions(HS, cur_loc_id)
@@ -411,4 +410,11 @@ function solve_hybrid(HS::HybridSystem,
         i += 1
     end
     return ReachSolution(vcat(rset...), options)
+end
+
+function intersect_reach_tubes_invariant(reach_tubes, invariant)
+    intersections =
+        [intersection(invariant, VPolytope(vertices_list(hi))) for hi in reach_tubes]
+    filter!(!isempty, intersections)
+    push!(rset, intersections)
 end
