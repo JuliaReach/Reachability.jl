@@ -351,6 +351,8 @@ with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2
 function solve_hybrid(HS::HybridSystem,
                       X0::LazySet,
                       options::Options)::AbstractSolution
+    # set options
+    options.dict[:project_reachset] = false
 
     waiting_list = []
     #TODO get start state. For now we assume that it is the first location
