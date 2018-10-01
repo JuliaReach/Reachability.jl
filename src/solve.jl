@@ -418,7 +418,8 @@ function intersect_reach_tubes_invariant(reach_tubes, invariant)
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
-    intersections = Vector{VPolytope}()
+    # TODO pass numeric type correctly
+    intersections = Vector{HPolytope{Float64}}()
     for rt in reach_tubes
         # TODO temporary workaround for 1D sets
         if dim(rt) == 1
