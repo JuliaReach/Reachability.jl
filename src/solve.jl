@@ -364,6 +364,7 @@ function solve_hybrid(HS::HybridSystem,
     i = 0
     rset = []
     while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
+        i += 1
         info("Iteration... $i")
         cur_loc_id, X0 = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
@@ -376,8 +377,10 @@ function solve_hybrid(HS::HybridSystem,
             intersect_reach_tubes_invariant(Rsets.Xk, source_invariant)
         push!(rset, intersectedRset)
 
-        j = 1
+        j = 0
         for trans in out_transitions(HS, cur_loc_id)
+            j += 1
+
             info("Going by transition... $(trans)")
             destination_loc = HS.modes[target(HS, trans)]
             target_invariant = destination_loc.X
@@ -393,25 +396,24 @@ function solve_hybrid(HS::HybridSystem,
             #interSIG = intersection(source_invariant, guard)
             rsetIntersMinus = [intersection(guard, VPolytope(vertices_list(hi))) for hi in intersectedRset]
             filter!(!isempty, rsetIntersMinus)
-            if (!isempty(rsetIntersMinus))
-                info("Intersection with I\^+")
-                rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
-                #Check intersection with  I^+, I^+ - invariant of target location
-                rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
-                #clean up empty intersections
-                filter!(!isempty, rsetIntersPlus)
-                rsetHull = ConvexHullArray(rsetIntersPlus)
-                for rh in rsetIntersPlus
-                    push!(waiting_list,(target(HS, trans), rh))
-                end
-                #TODO Check intersection with forbidden states
-                #push!(waiting_list,(target(HS, trans), rsetHull))
+            if (isempty(rsetIntersMinus))
+                continue
             end
-            j += 1
+            info("Intersection with I\^+")
+            rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
+            #Check intersection with  I^+, I^+ - invariant of target location
+            rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
+            #clean up empty intersections
+            filter!(!isempty, rsetIntersPlus)
+            rsetHull = ConvexHullArray(rsetIntersPlus)
+            for rh in rsetIntersPlus
+                push!(waiting_list,(target(HS, trans), rh))
+            end
+            #TODO Check intersection with forbidden states
+            #push!(waiting_list,(target(HS, trans), rsetHull))
         end
 
-        info("End of $i step")
-        i += 1
+        info("End of iteration $i")
     end
     return ReachSolution(vcat(rset...), options)
 end
