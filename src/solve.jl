@@ -420,15 +420,12 @@ function intersect_reach_tubes_invariant(reach_tubes, invariant)
     #      twice. This is currently the case for 'Polyhedra' polytopes.
     intersections = Vector{VPolytope}()
     for rt in reach_tubes
+        # TODO temporary workaround for 1D sets
+        if dim(rt) == 1
+            reach_tube = VPolytope(vertices_list(
+                Approximations.overapproximate(rt, LazySets.Interval)))
         # TODO offer a lazy intersection here
         # TODO offer more options instead of taking the VPolytope intersection
-        if rt isa ConvexHull
-            if dim(rt) == 1
-                reach_tube =
-                    VPolytope(vertices_list(overapproximate(rt, LazySets.Interval)))
-            else
-                error("unsupported set type for reach tube: ConvexHull")
-            end
         elseif rt isa CartesianProductArray
             reach_tube = VPolytope(vertices_list(rt))
         else
