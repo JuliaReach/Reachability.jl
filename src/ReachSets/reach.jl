@@ -66,9 +66,6 @@ function reach(S::IVP{<:LinearDiscreteSystem},
     # list containing the arguments passed to any reachability function
     args = []
 
-    # convert matrix
-    Δ = matrix_conversion(Δ, options)
-
     # coefficients matrix
     A = S.s.A
     push!(args, A)
@@ -253,52 +250,4 @@ function reach(system::IVP{<:LinearContinuousSystem},
           set_type_init=set_type_init, ε_iter=ε_iter,
           assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
           numeric_type=numeric_type, lazy_X0=lazy_X0, kwargs...)
-end
-
-
-function matrix_conversion(Δ, options)
-
-    # ===================================
-    # Sparse/dense/lazy matrix conversion
-    # ===================================
-    A = Δ.s.A
-    create_new_system = false
-    if !options[:lazy_expm] && options[:lazy_expm_discretize]
-        # convert SparseMatrixExp to eplicit matrix
-        info("Making lazy matrix exponential explicit...")
-        tic()
-        n = options.dict[:n]
-        if options[:assume_sparse]
-            B = sparse(Int[], Int[], eltype(A)[], n, n)
-        else
-            B = Matrix{eltype(A)}(n, n)
-        end
-        for i in 1:n
-            B[i, :] = get_row(A, i)
-        end
-        A = B
-        create_new_system = true
-        tocc()
-    end
-    if options[:assume_sparse]
-        if A isa SparseMatrixExp
-            # ignore this case
-        elseif !method_exists(sparse, Tuple{typeof(A)})
-            info("`assume_sparse` option cannot be applied to a matrix of " *
-                 "type $(typeof(A)) and will be ignored")
-        elseif !(A isa AbstractSparseMatrix)
-            # convert to sparse matrix
-            A = sparse(A)
-            create_new_system = true
-        end
-    end
-    if create_new_system
-        # set new matrix
-        if method_exists(inputset, Tuple{typeof(Δ.s)})
-            Δ = DiscreteSystem(A, Δ.x0, inputset(Δ))
-        else
-            Δ = DiscreteSystem(A, Δ.x0)
-        end
-    end
-    return Δ
 end
