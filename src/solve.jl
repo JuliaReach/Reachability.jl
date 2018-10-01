@@ -351,6 +351,9 @@ with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2
 function solve_hybrid(HS::HybridSystem,
                       X0::LazySet,
                       options::Options)::AbstractSolution
+    @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
+            "'Polyhedra' to be loaded"
+
     # set options
     options.dict[:project_reachset] = false
 
