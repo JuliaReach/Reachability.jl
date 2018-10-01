@@ -9,6 +9,7 @@ using Reexport, RecipesBase, Memento, MathematicalSystems
 
 include("logging.jl")
 include("Utils/Utils.jl")
+include("options.jl")
 include("ReachSets/ReachSets.jl")
 include("Properties/Properties.jl")
 include("Transformations/Transformations.jl")
@@ -24,7 +25,6 @@ export Properties, LinearConstraintProperty, Clause,
        SubsetProperty,
        Transformations
 
-include("options.jl")
 include("solve.jl")
 include("plot_recipes.jl")
 

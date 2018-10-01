@@ -1,7 +1,8 @@
 import LazySets.CacheMinkowskiSum
+import Reachability.Options
 
 """
-    reach(S, N; [algorithm], [ε_init], [set_type_init], [ε_iter],
+    reach(S, N, options; [algorithm], [ε_init], [set_type_init], [ε_iter],
           [set_type_iter], [assume_sparse], [assume_homogeneous],
           [numeric_type], [lazy_X0], [kwargs]...)
 
@@ -11,6 +12,7 @@ Interface to reachability algorithms for an LTI system.
 
 - `S`                  -- LTI system, discrete or continuous
 - `N`                  -- number of computed sets
+- `options`            -- additional options
 - `algorithm`          -- (optional, default: `"explicit"`), reachability
                           algorithm backend; see `available_algorithms` for all
                           admissible options
@@ -45,7 +47,8 @@ A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
 function reach(S::IVP{<:LinearDiscreteSystem},
-               N::Int;
+               N::Int,
+               options::Options;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
                set_type_init::Type{<:LazySet}=Hyperrectangle,
@@ -219,7 +222,8 @@ function reach(S::IVP{<:LinearDiscreteSystem},
 end
 
 function reach(system::IVP{<:LinearContinuousSystem},
-               N::Int;
+               N::Int,
+               options::Options;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
                set_type_init::Type{<:LazySet}=Hyperrectangle,
@@ -250,8 +254,9 @@ function reach(system::IVP{<:LinearContinuousSystem},
         Δ = system
     end
 
-    reach(Δ, N, algorithm=algorithm, ε_init=ε_init, set_type_init=set_type_init,
-          ε_iter=ε_iter, assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
+    reach(Δ, N, options, algorithm=algorithm, ε_init=ε_init,
+          set_type_init=set_type_init, ε_iter=ε_iter,
+          assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
           numeric_type=numeric_type, lazy_X0=lazy_X0, kwargs...)
 end
 

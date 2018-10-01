@@ -124,7 +124,8 @@ function solve!(system::InitialValueProblem, options::Options;
             tic()
             Rsets = reach(
                 system,
-                options[:N];
+                options[:N],
+                options;
                 algorithm=options[:algorithm],
                 ε_init=options[:ε_init],
                 set_type_init=options[:set_type_init],
