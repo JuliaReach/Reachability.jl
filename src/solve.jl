@@ -74,12 +74,6 @@ function default_algorithm(system::InitialValueProblem)
     return algorithm
 end
 
-#=
-function solve(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))
-    solve!(system, Options(copy(options.dict)), algorithm=algorithm)
-end
-=#
-
 """
     solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)
 
@@ -102,6 +96,10 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
+function solve(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))
+    solve!(system, Options(copy(options.dict)), algorithm=algorithm)
+end
+
 function solve!(system::InitialValueProblem, options::Options;
                 algorithm::String=default_algorithm(system))::AbstractSolution
     if algorithm == "BFFPSV18"
