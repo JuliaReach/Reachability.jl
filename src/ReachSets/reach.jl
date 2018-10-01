@@ -1,5 +1,4 @@
 import LazySets.CacheMinkowskiSum
-import Reachability.Options
 
 """
     reach(S, N, options; [algorithm], [ε_init], [set_type_init], [ε_iter],

@@ -90,7 +90,8 @@ import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability.tocc
+import Reachability:tocc,
+                    Options
 
 # ========================================
 # Discretize and compute bloating factors
