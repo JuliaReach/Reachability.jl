@@ -369,7 +369,7 @@ function solve_hybrid(HS::HybridSystem,
         Rsets = solve_cont(S, options)
 
         source_invariant = cur_loc.X
-        intersectedRset = [intersection(source_invariant, convert(HPolytope, hi)) for hi in Rsets.Xk]
+        intersectedRset = [intersection(source_invariant, VPolytope(vertices_list(hi))) for hi in Rsets.Xk]
         filter!(!isempty, intersectedRset)
         push!(rset, intersectedRset)
 
@@ -388,7 +388,7 @@ function solve_hybrid(HS::HybridSystem,
 
             # check intersection G & I^-, I^- - invariant of source location
             #interSIG = intersection(source_invariant, guard)
-            rsetIntersMinus = [intersection(guard, convert(HPolytope, hi)) for hi in intersectedRset]
+            rsetIntersMinus = [intersection(guard, VPolytope(vertices_list(hi))) for hi in intersectedRset]
             filter!(!isempty, rsetIntersMinus)
             if (!isempty(rsetIntersMinus))
                 info("Intersection with I\^+")
