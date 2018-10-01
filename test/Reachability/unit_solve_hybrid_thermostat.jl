@@ -48,9 +48,15 @@ X0 = Singleton([18.]);
 # calculate reachable states up to time T
 prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
+plot_vars = [0, 1]
 
-problem_options = Options(:vars=>[1], :T=>10.0, :δ=>0.01, :verbosity=>1, :plot_vars=>[0, 1]);
+problem_options = Options(:vars=>[1], :T=>10.0, :δ=>0.01, :verbosity=>1, :plot_vars=>plot_vars);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
 
-plot(sol, indices=1:2:length(sol.Xk))
+# work-around for 1D plot
+N = Float64
+sol_processed = ReachSolution([CartesianProductArray{N, HPolytope{N}}([x]) for x in sol.Xk], sol.options);
+sol_proj = Reachability.project_reach(plot_vars, 1, options_input.dict[:δ], sol_processed.Xk, "");
+
+plot(sol_proj)
