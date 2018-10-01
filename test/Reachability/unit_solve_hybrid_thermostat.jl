@@ -49,7 +49,7 @@ X0 = Singleton([18.]);
 prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 
-problem_options = Options(:vars=>[1], :T=>10.0, :δ=>0.01, :verbosity=>1);
+problem_options = Options(:vars=>[1], :T=>10.0, :δ=>0.01, :verbosity=>1, :plot_vars=>[0, 1]);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
 
