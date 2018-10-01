@@ -371,6 +371,7 @@ function solve_hybrid(HS::HybridSystem,
         source_invariant = cur_loc.X
         intersectedRset =
             intersect_reach_tubes_invariant(Rsets.Xk, source_invariant)
+        push!(rset, intersectedRset)
 
         j = 1
         for trans in out_transitions(HS, cur_loc_id)
@@ -413,8 +414,17 @@ function solve_hybrid(HS::HybridSystem,
 end
 
 function intersect_reach_tubes_invariant(reach_tubes, invariant)
-    intersections =
-        [intersection(invariant, VPolytope(vertices_list(hi))) for hi in reach_tubes]
-    filter!(!isempty, intersections)
-    push!(rset, intersections)
+    # TODO First check for empty intersection, which can be more efficient.
+    #      However, we need to make sure that the emptiness check does not just
+    #      compute the concrete intersection; otherwise, we would do the work
+    #      twice. This is currently the case for 'Polyhedra' polytopes.
+    intersections = Vector{LazySet}()
+    for rt in reach_tubes
+        intersection = intersection(invariant, VPolytope(vertices_list(rt)))
+        if isempty(intersection)
+            break
+        end
+        push!(intersections, intersection)
+    end
+    return intersections
 end
