@@ -420,6 +420,8 @@ function intersect_reach_tubes_invariant(reach_tubes, invariant)
     #      twice. This is currently the case for 'Polyhedra' polytopes.
     intersections = Vector{LazySet}()
     for rt in reach_tubes
+        # TODO offer a lazy intersection here
+        # TODO offer more options instead of taking the VPolytope intersection
         intersection = intersection(invariant, VPolytope(vertices_list(rt)))
         if isempty(intersection)
             break
