@@ -44,7 +44,7 @@ Interface to reachability algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
-function reach(S::AbstractDiscreteSystem,
+function reach(S::IVP{<:LinearDiscreteSystem},
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
@@ -218,7 +218,7 @@ function reach(S::AbstractDiscreteSystem,
     return res
 end
 
-function reach(system::AbstractContinuousSystem,
+function reach(system::IVP{<:LinearContinuousSystem},
                N::Int;
                algorithm::String="explicit",
                ε_init::Float64=Inf,
