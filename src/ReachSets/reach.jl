@@ -234,25 +234,20 @@ function reach(system::IVP{<:LinearContinuousSystem},
                numeric_type::Type=Float64,
                lazy_X0=false,
                kwargs...)::Vector{<:LazySet}
-
     # ===================
     # Time discretization
     # ===================
-    if system isa InitialValueProblem{<:AbstractContinuousSystem}
-        info("Time discretization...")
-        tic()
-        Δ = discretize(
-            system,
-            options[:δ],
-            approx_model=options[:approx_model],
-            pade_expm=options[:pade_expm],
-            lazy_expm=options[:lazy_expm_discretize],
-            lazy_sih=options[:lazy_sih]
-            )
-        tocc()
-    else
-        Δ = system
-    end
+    info("Time discretization...")
+    tic()
+    Δ = discretize(
+        system,
+        options[:δ],
+        approx_model=options[:approx_model],
+        pade_expm=options[:pade_expm],
+        lazy_expm=options[:lazy_expm_discretize],
+        lazy_sih=options[:lazy_sih]
+        )
+    tocc()
 
     reach(Δ, N, options, algorithm=algorithm, ε_init=ε_init,
           set_type_init=set_type_init, ε_iter=ε_iter,
