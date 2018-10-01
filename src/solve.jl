@@ -100,6 +100,9 @@ function solve(system::InitialValueProblem, options::Options; algorithm::String=
     solve!(system, Options(copy(options.dict)), algorithm=algorithm)
 end
 
+solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
+    solve(system, Options(Dict{Symbol,Any}(options)))
+
 function solve!(system::InitialValueProblem, options::Options;
                 algorithm::String=default_algorithm(system))::AbstractSolution
     if algorithm == "BFFPSV18"
@@ -192,11 +195,6 @@ function solve!(system::InitialValueProblem, options::Options;
         error("unsupported algorithm $algorithm")
     end # algorithm
 end
-
-#=
-solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
-    solve(system, Options(Dict{Symbol,Any}(options)))
-=#
 
 """
     project(Rsets, options; [transformation_matrix])
