@@ -418,15 +418,27 @@ function intersect_reach_tubes_invariant(reach_tubes, invariant)
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
-    intersections = Vector{LazySet}()
+    intersections = Vector{VPolytope}()
     for rt in reach_tubes
         # TODO offer a lazy intersection here
         # TODO offer more options instead of taking the VPolytope intersection
-        intersection = intersection(invariant, VPolytope(vertices_list(rt)))
-        if isempty(intersection)
+        if rt isa ConvexHull
+            if dim(rt) == 1
+                reach_tube =
+                    VPolytope(vertices_list(overapproximate(rt, LazySets.Interval)))
+            else
+                error("unsupported set type for reach tube: ConvexHull")
+            end
+        elseif rt isa CartesianProductArray
+            reach_tube = VPolytope(vertices_list(rt))
+        else
+            error("unsupported set type for reach tube: $(typeof(rt))")
+        end
+        intersect = intersection(invariant, reach_tube)
+        if isempty(intersect)
             break
         end
-        push!(intersections, intersection)
+        push!(intersections, intersect)
     end
     return intersections
 end
