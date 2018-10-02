@@ -153,8 +153,7 @@ function solve!(system::InitialValueProblem, options::Options;
             if options[:project_reachset] || options[:projection_matrix] != nothing
                 info("Projection...")
                 tic()
-                RsetsProj = project(Rsets, options;
-                                    transformation_matrix=transformation_matrix)
+                RsetsProj = project(Rsets, options)
                 tocc()
                 return ReachSolution(RsetsProj, options)
             end
@@ -214,7 +213,7 @@ function solve!(system::InitialValueProblem, options::Options;
 end
 
 """
-    project(Rsets, options; [transformation_matrix])
+    project(Rsets, options)
 
 Projects a sequence of sets according to the settings defined in the options.
 
@@ -222,16 +221,13 @@ Projects a sequence of sets according to the settings defined in the options.
 
 - `Rsets`   -- solution of a reachability problem
 - `options` -- options structure
-- `transformation_matrix` -- (optional, default: nothing) matrix implementing
-                              the transformation)
 
 ### Notes
 
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Vector{<:LazySet}, options::Options;
-                 transformation_matrix=nothing)
+function project(Rsets::Vector{<:LazySet}, options::Options)
     plot_vars = copy(options[:plot_vars])
     for i in 1:length(plot_vars)
         if plot_vars[i] != 0
@@ -247,7 +243,7 @@ function project(Rsets::Vector{<:LazySet}, options::Options;
                               options[:algorithm],
                               ε=options[:ε_proj],
                               set_type=options[:set_type_proj],
-                              transformation_matrix=transformation_matrix,
+                              transformation_matrix=options[:transformation_matrix],
                               projection_matrix=options[:projection_matrix],
                               output_function=output_function
                              )
