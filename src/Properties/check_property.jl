@@ -18,12 +18,6 @@ A dictionary with available algorithms is available via
 function check_property(S::IVP{<:AbstractDiscreteSystem},
                         options::Options
                        )::Int
-    return check_property(S, options)
-end
-
-function check_property(S::IVP{<:AbstractDiscreteSystem},
-                        options::Options
-                       )::Int
     # list containing the arguments passed to any reachability function
     args = []
 

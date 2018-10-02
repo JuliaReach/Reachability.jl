@@ -20,13 +20,6 @@ A dictionary with available algorithms is available via
 function reach(S::IVP{<:AbstractDiscreteSystem},
                options::Options;
                numeric_type::Type=Float64
-              )::Vector{<:LazySet}
-    return reach(S, options; numeric_type=numeric_type)
-end
-
-function reach(S::IVP{<:AbstractDiscreteSystem},
-               options::Options;
-               numeric_type::Type=Float64
               )Vector{<:LazySet}
     # list containing the arguments passed to any reachability function
     args = []
