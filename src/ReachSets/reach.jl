@@ -58,10 +58,26 @@ function reach(S::IVP{<:LinearDiscreteSystem},
                numeric_type::Type=Float64,
                lazy_X0=false,
                kwargs...)::Vector{<:LazySet}
+    return reach(S, N, options; algorithm=algorithm,  ε_init=ε_init,
+          set_type_init=set_type_init, ε_iter=ε_iter,
+          set_type_iter=set_type_iter,
+          assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
+          numeric_type=numeric_type, lazy_X0=lazy_X0, Dict(kwargs))
+end
 
-    # unpack arguments
-    kwargs_dict = Dict(kwargs)
-
+function reach(S::IVP{<:LinearDiscreteSystem},
+               N::Int,
+               options::Options;
+               algorithm::String="explicit",
+               ε_init::Float64=Inf,
+               set_type_init::Type{<:LazySet}=Hyperrectangle,
+               ε_iter::Float64=Inf,
+               set_type_iter::Type{<:LazySet}=Hyperrectangle,
+               assume_sparse=true,
+               assume_homogeneous=false,
+               numeric_type::Type=Float64,
+               lazy_X0=false,
+               kwargs_dict::Dict{Symbol, Any}=Dict{Symbol, Any}())Vector{<:LazySet}
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -244,9 +260,9 @@ function reach(system::IVP{<:LinearContinuousSystem},
         lazy_sih=options[:lazy_sih]
         )
     tocc()
-
-    reach(Δ, N, options, algorithm=algorithm, ε_init=ε_init,
+    reach(Δ, N, options; algorithm=algorithm, ε_init=ε_init,
           set_type_init=set_type_init, ε_iter=ε_iter,
+          set_type_iter=set_type_iter,
           assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
-          numeric_type=numeric_type, lazy_X0=lazy_X0, kwargs...)
+          numeric_type=numeric_type, lazy_X0=lazy_X0, kwargs_dict=Dict(kwargs))
 end
