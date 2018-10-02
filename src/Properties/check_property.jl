@@ -188,5 +188,6 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
         lazy_sih=options[:lazy_sih]
         )
     tocc()
-    check_property(Δ, options)
+    Δ = matrix_conversion_lazy_explicit(Δ, options)
+    return check_property(Δ, options)
 end

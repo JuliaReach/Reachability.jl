@@ -200,5 +200,6 @@ function reach(system::IVP{<:AbstractContinuousSystem},
         lazy_sih=options[:lazy_sih]
         )
     tocc()
-    reach(Δ, options; numeric_type=numeric_type)
+    Δ = matrix_conversion_lazy_explicit(Δ, options)
+    return reach(Δ, options; numeric_type=numeric_type)
 end
