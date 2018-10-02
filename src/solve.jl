@@ -372,45 +372,51 @@ function solve_hybrid(HS::HybridSystem,
 
         Rsets = solve_cont(S, options)
 
-        source_invariant = cur_loc.X
+        # check intersection with source location
+        cur_invariant = cur_loc.X
         intersectedRset =
-            intersect_reach_tubes_invariant(Rsets.Xk, source_invariant)
+            intersect_reach_tubes_invariant(Rsets.Xk, cur_invariant)
         push!(rset, intersectedRset)
 
-        j = 0
-        for trans in out_transitions(HS, cur_loc_id)
-            j += 1
+        # TODO temp assumptions
+        # eg. what if we have LazySets.Hyperplane in the array?
+        @assert cur_invariant isa HPolytope
 
-            info("Going by transition... $(trans)")
-            destination_loc = HS.modes[target(HS, trans)]
-            target_invariant = destination_loc.X
-            reset_map, guard = HS.resetmaps[j].A, HS.resetmaps[j].X
+        for trans in out_transitions(HS, cur_loc_id)
+            info("Considering transition: $trans")
+            target_loc_id = target(HS, trans)
+            target_loc = HS.modes[target(HS, trans)]
+            target_invariant = target_loc.X
+            guard = HS.resetmaps[target_loc_id].X
+            assignment = HS.resetmaps[target_loc_id].A
 
             # TODO temp assumptions
             # eg. what if we have LazySets.Hyperplane in the array?
-            @assert source_invariant isa HPolytope &&
-                    target_invariant isa HPolytope &&
-                    guard isa HPolytope
+            @assert target_invariant isa HPolytope && guard isa HPolytope
 
-            # check intersection G & I^-, I^- - invariant of source location
-            #interSIG = intersection(source_invariant, guard)
+            # check intersection with guard
             rsetIntersMinus = [intersection(guard, VPolytope(vertices_list(hi))) for hi in intersectedRset]
             filter!(!isempty, rsetIntersMinus)
             if (isempty(rsetIntersMinus))
                 continue
             end
+
+            # apply assignment
+            rsetIntersMinus = [linear_map(assignment, ri) for ri in rsetIntersMinus]
+
+            # check intersection with target invariant
             info("Intersection with I\^+")
-            rsetIntersMinus = [linear_map(reset_map, ri) for ri in rsetIntersMinus]
-            #Check intersection with  I^+, I^+ - invariant of target location
             rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
-            #clean up empty intersections
             filter!(!isempty, rsetIntersPlus)
+
+            # push new sets after jump
             rsetHull = ConvexHullArray(rsetIntersPlus)
             for rh in rsetIntersPlus
                 push!(waiting_list,(target(HS, trans), rh))
             end
-            #TODO Check intersection with forbidden states
-            #push!(waiting_list,(target(HS, trans), rsetHull))
+
+            # TODO check intersection with forbidden states
+            # push!(waiting_list,(target(HS, trans), rsetHull))
         end
 
         info("End of iteration $i")
