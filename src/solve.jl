@@ -63,7 +63,7 @@ function default_algorithm(system::InitialValueProblem)
     if s isa LinearContinuousSystem ||
        s isa LinearControlContinuousSystem ||
        s isa ConstrainedLinearContinuousSystem ||
-       s isa ConstrainedLinearContinuousSystem ||
+       s isa ConstrainedLinearControlContinuousSystem ||
        s isa LinearDiscreteSystem ||
        s isa LinearControlDiscreteSystem ||
        s isa ConstrainedLinearDiscreteSystem ||
