@@ -69,7 +69,10 @@ function default_algorithm(system::InitialValueProblem)
        s isa ConstrainedLinearDiscreteSystem ||
        s isa ConstrainedLinearControlDiscreteSystem
        
-       algorithm = "BFFPSV18"
+        algorithm = "BFFPSV18"
+    else
+        error("no default reachability algorithm available for system of " *
+              "type $(typeof(system))")
     end
     return algorithm
 end
