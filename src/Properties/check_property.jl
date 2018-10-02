@@ -42,7 +42,7 @@ Interface to property checking algorithms for an LTI system.
 A dictionary with available algorithms is available via
 `Properties.available_algorithms`.
 """
-function check_property(S::IVP{<:LinearDiscreteSystem},
+function check_property(S::IVP{<:AbstractDiscreteSystem},
                N::Int,
                options::Options;
                algorithm::String="explicit",
@@ -61,7 +61,7 @@ function check_property(S::IVP{<:LinearDiscreteSystem},
           lazy_X0=lazy_X0, Dict(kwargs))
 end
 
-function check_property(S::IVP{<:LinearDiscreteSystem},
+function check_property(S::IVP{<:AbstractDiscreteSystem},
                         N::Int,
                         options::Options;
                         algorithm::String="explicit",
@@ -220,7 +220,7 @@ function check_property(S::IVP{<:LinearDiscreteSystem},
     return answer
 end
 
-function check_property(S::IVP{<:LinearContinuousSystem},
+function check_property(S::IVP{<:AbstractContinuousSystem},
                         N::Int,
                         options::Options;
                         algorithm::String="explicit",
