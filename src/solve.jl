@@ -357,16 +357,17 @@ function solve_hybrid(HS::HybridSystem,
     # set options
     options.dict[:project_reachset] = false
 
-    waiting_list = []
-    #TODO get start state. For now we assume that it is the first location
-    cur_loc_id = 1
-    push!(waiting_list,(cur_loc_id, X0))
-    i = 0
+    max_jumps = options[:max_jumps]
+
+    #TODO get initial location. For now we assume that it is the first location
+    # waiting_list entries:
+    # - (discrete) location
+    # - (set of) continuous states
+    # - number of previous jumps
+    waiting_list::Vector{Tuple{Int, LazySet, Int}} = [(1, X0, 0)]
     rset = []
-    while (!isempty(waiting_list) && i < 15) #TODO add variable for max iteration number
-        i += 1
-        info("Iteration... $i")
-        cur_loc_id, X0 = pop!(waiting_list)
+    while (!isempty(waiting_list))
+        cur_loc_id, X0, jumps = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
         S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
@@ -384,6 +385,9 @@ function solve_hybrid(HS::HybridSystem,
             intersect_reach_tubes_invariant(Rsets.Xk, cur_invariant)
         push!(rset, intersectedRset)
 
+        if jumps == max_jumps
+            continue
+        end
         for trans in out_transitions(HS, cur_loc_id)
             info("Considering transition: $trans")
             target_loc_id = target(HS, trans)
@@ -415,14 +419,12 @@ function solve_hybrid(HS::HybridSystem,
             # push new sets after jump
             rsetHull = ConvexHullArray(rsetIntersPlus)
             for rh in rsetIntersPlus
-                push!(waiting_list,(target(HS, trans), rh))
+                push!(waiting_list, (target(HS, trans), rh, jumps + 1))
             end
 
             # TODO check intersection with forbidden states
             # push!(waiting_list,(target(HS, trans), rsetHull))
         end
-
-        info("End of iteration $i")
     end
     return ReachSolution(vcat(rset...), options)
 end

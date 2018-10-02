@@ -31,10 +31,10 @@ HS = HybridSystem(a, m, r, s);
 # initial condition in mode 1
 X0 = Hyperrectangle(low=[10, 0.0], high=[10.2, 0.0]);
 
-# calculate reachable states up to time T
 prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 
-problem_options = Options(:vars=>[1,2], :T=>7.0, :δ=>0.01, :plot_vars=>[1, 2], :verbosity=>1);
+problem_options = Options(:vars=>[1,2], :T=>7.0, :δ=>0.01, :plot_vars=>[1, 2],
+                          :max_jumps=>1, :verbosity=>1);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
