@@ -3,6 +3,7 @@
 # ============================
 
 using HybridSystems, MathematicalSystems, LazySets, Polyhedra
+import LazySets.HalfSpace
 
 # Transition graph (automaton)
 a = LightAutomaton(1);

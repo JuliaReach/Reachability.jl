@@ -4,6 +4,7 @@
 # ============================
 
 using HybridSystems, MathematicalSystems, LazySets, Polyhedra
+import LazySets.HalfSpace
 
 c_a = 0.1;
 # Transition graph (automaton)
