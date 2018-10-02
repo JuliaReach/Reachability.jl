@@ -51,8 +51,8 @@ prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 plot_vars = [0, 1]
 
-problem_options = Options(:vars=>[1], :T=>3.0, :δ=>0.01, :plot_vars=>plot_vars,
-                          :max_jumps=>2, :verbosity=>1);
+problem_options = Options(:vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
+                          :max_jumps=>1, :verbosity=>1);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
 
