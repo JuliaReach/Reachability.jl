@@ -109,7 +109,7 @@ solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
 function solve!(system::InitialValueProblem, options::Options;
                 algorithm::String=default_algorithm(system))::AbstractSolution
     if algorithm == "BFFPSV18"
-        options, output_function = init_BFFPSV18!(system, options)
+        options = init_BFFPSV18!(system, options)
 
         # coordinate transformation
         options[:transformation_matrix] = nothing
@@ -128,27 +128,7 @@ function solve!(system::InitialValueProblem, options::Options;
         if options[:mode] == "reach"
             info("Reachable States Computation...")
             tic()
-            Rsets = reach(
-                system,
-                options[:N],
-                options;
-                algorithm=options[:algorithm],
-                ε_init=options[:ε_init],
-                set_type_init=options[:set_type_init],
-                ε_iter=options[:ε_iter],
-                set_type_iter=options[:set_type_iter],
-                assume_sparse=options[:assume_sparse],
-                assume_homogeneous=options[:assume_homogeneous],
-                lazy_X0=options[:lazy_X0],
-                blocks=options[:blocks],
-                partition=options[:partition],
-                block_types_init=options[:block_types_init],
-                block_types_iter=options[:block_types_iter],
-                template_directions_init=options[:template_directions_init],
-                template_directions_iter=options[:template_directions_iter],
-                lazy_inputs_interval=options[:lazy_inputs_interval],
-                output_function=output_function
-                )
+            Rsets = reach(system, options)
             info("- Total")
             tocc()
 
@@ -174,28 +154,7 @@ function solve!(system::InitialValueProblem, options::Options;
             # =================
             info("Property Checking...")
             tic()
-            answer = check_property(
-                system,
-                options[:N],
-                options;
-                algorithm=options[:algorithm],
-                ε_init=options[:ε_init],
-                set_type_init=options[:set_type_init],
-                ε_iter=options[:ε_iter],
-                set_type_iter=options[:set_type_iter],
-                assume_sparse=options[:assume_sparse],
-                assume_homogeneous=options[:assume_homogeneous],
-                lazy_X0=options[:lazy_X0],
-                blocks=options[:blocks],
-                partition=options[:partition],
-                block_types_init=options[:block_types_init],
-                block_types_iter=options[:block_types_iter],
-                template_directions_init=options[:template_directions_init],
-                template_directions_iter=options[:template_directions_iter],
-                eager_checking=options[:eager_checking],
-                property=options[:property],
-                lazy_inputs_interval=options[:lazy_inputs_interval]
-                )
+            answer = check_property(system, options)
             info("- Total")
             tocc()
 
@@ -271,12 +230,12 @@ function init_BFFPSV18!(system, options_input)
     options.dict[:inout_map] = inout_map_reach(options[:partition], options[:blocks], options[:n])
 
     if options[:project_reachset]
-        output_function = nothing
+        options[:output_function] = nothing
     else
-        output_function = options[:projection_matrix]
+        options[:output_function] = options[:projection_matrix]
     end
 
-    return options, output_function
+    return options
 end
 
 function matrix_conversion(Δ, options)
