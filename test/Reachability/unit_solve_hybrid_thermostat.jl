@@ -34,7 +34,7 @@ X_off = HPolytope([HalfSpace([-1.0], -21.0)]); # x >= 21
 A_on = hcat(1.0);
 X_on = HPolytope([HalfSpace([1.0], 19.0)]); # x <= 19
 
-m = [m_on, m_off];
+m = [m_off, m_on];
 
 r = [ConstrainedLinearDiscreteSystem(A_on, X_on),
      ConstrainedLinearDiscreteSystem(A_off, X_off)];
@@ -52,7 +52,7 @@ prob = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 plot_vars = [0, 1]
 
-problem_options = Options(:vars=>[1], :T=>0.1, :δ=>0.01, :verbosity=>1, :plot_vars=>plot_vars);
+problem_options = Options(:vars=>[1], :T=>3.0, :δ=>0.01, :verbosity=>1, :plot_vars=>plot_vars);
 options_input = merge(problem_options, input_options);
 sol = solve_hybrid(HS, X0, options_input);
 
