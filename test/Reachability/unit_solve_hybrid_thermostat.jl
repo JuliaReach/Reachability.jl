@@ -15,14 +15,14 @@ add_transition!(a, 2, 1, 2);
 # Mode off
 A = hcat(-c_a);
 B = hcat(0.0);
-X = HPolytope([HalfSpace([1.0], 22.0)]); # x <= 22
+X = HalfSpace([1.0], 22.0); # x <= 22
 U = Singleton([0.0]);
 m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Mode on
 A = hcat(-c_a);
 B = hcat(30.);
-X = HPolytope([HalfSpace([-1.0], -18.0)]); # x >= 18
+X = HalfSpace([-1.0], -18.0); # x >= 18
 U = Singleton([c_a]);
 m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 

@@ -370,17 +370,19 @@ function solve_hybrid(HS::HybridSystem,
         cur_loc = HS.modes[cur_loc_id]
         S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
+        # compute reach tubes
         Rsets = solve_cont(S, options)
 
-        # check intersection with source location
         cur_invariant = cur_loc.X
+
+        # TODO temporary conversion to HPolytope
+        @assert cur_invariant isa HalfSpace
+        cur_invariant = HPolytope([cur_invariant])
+
+        # take intersection with source invariant
         intersectedRset =
             intersect_reach_tubes_invariant(Rsets.Xk, cur_invariant)
         push!(rset, intersectedRset)
-
-        # TODO temp assumptions
-        # eg. what if we have LazySets.Hyperplane in the array?
-        @assert cur_invariant isa HPolytope
 
         for trans in out_transitions(HS, cur_loc_id)
             info("Considering transition: $trans")
@@ -390,9 +392,10 @@ function solve_hybrid(HS::HybridSystem,
             guard = HS.resetmaps[target_loc_id].X
             assignment = HS.resetmaps[target_loc_id].A
 
-            # TODO temp assumptions
-            # eg. what if we have LazySets.Hyperplane in the array?
-            @assert target_invariant isa HPolytope && guard isa HPolytope
+            # TODO temporary conversion to HPolytope
+            @assert target_invariant isa HalfSpace
+            target_invariant = HPolytope([target_invariant])
+            @assert guard isa HPolytope
 
             # check intersection with guard
             rsetIntersMinus = [intersection(guard, VPolytope(vertices_list(hi))) for hi in intersectedRset]

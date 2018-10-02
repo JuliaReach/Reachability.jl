@@ -12,7 +12,7 @@ add_transition!(a, 1, 1, 1);
 # Modes
 A = [0.0 1.0; 0.0 0.0];
 B = reshape([0.0, -1.0], (2, 1));
-X = HPolytope([HalfSpace([-1.0, 0.0], 0.0)]); # x >= 0
+X = HalfSpace([-1.0, 0.0], 0.0); # x >= 0
 U = Singleton([1.0]);
 m = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
 
