@@ -43,6 +43,25 @@ A dictionary with available algorithms is available via
 `Properties.available_algorithms`.
 """
 function check_property(S::IVP{<:LinearDiscreteSystem},
+               N::Int,
+               options::Options;
+               algorithm::String="explicit",
+               ε_init::Float64=Inf,
+               set_type_init::Type{<:LazySet}=Hyperrectangle,
+               ε_iter::Float64=Inf,
+               set_type_iter::Type{<:LazySet}=Hyperrectangle,
+               assume_sparse=true,
+               assume_homogeneous=false,
+               lazy_X0=false,
+               kwargs...)::Int
+    return check_property(S, N, options; algorithm=algorithm,  ε_init=ε_init,
+          set_type_init=set_type_init, ε_iter=ε_iter,
+          set_type_iter=set_type_iter,
+          assume_sparse=assume_sparse, assume_homogeneous=assume_homogeneous,
+          lazy_X0=lazy_X0, Dict(kwargs))
+end
+
+function check_property(S::IVP{<:LinearDiscreteSystem},
                         N::Int,
                         options::Options;
                         algorithm::String="explicit",
@@ -53,11 +72,7 @@ function check_property(S::IVP{<:LinearDiscreteSystem},
                         assume_sparse=true,
                         assume_homogeneous=false,
                         lazy_X0=false,
-                        kwargs...)::Int
-
-    # unpack arguments
-    kwargs_dict = Dict(kwargs)
-
+                        kwargs_dict::Dict{Symbol, Any}=Dict{Symbol, Any}())::Int
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -203,4 +218,37 @@ function check_property(S::IVP{<:LinearDiscreteSystem},
 
     # return the result
     return answer
+end
+
+function check_property(S::IVP{<:LinearContinuousSystem},
+                        N::Int,
+                        options::Options;
+                        algorithm::String="explicit",
+                        ε_init::Float64=Inf,
+                        set_type_init::Type{<:LazySet}=Hyperrectangle,
+                        ε_iter::Float64=Inf,
+                        set_type_iter::Type{<:LazySet}=Hyperrectangle,
+                        assume_sparse=true,
+                        assume_homogeneous=false,
+                        lazy_X0=false,
+                        kwargs...)::Int
+    # ===================
+    # Time discretization
+    # ===================
+    info("Time discretization...")
+    tic()
+    Δ = discretize(
+        S,
+        options[:δ],
+        approx_model=options[:approx_model],
+        pade_expm=options[:pade_expm],
+        lazy_expm=options[:lazy_expm_discretize],
+        lazy_sih=options[:lazy_sih]
+        )
+    tocc()
+    check_property(Δ, N, options; algorithm=algorithm, ε_init=ε_init,
+                   set_type_init=set_type_init, ε_iter=ε_iter,
+                   set_type_iter=set_type_iter, assume_sparse=assume_sparse,
+                   assume_homogeneous=assume_homogeneous,
+                   lazy_X0=lazy_X0, kwargs_dict=Dict(kwargs))
 end
