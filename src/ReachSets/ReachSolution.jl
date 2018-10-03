@@ -6,14 +6,14 @@ sets, and a dictionary of options.
 
 ### Fields
 
-- `Xk`       -- the list of reachable states
+- `Xk`       -- the list of [`ReachSet`](@ref)s
 - `options`  -- the dictionary of options
 """
 struct ReachSolution{S<:LazySet} <: AbstractSolution
-    Xk::Vector{S}
+    Xk::Vector{<:ReachSet{S}}
     options::Options
 end
 
 # constructor with no options
-ReachSolution(Xk::Vector{S}) where {S<:LazySet} =
+ReachSolution(Xk::Vector{<:ReachSet{S}}) where {S<:LazySet} =
     ReachSolution{S}(Xk, Options())

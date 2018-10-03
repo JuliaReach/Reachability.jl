@@ -10,9 +10,13 @@ function reach_blocks_wrapping_effect!(
         output_function::Void, # ignored
         blocks::AbstractVector{Int},
         partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-        res::Vector{OUT}
-       )::Void where {NUM, OUT<:LazySet{NUM}}
-    res[1] = CartesianProductArray(Xhat0)
+        δ::NUM,
+        res::Vector{<:ReachSet}
+       )::Void where {NUM}
+    X_store = CartesianProductArray(Xhat0)
+    t0 = zero(δ)
+    t1 = δ
+    store!(res, 1, X_store, t0, t1)
     if N == 1
         return nothing
     end
@@ -38,14 +42,17 @@ function reach_blocks_wrapping_effect!(
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)
-                arr[j] = ϕ[bi, bj] * array(res[k-1])[j]
+                arr[j] = ϕ[bi, bj] * array(res[k-1].X)[j]
             end
             if U != nothing
                 arr[arr_length] = Whatk[i]
             end
             Xhatk[i] = overapproximate(blocks[i], MinkowskiSumArray(arr))
         end
-        res[k] = CartesianProductArray(copy(Xhatk))
+        X_store = CartesianProductArray(copy(Xhatk))
+        t0 = t1
+        t1 += δ
+        store!(res, k, X_store, t0, t1)
 
         if k == N
             break

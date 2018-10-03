@@ -82,10 +82,11 @@ function solve!(system::InitialValueProblem, options::Options;
                 tic()
                 RsetsProj = project(Rsets, options)
                 tocc()
-                return ReachSolution(RsetsProj, options)
+            else
+                RsetsProj = Rsets
             end
 
-            return ReachSolution(Rsets, options)
+            return ReachSolution(RsetsProj, options)
 
         elseif options[:mode] == "check"
 
@@ -133,7 +134,7 @@ Projects a sequence of sets according to the settings defined in the options.
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Vector{<:LazySet}, options::Options)
+function project(Rsets::Vector{<:ReachSet}, options::Options)
     plot_vars = copy(options[:plot_vars])
     for i in 1:length(plot_vars)
         if plot_vars[i] != 0
@@ -157,7 +158,7 @@ end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 
-project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
+project(Rsets::Vector{<:ReachSet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
 # ===========================================================================
