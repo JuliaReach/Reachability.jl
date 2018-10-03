@@ -54,7 +54,7 @@ plot_vars = [0, 1]
 problem_options = Options(:vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
                           :max_jumps=>1, :verbosity=>1);
 options_input = merge(problem_options, input_options);
-sol = solve_hybrid(HS, X0, options_input);
+sol = solve(HS, X0, options_input);
 
 # work-around for 1D plot
 N = Float64

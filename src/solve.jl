@@ -1,10 +1,8 @@
-using HybridSystems
 using LazySets.Approximations.box_approximation
 export AbstractSolution,
        ReachSolution,
        CheckSolution,
-       solve_cont,
-       solve_hybrid,
+       solve,
        project
 
 """
@@ -102,15 +100,20 @@ A solution object whose content depends on the input options.
 To see all available input options, see
 `keys(Reachability.available_keywords.dict)`.
 """
-function solve(system::InitialValueProblem, options::Options; algorithm::String=default_algorithm(system))
+function solve(system::InitialValueProblem,
+               options::Options;
+               algorithm::String=default_algorithm(system))
     solve!(system, Options(copy(options.dict)), algorithm=algorithm)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
-function solve!(system::InitialValueProblem, options::Options;
-                algorithm::String=default_algorithm(system))::AbstractSolution
+function solve!(system::InitialValueProblem{<:SYS},
+                options::Options;
+                algorithm::String=default_algorithm(system)
+               )::AbstractSolution where {SYS<:Union{AbstractContinuousSystem,
+                                                     AbstractDiscreteSystem}}
     if algorithm == "BFFPSV18"
         options = init_BFFPSV18!(system, options)
 
@@ -220,9 +223,9 @@ project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
 """
-    solve_hybrid(HS::HybridSystem,
-                 X0::LazySet,
-                 options::Options)::AbstractSolution
+    solve(HS::HybridSystem,
+          X0::LazySet,
+          options::Options)::AbstractSolution
 
 Interface to reachability algorithms for a hybrid system PWA dynamics.
 
@@ -249,9 +252,9 @@ Currently, the following simplifying assumptions are made:
 The algorithm is based on [Flowpipe-Guard Intersection for Reachability Computations
 with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-function solve_hybrid(HS::HybridSystem,
-                      X0::LazySet,
-                      options::Options)::AbstractSolution
+function solve(HS::HybridSystem,
+               X0::LazySet,
+               options::Options)::AbstractSolution
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
@@ -273,7 +276,7 @@ function solve_hybrid(HS::HybridSystem,
         S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
         # compute reach tubes
-        Rsets = solve_cont(S, options)
+        Rsets = solve(S, options)
 
         cur_invariant = cur_loc.X
 

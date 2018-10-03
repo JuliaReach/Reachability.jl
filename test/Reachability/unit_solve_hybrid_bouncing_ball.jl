@@ -37,4 +37,4 @@ input_options = Options(:mode=>"reach");
 problem_options = Options(:vars=>[1,2], :T=>7.0, :δ=>0.01, :plot_vars=>[1, 2],
                           :max_jumps=>1, :verbosity=>1);
 options_input = merge(problem_options, input_options);
-sol = solve_hybrid(HS, X0, options_input);
+sol = solve(HS, X0, options_input);
