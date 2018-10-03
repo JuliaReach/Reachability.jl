@@ -273,39 +273,36 @@ function solve(HS::HybridSystem,
     while (!isempty(waiting_list))
         cur_loc_id, X0, jumps = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
-        S = ContinuousSystem(cur_loc.A, X0, cur_loc.U)
 
-        # compute reach tubes
-        Rsets = solve(S, options)
-
-        cur_invariant = cur_loc.X
-
-        # TODO temporary conversion to HPolytope
-        @assert cur_invariant isa HalfSpace
-        cur_invariant = HPolytope([cur_invariant])
+        # compute reach tube
+        reach_tube = solve(ContinuousSystem(cur_loc.A, X0, cur_loc.U), options)
 
         # take intersection with source invariant
-        intersectedRset =
-            intersect_reach_tubes_invariant(Rsets.Xk, cur_invariant)
-        push!(rset, intersectedRset)
+        reach_tube_in_invariant =
+            intersect_reach_tube_invariant(reach_tube.Xk, cur_loc.X)
+        push!(rset, reach_tube_in_invariant)
 
         if jumps == max_jumps
             continue
         end
 
-        discrete_post!(waiting_list, HS, cur_loc_id, intersectedRset, jumps)
+        discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant, jumps)
     end
     return ReachSolution(vcat(rset...), options)
 end
 
-function intersect_reach_tubes_invariant(reach_tubes, invariant)
+function intersect_reach_tube_invariant(reach_tube, invariant)
+    # TODO temporary conversion to HPolytope
+    @assert invariant isa HalfSpace
+    invariant = HPolytope([invariant])
+
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
     # TODO pass numeric type correctly
     intersections = Vector{HPolytope{Float64}}()
-    for rt in reach_tubes
+    for rt in reach_tube
         # TODO temporary workaround for 1D sets
         if dim(rt) == 1
             reach_tube = VPolytope(vertices_list(
