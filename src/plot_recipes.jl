@@ -10,7 +10,8 @@ Plots the solution of a reachability problem in high-dimensions.
 """
 @recipe function plot_sol(sol::ReachSolution{<:CartesianProductArray})
 
-    error("There is no user recipe defined for $(typeof(sol)); you need to project first into 2D using `project`")
+    error("There is no user recipe defined for $(typeof(sol)); you need to " *
+          "project into 2D using `project first`")
 end
 
 """
@@ -45,6 +46,7 @@ argument. For additional options, consult the Plots.jl reference manual.
                           seriestype=:shape,
                           label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing)
+    @assert dim(sol.Xk[1].X) == 2 "we only support plotting 2D sets"
 
     options = check_aliases_and_add_default_value(sol)
 
@@ -71,7 +73,7 @@ argument. For additional options, consult the Plots.jl reference manual.
     # Using single list and NaN separators
     vlist = Vector{Vector{Float64}}()
     for i in indices
-        append!(vlist, convex_hull(vertices_list(sol.Xk[i])))
+        append!(vlist, convex_hull(vertices_list(sol.Xk[i].X)))
         push!(vlist, [NaN; NaN])
     end
     vlist = hcat(vlist...)'
