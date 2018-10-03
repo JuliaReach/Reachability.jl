@@ -36,6 +36,7 @@ nondeterministic inputs.
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
+@inline store!(res, k, X, t0, t1) = (res[k] = ReachSet(X, t0, t1))
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -48,12 +49,16 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{OUT}
-                       )::Void where {NUM, OUT<:LazySet{NUM}}
+                       δ::NUM,
+                       res::Vector{<:ReachSet}
+                       )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
-    res[1] = (output_function == nothing) ?
+    X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
+    t0 = zero(δ)
+    t1 = δ
+    store!(res, 1, X_store, t0, t1)
     if N == 1
         return nothing
     end
@@ -90,9 +95,12 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                 Xhatk_bi_lazy
         end
         array = CartesianProductArray(copy(Xhatk))
-        res[k] = (output_function == nothing) ?
+        X_store = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))
+        t0 = t1
+        t1 += δ
+        store!(res, k, X_store, t0, t1)
 
         if k == N
             break
@@ -124,12 +132,16 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{OUT}
-                       )::Void where {NUM, OUT<:LazySet{NUM}}
+                       δ::NUM,
+                       res::Vector{<:ReachSet}
+                       )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
-    res[1] = (output_function == nothing) ?
+    X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
+    t0 = zero(δ)
+    t1 = δ
+    store!(res, 1, X_store, t0, t1)
     if N == 1
         return nothing
     end
@@ -167,9 +179,13 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                 MinkowskiSumArray(copy(arr))
         end
         array = CartesianProductArray(copy(Xhatk))
-        res[k] = (output_function == nothing) ?
+
+        X_store = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))
+        t0 = t1
+        t1 += δ
+        store!(res, k, X_store, t0, t1)
 
         if k == N
             break
@@ -204,12 +220,16 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{OUT}
-                       )::Void where {NUM, OUT<:LazySet{NUM}}
+                       δ::NUM,
+                       res::Vector{<:ReachSet}
+                       )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
-    res[1] = (output_function == nothing) ?
+    X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
+    t0 = zero(δ)
+    t1 = δ
+    store!(res, 1, X_store, t0, t1)
     if N == 1
         return nothing
     end
@@ -251,9 +271,12 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             end
         end
         array = CartesianProductArray(copy(Xhatk))
-        res[k] = (output_function == nothing) ?
+        X_store = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))
+        t0 = t1
+        t1 += δ
+        store!(res, k, X_store, t0, t1)
 
         if k == N
             break
@@ -279,12 +302,16 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        output_function::Union{Function, Void},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
-                       res::Vector{OUT}
-                       )::Void where {NUM, OUT<:LazySet{NUM}}
+                       δ::NUM,
+                       res::Vector{<:ReachSet}
+                       )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
-    res[1] = (output_function == nothing) ?
+    X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
+    t0 = zero(δ)
+    t1 = δ
+    store!(res, 1, X_store, t0, t1)
     if N == 1
         return nothing
     end
@@ -326,9 +353,12 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             end
         end
         array = CartesianProductArray(copy(Xhatk))
-        res[k] = (output_function == nothing) ?
+        X_store = (output_function == nothing) ?
             array :
             box_approximation(output_function(array))
+        t0 = t1
+        t1 += δ
+        store!(res, k, X_store, t0, t1)
 
         if k == N
             break

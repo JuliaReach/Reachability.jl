@@ -37,6 +37,9 @@ export decompose_helper
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
+# abstract solution type
+include("AbstractSolution.jl")
+
 """
     @filename_to_png
 

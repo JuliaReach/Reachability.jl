@@ -107,6 +107,15 @@ include("inout_map_reach.jl")
 
 export inout_map_reach
 
+# =====================
+# Reachability results
+# =====================
+include("ReachSet.jl")
+include("ReachSolution.jl")
+
+export ReachSet,
+       ReachSolution
+
 # ========================
 # Reachability Algorithms
 # ========================
