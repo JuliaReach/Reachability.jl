@@ -6,6 +6,8 @@ module Utils
 
 using LazySets
 
+import Reachability.tocc
+
 # Visualization
 export print_sparsity,
        plot_sparsity,
@@ -25,7 +27,9 @@ export @filename_to_png,
        @relpath
 
 # internal conversion
-export interpret_template_direction_symbol
+export interpret_template_direction_symbol,
+       matrix_conversion,
+       matrix_conversion_lazy_explicit
 
 # temporary helper function
 export decompose_helper
@@ -413,6 +417,68 @@ function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
         block_start += bi
     end
     return CartesianProductArray(result)
+end
+
+# sparse/dense matrix conversion
+function matrix_conversion(Δ, options; A_passed=nothing)
+    if A_passed == nothing
+        A = Δ.s.A
+        create_new_system = false
+    else
+        A = A_passed
+        create_new_system = true
+    end
+
+    if options[:assume_sparse]
+        if A isa SparseMatrixExp
+            # ignore this case
+            A_new = A
+        elseif !method_exists(sparse, Tuple{typeof(A)})
+            info("`assume_sparse` option cannot be applied to a matrix of " *
+                 "type $(typeof(A)) and will be ignored")
+            A_new = A
+        elseif !(A isa AbstractSparseMatrix)
+            # convert to sparse matrix
+            A_new = sparse(A)
+            create_new_system = true
+        else
+            # A is already sparse
+            A_new = A
+        end
+    else
+        A_new = A
+    end
+    if create_new_system
+        # set new matrix
+        if method_exists(inputset, Tuple{typeof(Δ.s)})
+            Δ = DiscreteSystem(A_new, Δ.x0, inputset(Δ))
+        else
+            Δ = DiscreteSystem(A_new, Δ.x0)
+        end
+    end
+    return Δ
+end
+
+# convert SparseMatrixExp to eplicit matrix
+function matrix_conversion_lazy_explicit(Δ, options)
+    A = Δ.s.A
+    if !options[:lazy_expm] && options[:lazy_expm_discretize]
+        info("Making lazy matrix exponential explicit...")
+        tic()
+        n = options.dict[:n]
+        if options[:assume_sparse]
+            B = sparse(Int[], Int[], eltype(A)[], n, n)
+        else
+            B = Matrix{eltype(A)}(n, n)
+        end
+        for i in 1:n
+            B[i, :] = get_row(A, i)
+        end
+        tocc()
+    else
+        B = nothing
+    end
+    return matrix_conversion(Δ, options; A_passed=B)
 end
 
 end # module

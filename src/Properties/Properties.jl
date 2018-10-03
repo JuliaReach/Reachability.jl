@@ -8,7 +8,9 @@ module Properties
 
 import LazySets.Approximations:decompose,
                                overapproximate
-import Reachability.tocc
+import Reachability:tocc,
+                    Options,
+                    ReachSets.discretize
 
 using LazySets, MathematicalSystems, ..Utils, Expokit, ProgressMeter
 
