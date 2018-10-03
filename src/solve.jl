@@ -181,8 +181,8 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 
 ### Notes
 
-The current implementation requires that you have loaded the `Polyhedra` library,
-because some concrete operations between polytopes are used.
+The current implementation requires that you have loaded the `Polyhedra`
+library, because some concrete operations between polytopes are used.
 
 Currently, the following simplifying assumptions are made:
 
@@ -193,12 +193,13 @@ Currently, the following simplifying assumptions are made:
 
 ### Algorithm
 
-The algorithm is based on [Flowpipe-Guard Intersection for Reachability Computations
-with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
+The algorithm is based on [Flowpipe-Guard Intersection for Reachability
+Computations with Support Functions](
+http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
 function solve(HS::HybridSystem,
-               X0::LazySet,
-               options::Options)::AbstractSolution
+               X0::LazySet{N},
+               options::Options)::AbstractSolution where {N}
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
@@ -207,35 +208,42 @@ function solve(HS::HybridSystem,
 
     max_jumps = options[:max_jumps]
 
+    time_horizon = options[:T]
+
     #TODO get initial location. For now we assume that it is the first location
     # waiting_list entries:
     # - (discrete) location
-    # - (set of) continuous states
+    # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list::Vector{Tuple{Int, LazySet, Int}} = [(1, X0, 0)]
-    rset = []
+    waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}} =
+        [(1, ReachSet{LazySet{N}, N}(X0, zero(N), zero(N)), 0)]
+    rset = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))
         cur_loc_id, X0, jumps = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
 
         # compute reach tube
-        reach_tube = solve(ContinuousSystem(cur_loc.A, X0, cur_loc.U), options)
+        options[:T] = time_horizon - X0.t_start
+        reach_tube =
+            solve(ContinuousSystem(cur_loc.A, X0.X, cur_loc.U), options)
 
         # take intersection with source invariant
         reach_tube_in_invariant =
-            intersect_reach_tube_invariant(reach_tube.Xk, cur_loc.X)
-        push!(rset, reach_tube_in_invariant)
+            intersect_reach_tube_invariant(reach_tube.Xk, X0, cur_loc.X, N)
+        append!(rset, reach_tube_in_invariant)
 
         if jumps == max_jumps
             continue
         end
 
-        discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant, jumps)
+        discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant,
+            jumps, N)
     end
-    return ReachSolution(vcat(rset...), options)
+    options[:T] = time_horizon
+    return ReachSolution(rset, options)
 end
 
-function intersect_reach_tube_invariant(reach_tube, invariant)
+function intersect_reach_tube_invariant(reach_tube, X0, invariant, N)
     # TODO temporary conversion to HPolytope
     @assert invariant isa HalfSpace
     invariant = HPolytope([invariant])
@@ -244,25 +252,26 @@ function intersect_reach_tube_invariant(reach_tube, invariant)
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
-    # TODO pass numeric type correctly
-    intersections = Vector{HPolytope{Float64}}()
-    for rt in reach_tube
+    intersections = Vector{ReachSet{LazySet{N}, N}}()
+    for reach_set in reach_tube
+        rs = reach_set.X
         # TODO temporary workaround for 1D sets
-        if dim(rt) == 1
+        if dim(rs) == 1
             reach_tube = VPolytope(vertices_list(
-                Approximations.overapproximate(rt, LazySets.Interval)))
+                Approximations.overapproximate(rs, LazySets.Interval)))
         # TODO offer a lazy intersection here
         # TODO offer more options instead of taking the VPolytope intersection
-        elseif rt isa CartesianProductArray
-            reach_tube = VPolytope(vertices_list(rt))
+        elseif rs isa CartesianProductArray
+            reach_tube = VPolytope(vertices_list(rs))
         else
-            error("unsupported set type for reach tube: $(typeof(rt))")
+            error("unsupported set type for reach tube: $(typeof(rs))")
         end
         intersect = intersection(invariant, reach_tube)
         if isempty(intersect)
             break
         end
-        push!(intersections, intersect)
+        push!(intersections, ReachSet{LazySet{N}, N}(intersect,
+            reach_set.t_start + X0.t_start, reach_set.t_end + X0.t_end))
     end
     return intersections
 end
@@ -278,7 +287,8 @@ function init_BFFPSV18!(system, options_input)
     options = validate_solver_options_and_add_default_values!(options_input)
 
     # Input -> Output variable mapping
-    options.dict[:inout_map] = inout_map_reach(options[:partition], options[:blocks], options[:n])
+    options.dict[:inout_map] =
+        inout_map_reach(options[:partition], options[:blocks], options[:n])
 
     if options[:project_reachset]
         options[:output_function] = nothing

@@ -1,4 +1,5 @@
-function discrete_post!(waiting_list, HS, cur_loc_id, intersectedRset, jumps)
+function discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant,
+                        jumps, N)
     jumps += 1
     for trans in out_transitions(HS, cur_loc_id)
         info("Considering transition: $trans")
@@ -13,28 +14,43 @@ function discrete_post!(waiting_list, HS, cur_loc_id, intersectedRset, jumps)
         target_invariant = HPolytope([target_invariant])
         @assert guard isa HPolytope
 
-        # check intersection with guard
-        rsetIntersMinus = [intersection(guard, VPolytope(vertices_list(hi))) for hi in intersectedRset]
-        filter!(!isempty, rsetIntersMinus)
-        if (isempty(rsetIntersMinus))
+        # perform jumps
+        post_jump = Vector{ReachSet{LazySet{N}, N}}()
+        sizehint!(post_jump, length(reach_tube_in_invariant))
+        for reach_set in reach_tube_in_invariant
+            # check intersection with guard
+            cap = intersection(guard, VPolytope(vertices_list(reach_set.X)))
+            if isempty(cap)
+                continue
+            end
+            # apply assignment
+            asgn = linear_map(assignment, cap)
+            # intersect with target invariant
+            res = intersection(target_invariant, asgn)
+            if isempty(res)
+                continue
+            end
+            # store result
+            push!(post_jump, ReachSet{LazySet{N}, N}(res, reach_set.t_start,
+                                                      reach_set.t_end))
+        end
+
+        if (isempty(post_jump))
+            # transition can never be taken
             continue
         end
 
-        # apply assignment
-        rsetIntersMinus = [linear_map(assignment, ri) for ri in rsetIntersMinus]
-
-        # check intersection with target invariant
-        info("Intersection with I\^+")
-        rsetIntersPlus = [intersection(target_invariant, hi) for hi in rsetIntersMinus]
-        filter!(!isempty, rsetIntersPlus)
+        # apply clustering
+        clustered = cluster(post_jump)
 
         # push new sets after jump
-        rsetHull = ConvexHullArray(rsetIntersPlus)
-        for rh in rsetIntersPlus
-            push!(waiting_list, (target(HS, trans), rh, jumps + 1))
+        for set in clustered
+            push!(waiting_list, (target(HS, trans), set, jumps + 1))
         end
-
-        # TODO check intersection with forbidden states
-        # push!(waiting_list,(target(HS, trans), rsetHull))
     end
+end
+
+function cluster(sets)
+    # TODO apply some clustering
+    return sets
 end
