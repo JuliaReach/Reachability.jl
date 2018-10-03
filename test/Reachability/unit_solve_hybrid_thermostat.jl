@@ -5,6 +5,7 @@
 
 using HybridSystems, MathematicalSystems, LazySets, Polyhedra
 import LazySets.HalfSpace
+import Reachability.ReachSet
 
 c_a = 0.1;
 # Transition graph (automaton)
@@ -58,5 +59,12 @@ sol = solve(HS, X0, options_input);
 
 # work-around for 1D plot
 N = Float64
-sol_processed = ReachSolution([CartesianProductArray{N, HPolytope{N}}([x]) for x in sol.Xk], sol.options);
-sol_proj = Reachability.project_reach(plot_vars, 1, options_input.dict[:δ], sol_processed.Xk, "");
+new_reach_sets = Vector{ReachSet{CartesianProductArray{N}, N}}(length(sol.Xk))
+for (i, rs) in enumerate(sol.Xk)
+    new_reach_sets[i] =
+        ReachSet{CartesianProductArray{N}, N}(CartesianProductArray{N, HPolytope{N}}([rs.X]),
+                                rs.t_start, rs.t_end)
+end
+sol_processed = Reachability.ReachSolution(new_reach_sets, sol.options);
+sol_proj = Reachability.ReachSolution(Reachability.project_reach(plot_vars, 1, options_input.dict[:δ],
+    sol_processed.Xk, ""), sol.options);
