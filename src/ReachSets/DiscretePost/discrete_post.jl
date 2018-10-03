@@ -45,7 +45,7 @@ function discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant,
 
         # push new sets after jump
         for set in clustered
-            push!(waiting_list, (target(HS, trans), set, jumps + 1))
+            push!(waiting_list, (target(HS, trans), set, jumps))
         end
     end
 end
