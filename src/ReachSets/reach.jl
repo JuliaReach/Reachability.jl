@@ -7,10 +7,14 @@ Interface to reachability algorithms for an LTI system.
 
 ### Input
 
-- `S`                  -- LTI system, discrete or continuous
-- `options`            -- additional options
-- `numeric_type`       -- (optional, default: `Float64`) numeric type of the
-                          resulting set
+- `S`            -- LTI system, discrete or continuous
+- `options`      -- additional options
+- `numeric_type` -- (optional, default: `Float64`) numeric type of the resulting
+                    sets
+
+### Output
+
+A sequence of [`ReachSet`](@ref)s.
 
 ### Notes
 
@@ -20,7 +24,7 @@ A dictionary with available algorithms is available via
 function reach(S::IVP{<:AbstractDiscreteSystem},
                options::Options;
                numeric_type::Type=Float64
-              )Vector{<:LazySet}
+              )::Vector{<:ReachSet}
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -157,10 +161,15 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
-        res = Vector{CartesianProductArray{numeric_type}}(N)
+        res = Vector{ReachSet{CartesianProductArray{numeric_type,
+                                                     LazySet{numeric_type}},
+                               numeric_type}}(N)
     else
-        res = Vector{Hyperrectangle{numeric_type}}(N)
+        res = Vector{ReachSet{Hyperrectangle{numeric_type}, numeric_type}}(N)
     end
+
+    # time step
+    push!(args, options[:δ])
 
     # choose algorithm backend
     algorithm = options[:algorithm]
@@ -187,7 +196,7 @@ end
 function reach(system::IVP{<:AbstractContinuousSystem},
                options::Options;
                numeric_type::Type=Float64
-              )::Vector{<:LazySet}
+              )::Vector{<:ReachSet}
     # ===================
     # Time discretization
     # ===================

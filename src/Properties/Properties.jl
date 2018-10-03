@@ -31,6 +31,17 @@ export IntersectionProperty
 include("SubsetProperty.jl")
 export SubsetProperty
 
+# ==========================
+# Property checking results
+# ==========================
+include("CheckSolution.jl")
+
+export CheckSolution
+
+# =============================
+# Property checking algorithms
+# =============================
+
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()
 

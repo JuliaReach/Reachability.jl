@@ -1,62 +1,5 @@
-using LazySets.Approximations.box_approximation
-export AbstractSolution,
-       ReachSolution,
-       CheckSolution,
-       solve,
+export solve,
        project
-
-"""
-    AbstractSolution
-
-Abstract type representing the solution of a rechability problem.
-"""
-abstract type AbstractSolution end
-
-"""
-    ReachSolution{S<:LazySet} <: AbstractSolution
-
-Type that wraps a the solution of a reachability problem as a sequence of
-lazy sets, and a dictionary of options.
-
-### Fields
-
-- `Xk`       -- the list of reachable states
-- `options`  -- the dictionary of options
-
-### Notes
-
-If the solution has been projected in 2D, the sequence `Xk` is an array
-of polygons in constraint representation. In high-dimensions this is a sequence
-of cartesian product arrays of low-dimensional sets.
-"""
-struct ReachSolution{S<:LazySet} <: AbstractSolution
-  Xk::Vector{S}
-  options::Options
-end
-# constructor with no options
-ReachSolution(Xk::Vector{S}) where {S<:LazySet} =
-    ReachSolution{S}(Xk, Options())
-
-"""
-    CheckSolution
-
-Type that wraps a the solution of a property checking problem, which is just the
-answer if the property is satisfied.
-
-### Fields
-
-- `satisfied` -- is the property satisfied?
-- `violation` -- step at which the property is violated (-1 otherwise)
-- `options`   -- the dictionary of options
-"""
-struct CheckSolution <: AbstractSolution
-  satisfied::Bool
-  violation::Int
-  options::Options
-end
-# constructor with no options
-CheckSolution(satisfied::Bool, violation::Int) =
-    CheckSolution(satisfied, violation, Options())
 
 function default_algorithm(system::InitialValueProblem)
     algorithm = ""
@@ -144,10 +87,11 @@ function solve!(system::InitialValueProblem{<:SYS},
                 tic()
                 RsetsProj = project(Rsets, options)
                 tocc()
-                return ReachSolution(RsetsProj, options)
+            else
+                RsetsProj = Rsets
             end
 
-            return ReachSolution(Rsets, options)
+            return ReachSolution(RsetsProj, options)
 
         elseif options[:mode] == "check"
 
@@ -195,7 +139,7 @@ Projects a sequence of sets according to the settings defined in the options.
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Vector{<:LazySet}, options::Options)
+function project(Rsets::Vector{<:ReachSet}, options::Options)
     plot_vars = copy(options[:plot_vars])
     for i in 1:length(plot_vars)
         if plot_vars[i] != 0
@@ -219,7 +163,7 @@ end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
 
-project(Rsets::Vector{<:LazySet}, options::Pair{Symbol,<:Any}...) =
+project(Rsets::Vector{<:ReachSet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))
 
 """
