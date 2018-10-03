@@ -161,9 +161,8 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
-        res = Vector{ReachSet{CartesianProductArray{numeric_type,
-                                                     LazySet{numeric_type}},
-                               numeric_type}}(N)
+        res = Vector{ReachSet{LazySet{numeric_type},
+                              numeric_type}}(N)
     else
         res = Vector{ReachSet{Hyperrectangle{numeric_type}, numeric_type}}(N)
     end
