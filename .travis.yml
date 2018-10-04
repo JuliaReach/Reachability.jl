@@ -4,24 +4,17 @@ os:
   - linux
 julia:
   - 0.6
-  - 0.7
-  - nightly
+# - 0.7
+# - nightly
 notifications:
   email: false
 git:
   depth: 99999999
 
-# dependencies that are not in METADATA
-#before_script:
-#  - julia -e 'Pkg.clone("git://github.com/acroy/Expokit.jl.git")'
-#  - julia -e 'Pkg.clone("git://github.com/juliareach/LazySets.jl.git")'
-#  - julia -e 'Pkg.clone("git://github.com/juliareach/MathematicalSystems.jl.git")'
-
 ## allow failures (tests will run but not make your overall status red)
-matrix:
-  allow_failures:
-    - julia: 0.7  # TODO: fix compatibility
-    - julia: nightly
+#matrix:
+# allow_failures:
+#   - julia: nightly
 
 ## uncomment the following lines to override the default test script
 script:
