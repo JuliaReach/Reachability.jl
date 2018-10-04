@@ -11,16 +11,14 @@ include("logging.jl")
 include("Utils/Utils.jl")
 include("options.jl")
 include("ReachSets/ReachSets.jl")
-include("Properties/Properties.jl")
 include("Transformations/Transformations.jl")
 
 @reexport using Reachability.Utils
 
 using Reachability.ReachSets,
-      Reachability.Properties,
       Reachability.Transformations
 
-export Properties, LinearConstraintProperty, Clause,
+export LinearConstraintProperty, Clause,
        IntersectionProperty,
        SubsetProperty,
        Transformations

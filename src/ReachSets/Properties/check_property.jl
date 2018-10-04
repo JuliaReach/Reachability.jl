@@ -13,7 +13,7 @@ Interface to property checking algorithms for an LTI system.
 ### Notes
 
 A dictionary with available algorithms is available via
-`Properties.available_algorithms`.
+`available_algorithms_check`.
 """
 function check_property(S::IVP{<:AbstractDiscreteSystem},
                         options::Options
@@ -164,7 +164,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     # call the adequate function with the given arguments list
     info("- Computing successors")
     tic()
-    answer = available_algorithms[algorithm_backend]["func"](args...)
+    answer = available_algorithms_check[algorithm_backend]["func"](args...)
     tocc()
 
     # return the result

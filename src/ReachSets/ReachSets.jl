@@ -107,6 +107,53 @@ include("inout_map_reach.jl")
 
 export inout_map_reach
 
+# ==============================
+# Property struct and evaluation
+# ==============================
+include("Properties/Property.jl")
+export Property,
+       inout_map_property
+
+include("Properties/LinearConstraintProperty.jl")
+export LinearConstraintProperty,
+       Clause
+
+include("Properties/IntersectionProperty.jl")
+export IntersectionProperty
+
+include("Properties/SubsetProperty.jl")
+export SubsetProperty
+
+# ==========================
+# Property checking results
+# ==========================
+include("Properties/CheckSolution.jl")
+
+export CheckSolution
+
+# =============================
+# Property checking algorithms
+# =============================
+
+# dictionary of registered algorithms
+available_algorithms_check = Dict{String, Dict{String, Any}}()
+
+# "explicit" backends
+include("Properties/check_blocks.jl")
+push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,
+                                                    "is_explicit"=>true))
+
+include("Properties/check_property.jl")
+
+export available_algorithms_check,
+       check_property
+
+# ====================================================
+# Algorithms to find a threshold for property checking
+# ====================================================
+include("Properties/tune.jl")
+export tune_δ
+
 # =====================
 # Reachability results
 # =====================
