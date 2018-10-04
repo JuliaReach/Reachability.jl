@@ -53,7 +53,8 @@ input_options = Options(:mode=>"reach");
 plot_vars = [0, 1]
 
 problem_options = Options(:vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
-                          :max_jumps=>1, :verbosity=>1);
+                          :max_jumps=>1, :verbosity=>1,
+                          :project_reachset => false);
 options_input = merge(problem_options, input_options);
 sol = solve(HS, X0, options_input);
 
@@ -62,9 +63,10 @@ N = Float64
 new_reach_sets = Vector{ReachSet{CartesianProductArray{N}, N}}(length(sol.Xk))
 for (i, rs) in enumerate(sol.Xk)
     new_reach_sets[i] =
-        ReachSet{CartesianProductArray{N}, N}(CartesianProductArray{N, HPolytope{N}}([rs.X]),
-                                rs.t_start, rs.t_end)
+        ReachSet{CartesianProductArray{N}, N}(
+            CartesianProductArray{N, HPolytope{N}}([rs.X]),
+            rs.t_start, rs.t_end)
 end
 sol_processed = Reachability.ReachSolution(new_reach_sets, sol.options);
-sol_proj = Reachability.ReachSolution(Reachability.project_reach(plot_vars, 1, options_input.dict[:δ],
-    sol_processed.Xk, ""), sol.options);
+sol_proj = Reachability.ReachSolution(Reachability.project_reach(
+    sol_processed.Xk, plot_vars, 1, sol.options), sol.options);
