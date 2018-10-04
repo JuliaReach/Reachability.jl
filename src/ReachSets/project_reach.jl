@@ -78,14 +78,14 @@ function project_reach(
 
     δ = options[:δ]
     if got_time
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t], radius))),
+                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     else
         @inbounds for i in 1:N
@@ -172,23 +172,23 @@ function project_reach(
 
     δ = options[:δ]
     if output_function
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
-                oa(CartesianProduct(BallInf([t], radius), Rsets[i].X)),
+                oa(CartesianProduct(BallInf([t0 + radius], radius), Rsets[i].X)),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     elseif got_time # x variable is 'time'
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t], radius))),
+                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     else
         @inbounds for i in 1:N
