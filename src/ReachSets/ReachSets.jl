@@ -175,7 +175,8 @@ export PostOperator,
        ContinuousPost,
        DiscretePost,
        init,
-       post
+       post,
+       tube⋂inv!
 
 # ========================
 # Reachability Algorithms
@@ -200,9 +201,9 @@ include("ContinuousPost/BFFPSV18.jl")
 
 export BFFPSV18
 
-include("DiscretePost/discrete_post.jl")
+include("DiscretePost/TextbookDiscretePost.jl")
 
-export discrete_post!
+export TextbookDiscretePost
 
 # =========================
 # External reach interface
