@@ -189,16 +189,11 @@ http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
 function solve(HS::HybridSystem,
                X0::LazySet{N},
-               options::Options)::AbstractSolution where {N}
+               options_input::Options)::AbstractSolution where {N}
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
-    # set options
-    options.dict[:project_reachset] = false
-
-    max_jumps = options[:max_jumps]
-
-    time_horizon = options[:T]
+    options, time_horizon, max_jumps, delete_N = init_hybrid!(HS, options_input)
 
     #TODO get initial location. For now we assume that it is the first location
     # waiting_list entries:
@@ -209,20 +204,33 @@ function solve(HS::HybridSystem,
     # passed_list maps the (discrete) location to the (set of) continuous-time
     # reach sets
     passed_list = Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS))
-    rset = Vector{ReachSet{LazySet{N}, N}}()
+    Rsets = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))
         cur_loc_id, X0, jumps = pop!(waiting_list)
         cur_loc = HS.modes[cur_loc_id]
 
         # compute reach tube
-        options[:T] = time_horizon - X0.t_start
+        options_copy = Options(copy(options.dict))
+        options_copy.dict[:T] = time_horizon - X0.t_start
+        options_copy.dict[:project_reachset] = false
+        delete!(options_copy.dict, :inout_map)
+        if delete_N # TODO add more conditions or fix option clashes in general
+            delete!(options_copy.dict, :N)
+        end
+        if haskey(options_copy.dict, :block_types) &&
+                options_copy.dict[:block_types] == nothing
+            delete!(options_copy.dict, :block_types)
+        end
+        if haskey(options_copy.dict, :blocks)
+            delete!(options_copy.dict, :blocks)
+        end
         reach_tube =
-            solve(ContinuousSystem(cur_loc.A, X0.X, cur_loc.U), options)
+            solve(ContinuousSystem(cur_loc.A, X0.X, cur_loc.U), options_copy)
 
         # take intersection with source invariant
         reach_tube_in_invariant =
             intersect_reach_tube_invariant(reach_tube.Xk, X0, cur_loc.X, N)
-        append!(rset, reach_tube_in_invariant)
+        append!(Rsets, reach_tube_in_invariant)
 
         if jumps == max_jumps
             continue
@@ -231,8 +239,17 @@ function solve(HS::HybridSystem,
         discrete_post!(waiting_list, passed_list, HS, cur_loc_id,
             reach_tube_in_invariant, jumps, N)
     end
-    options[:T] = time_horizon
-    return ReachSolution(rset, options)
+
+    # Projection
+    if options[:project_reachset] || options[:projection_matrix] != nothing
+        info("Projection...")
+        tic()
+        RsetsProj = project(Rsets, options)
+        tocc()
+    else
+        RsetsProj = Rsets
+    end
+    return ReachSolution(RsetsProj, options)
 end
 
 function intersect_reach_tube_invariant(reach_tube, X0, invariant, N)
@@ -289,4 +306,21 @@ function init_BFFPSV18!(system, options_input)
     end
 
     return options
+end
+
+function init_hybrid!(system, options_input)
+    delete_N = !haskey(options_input.dict, :N)
+    options_input.dict[:n] = statedim(system, 1)
+
+    # solver-specific options (adds default values for unspecified options)
+    options = validate_solver_options_and_add_default_values!(options_input)
+
+    # Input -> Output variable mapping
+    options.dict[:inout_map] =
+        inout_map_reach(options[:partition], options[:blocks], options[:n])
+
+    time_horizon = options[:T]
+    max_jumps = options[:max_jumps]
+
+    return options, time_horizon, max_jumps, delete_N
 end
