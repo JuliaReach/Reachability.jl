@@ -1,48 +1,30 @@
 """
-    project_reach(plot_vars, n, δ, Rsets, [algorithm]; [ε], [projection_matrix], [transformation_matrix])
+    project_reach(Rsets, vars, n, options)
 
 Projection of a reachability analysis result in 2D.
 
 ### Input
 
-- `plot_vars`         -- variables to plot; two-dimensional index vector
-- `n`                 -- system dimension
-- `δ`                 -- time discretization
-- `Rsets`             -- reachable states representation
-- `algorithm`         -- (optional, default: `"explicit"`) reachability
-                         algorithm backend, see `available_algorithms`
-- `ε`                 -- (optional, default: `Inf`) error bound for the
-                         approximation
-- `set_type`          -- (optional, default: `Hyperrectangle`) set type for the
-                         approximation
-- `projection_matrix` -- (optional, default: `nothing`) projection matrix; if
-                         not passed, the function computes `projection_matrix`
-                         from `plot_vars`
-- `transformation_matrix` -- (optional, default: `nothing`) transformation
-                             matrix
-- `output_function`   -- (optional, default: `false`) switch denoting whether
-                         the passed set is one-dimensional, representing an
-                         output function
+- `Rsets`   -- reachable states representation
+- `vars`    -- variables to plot; two-dimensional index vector
+- `n`       -- system dimension
+- `options` -- options
 
 ### Notes
 
-The `plot_vars` argument is required even if the optional argument
+The `vars` argument is required even if the optional argument
 `projection_matrix` is passed, because we also determine whether time is used as
 a dimension from this variable.
 """
-function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
-    Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}},
-    algorithm::String="explicit";
-    ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
-    projection_matrix::Union{AbstractMatrix, Void}=nothing,
-    transformation_matrix::Union{AbstractMatrix, Void}=nothing,
-    output_function::Bool=false
-    )::Vector{<:ReachSet} where {numeric_type<:Real}
-
+function project_reach(
+        Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}},
+        vars::Vector{Int64},
+        n::Int64,
+        options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
     # parse input
-    assert(length(plot_vars) == 2)
+    assert(length(vars) == 2)
     # first projection dimension
-    xaxis = plot_vars[1]
+    xaxis = vars[1]
     if xaxis == 0
         got_time = true
         xaxis = n+1 # we add a new dimension for time
@@ -54,10 +36,12 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     end
 
     # build projection matrix
+    projection_matrix = options[:projection_matrix]
+    output_function = !options[:project_reachset]
     m = got_time ? n+1 : n
     if projection_matrix == nothing
         # projection to a state variable
-        yaxis = plot_vars[2]
+        yaxis = vars[2]
         if (yaxis <= 0 || yaxis > n)
             throw(DomainError())
         end
@@ -70,6 +54,7 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     end
 
     # apply optional transformation to projection matrix
+    transformation_matrix = options[:transformation_matrix]
     if (transformation_matrix != nothing)
         if got_time
             # add another dimension for time: block matrix [S 0; 0 1]
@@ -81,23 +66,26 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     N = length(Rsets)
 
     # allocate output and define overapproximation function
+    ε = options[:ε_proj]
     if ε < Inf
         oa = x -> overapproximate(x, HPolygon, ε)
         RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(N)
     else
+        set_type = options[:set_type_proj]
         oa = x -> overapproximate(x, set_type)
         RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(N)
     end
 
+    δ = options[:δ]
     if got_time
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t], radius))),
+                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     else
         @inbounds for i in 1:N
@@ -111,33 +99,35 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
 end
 
 """
-    project_reach(plot_vars, n, δ, Rsets, [algorithm]; [ε], [projection_matrix],
-                  [transformation_matrix])
+    project_reach(Rsets, vars, n, options)
 
-This algorithm projects a sequence of sets into the time variable, or can be
+This function projects a sequence of sets into the time variable, or can be
 used to take a linear combination of the given variables.
+
+### Input
+
+- `Rsets`   -- reachable states representation
+- `vars`    -- variables to plot; two-dimensional index vector
+- `n`       -- system dimension
+- `options` -- options
+
+### Notes
 
 The input `Rsets` is an array of sets (instead of a `CartesianProductArray`).
 This array contains the collection of reach sets in 2D.
 
-WARNING: 
-
-It is assumed that the variable given in plot_vars belongs to the block computed
+It is assumed that the variable given in vars belongs to the block computed
 in the sequence of 2D sets `Rsets`.
 """
-function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
-    Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
-    algorithm::String;
-    ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
-    projection_matrix::Union{AbstractMatrix, Void}=nothing,
-    transformation_matrix::Union{AbstractMatrix, Void}=nothing,
-    output_function::Bool=false
-    )::Vector{<:ReachSet} where {numeric_type<:Real}
-
+function project_reach(
+        Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
+        vars::Vector{Int64},
+        n::Int64,
+        options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
     # parse input
-    assert(length(plot_vars) == 2)
+    assert(length(vars) == 2)
     # first projection dimension
-    xaxis = plot_vars[1]
+    xaxis = vars[1]
     if xaxis == 0
         got_time = true
         xaxis = 3  # time is associated to dimension 3
@@ -151,9 +141,11 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     end
 
     # build projection matrix
+    projection_matrix = options[:projection_matrix]
+    output_function = !options[:project_reachset]
     if projection_matrix == nothing
         # projection to a state variable
-        yaxis = plot_vars[2]
+        yaxis = vars[2]
         if (yaxis <= 0 || yaxis > n)
             throw(DomainError())
         end
@@ -168,32 +160,35 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
     N = length(Rsets)
 
     # allocate output and define overapproximation function
+    ε = options[:ε_proj]
     if ε < Inf
         oa = x -> overapproximate(x, HPolygon, ε)
         RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(N)
     else
+        set_type = options[:set_type_proj]
         oa = x -> overapproximate(x, set_type)
         RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(N)
     end
 
+    δ = options[:δ]
     if output_function
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
-                oa(CartesianProduct(BallInf([t], radius), Rsets[i].X)),
+                oa(CartesianProduct(BallInf([t0 + radius], radius), Rsets[i].X)),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     elseif got_time # x variable is 'time'
-        radius = δ/2.0
-        t = radius
         @inbounds for i in 1:N
+            t0 = Rsets[i].t_start
+            t1 = Rsets[i].t_end
+            radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t], radius))),
+                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
                 Rsets[i].t_start, Rsets[i].t_end)
-            t = t + δ
         end
     else
         @inbounds for i in 1:N
