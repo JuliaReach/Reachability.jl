@@ -36,7 +36,7 @@ nondeterministic inputs.
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
-@inline store!(res, k, X, t0, t1, N) = (res[k] = ReachSet{LazySet{N}, N}(X, t0, t1))
+@inline store!(res, k, X, t0, t1, N) = (res[k] = ReachSet(X, t0, t1))
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},

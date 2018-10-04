@@ -53,7 +53,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
-        Xhat0 = [S.x0]
+        Xhat0 = LazySet{numeric_type}[S.x0]
     else
         info("- Decomposing X0")
         tic()
@@ -161,8 +161,9 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
-        res = Vector{ReachSet{LazySet{numeric_type},
-                              numeric_type}}(N)
+        res = Vector{ReachSet{
+            CartesianProductArray{numeric_type, LazySet{numeric_type}},
+            numeric_type}}(N)
     else
         res = Vector{ReachSet{Hyperrectangle{numeric_type}, numeric_type}}(N)
     end
