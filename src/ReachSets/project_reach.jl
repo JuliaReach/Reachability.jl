@@ -1,30 +1,30 @@
 """
-    project_reach(Rsets, plot_vars, n, options)
+    project_reach(Rsets, vars, n, options)
 
 Projection of a reachability analysis result in 2D.
 
 ### Input
 
-- `Rsets`     -- reachable states representation
-- `plot_vars` -- variables to plot; two-dimensional index vector
-- `n`         -- system dimension
-- `options`   -- options
+- `Rsets`   -- reachable states representation
+- `vars`    -- variables to plot; two-dimensional index vector
+- `n`       -- system dimension
+- `options` -- options
 
 ### Notes
 
-The `plot_vars` argument is required even if the optional argument
+The `vars` argument is required even if the optional argument
 `projection_matrix` is passed, because we also determine whether time is used as
 a dimension from this variable.
 """
 function project_reach(
         Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}},
-        plot_vars::Vector{Int64},
+        vars::Vector{Int64},
         n::Int64,
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
     # parse input
-    assert(length(plot_vars) == 2)
+    assert(length(vars) == 2)
     # first projection dimension
-    xaxis = plot_vars[1]
+    xaxis = vars[1]
     if xaxis == 0
         got_time = true
         xaxis = n+1 # we add a new dimension for time
@@ -41,7 +41,7 @@ function project_reach(
     m = got_time ? n+1 : n
     if projection_matrix == nothing
         # projection to a state variable
-        yaxis = plot_vars[2]
+        yaxis = vars[2]
         if (yaxis <= 0 || yaxis > n)
             throw(DomainError())
         end
@@ -99,35 +99,35 @@ function project_reach(
 end
 
 """
-    project_reach(Rsets, plot_vars, n, options)
+    project_reach(Rsets, vars, n, options)
 
 This function projects a sequence of sets into the time variable, or can be
 used to take a linear combination of the given variables.
 
 ### Input
 
-- `Rsets`     -- reachable states representation
-- `plot_vars` -- variables to plot; two-dimensional index vector
-- `n`         -- system dimension
-- `options`   -- options
+- `Rsets`   -- reachable states representation
+- `vars`    -- variables to plot; two-dimensional index vector
+- `n`       -- system dimension
+- `options` -- options
 
 ### Notes
 
 The input `Rsets` is an array of sets (instead of a `CartesianProductArray`).
 This array contains the collection of reach sets in 2D.
 
-It is assumed that the variable given in plot_vars belongs to the block computed
+It is assumed that the variable given in vars belongs to the block computed
 in the sequence of 2D sets `Rsets`.
 """
 function project_reach(
         Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
-        plot_vars::Vector{Int64},
+        vars::Vector{Int64},
         n::Int64,
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
     # parse input
-    assert(length(plot_vars) == 2)
+    assert(length(vars) == 2)
     # first projection dimension
-    xaxis = plot_vars[1]
+    xaxis = vars[1]
     if xaxis == 0
         got_time = true
         xaxis = 3  # time is associated to dimension 3
@@ -145,7 +145,7 @@ function project_reach(
     output_function = !options[:project_reachset]
     if projection_matrix == nothing
         # projection to a state variable
-        yaxis = plot_vars[2]
+        yaxis = vars[2]
         if (yaxis <= 0 || yaxis > n)
             throw(DomainError())
         end
