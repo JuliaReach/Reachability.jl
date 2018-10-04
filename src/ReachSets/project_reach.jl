@@ -54,8 +54,9 @@ function project_reach(
     end
 
     # apply optional transformation to projection matrix
-    transformation_matrix = options[:transformation_matrix]
-    if (transformation_matrix != nothing)
+    if haskey(options.dict, :transformation_matrix) &&
+            options[:transformation_matrix] != nothing
+        transformation_matrix = options[:transformation_matrix]
         if got_time
             # add another dimension for time: block matrix [S 0; 0 1]
             transformation_matrix = sparse(cat([1, 2], transformation_matrix, [1]))
