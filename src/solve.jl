@@ -143,17 +143,7 @@ function project(Rsets::Vector{<:ReachSet}, options::Options)
     end
     reduced_n = sum(x -> x != 0, options[:inout_map])
     output_function = !options[:project_reachset]
-    RsetsProj = project_reach(plot_vars,
-                              reduced_n,
-                              options[:δ],
-                              Rsets,
-                              options[:algorithm],
-                              ε=options[:ε_proj],
-                              set_type=options[:set_type_proj],
-                              transformation_matrix=options[:transformation_matrix],
-                              projection_matrix=options[:projection_matrix],
-                              output_function=output_function
-                             )
+    RsetsProj = project_reach(Rsets, plot_vars, reduced_n, options)
 end
 
 project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
