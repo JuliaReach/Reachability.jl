@@ -147,7 +147,6 @@ function project(Rsets::Vector{<:ReachSet}, options::Options)
                               reduced_n,
                               options[:δ],
                               Rsets,
-                              options[:algorithm],
                               ε=options[:ε_proj],
                               set_type=options[:set_type_proj],
                               transformation_matrix=options[:transformation_matrix],

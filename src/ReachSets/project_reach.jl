@@ -1,5 +1,5 @@
 """
-    project_reach(plot_vars, n, δ, Rsets, [algorithm]; [ε], [projection_matrix], [transformation_matrix])
+    project_reach(plot_vars, n, δ, Rsets; [ε], [projection_matrix], [transformation_matrix])
 
 Projection of a reachability analysis result in 2D.
 
@@ -9,8 +9,6 @@ Projection of a reachability analysis result in 2D.
 - `n`                 -- system dimension
 - `δ`                 -- time discretization
 - `Rsets`             -- reachable states representation
-- `algorithm`         -- (optional, default: `"explicit"`) reachability
-                         algorithm backend, see `available_algorithms`
 - `ε`                 -- (optional, default: `Inf`) error bound for the
                          approximation
 - `set_type`          -- (optional, default: `Hyperrectangle`) set type for the
@@ -31,8 +29,7 @@ The `plot_vars` argument is required even if the optional argument
 a dimension from this variable.
 """
 function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
-    Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}},
-    algorithm::String="explicit";
+    Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}};
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{AbstractMatrix, Void}=nothing,
     transformation_matrix::Union{AbstractMatrix, Void}=nothing,
@@ -111,10 +108,10 @@ function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
 end
 
 """
-    project_reach(plot_vars, n, δ, Rsets, [algorithm]; [ε], [projection_matrix],
+    project_reach(plot_vars, n, δ, Rsets; [ε], [projection_matrix],
                   [transformation_matrix])
 
-This algorithm projects a sequence of sets into the time variable, or can be
+This function projects a sequence of sets into the time variable, or can be
 used to take a linear combination of the given variables.
 
 The input `Rsets` is an array of sets (instead of a `CartesianProductArray`).
@@ -126,8 +123,7 @@ It is assumed that the variable given in plot_vars belongs to the block computed
 in the sequence of 2D sets `Rsets`.
 """
 function project_reach(plot_vars::Vector{Int64}, n::Int64, δ::Float64,
-    Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
-    algorithm::String;
+    Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}};
     ε::Float64=Inf, set_type::Type{<:LazySet}=Hyperrectangle,
     projection_matrix::Union{AbstractMatrix, Void}=nothing,
     transformation_matrix::Union{AbstractMatrix, Void}=nothing,
