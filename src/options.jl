@@ -192,6 +192,7 @@ Supported options:
                                   generally may also be a predicate over indices
 - `:lazy_expm_discretize`      -- switch to use lazy matrix exponential in the
                                   discretization phase (see also `:lazy_expm`)
+- `:max_jumps`     -- maximum number of discrete jumps in a hybrid automaton
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 - `:n`             -- system's dimension
@@ -240,6 +241,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm_discretize],
                                          dict_copy[:lazy_expm])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], 5)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -383,6 +385,9 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
                 error("cannot use option $(:lazy_expm) with deactivated " *
                       "option $(:lazy_expm_discretize)")
             end
+        elseif key == :max_jumps
+            expected_type = Int
+            domain_constraints = (v::Int  ->  v >= 0)
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)

@@ -49,10 +49,11 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     ε_iter = options[:ε_iter]
     set_type_iter = options[:set_type_iter]
 
+
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
-        Xhat0 = [S.x0]
+        Xhat0 = LazySet{numeric_type}[S.x0]
     else
         info("- Decomposing X0")
         tic()
@@ -160,9 +161,9 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, blocks)
     push!(args, partition)
     if output_function == nothing
-        res = Vector{ReachSet{CartesianProductArray{numeric_type,
-                                                     LazySet{numeric_type}},
-                               numeric_type}}(N)
+        res = Vector{ReachSet{
+            CartesianProductArray{numeric_type, LazySet{numeric_type}},
+            numeric_type}}(N)
     else
         res = Vector{ReachSet{Hyperrectangle{numeric_type}, numeric_type}}(N)
     end
@@ -186,6 +187,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     tic()
     available_algorithms[algorithm_backend]["func"](args...)
     tocc()
+
 
     # return the result
     return res

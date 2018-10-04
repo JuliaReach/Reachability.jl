@@ -1,21 +1,5 @@
 """
-    plot_sol(sol::ReachSolution{<:CartesianProductArray}, ...)
-
-Plots the solution of a reachability problem in high-dimensions.
-
-### Input
-
-- `sol` -- the solution of a reachability problem
-           as a cartesian product array
-"""
-@recipe function plot_sol(sol::ReachSolution{<:CartesianProductArray})
-
-    error("There is no user recipe defined for $(typeof(sol)); you need to " *
-          "project into 2D using `project first`")
-end
-
-"""
-    plot_sol(sol::ReachSolution{<:AbstractPolytope}; ...)
+    plot_sol(sol::ReachSolution; ...)
 
 Plots the solution of a reachability problem in 2D with the given options.
 
@@ -40,7 +24,7 @@ Plots the solution of a reachability problem in 2D with the given options.
 To define your own x and y labels, use the `xlabel` (resp. `ylabel`) keyword
 argument. For additional options, consult the Plots.jl reference manual.
 """
-@recipe function plot_sol(sol::ReachSolution{<:AbstractPolytope};
+@recipe function plot_sol(sol::ReachSolution;
                           seriescolor=:auto,
                           fillcolor=:auto,
                           seriestype=:shape,

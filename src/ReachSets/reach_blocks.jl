@@ -36,7 +36,7 @@ nondeterministic inputs.
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
-@inline store!(res, k, X, t0, t1) = (res[k] = ReachSet(X, t0, t1))
+@inline store!(res, k, X, t0, t1, N) = (res[k] = ReachSet(X, t0, t1))
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -58,7 +58,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1)
+    store!(res, 1, X_store, t0, t1, NUM)
     if N == 1
         return nothing
     end
@@ -100,7 +100,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1)
+        store!(res, k, X_store, t0, t1, NUM)
 
         if k == N
             break
@@ -141,7 +141,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1)
+    store!(res, 1, X_store, t0, t1, NUM)
     if N == 1
         return nothing
     end
@@ -185,7 +185,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1)
+        store!(res, k, X_store, t0, t1, NUM)
 
         if k == N
             break
@@ -229,7 +229,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1)
+    store!(res, 1, X_store, t0, t1, NUM)
     if N == 1
         return nothing
     end
@@ -276,7 +276,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1)
+        store!(res, k, X_store, t0, t1, NUM)
 
         if k == N
             break
@@ -311,7 +311,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1)
+    store!(res, 1, X_store, t0, t1, NUM)
     if N == 1
         return nothing
     end
@@ -358,7 +358,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1)
+        store!(res, k, X_store, t0, t1, NUM)
 
         if k == N
             break

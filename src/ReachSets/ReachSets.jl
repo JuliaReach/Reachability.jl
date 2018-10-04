@@ -84,7 +84,7 @@ AUTHORS:
 """
 module ReachSets
 
-using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter
+using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter, HybridSystems
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
@@ -134,6 +134,10 @@ push!(available_algorithms,
                    "is_explicit"=>true))
 
 export available_algorithms
+
+include("DiscretePost/discrete_post.jl")
+
+export discrete_post!
 
 # =========================
 # External reach interface
