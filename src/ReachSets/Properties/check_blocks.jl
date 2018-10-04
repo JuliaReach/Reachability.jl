@@ -23,17 +23,6 @@ OUTPUT:
 The first time index where the property is violated, and 0 if the property is satisfied.
 =#
 
-# helper functions
-@inline proj(bi::UnitRange{Int}, n::Int) =
-         sparse(1:length(bi), bi, ones(length(bi)), length(bi), n)
-@inline proj(bi::Int, n::Int) = sparse([1], [bi], ones(1), 1, n)
-@inline row(ϕpowerk::AbstractMatrix, bi::UnitRange{Int}) = ϕpowerk[bi, :]
-@inline row(ϕpowerk::AbstractMatrix, bi::Int) = ϕpowerk[[bi], :]
-@inline row(ϕpowerk::SparseMatrixExp, bi::UnitRange{Int}) = get_rows(ϕpowerk, bi)
-@inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
-@inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
-@inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
-
 # sparse
 function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        Xhat0::Vector{<:LazySet{NUM}},
