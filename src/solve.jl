@@ -1,23 +1,21 @@
 export solve
 
-function default_algorithm(system::InitialValueProblem)
-    algorithm = ""
+function default_operator(system::InitialValueProblem)
     s = system.s
     if s isa LinearContinuousSystem ||
-       s isa LinearControlContinuousSystem ||
-       s isa ConstrainedLinearContinuousSystem ||
-       s isa ConstrainedLinearControlContinuousSystem ||
-       s isa LinearDiscreteSystem ||
-       s isa LinearControlDiscreteSystem ||
-       s isa ConstrainedLinearDiscreteSystem ||
-       s isa ConstrainedLinearControlDiscreteSystem
-       
-        algorithm = "BFFPSV18"
+            s isa LinearControlContinuousSystem ||
+            s isa ConstrainedLinearContinuousSystem ||
+            s isa ConstrainedLinearControlContinuousSystem ||
+            s isa LinearDiscreteSystem ||
+            s isa LinearControlDiscreteSystem ||
+            s isa ConstrainedLinearDiscreteSystem ||
+            s isa ConstrainedLinearControlDiscreteSystem
+        op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *
               "type $(typeof(system))")
     end
-    return algorithm
+    return op
 end
 
 """
@@ -44,83 +42,32 @@ To see all available input options, see
 """
 function solve(system::InitialValueProblem,
                options::Options;
-               algorithm::String=default_algorithm(system))
-    solve!(system, Options(copy(options.dict)), algorithm=algorithm)
+               op::PostOperator=default_operator(system))
+    solve!(system, Options(copy(options.dict)), op=op)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
 function solve!(system::InitialValueProblem{<:SYS},
-                options::Options;
-                algorithm::String=default_algorithm(system)
+                options_input::Options;
+                op::PostOperator=default_operator(system)
                )::AbstractSolution where {SYS<:Union{AbstractContinuousSystem,
                                                      AbstractDiscreteSystem}}
-    if algorithm == "BFFPSV18"
-        options = init_BFFPSV18!(system, options)
+    options = init(op, system, options_input)
 
-        # coordinate transformation
-        options[:transformation_matrix] = nothing
-        if options[:coordinate_transformation] != ""
-            info("Transformation...")
-            tic()
-            (system, transformation_matrix) =
-                transform(system, options[:coordinate_transformation])
-            tocc()
-            options[:transformation_matrix] = transformation_matrix
-        end
+    # coordinate transformation
+    options[:transformation_matrix] = nothing
+    if options[:coordinate_transformation] != ""
+        info("Transformation...")
+        tic()
+        (system, transformation_matrix) =
+            transform(system, options[:coordinate_transformation])
+        tocc()
+        options[:transformation_matrix] = transformation_matrix
+    end
 
-        # convert matrix
-        system = matrix_conversion(system, options)
-
-        if options[:mode] == "reach"
-            info("Reachable States Computation...")
-            tic()
-            Rsets = reach(system, options)
-            info("- Total")
-            tocc()
-
-            # Projection
-            if options[:project_reachset] || options[:projection_matrix] != nothing
-                info("Projection...")
-                tic()
-                RsetsProj = project(Rsets, options)
-                tocc()
-            else
-                RsetsProj = Rsets
-            end
-
-            return ReachSolution(RsetsProj, options)
-
-        elseif options[:mode] == "check"
-
-            # Input -> Output variable mapping in property
-            options.dict[:property] = inout_map_property(options[:property],
-                options[:partition], options[:blocks], options[:n])
-
-            # =================
-            # Property checking
-            # =================
-            info("Property Checking...")
-            tic()
-            answer = check_property(system, options)
-            info("- Total")
-            tocc()
-
-            if answer == 0
-                info("The property is satisfied!")
-                return CheckSolution(true, -1, options)
-            else
-                info("The property may be violated at index $answer," *
-                    " (time point $(answer * options[:δ]))!")
-                return CheckSolution(false, answer, options)
-            end
-        else
-            error("unsupported mode $(options[:mode])")
-        end # mode
-    else
-        error("unsupported algorithm $algorithm")
-    end # algorithm
+    post(op, system, options)
 end
 
 """
@@ -250,29 +197,6 @@ function intersect_reach_tube_invariant(reach_tube, X0, invariant, N)
             reach_set.t_start + X0.t_start, reach_set.t_end + X0.t_end))
     end
     return intersections
-end
-
-# ===========================================================================
-# Bogomolov, Forets, Frehse, Podelski, Schilling, Viry 2018
-# ===========================================================================
-function init_BFFPSV18!(system, options_input)
-    # state dimension for (purely continuous or purely discrete systems)
-    options_input.dict[:n] = statedim(system)
-
-    # solver-specific options (adds default values for unspecified options)
-    options = validate_solver_options_and_add_default_values!(options_input)
-
-    # Input -> Output variable mapping
-    options.dict[:inout_map] =
-        inout_map_reach(options[:partition], options[:blocks], options[:n])
-
-    if options[:project_reachset]
-        options[:output_function] = nothing
-    else
-        options[:output_function] = options[:projection_matrix]
-    end
-
-    return options
 end
 
 function init_hybrid!(system, options_input)

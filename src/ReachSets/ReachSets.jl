@@ -91,7 +91,8 @@ import LazySets.Approximations:symmetric_interval_hull,
                                overapproximate,
                                box_approximation
 import Reachability:tocc,
-                    Options
+                    Options,
+                    validate_solver_options_and_add_default_values!
 
 # ========================================
 # Discretize and compute bloating factors
@@ -172,7 +173,9 @@ include("DiscretePost/DiscretePost.jl")
 
 export PostOperator,
        ContinuousPost,
-       DiscretePost
+       DiscretePost,
+       init,
+       post
 
 # ========================
 # Reachability Algorithms
@@ -192,6 +195,10 @@ push!(available_algorithms,
                    "is_explicit"=>true))
 
 export available_algorithms
+
+include("ContinuousPost/BFFPSV18.jl")
+
+export BFFPSV18
 
 include("DiscretePost/discrete_post.jl")
 
