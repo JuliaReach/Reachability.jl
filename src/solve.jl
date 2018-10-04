@@ -215,8 +215,10 @@ function solve(HS::HybridSystem,
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}} =
-        [(1, ReachSet{LazySet{N}, N}(X0, zero(N), zero(N)), 0)]
+    waiting_list = [(1, ReachSet{LazySet{N}, N}(X0, zero(N), zero(N)), 0)]
+    # passed_list maps the (discrete) location to the (set of) continuous-time
+    # reach sets
+    passed_list = Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS))
     rset = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))
         cur_loc_id, X0, jumps = pop!(waiting_list)
@@ -236,8 +238,8 @@ function solve(HS::HybridSystem,
             continue
         end
 
-        discrete_post!(waiting_list, HS, cur_loc_id, reach_tube_in_invariant,
-            jumps, N)
+        discrete_post!(waiting_list, passed_list, HS, cur_loc_id,
+            reach_tube_in_invariant, jumps, N)
     end
     options[:T] = time_horizon
     return ReachSolution(rset, options)
