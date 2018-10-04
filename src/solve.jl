@@ -71,16 +71,14 @@ function solve!(system::InitialValueProblem{<:SYS},
 end
 
 """
-    solve(HS::HybridSystem,
-          X0::LazySet,
+    solve(system::InitialValueProblem{<:HybridSystem},
           options::Options)::AbstractSolution
 
 Interface to reachability algorithms for a hybrid system PWA dynamics.
 
 ### Input
 
-- `HS`      -- hybrid system
-- `X0`      -- initial set
+- `system`  -- hybrid system
 - `options` -- options for solving the problem
 
 ### Notes
@@ -90,8 +88,7 @@ library, because some concrete operations between polytopes are used.
 
 Currently, the following simplifying assumptions are made:
 
-- the starting state (for which `X0` is given) correspond to the first location
-  in the automaton
+- the behavior starts in the first location
 - source invariants, target invariants and guards are polytopes in constraint
   representation
 
@@ -101,12 +98,13 @@ The algorithm is based on [Flowpipe-Guard Intersection for Reachability
 Computations with Support Functions](
 http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-function solve(HS::HybridSystem,
-               X0::LazySet{N},
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
                options_input::Options)::AbstractSolution where {N}
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
+    HS = system.s
+    X0 = system.x0
     options, time_horizon, max_jumps, delete_N = init_hybrid!(HS, options_input)
 
     #TODO get initial location. For now we assume that it is the first location

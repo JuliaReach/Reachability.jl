@@ -48,7 +48,7 @@ HS = HybridSystem(a, m, r, s);
 # initial condition in mode 1
 X0 = Singleton([18.]);
 
-prob = InitialValueProblem(HS, X0);
+system = InitialValueProblem(HS, X0);
 input_options = Options(:mode=>"reach");
 plot_vars = [0, 1]
 
@@ -56,7 +56,7 @@ problem_options = Options(:vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
                           :max_jumps=>1, :verbosity=>1,
                           :project_reachset => false);
 options_input = merge(problem_options, input_options);
-sol = solve(HS, X0, options_input);
+sol = solve(system, options_input);
 
 # work-around for 1D plot
 N = Float64
