@@ -163,6 +163,17 @@ include("ReachSolution.jl")
 export ReachSet,
        ReachSolution
 
+# ===============
+# Post operators
+# ===============
+include("PostOperator.jl")
+include("ContinuousPost/ContinuousPost.jl")
+include("DiscretePost/DiscretePost.jl")
+
+export PostOperator,
+       ContinuousPost,
+       DiscretePost
+
 # ========================
 # Reachability Algorithms
 # ========================
