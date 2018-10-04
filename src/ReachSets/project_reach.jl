@@ -200,3 +200,35 @@ function project_reach(
 
     return RsetsProj
 end
+
+"""
+    project(Rsets, options)
+
+Projects a sequence of sets according to the settings defined in the options.
+
+### Input
+
+- `Rsets`   -- solution of a reachability problem
+- `options` -- options structure
+
+### Notes
+
+A projection matrix can be given in the options structure, or passed as a
+dictionary entry.
+"""
+function project(Rsets::Vector{<:ReachSet}, options::Options)
+    plot_vars = copy(options[:plot_vars])
+    for i in 1:length(plot_vars)
+        if plot_vars[i] != 0
+            plot_vars[i] = options[:inout_map][plot_vars[i]]
+        end
+    end
+    reduced_n = sum(x -> x != 0, options[:inout_map])
+    output_function = !options[:project_reachset]
+    RsetsProj = project_reach(Rsets, plot_vars, reduced_n, options)
+end
+
+project(reach_sol::ReachSolution) = project(reach_sol.Xk, reach_sol.options)
+
+project(Rsets::Vector{<:ReachSet}, options::Pair{Symbol,<:Any}...) =
+    project(Rsets, Options(Dict{Symbol,Any}(options)))

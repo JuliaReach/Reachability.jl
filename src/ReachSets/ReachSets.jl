@@ -209,6 +209,7 @@ export reach
 # ==============================================
 include("project_reach.jl")
 
-export project_reach
+export project_reach,
+       project
 
 end # module ReachSets

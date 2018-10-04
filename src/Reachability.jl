@@ -18,7 +18,8 @@ include("Transformations/Transformations.jl")
 using Reachability.ReachSets,
       Reachability.Transformations
 
-export LinearConstraintProperty, Clause,
+export project,
+       LinearConstraintProperty, Clause,
        IntersectionProperty,
        SubsetProperty,
        Transformations
