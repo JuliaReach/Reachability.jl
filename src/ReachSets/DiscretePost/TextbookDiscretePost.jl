@@ -62,7 +62,6 @@ function tube⋂inv!(op::TextbookDiscretePost,
         if dim(rs) == 1
             reach_tube = VPolytope(vertices_list(
                 Approximations.overapproximate(rs, LazySets.Interval)))
-        # TODO offer a lazy intersection here
         # TODO offer more options instead of taking the VPolytope intersection
         elseif rs isa CartesianProductArray
             reach_tube = VPolytope(vertices_list(rs))
@@ -148,29 +147,5 @@ function post(op::TextbookDiscretePost,
             end
             push!(waiting_list, (target(HS, trans), reach_set, jumps))
         end
-    end
-end
-
-function cluster(op::TextbookDiscretePost, reach_sets)
-    # TODO apply some clustering
-    return reach_sets
-end
-
-function isfixpoint(op::TextbookDiscretePost,
-                    reach_set::ReachSet{LazySet{N}, N},
-                    passed_list,
-                    loc_id
-                   ) where N
-    if isassigned(passed_list, loc_id)
-        for other_reach_set in passed_list[loc_id]
-            if reach_set.X ⊆ other_reach_set.X
-                info("found a fixpoint in some reach tube")
-                return true
-            end
-        end
-        return false
-    else
-        passed_list[loc_id] = Vector{ReachSet{LazySet{N}, N}}()
-        return false
     end
 end
