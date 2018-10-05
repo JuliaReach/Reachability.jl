@@ -1,24 +1,27 @@
-export solve,
-       project
+export solve
 
-function default_algorithm(system::InitialValueProblem)
-    algorithm = ""
-    s = system.s
-    if s isa LinearContinuousSystem ||
-       s isa LinearControlContinuousSystem ||
-       s isa ConstrainedLinearContinuousSystem ||
-       s isa ConstrainedLinearControlContinuousSystem ||
-       s isa LinearDiscreteSystem ||
-       s isa LinearControlDiscreteSystem ||
-       s isa ConstrainedLinearDiscreteSystem ||
-       s isa ConstrainedLinearControlDiscreteSystem
-       
-        algorithm = "BFFPSV18"
+function default_operator(system::InitialValueProblem{<:S}) where
+        {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
+    if S <: LinearContinuousSystem ||
+            S <: LinearControlContinuousSystem ||
+            S <: ConstrainedLinearContinuousSystem ||
+            S <: ConstrainedLinearControlContinuousSystem ||
+            S <: LinearDiscreteSystem ||
+            S <: LinearControlDiscreteSystem ||
+            S <: ConstrainedLinearDiscreteSystem ||
+            S <: ConstrainedLinearControlDiscreteSystem
+        op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *
               "type $(typeof(system))")
     end
-    return algorithm
+    return op
+end
+
+function default_operator(system::InitialValueProblem{<:HybridSystem})
+    opC = BFFPSV18()
+    opD = TextbookDiscretePost()
+    return opC, opD
 end
 
 """
@@ -45,155 +48,62 @@ To see all available input options, see
 """
 function solve(system::InitialValueProblem,
                options::Options;
-               algorithm::String=default_algorithm(system))
-    solve!(system, Options(copy(options.dict)), algorithm=algorithm)
+               op::PostOperator=default_operator(system))
+    solve!(system, Options(copy(options.dict)), op=op)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
 function solve!(system::InitialValueProblem{<:SYS},
-                options::Options;
-                algorithm::String=default_algorithm(system)
+                options_input::Options;
+                op::PostOperator=default_operator(system)
                )::AbstractSolution where {SYS<:Union{AbstractContinuousSystem,
                                                      AbstractDiscreteSystem}}
-    if algorithm == "BFFPSV18"
-        options = init_BFFPSV18!(system, options)
+    options = init(op, system, options_input)
 
-        # coordinate transformation
-        options[:transformation_matrix] = nothing
-        if options[:coordinate_transformation] != ""
-            info("Transformation...")
-            tic()
-            (system, transformation_matrix) =
-                transform(system, options[:coordinate_transformation])
-            tocc()
-            options[:transformation_matrix] = transformation_matrix
-        end
-
-        # convert matrix
-        system = matrix_conversion(system, options)
-
-        if options[:mode] == "reach"
-            info("Reachable States Computation...")
-            tic()
-            Rsets = reach(system, options)
-            info("- Total")
-            tocc()
-
-            # Projection
-            if options[:project_reachset] || options[:projection_matrix] != nothing
-                info("Projection...")
-                tic()
-                RsetsProj = project(Rsets, options)
-                tocc()
-            else
-                RsetsProj = Rsets
-            end
-
-            return ReachSolution(RsetsProj, options)
-
-        elseif options[:mode] == "check"
-
-            # Input -> Output variable mapping in property
-            options.dict[:property] = inout_map_property(options[:property],
-                options[:partition], options[:blocks], options[:n])
-
-            # =================
-            # Property checking
-            # =================
-            info("Property Checking...")
-            tic()
-            answer = check_property(system, options)
-            info("- Total")
-            tocc()
-
-            if answer == 0
-                info("The property is satisfied!")
-                return CheckSolution(true, -1, options)
-            else
-                info("The property may be violated at index $answer," *
-                    " (time point $(answer * options[:δ]))!")
-                return CheckSolution(false, answer, options)
-            end
-        else
-            error("unsupported mode $(options[:mode])")
-        end # mode
-    else
-        error("unsupported algorithm $algorithm")
-    end # algorithm
-end
-
-"""
-    project(Rsets, options)
-
-Projects a sequence of sets according to the settings defined in the options.
-
-### Input
-
-- `Rsets`   -- solution of a reachability problem
-- `options` -- options structure
-
-### Notes
-
-A projection matrix can be given in the options structure, or passed as a
-dictionary entry.
-"""
-function project(Rsets::Vector{<:ReachSet}, options::Options)
-    plot_vars = copy(options[:plot_vars])
-    for i in 1:length(plot_vars)
-        if plot_vars[i] != 0
-            plot_vars[i] = options[:inout_map][plot_vars[i]]
-        end
+    # coordinate transformation
+    options[:transformation_matrix] = nothing
+    if options[:coordinate_transformation] != ""
+        info("Transformation...")
+        tic()
+        (system, transformation_matrix) =
+            transform(system, options[:coordinate_transformation])
+        tocc()
+        options[:transformation_matrix] = transformation_matrix
     end
-    reduced_n = sum(x -> x != 0, options[:inout_map])
-    output_function = !options[:project_reachset]
-    RsetsProj = project_reach(Rsets, plot_vars, reduced_n, options)
+
+    post(op, system, options)
 end
 
-project(reach_sol::AbstractSolution) = project(reach_sol.Xk, reach_sol.options)
-
-project(Rsets::Vector{<:ReachSet}, options::Pair{Symbol,<:Any}...) =
-    project(Rsets, Options(Dict{Symbol,Any}(options)))
-
 """
-    solve(HS::HybridSystem,
-          X0::LazySet,
+    solve(system::InitialValueProblem{<:HybridSystem},
           options::Options)::AbstractSolution
 
 Interface to reachability algorithms for a hybrid system PWA dynamics.
 
 ### Input
 
-- `HS`      -- hybrid system
-- `X0`      -- initial set
+- `system`  -- hybrid system
 - `options` -- options for solving the problem
-
-### Notes
-
-The current implementation requires that you have loaded the `Polyhedra`
-library, because some concrete operations between polytopes are used.
-
-Currently, the following simplifying assumptions are made:
-
-- the starting state (for which `X0` is given) correspond to the first location
-  in the automaton
-- source invariants, target invariants and guards are polytopes in constraint
-  representation
-
-### Algorithm
-
-The algorithm is based on [Flowpipe-Guard Intersection for Reachability
-Computations with Support Functions](
-http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-function solve(HS::HybridSystem,
-               X0::LazySet{N},
-               options_input::Options)::AbstractSolution where {N}
-    @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
-            "'Polyhedra' to be loaded"
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+               options::Options)::AbstractSolution where {N}
+    opC, opD = default_operator(system)
+    return solve(system, options, opC, opD)
+end
 
-    options, time_horizon, max_jumps, delete_N = init_hybrid!(HS, options_input)
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+               options_input::Options,
+               opC::ContinuousPost,
+               opD::DiscretePost
+              )::AbstractSolution where {N}
+    HS = system.s
+    X0 = system.x0
+    delete_N = !haskey(options_input.dict, :N)
+    options = init(opD, HS, options_input)
+    time_horizon = options[:T]
+    max_jumps = options[:max_jumps]
 
     #TODO get initial location. For now we assume that it is the first location
     # waiting_list entries:
@@ -201,13 +111,15 @@ function solve(HS::HybridSystem,
     # - (set of) continuous-time reach sets
     # - number of previous jumps
     waiting_list = [(1, ReachSet{LazySet{N}, N}(X0, zero(N), zero(N)), 0)]
+
     # passed_list maps the (discrete) location to the (set of) continuous-time
     # reach sets
     passed_list = Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS))
+
     Rsets = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))
-        cur_loc_id, X0, jumps = pop!(waiting_list)
-        cur_loc = HS.modes[cur_loc_id]
+        loc_id, X0, jumps = pop!(waiting_list)
+        loc = HS.modes[loc_id]
 
         # compute reach tube
         options_copy = Options(copy(options.dict))
@@ -224,20 +136,18 @@ function solve(HS::HybridSystem,
         if haskey(options_copy.dict, :blocks)
             delete!(options_copy.dict, :blocks)
         end
-        reach_tube =
-            solve(ContinuousSystem(cur_loc.A, X0.X, cur_loc.U), options_copy)
+        reach_tube = solve(ContinuousSystem(loc.A, X0.X, loc.U),
+                           options_copy,
+                           op=opC)
 
-        # take intersection with source invariant
-        reach_tube_in_invariant =
-            intersect_reach_tube_invariant(reach_tube.Xk, X0, cur_loc.X, N)
-        append!(Rsets, reach_tube_in_invariant)
+        tube⋂inv = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+                             [X0.t_start, X0.t_end])
 
         if jumps == max_jumps
             continue
         end
 
-        discrete_post!(waiting_list, passed_list, HS, cur_loc_id,
-            reach_tube_in_invariant, jumps, N)
+        post(opD, system, waiting_list, passed_list, loc_id, tube⋂inv, jumps)
     end
 
     # Projection
@@ -250,77 +160,4 @@ function solve(HS::HybridSystem,
         RsetsProj = Rsets
     end
     return ReachSolution(RsetsProj, options)
-end
-
-function intersect_reach_tube_invariant(reach_tube, X0, invariant, N)
-    # TODO temporary conversion to HPolytope
-    @assert invariant isa HalfSpace
-    invariant = HPolytope([invariant])
-
-    # TODO First check for empty intersection, which can be more efficient.
-    #      However, we need to make sure that the emptiness check does not just
-    #      compute the concrete intersection; otherwise, we would do the work
-    #      twice. This is currently the case for 'Polyhedra' polytopes.
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
-    for reach_set in reach_tube
-        rs = reach_set.X
-        # TODO temporary workaround for 1D sets
-        if dim(rs) == 1
-            reach_tube = VPolytope(vertices_list(
-                Approximations.overapproximate(rs, LazySets.Interval)))
-        # TODO offer a lazy intersection here
-        # TODO offer more options instead of taking the VPolytope intersection
-        elseif rs isa CartesianProductArray
-            reach_tube = VPolytope(vertices_list(rs))
-        else
-            error("unsupported set type for reach tube: $(typeof(rs))")
-        end
-        intersect = intersection(invariant, reach_tube)
-        if isempty(intersect)
-            break
-        end
-        push!(intersections, ReachSet{LazySet{N}, N}(intersect,
-            reach_set.t_start + X0.t_start, reach_set.t_end + X0.t_end))
-    end
-    return intersections
-end
-
-# ===========================================================================
-# Bogomolov, Forets, Frehse, Podelski, Schilling, Viry 2018
-# ===========================================================================
-function init_BFFPSV18!(system, options_input)
-    # state dimension for (purely continuous or purely discrete systems)
-    options_input.dict[:n] = statedim(system)
-
-    # solver-specific options (adds default values for unspecified options)
-    options = validate_solver_options_and_add_default_values!(options_input)
-
-    # Input -> Output variable mapping
-    options.dict[:inout_map] =
-        inout_map_reach(options[:partition], options[:blocks], options[:n])
-
-    if options[:project_reachset]
-        options[:output_function] = nothing
-    else
-        options[:output_function] = options[:projection_matrix]
-    end
-
-    return options
-end
-
-function init_hybrid!(system, options_input)
-    delete_N = !haskey(options_input.dict, :N)
-    options_input.dict[:n] = statedim(system, 1)
-
-    # solver-specific options (adds default values for unspecified options)
-    options = validate_solver_options_and_add_default_values!(options_input)
-
-    # Input -> Output variable mapping
-    options.dict[:inout_map] =
-        inout_map_reach(options[:partition], options[:blocks], options[:n])
-
-    time_horizon = options[:T]
-    max_jumps = options[:max_jumps]
-
-    return options, time_horizon, max_jumps, delete_N
 end

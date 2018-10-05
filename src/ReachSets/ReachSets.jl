@@ -91,7 +91,8 @@ import LazySets.Approximations:symmetric_interval_hull,
                                overapproximate,
                                box_approximation
 import Reachability:tocc,
-                    Options
+                    Options,
+                    validate_solver_options_and_add_default_values!
 
 # ========================================
 # Discretize and compute bloating factors
@@ -163,6 +164,20 @@ include("ReachSolution.jl")
 export ReachSet,
        ReachSolution
 
+# ===============
+# Post operators
+# ===============
+include("PostOperator.jl")
+include("ContinuousPost/ContinuousPost.jl")
+include("DiscretePost/DiscretePost.jl")
+
+export PostOperator,
+       ContinuousPost,
+       DiscretePost,
+       init,
+       post,
+       tube⋂inv!
+
 # ========================
 # Reachability Algorithms
 # ========================
@@ -182,9 +197,13 @@ push!(available_algorithms,
 
 export available_algorithms
 
-include("DiscretePost/discrete_post.jl")
+include("ContinuousPost/BFFPSV18.jl")
 
-export discrete_post!
+export BFFPSV18
+
+include("DiscretePost/TextbookDiscretePost.jl")
+
+export TextbookDiscretePost
 
 # =========================
 # External reach interface
@@ -198,6 +217,7 @@ export reach
 # ==============================================
 include("project_reach.jl")
 
-export project_reach
+export project_reach,
+       project
 
 end # module ReachSets
