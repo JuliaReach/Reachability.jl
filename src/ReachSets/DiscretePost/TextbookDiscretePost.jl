@@ -60,19 +60,19 @@ function tube⋂inv!(op::TextbookDiscretePost,
         rs = reach_set.X
         # TODO temporary workaround for 1D sets
         if dim(rs) == 1
-            reach_tube = VPolytope(vertices_list(
+            rs_converted = VPolytope(vertices_list(
                 Approximations.overapproximate(rs, LazySets.Interval)))
         # TODO offer more options instead of taking the VPolytope intersection
         elseif rs isa CartesianProductArray
-            reach_tube = VPolytope(vertices_list(rs))
+            rs_converted = VPolytope(vertices_list(rs))
         else
             error("unsupported set type for reach tube: $(typeof(rs))")
         end
-        intersect = intersection(invariant, reach_tube)
-        if isempty(intersect)
+        R⋂I = intersection(invariant, rs_converted)
+        if isempty(R⋂I)
             break
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(intersect,
+        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
     end
@@ -112,21 +112,22 @@ function post(op::TextbookDiscretePost,
         sizehint!(post_jump, length(tube⋂inv))
         for reach_set in tube⋂inv
             # check intersection with guard
-            cap = intersection(guard, VPolytope(vertices_list(reach_set.X)))
-            if isempty(cap)
+            R⋂G = intersection(guard, VPolytope(vertices_list(reach_set.X)))
+            if isempty(R⋂G)
                 continue
             end
             # apply assignment
-            asgn = linear_map(assignment, cap)
+            A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
             # intersect with target invariant
-            res = intersection(target_invariant, asgn)
-            if isempty(res)
+            A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
+            if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(res, reach_set.t_start,
-                                                      reach_set.t_end))
+            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
+                                                     reach_set.t_start,
+                                                     reach_set.t_end))
         end
 
         if (isempty(post_jump))
