@@ -44,9 +44,12 @@ function tube⋂inv!(op::TextbookDiscretePost,
                   ) where {N}
     # take intersection with source invariant
 
-    # TODO temporary conversion to HPolytope
-    @assert invariant isa HalfSpace
-    invariant = HPolytope([invariant])
+    if invariant isa HalfSpace
+        # TODO temporary conversion to HPolytope
+        invariant = HPolytope([invariant])
+    else
+        @assert invariant isa HPolytope
+    end
 
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
