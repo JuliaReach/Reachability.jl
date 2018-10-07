@@ -114,7 +114,9 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
 
     # passed_list maps the (discrete) location to the (set of) continuous-time
     # reach sets
-    passed_list = Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS))
+    passed_list = options[:fixpoint_check] ?
+        Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS)) :
+        nothing
 
     Rsets = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))

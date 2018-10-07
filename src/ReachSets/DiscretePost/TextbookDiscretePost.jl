@@ -136,10 +136,13 @@ function post(op::TextbookDiscretePost,
 
         # push new sets after jump (unless a fixpoint is detected)
         for reach_set in clustered
-            if !isfixpoint(op, reach_set, passed_list, target_loc_id)
+            if passed_list != nothing
+                if isfixpoint(op, reach_set, passed_list, target_loc_id)
+                    continue
+                end
                 push!(passed_list[target_loc_id], reach_set)
-                push!(waiting_list, (target(HS, trans), reach_set, jumps))
             end
+            push!(waiting_list, (target(HS, trans), reach_set, jumps))
         end
     end
 end
