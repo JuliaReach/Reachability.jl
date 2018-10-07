@@ -13,32 +13,33 @@ a = LightAutomaton(2);
 add_transition!(a, 1, 2, 1);
 add_transition!(a, 2, 1, 2);
 
-# Mode off
-A = hcat(-c_a);
-B = hcat(0.0);
-X = HalfSpace([-1.0], -18.0); # x >= 18
-U = Singleton([0.0]);
-m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
-
 # Mode on
 A = hcat(-c_a);
 B = hcat(30.);
 X = HalfSpace([1.0], 22.0); # x <= 22
 U = Singleton([c_a]);
+m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
+
+# Mode off
+A = hcat(-c_a);
+B = hcat(0.0);
+X = HalfSpace([-1.0], -18.0); # x >= 18
+U = Singleton([0.0]);
 m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Transition from on to off
-A_off = hcat(1.0);
-X_off = HPolytope([HalfSpace([-1.0], -21.0)]); # x >= 21
+A = hcat(1.0);
+X = HPolytope([HalfSpace([-1.0], -21.0)]); # x >= 21
+t_on2off = ConstrainedLinearDiscreteSystem(A, X)
 
 # Transition from off to on
-A_on = hcat(1.0);
-X_on = HPolytope([HalfSpace([1.0], 19.0)]); # x <= 19
+A = hcat(1.0);
+X = HPolytope([HalfSpace([1.0], 19.0)]); # x <= 19
+t_off2on = ConstrainedLinearDiscreteSystem(A, X)
 
-m = [m_off, m_on];
+m = [m_on, m_off];
 
-r = [ConstrainedLinearDiscreteSystem(A_on, X_on),
-     ConstrainedLinearDiscreteSystem(A_off, X_off)];
+r = [t_off2on, t_on2off];
 
 # Switchings
 s = [HybridSystems.AutonomousSwitching()];
