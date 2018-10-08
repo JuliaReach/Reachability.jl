@@ -3,7 +3,10 @@
 # ==============================================================================
 
 struct LazyTextbookDiscretePost <: DiscretePost
+    options::Options
 end
+
+LazyTextbookDiscretePost() = LazyTextbookDiscretePost(Options())
 
 function init(op::LazyTextbookDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -14,6 +17,11 @@ function init(op::LazyTextbookDiscretePost, system, options_input)
     # Input -> Output variable mapping
     options.dict[:inout_map] =
         inout_map_reach(options[:partition], options[:blocks], options[:n])
+
+    # set up operator-specific options
+    # TODO temporarily use box approximation
+    @assert !haskey(op.options.dict, :overapproximation)
+    op.options.dict[:overapproximation] = Hyperrectangle
 
     return options
 end
@@ -70,12 +78,17 @@ function post(op::LazyTextbookDiscretePost,
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
-            if isempty(A⌜R⋂G⌟⋂I)
+            # overapproximate final set
+            res = overapproximate(A⌜R⋂G⌟⋂I, op.options[:overapproximation];
+                                  upper_bound=true)
+
+            # check if the final set is empty
+            if isempty(res)
                 continue
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
+            push!(post_jump, ReachSet{LazySet{N}, N}(res,
                                                      reach_set.t_start,
                                                      reach_set.t_end))
         end
