@@ -197,6 +197,7 @@ Supported options:
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 - `:n`             -- system's dimension
+- `:init_locs`             -- array of initial_locations
 
 Internal options (inputs are ignored or even illegal):
 
@@ -245,6 +246,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], 5)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:init_locs], Int64[])
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
@@ -398,6 +400,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :n
             expected_type = Int
             domain_constraints = (v::Int  ->  v > 0)
+        elseif key == :init_locs
+            expected_type = Vector{Int}
         else
             error(get_unrecognized_key_message(key))
         end

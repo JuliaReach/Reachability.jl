@@ -110,7 +110,20 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list = [(1, ReachSet{LazySet{N}, N}(X0, zero(N), zero(N)), 0)]
+    initial_locations = length(options[:init_locs]) > 0 ? options[:init_locs] : collect(states(HS))
+
+    waiting_list = []
+    for modeId in initial_locations
+        mode = HS.modes[modeId]
+        source_invariant = mode.X
+
+        @assert source_invariant isa HalfSpace
+        source_invariant = HPolytope([source_invariant])
+        loc_x0sets = intersection(source_invariant, X0)
+
+        push!(waiting_list,(modeId, ReachSet{LazySet{N}, N}(loc_x0sets, zero(N), zero(N)), 0))
+    end
+
 
     # passed_list maps the (discrete) location to the (set of) continuous-time
     # reach sets
