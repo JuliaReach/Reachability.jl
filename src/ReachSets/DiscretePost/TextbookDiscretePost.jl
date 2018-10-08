@@ -100,9 +100,12 @@ function post(op::TextbookDiscretePost,
         guard = trans_annot.X
         assignment = trans_annot.A
 
-        # TODO temporary conversion to HPolytope
-        @assert target_invariant isa HalfSpace
-        target_invariant = HPolytope([target_invariant])
+        if target_invariant isa HalfSpace
+            # TODO temporary conversion to HPolytope
+            target_invariant = HPolytope([target_invariant])
+        else
+            @assert target_invariant isa HPolytope
+        end
         @assert guard isa HPolytope
 
         # perform jumps
