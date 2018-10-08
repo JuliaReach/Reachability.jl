@@ -39,7 +39,7 @@ t_off2on = ConstrainedLinearDiscreteSystem(A, X)
 
 m = [m_on, m_off];
 
-r = [t_off2on, t_on2off];
+r = [t_on2off, t_off2on];
 
 # Switchings
 s = [HybridSystems.AutonomousSwitching()];

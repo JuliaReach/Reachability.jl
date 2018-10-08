@@ -96,8 +96,9 @@ function post(op::TextbookDiscretePost,
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
         target_invariant = target_loc.X
-        guard = HS.resetmaps[target_loc_id].X
-        assignment = HS.resetmaps[target_loc_id].A
+        trans_annot = HS.resetmaps[symbol(HS, trans)]
+        guard = trans_annot.X
+        assignment = trans_annot.A
 
         # TODO temporary conversion to HPolytope
         @assert target_invariant isa HalfSpace
