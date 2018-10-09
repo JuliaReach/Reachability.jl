@@ -117,9 +117,15 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
         mode = HS.modes[modeId]
         source_invariant = mode.X
 
-        @assert source_invariant isa HalfSpace
-        source_invariant = HPolytope([source_invariant])
+        if source_invariant isa HalfSpace
+            # TODO temporary conversion to HPolytope
+            source_invariant = HPolytope([source_invariant])
+        else
+            @assert source_invariant isa HPolytope
+        end
+
         loc_x0sets = intersection(source_invariant, X0)
+        print(50)
 
         push!(waiting_list,(modeId, ReachSet{LazySet{N}, N}(loc_x0sets, zero(N), zero(N)), 0))
     end
