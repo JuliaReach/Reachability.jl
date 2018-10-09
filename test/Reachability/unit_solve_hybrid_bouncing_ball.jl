@@ -37,4 +37,8 @@ input_options = Options(:mode=>"reach");
 problem_options = Options(:vars=>[1,2], :T=>5.0, :δ=>0.1, :plot_vars=>[1, 2],
                           :max_jumps=>1, :verbosity=>1);
 options_input = merge(problem_options, input_options);
+options_copy = Options(copy(options_input.dict))
 sol = solve(system, options_input);
+
+sol = solve(system, options_copy, Reachability.BFFPSV18(),
+            Reachability.ReachSets.LazyTextbookDiscretePost());
