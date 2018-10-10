@@ -25,7 +25,7 @@ function project_reach(
     # parse input
     assert(length(vars) == 2)
     if n == 2
-        project_2d_reach(Rsets, vars, n, options)
+        return project_2d_reach(Rsets, vars, n, options)
     end
 
     # first projection dimension
