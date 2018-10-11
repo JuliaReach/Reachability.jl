@@ -90,16 +90,26 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
                options::Options)::AbstractSolution where {N}
     opC, opD = default_operator(system)
+    HS = system.s
+    X0 = system.x0
+    inits = [(n, X0) for n in states(HS)]
+    system = InitialValueProblem(HS, inits)
     return solve(system, options, opC, opD)
 end
 
-function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+function solve(system::InitialValueProblem{<:HybridSystem, <:Array{<:Tuple{Int64,<:LazySets.LazySet{N}},1}},
+               options::Options)::AbstractSolution where {N}
+    opC, opD = default_operator(system)
+    return solve(system, options, opC, opD)
+end
+
+function solve(system::InitialValueProblem{<:HybridSystem, <:Array{<:Tuple{Int64,<:LazySets.LazySet{N}},1}},
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost
               )::AbstractSolution where {N}
     HS = system.s
-    X0 = system.x0
+    init_sets = system.x0
     delete_N = !haskey(options_input.dict, :N)
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
@@ -110,24 +120,20 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    inits = length(options[:init]) > 0 ? options[:init] : [(n, X0) for n in states(HS)]
 
-    waiting_list = []
-    for (modeId, x0) in inits
+    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}}()
+    for (modeId, x0) in init_sets
         mode = HS.modes[modeId]
         source_invariant = mode.X
 
         if source_invariant isa HalfSpace
-            # TODO temporary conversion to HPolytope
             source_invariant = HPolytope([source_invariant])
-        else
-            @assert source_invariant isa HPolytope
         end
 
-        loc_x0sets = intersection(source_invariant, x0)
+        loc_x0set = intersection(source_invariant, x0)
 
-        if !isempty(loc_x0sets)
-            push!(waiting_list,(modeId, ReachSet{LazySet{N}, N}(loc_x0sets, zero(N), zero(N)), 0))
+        if !isempty(loc_x0set)
+            push!(waiting_list,(modeId, ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
         end
     end
 
@@ -169,7 +175,7 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
             continue
         end
 
-        post(opD, system, waiting_list, passed_list, loc_id, tube⋂inv, jumps)
+        post(opD, HS, waiting_list, passed_list, loc_id, tube⋂inv, jumps)
     end
 
     # Projection

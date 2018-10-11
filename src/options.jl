@@ -246,7 +246,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], 5)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:init], Tuple{Int64,LazySets.LazySet{Float64}}[])
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
@@ -400,8 +399,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :n
             expected_type = Int
             domain_constraints = (v::Int  ->  v > 0)
-        elseif key == :init
-            expected_type = Vector{<:Tuple{Int64,<:LazySets.LazySet{<:Real}}}
         else
             error(get_unrecognized_key_message(key))
         end
