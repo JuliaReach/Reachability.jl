@@ -81,14 +81,13 @@ function tube⋂inv!(op::TextbookDiscretePost,
 end
 
 function post(op::TextbookDiscretePost,
-              system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
-              waiting_list,
+              HS::HybridSystem,
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
               jumps
              ) where {N}
-    HS = system.s
     jumps += 1
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")

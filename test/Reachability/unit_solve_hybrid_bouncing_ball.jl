@@ -31,7 +31,10 @@ HS = HybridSystem(a, m, r, s);
 # initial condition in mode 1
 X0 = Hyperrectangle(low=[10, 0.0], high=[10.2, 0.0]);
 
-system = InitialValueProblem(HS, X0);
+inits = [(1,X0)]
+
+
+system = InitialValueProblem(HS, inits);
 input_options = Options(:mode=>"reach");
 
 problem_options = Options(:vars=>[1,2], :T=>5.0, :δ=>0.1, :plot_vars=>[1, 2],
