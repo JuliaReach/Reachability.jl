@@ -55,8 +55,15 @@ s = solve(ContinuousSystem(A, X0), :T=>0.1, :mode=>"check",
 # ===============================
 # Test reachability options
 # ===============================
+
+# template directions (eg. :box, :oct, :octbox)
+s = solve(ContinuousSystem(A, X0), :T=>0.1, :vars=>[1,3],
+          :template_directions => :oct,
+          :partition=>[1:4], :ε_proj=>1e-5)
+
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
           :vars=>[1,3], :lazy_sih=>true);
+
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4],
           :vars=>[1,3], :lazy_sih=>false);
 
