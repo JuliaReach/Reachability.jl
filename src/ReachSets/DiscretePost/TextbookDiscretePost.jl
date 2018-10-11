@@ -51,14 +51,13 @@ function tube⋂inv!(op::TextbookDiscretePost,
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     for reach_set in reach_tube
         rs = reach_set.X
-        if dim(rs) == 1
-            # TODO temporary workaround for 1D sets
-            rs_converted = HPolytope(constraints_list(
-                Approximations.overapproximate(rs, LazySets.Interval)))
-        elseif rs isa CartesianProductArray
-            rs_converted = HPolytope(constraints_list(rs))
+        @assert rs isa CartesianProductArray
+        if length(array(rs)) == 1
+            # TODO workaround for lazy X0
+            rs_converted = Approximations.overapproximate(rs,
+                Approximations.BoxDirections(dim(rs)))
         else
-            error("unsupported set type for reach tube: $(typeof(rs))")
+            rs_converted = HPolytope(constraints_list(rs))
         end
         R⋂I = intersection(invariant, rs_converted)
         if isempty(R⋂I)
