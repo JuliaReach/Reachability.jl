@@ -97,13 +97,13 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
     return solve(system, options, opC, opD)
 end
 
-function solve(system::InitialValueProblem{<:HybridSystem, <:Array{<:Tuple{Int64,<:LazySets.LazySet{N}},1}},
+function solve(system::InitialValueProblem{<:HybridSystem, <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options::Options)::AbstractSolution where {N}
     opC, opD = default_operator(system)
     return solve(system, options, opC, opD)
 end
 
-function solve(system::InitialValueProblem{<:HybridSystem, <:Array{<:Tuple{Int64,<:LazySets.LazySet{N}},1}},
+function solve(system::InitialValueProblem{<:HybridSystem, <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost

@@ -197,7 +197,6 @@ Supported options:
 - `:plot_vars`     -- variables for projection and plotting;
                       alias: `:output_variables`
 - `:n`             -- system's dimension
-- `:init`             -- map of (initial_locations, initial_set)
 
 Internal options (inputs are ignored or even illegal):
 
