@@ -88,26 +88,42 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 - `options` -- options for solving the problem
 """
 function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
-               options::Options)::AbstractSolution where {N}
-    opC, opD = default_operator(system)
+               options::Options)::AbstractSolution where N<:Real
+    sys_new = init_states_sys_from_init_set_sys(system)
+    opC, opD = default_operator(sys_new)
+    return solve(sys_new, options, opC, opD)
+end
+
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+               options::Options,
+               opC::ContinuousPost,
+               opD::DiscretePost
+              )::AbstractSolution where N<:Real
+    sys_new = init_states_sys_from_init_set_sys(system)
+    return solve(sys_new, options, opC, opD)
+end
+
+function init_states_sys_from_init_set_sys(
+        system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
     HS = system.s
     X0 = system.x0
     inits = [(n, X0) for n in states(HS)]
-    system = InitialValueProblem(HS, inits)
-    return solve(system, options, opC, opD)
+    return InitialValueProblem(HS, inits)
 end
 
-function solve(system::InitialValueProblem{<:HybridSystem, <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
-               options::Options)::AbstractSolution where {N}
+function solve(system::InitialValueProblem{<:HybridSystem,
+                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+               options::Options)::AbstractSolution where N<:Real
     opC, opD = default_operator(system)
     return solve(system, options, opC, opD)
 end
 
-function solve(system::InitialValueProblem{<:HybridSystem, <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+function solve(system::InitialValueProblem{<:HybridSystem,
+                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost
-              )::AbstractSolution where {N}
+              )::AbstractSolution where N<:Real
     HS = system.s
     init_sets = system.x0
     delete_N = !haskey(options_input.dict, :N)
@@ -115,12 +131,10 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:Vector{<:Tuple{Int6
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
 
-    #TODO get initial location. For now we assume that it is the first location
     # waiting_list entries:
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-
     waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}}()
     for (modeId, x0) in init_sets
         mode = HS.modes[modeId]
