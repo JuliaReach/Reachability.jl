@@ -4,7 +4,7 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
-using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems
+using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems, Compat
 @reexport using LazySets
 
 include("logging.jl")
