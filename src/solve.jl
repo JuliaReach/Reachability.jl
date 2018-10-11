@@ -179,6 +179,9 @@ function solve(system::InitialValueProblem{<:HybridSystem,
         if haskey(options_copy.dict, :blocks)
             delete!(options_copy.dict, :blocks)
         end
+        if haskey(options.dict, :loc2vars)
+            options_copy.dict[:vars] = options[:loc2vars][loc_id]
+        end
         reach_tube = solve(ContinuousSystem(loc.A, X0.X, loc.U),
                            options_copy,
                            op=opC)
