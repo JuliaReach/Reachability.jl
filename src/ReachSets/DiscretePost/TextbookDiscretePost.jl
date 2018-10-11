@@ -44,13 +44,6 @@ function tube⋂inv!(op::TextbookDiscretePost,
                   ) where {N}
     # take intersection with source invariant
 
-    if invariant isa HalfSpace
-        # TODO temporary conversion to HPolytope
-        invariant = HPolytope([invariant])
-    else
-        @assert invariant isa HPolytope
-    end
-
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
@@ -58,13 +51,12 @@ function tube⋂inv!(op::TextbookDiscretePost,
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     for reach_set in reach_tube
         rs = reach_set.X
-        # TODO temporary workaround for 1D sets
         if dim(rs) == 1
-            rs_converted = VPolytope(vertices_list(
+            # TODO temporary workaround for 1D sets
+            rs_converted = HPolytope(constraints_list(
                 Approximations.overapproximate(rs, LazySets.Interval)))
-        # TODO offer more options instead of taking the VPolytope intersection
         elseif rs isa CartesianProductArray
-            rs_converted = VPolytope(vertices_list(rs))
+            rs_converted = HPolytope(constraints_list(rs))
         else
             error("unsupported set type for reach tube: $(typeof(rs))")
         end
@@ -98,25 +90,18 @@ function post(op::TextbookDiscretePost,
         guard = trans_annot.X
         assignment = trans_annot.A
 
-        if target_invariant isa HalfSpace
-            # TODO temporary conversion to HPolytope
-            target_invariant = HPolytope([target_invariant])
-        else
-            @assert target_invariant isa HPolytope
-        end
-        @assert guard isa HPolytope
-
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, length(tube⋂inv))
         for reach_set in tube⋂inv
             # check intersection with guard
-            R⋂G = intersection(guard, VPolytope(vertices_list(reach_set.X)))
+            R⋂G = intersection(guard, HPolytope(constraints_list(reach_set.X)))
             if isempty(R⋂G)
                 continue
             end
             # apply assignment
-            A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
+            # TODO converting to HPolytope; this should be handled automatically
+            A⌜R⋂G⌟ = linear_map(assignment, R⋂G, output_type=HPolytope)
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
             if isempty(A⌜R⋂G⌟⋂I)
