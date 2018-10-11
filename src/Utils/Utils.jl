@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets
+using LazySets, Compat
 
 import Reachability.tocc
 
