@@ -17,12 +17,17 @@ The `vars` argument is required even if the optional argument
 a dimension from this variable.
 """
 function project_reach(
-        Rsets::Vector{<:ReachSet{<:LazySets.CartesianProductArray{numeric_type}}},
+        Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
+
     # parse input
     assert(length(vars) == 2)
+    if n == 2
+        return project_2d_reach(Rsets, vars, n, options)
+    end
+
     # first projection dimension
     xaxis = vars[1]
     if xaxis == 0
@@ -120,13 +125,12 @@ This array contains the collection of reach sets in 2D.
 It is assumed that the variable given in vars belongs to the block computed
 in the sequence of 2D sets `Rsets`.
 """
-function project_reach(
+function project_2d_reach(
         Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
-    # parse input
-    assert(length(vars) == 2)
+
     # first projection dimension
     xaxis = vars[1]
     if xaxis == 0
