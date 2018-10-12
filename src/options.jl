@@ -89,7 +89,7 @@ This function makes a copy of the dictionary and does not modify its first
 argument.
 """
 function merge(op1::Options, opn::Options...)::Options
-    merg!(copy(op1), opn...)
+    merge!(copy(op1), opn...)
 end
 
 """
