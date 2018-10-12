@@ -1,6 +1,6 @@
-import Base: merge, getindex, keys, values, setindex!
+import Base: merge, merge!, getindex, keys, values, setindex!, copy
 
-export Options, merge, getindex
+export Options, merge, merge!, getindex
 
 available_keywords = Set{Symbol}([])
 
@@ -78,8 +78,37 @@ for conflicting keys a later object overrides a previous value.
 
 - `op1` -- first options object
 - `opn` -- list of options objects
+
+### Output
+
+An `Options` object.
+
+### Notes
+
+This function makes a copy of the dictionary and does not modify its first
+argument.
 """
 function merge(op1::Options, opn::Options...)::Options
+    merge!(copy(op1), opn...)
+end
+
+"""
+    merge!(op1, opn)
+
+Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
+Values are inserted in the order in which the function arguments occur, i.e.,
+for conflicting keys a later object overrides a previous value.
+
+### Input
+
+- `op1` -- first options object
+- `opn` -- list of options objects
+
+### Output
+
+An `Options` object.
+"""
+function merge!(op1::Options, opn::Options...)::Options
     dict = Dict{Symbol,Any}(op1.dict)
     for i in 1 : length(opn)
         merge!(dict, opn[i].dict)
@@ -125,6 +154,21 @@ julia> op[:T] = 1.0
 ```
 """
 setindex!(op::Options, value, key) = setindex!(op.dict, value, key)
+
+"""
+    copy(op)
+
+Create a shallow copy of the given options.
+
+### Input
+
+- `op`    -- options object
+
+### Output
+
+A new `Options` instance whose dictionary is a copy of `op`'s dictionary.
+"""
+copy(op::Options) = Options(copy(op.dict))
 
 """
     validate_solver_options_and_add_default_values!(options)

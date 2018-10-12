@@ -91,7 +91,7 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
                options::Options)::AbstractSolution where N<:Real
     sys_new = init_states_sys_from_init_set_sys(system)
     opC, opD = default_operator(sys_new)
-    return solve(sys_new, options, opC, opD)
+    return solve!(sys_new, copy(options), opC, opD)
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
@@ -100,7 +100,7 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
                opD::DiscretePost
               )::AbstractSolution where N<:Real
     sys_new = init_states_sys_from_init_set_sys(system)
-    return solve(sys_new, options, opC, opD)
+    return solve!(sys_new, copy(options), opC, opD)
 end
 
 function init_states_sys_from_init_set_sys(
@@ -112,13 +112,22 @@ function init_states_sys_from_init_set_sys(
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem,
-                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
-               options::Options)::AbstractSolution where N<:Real
-    opC, opD = default_operator(system)
-    return solve(system, options, opC, opD)
+               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+               options::Options,
+               opC::ContinuousPost,
+               opD::DiscretePost
+              )::AbstractSolution where N<:Real
+    return solve!(system, copy(options), opC, opD)
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem,
+               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+               options::Options)::AbstractSolution where N<:Real
+    opC, opD = default_operator(system)
+    return solve!(system, copy(options), opC, opD)
+end
+
+function solve!(system::InitialValueProblem{<:HybridSystem,
                                 <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options_input::Options,
                opC::ContinuousPost,
