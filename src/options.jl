@@ -1,4 +1,4 @@
-import Base: merge, getindex, keys, values, setindex!, copy
+import Base: merge, merge!, getindex, keys, values, setindex!, copy
 
 export Options, merge, merge!, getindex
 
