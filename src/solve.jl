@@ -136,8 +136,9 @@ function solve(system::InitialValueProblem{<:HybridSystem,
     # - (set of) continuous-time reach sets
     # - number of previous jumps
     waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}}()
-    for (modeId, x0) in init_sets
-        mode = HS.modes[modeId]
+
+    for (loc_id, x0) in init_sets
+        mode = HS.modes[loc_id]
         source_invariant = mode.X
 
         # TODO temporary conversion
@@ -148,16 +149,15 @@ function solve(system::InitialValueProblem{<:HybridSystem,
         loc_x0set = intersection(source_invariant, x0)
 
         if !isempty(loc_x0set)
-            push!(waiting_list, (modeId,
+            push!(waiting_list, (loc_id,
                 ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
         end
     end
 
-
     # passed_list maps the (discrete) location to the (set of) continuous-time
     # reach sets
     passed_list = options[:fixpoint_check] ?
-        Vector{Vector{ReachSet{LazySet{N}, N}}}(nstates(HS)) :
+        Vector{Vector{ReachSet{LazySet{N}, N}}}(undef, nstates(HS)) :
         nothing
 
     Rsets = Vector{ReachSet{LazySet{N}, N}}()
@@ -183,6 +183,21 @@ function solve(system::InitialValueProblem{<:HybridSystem,
         reach_tube = solve(ContinuousSystem(loc.A, X0.X, loc.U),
                            options_copy,
                            op=opC)
+
+        # add the very first initial approximation
+        if passed_list != nothing &&
+                (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
+            reach_set = reach_tube.Xk[1]
+            # TODO For lazy X0 the fixpoint check is likely to fail, so we
+            # currently ignore that. In general, we want to add an
+            # *underapproximation*, which we currently do not support.
+            @assert reach_set.X isa CartesianProductArray
+            X0hat = array(reach_set.X)[1]
+            if !(X0hat isa ConvexHull)
+                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(reach_set.X,
+                    reach_set.t_start, reach_set.t_end)]
+            end
+        end
 
         tube⋂inv = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                              [X0.t_start, X0.t_end])
