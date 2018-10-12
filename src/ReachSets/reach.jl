@@ -73,13 +73,28 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
         tocc()
     end
 
+    # determine output function: linear map with the given matrix
+    output_function = options[:output_function] != nothing ?
+        (x -> options[:output_function] * x) :
+        nothing
+
+    # preallocate output vector
+    if output_function == nothing
+        res_type = ReachSet{
+            CartesianProductArray{numeric_type, LazySet{numeric_type}},
+            numeric_type}
+    else
+        res_type = ReachSet{Hyperrectangle{numeric_type}, numeric_type}
+    end
+    res = Vector{res_type}(N)
+
     # shortcut if only the initial set is required
     if N == 1
-        if length(blocks) == 1
-            return [Xhat0[blocks[1]]]
-        else
-            return Xhat0
-        end
+        res[1] = res_type(
+            CartesianProductArray{numeric_type,
+                                  LazySet{numeric_type}}(Xhat0[blocks]),
+            zero(numeric_type), options[:δ])
+        return res
     end
     push!(args, Xhat0)
 
@@ -151,22 +166,12 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # number of computed sets
     push!(args, N)
 
-    # output function: linear map with the given matrix
-    output_function = options[:output_function] != nothing ?
-        (x -> options[:output_function] * x) :
-        nothing
+    # output function
     push!(args, output_function)
 
-    # preallocate output vector and add mode-specific block(s) argument
+    # add mode-specific block(s) argument
     push!(args, blocks)
     push!(args, partition)
-    if output_function == nothing
-        res = Vector{ReachSet{
-            CartesianProductArray{numeric_type, LazySet{numeric_type}},
-            numeric_type}}(N)
-    else
-        res = Vector{ReachSet{Hyperrectangle{numeric_type}, numeric_type}}(N)
-    end
 
     # time step
     push!(args, options[:δ])
@@ -187,7 +192,6 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     tic()
     available_algorithms[algorithm_backend]["func"](args...)
     tocc()
-
 
     # return the result
     return res

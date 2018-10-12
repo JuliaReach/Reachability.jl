@@ -52,7 +52,8 @@ function post(op::LazyTextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
-              jumps
+              jumps,
+              options
              ) where {N}
     jumps += 1
     for trans in out_transitions(HS, source_loc_id)
@@ -98,7 +99,7 @@ function post(op::LazyTextbookDiscretePost,
         end
 
         # apply clustering
-        clustered = cluster(op, post_jump)
+        clustered = cluster(op, post_jump, options)
 
         # push new sets after jump (unless a fixpoint is detected)
         for reach_set in clustered

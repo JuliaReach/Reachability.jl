@@ -44,13 +44,6 @@ function tube⋂inv!(op::TextbookDiscretePost,
                   ) where {N}
     # take intersection with source invariant
 
-    if invariant isa HalfSpace
-        # TODO temporary conversion to HPolytope
-        invariant = HPolytope([invariant])
-    else
-        @assert invariant isa HPolytope
-    end
-
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
@@ -58,15 +51,13 @@ function tube⋂inv!(op::TextbookDiscretePost,
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     for reach_set in reach_tube
         rs = reach_set.X
-        # TODO temporary workaround for 1D sets
-        if dim(rs) == 1
-            rs_converted = VPolytope(vertices_list(
-                Approximations.overapproximate(rs, LazySets.Interval)))
-        # TODO offer more options instead of taking the VPolytope intersection
-        elseif rs isa CartesianProductArray
-            rs_converted = VPolytope(vertices_list(rs))
+        @assert rs isa CartesianProductArray
+        if length(array(rs)) == 1
+            # TODO workaround for lazy X0
+            rs_converted = Approximations.overapproximate(rs,
+                Approximations.BoxDirections(dim(rs)))
         else
-            error("unsupported set type for reach tube: $(typeof(rs))")
+            rs_converted = HPolytope(constraints_list(rs))
         end
         R⋂I = intersection(invariant, rs_converted)
         if isempty(R⋂I)
@@ -86,7 +77,8 @@ function post(op::TextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
-              jumps
+              jumps,
+              options
              ) where {N}
     jumps += 1
     for trans in out_transitions(HS, source_loc_id)
@@ -98,25 +90,18 @@ function post(op::TextbookDiscretePost,
         guard = trans_annot.X
         assignment = trans_annot.A
 
-        if target_invariant isa HalfSpace
-            # TODO temporary conversion to HPolytope
-            target_invariant = HPolytope([target_invariant])
-        else
-            @assert target_invariant isa HPolytope
-        end
-        @assert guard isa HPolytope
-
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, length(tube⋂inv))
         for reach_set in tube⋂inv
             # check intersection with guard
-            R⋂G = intersection(guard, VPolytope(vertices_list(reach_set.X)))
+            R⋂G = intersection(guard, HPolytope(constraints_list(reach_set.X)))
             if isempty(R⋂G)
                 continue
             end
             # apply assignment
-            A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
+            # TODO converting to HPolytope; this should be handled automatically
+            A⌜R⋂G⌟ = linear_map(assignment, R⋂G, output_type=HPolytope)
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
             if isempty(A⌜R⋂G⌟⋂I)
@@ -135,7 +120,7 @@ function post(op::TextbookDiscretePost,
         end
 
         # apply clustering
-        clustered = cluster(op, post_jump)
+        clustered = cluster(op, post_jump, options)
 
         # push new sets after jump (unless a fixpoint is detected)
         for reach_set in clustered

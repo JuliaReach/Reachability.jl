@@ -156,7 +156,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         loc_x0set = intersection(source_invariant, x0)
 
         if !isempty(loc_x0set)
-            push!(waiting_list,(modeId, ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
+            push!(waiting_list, (modeId,
+                ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
         end
     end
 
@@ -198,7 +199,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             continue
         end
 
-        post(opD, HS, waiting_list, passed_list, loc_id, tube⋂inv, jumps)
+        post(opD, HS, waiting_list, passed_list, loc_id, tube⋂inv, jumps,
+             options)
     end
 
     # Projection
