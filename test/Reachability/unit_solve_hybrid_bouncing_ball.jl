@@ -27,7 +27,7 @@ r = [ConstrainedLinearDiscreteSystem(A, X)];
 s = [HybridSystems.AutonomousSwitching()];
 
 HS = HybridSystem(a, m, r, s);
-§
+
 # initial condition in mode 1
 X0 = Hyperrectangle(low=[10, 0.0], high=[10.2, 0.0]);
 

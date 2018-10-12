@@ -91,7 +91,7 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
                options::Options)::AbstractSolution where N<:Real
     sys_new = init_states_sys_from_init_set_sys(system)
     opC, opD = default_operator(sys_new)
-    return solve(sys_new, copy(options), opC, opD)
+    return solve!(sys_new, copy(options), opC, opD)
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
