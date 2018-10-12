@@ -51,7 +51,9 @@ X0 = Singleton([18.]);
 
 system = InitialValueProblem(HS, X0);
 
-options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>[0, 1],
+plot_vars = [0, 1]
+
+options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
                           :max_jumps=>1, :verbosity=>1,
                           :project_reachset => false, :clustering=>:none);
 
