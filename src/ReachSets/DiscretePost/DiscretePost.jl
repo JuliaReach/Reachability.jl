@@ -13,9 +13,20 @@ tube⋂inv(op::DiscretePost, reach_tube, invariant, Rsets, start_interval)
 """
 abstract type DiscretePost <: PostOperator end
 
-function cluster(op::DiscretePost, reach_sets, options)
-    # TODO apply some clustering
-    return reach_sets
+function cluster(op::DiscretePost,
+                 reach_sets::Vector{ReachSet{LazySet{N}, N}},
+                 options::Options) where N<:Real
+    strategy = options[:clustering]
+    if strategy == :none
+        # no clustering
+        return reach_sets
+    elseif strategy == :chull
+        # cluster all sets in a convex hull
+        chull = ConvexHullArray(
+            LazySet{N}[reach_set.X for reach_set in reach_sets])
+        return [ReachSet{LazySet{N}, N}(chull, reach_sets[1].t_start,
+                reach_sets[end].t_end)]
+    end
 end
 
 function isfixpoint(op::DiscretePost,
