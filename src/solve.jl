@@ -140,8 +140,9 @@ function solve(system::InitialValueProblem{<:HybridSystem,
         mode = HS.modes[modeId]
         source_invariant = mode.X
 
+        # TODO temporary conversion
         if source_invariant isa HalfSpace
-            source_invariant = HPolytope([source_invariant])
+            source_invariant = HPolyhedron([source_invariant])
         end
 
         loc_x0set = intersection(source_invariant, x0)
