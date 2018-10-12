@@ -112,7 +112,16 @@ function init_states_sys_from_init_set_sys(
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem,
-                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+               options::Options,
+               opC::ContinuousPost,
+               opD::DiscretePost
+              )::AbstractSolution where N<:Real
+    return solve!(system, copy(options), opC, opD)
+end
+
+function solve(system::InitialValueProblem{<:HybridSystem,
+               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options::Options)::AbstractSolution where N<:Real
     opC, opD = default_operator(system)
     return solve!(system, copy(options), opC, opD)
