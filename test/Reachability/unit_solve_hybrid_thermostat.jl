@@ -53,9 +53,8 @@ system = InitialValueProblem(HS, X0);
 
 plot_vars = [0, 1]
 
-options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1, :plot_vars=>plot_vars,
-                          :max_jumps=>1, :verbosity=>1,
-                          :project_reachset => false, :clustering=>:none);
+options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1,
+                          :max_jumps=>1, :verbosity=>1, :clustering=>:none);
 
 # default algorithm
 sol = solve(system, options);
@@ -63,7 +62,3 @@ sol = solve(system, options);
 # specify lazy discrete post-operator algorithm
 sol = solve(system, options, Reachability.BFFPSV18(),
            Reachability.ReachSets.LazyTextbookDiscretePost());
-
-# work-around for 1D plot
-sol_proj = Reachability.ReachSolution(Reachability.project_reach(
-    sol.Xk, plot_vars, 1, sol.options), sol.options);
