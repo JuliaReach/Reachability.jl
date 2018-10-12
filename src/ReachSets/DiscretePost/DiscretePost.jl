@@ -13,7 +13,7 @@ tube⋂inv(op::DiscretePost, reach_tube, invariant, Rsets, start_interval)
 """
 abstract type DiscretePost <: PostOperator end
 
-function cluster(op::DiscretePost, reach_sets)
+function cluster(op::DiscretePost, reach_sets, options)
     # TODO apply some clustering
     return reach_sets
 end
