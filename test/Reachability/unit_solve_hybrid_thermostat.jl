@@ -57,6 +57,11 @@ options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1,
 # default algorithm
 sol = solve(system, options);
 
-# specify lazy discrete post-operator algorithm
+# specify lazy discrete post operator
 sol = solve(system, options, Reachability.BFFPSV18(),
-           Reachability.ReachSets.LazyTextbookDiscretePost());
+            Reachability.ReachSets.LazyTextbookDiscretePost());
+
+# specify overapproximating discrete post-operator algorithm
+sol = solve(system, options, Reachability.BFFPSV18(),
+            Reachability.ReachSets.ApproximatingDiscretePost(
+                Options(:overapproximation=>Hyperrectangle)));

@@ -38,9 +38,14 @@ system = InitialValueProblem(HS, inits);
 options = Options(:mode=>"reach", :vars=>[1,2], :T=>5.0, :δ=>0.1, :plot_vars=>[1, 2],
                   :max_jumps=>1, :verbosity=>1);
 
-# default algorithm
+# # default algorithm
 sol = solve(system, options);
 
-# specify lazy discrete post-operator algorithm
+# specify lazy discrete post operator
 sol = solve(system, options, Reachability.BFFPSV18(),
             Reachability.ReachSets.LazyTextbookDiscretePost());
+
+# specify overapproximating discrete post operator
+sol = solve(system, options, Reachability.BFFPSV18(),
+            Reachability.ReachSets.ApproximatingDiscretePost(
+                Options(:overapproximation=>Hyperrectangle)));
