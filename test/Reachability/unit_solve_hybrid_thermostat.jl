@@ -29,12 +29,12 @@ m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
 
 # Transition from on to off
 A = hcat(1.0);
-X = HPolytope([HalfSpace([-1.0], -21.0)]); # x >= 21
+X = HPolyhedron([HalfSpace([-1.0], -21.0)]); # x >= 21
 t_on2off = ConstrainedLinearDiscreteSystem(A, X)
 
 # Transition from off to on
 A = hcat(1.0);
-X = HPolytope([HalfSpace([1.0], 19.0)]); # x <= 19
+X = HPolyhedron([HalfSpace([1.0], 19.0)]); # x <= 19
 t_off2on = ConstrainedLinearDiscreteSystem(A, X)
 
 m = [m_on, m_off];

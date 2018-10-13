@@ -18,7 +18,7 @@ m = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
 
 # Reset maps
 A = [1.0 0.0; 0.0 -0.75];
-X = HPolytope([HalfSpace([0.0, 1.0], 0.0),   # v <= 0
+X = HPolyhedron([HalfSpace([0.0, 1.0], 0.0),   # v <= 0
                HalfSpace([-1.0, 0.0], 0.0),  # x >= 0
                HalfSpace([1.0, 0.0], 0.0)]); # x <= 0
 r = [ConstrainedLinearDiscreteSystem(A, X)];
