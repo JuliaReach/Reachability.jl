@@ -79,8 +79,7 @@ function post(op::LazyTextbookDiscretePost,
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
             # overapproximate final set
-            res = overapproximate(A⌜R⋂G⌟⋂I, op.options[:overapproximation];
-                                  upper_bound=true)
+            res = overapproximate(A⌜R⋂G⌟⋂I, op.options[:overapproximation])
 
             # check if the final set is empty
             if isempty(res)
