@@ -7,6 +7,8 @@ module Reachability
 using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems, Compat
 @reexport using LazySets
 
+import LazySets.use_precise_ρ
+
 include("logging.jl")
 include("Utils/Utils.jl")
 include("options.jl")
@@ -26,5 +28,12 @@ export project,
 
 include("solve.jl")
 include("plot_recipes.jl")
+
+# specify behavior of line search algorithm by dispatching on post operator
+global discrete_post_operator = TextbookDiscretePost()
+
+function use_precise_ρ(cap::Intersection{N})::Bool where N<:Real
+    return use_precise_ρ(discrete_post_operator, cap)
+end
 
 end # module
