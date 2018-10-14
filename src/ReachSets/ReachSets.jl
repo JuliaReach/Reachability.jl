@@ -204,9 +204,11 @@ export BFFPSV18
 
 include("DiscretePost/TextbookDiscretePost.jl")
 include("DiscretePost/LazyTextbookDiscretePost.jl")
+include("DiscretePost/ApproximatingDiscretePost.jl")
 
 export TextbookDiscretePost,
-       LazyTextbookDiscretePost
+       LazyTextbookDiscretePost,
+       ApproximatingDiscretePost
 
 # =========================
 # External reach interface
