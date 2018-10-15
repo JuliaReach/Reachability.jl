@@ -99,6 +99,12 @@ function post(op::ApproximatingDiscretePost,
         end
 
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
-            target_loc_id, jumps)
+            target_loc_id, target_invariant, jumps)
     end
+end
+
+function cluster_invariant_intersection(op::ApproximatingDiscretePost,
+                                        clustered, invariant, options)
+    return overapproximate(clustered ∩ invariant,
+                           get_overapproximation_option(op, options[:n]))
 end
