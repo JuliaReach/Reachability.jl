@@ -115,15 +115,3 @@ function post(op::ApproximatingDiscretePost,
         end
     end
 end
-
-function get_overapproximation_option(op::ApproximatingDiscretePost, n::Int)
-    oa = op.options.dict[:overapproximation]
-    if oa isa Symbol
-        dirs = Utils.interpret_template_direction_symbol(oa)
-        return dirs(n)
-    elseif oa <: LazySets.LazySet
-        return oa
-    else
-        error("received unknown :overapproximation option $oa")
-    end
-end
