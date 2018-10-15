@@ -31,7 +31,7 @@ function tube⋂inv!(op::ApproximatingDiscretePost,
                    invariant,
                    Rsets,
                    start_interval
-                  ) where {N}
+                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     dirs = get_overapproximation_option(op, dim(invariant))
     for reach_set in reach_tube
@@ -47,6 +47,7 @@ function tube⋂inv!(op::ApproximatingDiscretePost,
     end
 
     append!(Rsets, intersections)
+    return intersections
 end
 
 function post(op::ApproximatingDiscretePost,
