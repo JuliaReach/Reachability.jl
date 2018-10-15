@@ -94,21 +94,8 @@ function post(op::LazyTextbookDiscretePost,
                                                      reach_set.t_end))
         end
 
-        if (isempty(post_jump))
-            # transition can never be taken
-            continue
-        end
-
-        # apply clustering
-        clustered = cluster(op, post_jump, options)
-
-        # push new sets after jump (unless a fixpoint is detected)
-        for reach_set in clustered
-            if !isfixpoint(op, reach_set, passed_list, target_loc_id)
-                push!(passed_list[target_loc_id], reach_set)
-                push!(waiting_list, (target(HS, trans), reach_set, jumps))
-            end
-        end
+        postprocess(op, HS, post_jump, options, waiting_list, passed_list,
+            target_loc_id, jumps)
     end
 end
 

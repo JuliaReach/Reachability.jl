@@ -15,14 +15,54 @@ tube⋂inv(op::DiscretePost, reach_tube, invariant, Rsets, start_interval)
 """
 abstract type DiscretePost <: PostOperator end
 
+function postprocess(op,
+                     HS,
+                     post_jump,
+                     options,
+                     waiting_list,
+                     passed_list,
+                     target_loc_id,
+                     jumps)
+    fixpoint_strategy = options[:fixpoint_check]
+
+    if fixpoint_strategy == :eager
+        # eager fixpoint checking
+        post_jump_filtered =
+            filter(x -> !isfixpoint(op, x, passed_list, target_loc_id),
+                   post_jump)
+    else
+        post_jump_filtered = post_jump
+    end
+
+    if (isempty(post_jump_filtered))
+        # fixpoint found or transition can never be taken
+        return
+    end
+
+    # apply clustering
+    clustered = cluster(op, post_jump_filtered, options)
+
+    # push new sets after jump (unless a fixpoint is detected)
+    for reach_set in clustered
+        if fixpoint_strategy != :none
+            if fixpoint_strategy == :lazy &&
+                    isfixpoint(op, reach_set, passed_list, target_loc_id)
+                continue
+            end
+            push!(passed_list[target_loc_id], reach_set)
+        end
+        push!(waiting_list, (target_loc_id, reach_set, jumps))
+    end
+end
+
 function cluster(op::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
                  options::Options) where N<:Real
-    strategy = options[:clustering]
-    if strategy == :none
+    clustering_strategy = options[:clustering]
+    if clustering_strategy == :none
         # no clustering
         return reach_sets
-    elseif strategy == :chull
+    elseif clustering_strategy == :chull
         # cluster all sets in a convex hull and overapproximate that set with
         # oct directions
         chull = ConvexHullArray(
@@ -39,6 +79,7 @@ function isfixpoint(op::DiscretePost,
                     passed_list,
                     loc_id
                    ) where N
+    @assert passed_list != nothing
     if isassigned(passed_list, loc_id)
         for other_reach_set in passed_list[loc_id]
             if reach_set.X ⊆ other_reach_set.X

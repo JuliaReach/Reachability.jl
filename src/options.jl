@@ -288,8 +288,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm_discretize],
                                          dict_copy[:lazy_expm])
     check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], 5)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:clustering], :chull)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
 
     # special options: δ, N, T
@@ -437,7 +437,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Int
             domain_constraints = (v::Int  ->  v >= 0)
         elseif key == :fixpoint_check
-            expected_type = Bool
+            expected_type = Symbol
+            domain_constraints = (v::Symbol  ->  v in [:none, :eager, :lazy])
         elseif key == :clustering
             expected_type = Symbol
             domain_constraints = (v::Symbol  ->  v in [:chull, :none])
