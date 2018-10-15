@@ -2,6 +2,8 @@
 # Textbook implementation of a discrete post operator, but with lazy operations.
 # ==============================================================================
 
+import LazySets.use_precise_ρ
+
 struct LazyTextbookDiscretePost <: DiscretePost
     options::Options
 end
@@ -108,4 +110,19 @@ function post(op::LazyTextbookDiscretePost,
             end
         end
     end
+end
+
+# --- line search policies ---
+
+# usually do not use line search
+function use_precise_ρ(op::LazyTextbookDiscretePost,
+                             cap::Intersection{N})::Bool where N<:Real
+    return false
+end
+
+# use line search for the outermost level, which is a LinearMap
+function use_precise_ρ(op::LazyTextbookDiscretePost,
+                             cap::Intersection{N, <:LinearMap{N}}
+                            )::Bool where N<:Real
+    return true
 end

@@ -1,3 +1,5 @@
+import LazySets.use_precise_ρ
+
 """
     DiscretePost
 
@@ -49,4 +51,10 @@ function isfixpoint(op::DiscretePost,
         passed_list[loc_id] = Vector{ReachSet{LazySet{N}, N}}()
         return false
     end
+end
+
+# default: always apply line search
+function use_precise_ρ(op::DiscretePost,
+                             cap::Intersection{N})::Bool where N<:Real
+    return true
 end

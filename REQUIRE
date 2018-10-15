@@ -1,10 +1,11 @@
 julia 0.6
 Compat
-MathematicalSystems
-LazySets
-Reexport
-RecipesBase
-Plots
-Memento
-ProgressMeter
 HybridSystems
+LazySets
+MathematicalSystems
+Memento
+Plots
+ProgressMeter
+RecipesBase
+Reexport
+Suppressor

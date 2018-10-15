@@ -133,6 +133,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                opC::ContinuousPost,
                opD::DiscretePost
               )::AbstractSolution where N<:Real
+    # update global variable
+    global discrete_post_operator = opD
+
     HS = system.s
     init_sets = system.x0
     delete_N = !haskey(options_input.dict, :N)
