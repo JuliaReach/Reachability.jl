@@ -8,7 +8,8 @@ struct LazyTextbookDiscretePost <: DiscretePost
     options::Options
 end
 
-LazyTextbookDiscretePost() = LazyTextbookDiscretePost(Options())
+LazyTextbookDiscretePost() =
+    LazyTextbookDiscretePost(Options(:overapproximation => :oct))
 
 function init(op::LazyTextbookDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -21,9 +22,7 @@ function init(op::LazyTextbookDiscretePost, system, options_input)
         inout_map_reach(options[:partition], options[:blocks], options[:n])
 
     # set up operator-specific options
-    # TODO temporarily use box approximation
-    @assert !haskey(op.options.dict, :overapproximation)
-    op.options.dict[:overapproximation] = Hyperrectangle
+    @assert haskey(op.options.dict, :overapproximation)
 
     return options
 end
@@ -58,6 +57,7 @@ function post(op::LazyTextbookDiscretePost,
               options
              ) where {N}
     jumps += 1
+    dirs = get_overapproximation_option(op, options[:n])
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -81,7 +81,7 @@ function post(op::LazyTextbookDiscretePost,
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
             # overapproximate final set
-            res = overapproximate(A⌜R⋂G⌟⋂I, op.options[:overapproximation])
+            res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
 
             # check if the final set is empty
             if isempty(res)
