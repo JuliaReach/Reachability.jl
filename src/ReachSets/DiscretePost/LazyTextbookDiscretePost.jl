@@ -32,7 +32,7 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
                    invariant,
                    Rsets,
                    start_interval
-                  ) where {N}
+                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
@@ -45,6 +45,7 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
     end
 
     append!(Rsets, intersections)
+    return intersections
 end
 
 function post(op::LazyTextbookDiscretePost,

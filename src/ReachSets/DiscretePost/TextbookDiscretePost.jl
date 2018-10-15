@@ -41,7 +41,7 @@ function tube⋂inv!(op::TextbookDiscretePost,
                    invariant,
                    Rsets,
                    start_interval
-                  ) where {N}
+                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
     # take intersection with source invariant
 
     # TODO First check for empty intersection, which can be more efficient.
@@ -69,6 +69,7 @@ function tube⋂inv!(op::TextbookDiscretePost,
     end
 
     append!(Rsets, intersections)
+    return intersections
 end
 
 function post(op::TextbookDiscretePost,
