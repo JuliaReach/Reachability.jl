@@ -116,6 +116,13 @@ function post(op::TextbookDiscretePost,
         end
 
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
-            target_loc_id, jumps)
+            target_loc_id, target_invariant, jumps)
     end
+end
+
+function cluster_invariant_intersection(op::TextbookDiscretePost, clustered,
+                                        invariant, options)
+    return intersection(
+        overapproximate(clustered, Approximations.OctDirections(dim(invariant))),
+        invariant)
 end

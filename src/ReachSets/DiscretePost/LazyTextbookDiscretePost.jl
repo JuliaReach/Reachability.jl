@@ -96,8 +96,14 @@ function post(op::LazyTextbookDiscretePost,
         end
 
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
-            target_loc_id, jumps)
+            target_loc_id, target_invariant, jumps)
     end
+end
+
+function cluster_invariant_intersection(op::LazyTextbookDiscretePost, clustered,
+                                        invariant, options)
+    return overapproximate(clustered ∩ invariant,
+                           get_overapproximation_option(op, options[:n]))
 end
 
 # --- line search policies ---

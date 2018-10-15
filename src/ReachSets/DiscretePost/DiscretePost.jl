@@ -23,6 +23,7 @@ function postprocess(op,
                      waiting_list,
                      passed_list,
                      target_loc_id,
+                     target_invariant,
                      jumps)
     fixpoint_strategy = options[:fixpoint_check]
 
@@ -41,7 +42,7 @@ function postprocess(op,
     end
 
     # apply clustering
-    clustered = cluster(op, post_jump_filtered, options)
+    clustered = cluster(op, post_jump_filtered, target_invariant, options)
 
     # push new sets after jump (unless a fixpoint is detected)
     for reach_set in clustered
@@ -58,6 +59,7 @@ end
 
 function cluster(op::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
+                 invariant,
                  options::Options) where N<:Real
     clustering_strategy = options[:clustering]
     if clustering_strategy == :none
@@ -68,11 +70,19 @@ function cluster(op::DiscretePost,
         # oct directions
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
-        chull_oa = overapproximate(chull,
-                                   Approximations.OctDirections(dim(chull)))
-        return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
-                reach_sets[end].t_end)]
+        clustered =
+            cluster_invariant_intersection(op, chull, invariant, options)
+    else
+        error("unknown clustering strategy $(string(clustering_strategy))")
     end
+    return [ReachSet{LazySet{N}, N}(clustered, reach_sets[1].t_start,
+            reach_sets[end].t_end)]
+end
+
+function cluster_invariant_intersection(op::DiscretePost, clustered, invariant,
+                                        options)
+    return overapproximate(clustered ∩ invariant,
+                           Approximations.OctDirections(dim(invariant)))
 end
 
 function isfixpoint(op::DiscretePost,
