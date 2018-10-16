@@ -18,6 +18,13 @@
 # ====================================================
 
 struct TextbookDiscretePost <: DiscretePost
+    options::Options
+end
+
+function TextbookDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    return TextbookDiscretePost(defaults)
 end
 
 function init(op::TextbookDiscretePost, system, options_input)

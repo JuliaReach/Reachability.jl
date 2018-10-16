@@ -177,7 +177,10 @@ export PostOperator,
        DiscretePost,
        init,
        post,
-       tube⋂inv!
+       tube⋂inv!,
+       TextbookDiscretePost,
+       ApproximatingDiscretePost,
+       LazyTextbookDiscretePost
 
 # ========================
 # Reachability Algorithms
