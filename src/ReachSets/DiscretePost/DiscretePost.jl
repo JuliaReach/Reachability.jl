@@ -60,7 +60,7 @@ function cluster(op::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
                  options::Options) where N<:Real
     clustering_strategy = options[:clustering]
-    dirs = op.options.[:overapproximation]
+    dirs = op.options[:overapproximation]
     if clustering_strategy == :none
         # no clustering
         return reach_sets
