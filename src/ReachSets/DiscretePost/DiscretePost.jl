@@ -60,6 +60,7 @@ function cluster(op::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
                  options::Options) where N<:Real
     clustering_strategy = options[:clustering]
+    dirs = op.options.[:overapproximation]
     if clustering_strategy == :none
         # no clustering
         return reach_sets
@@ -69,7 +70,7 @@ function cluster(op::DiscretePost,
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
         chull_oa = overapproximate(chull,
-                                   Hyperrectangle)
+                                   dirs)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
                 reach_sets[end].t_end)]
     end
