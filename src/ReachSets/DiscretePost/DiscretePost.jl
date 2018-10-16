@@ -69,7 +69,7 @@ function cluster(op::DiscretePost,
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
         chull_oa = overapproximate(chull,
-                                   Approximations.OctDirections(dim(chull)))
+                                   Hyperrectangle)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
                 reach_sets[end].t_end)]
     end

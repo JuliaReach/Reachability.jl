@@ -206,8 +206,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             @assert reach_set.X isa CartesianProductArray
             X0hat = array(reach_set.X)[1]
             if !(X0hat isa ConvexHull)
-                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(reach_set.X,
-                    reach_set.t_start, reach_set.t_end)]
+                Xoa = LazySets.Approximations.overapproximate(reach_set.X)
+                ti, tf = reach_set.t_start, reach_set.t_end
+                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
             end
         end
 
