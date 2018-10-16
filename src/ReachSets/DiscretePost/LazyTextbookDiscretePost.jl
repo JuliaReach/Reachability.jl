@@ -8,8 +8,15 @@ struct LazyTextbookDiscretePost <: DiscretePost
     options::Options
 end
 
-LazyTextbookDiscretePost() =
-    LazyTextbookDiscretePost(Options(:overapproximation => Hyperrectangle))
+# default options for the LazyTextbookDiscretePost discrete post operator
+function LazyTextbookDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :lazy_R⋂I)
+    setindex!(defaults, true, :lazy_R⋂G)
+    setindex!(defaults, true, :lazy_A⌜R⋂G⌟⋂I)
+    return LazyTextbookDiscretePost(defaults)
+end
 
 function init(op::LazyTextbookDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -23,6 +30,7 @@ function init(op::LazyTextbookDiscretePost, system, options_input)
 
     # set up operator-specific options
     @assert haskey(op.options.dict, :overapproximation)
+    
 
     return options
 end
@@ -34,10 +42,14 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
                    start_interval
                   )::Vector{ReachSet{LazySet{N}, N}} where {N}
     intersections = Vector{ReachSet{LazySet{N}, N}}()
+    dirs = op.options[:overapproximation]
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
         if isempty(R⋂I)
             break
+        end
+        if !op.options[:lazy_R⋂I]
+            R⋂I = overapproximate(R⋂I, dirs)
         end
         push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
@@ -77,12 +89,19 @@ function post(op::LazyTextbookDiscretePost,
             if isempty(R⋂G)
                 continue
             end
+            if !op.options[:lazy_R⋂G]
+               R⋂G = overapproximate(R⋂G, dirs)
+            end
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
             # overapproximate final set
-            res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+            if !op.options[:lazy_A⌜R⋂G⌟⋂I]
+                res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+            else
+                res = A⌜R⋂G⌟⋂I
+            end
 
             # check if the final set is empty
             if isempty(res)
