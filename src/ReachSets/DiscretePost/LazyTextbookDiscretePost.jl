@@ -9,7 +9,7 @@ struct LazyTextbookDiscretePost <: DiscretePost
 end
 
 LazyTextbookDiscretePost() =
-    LazyTextbookDiscretePost(Options(:overapproximation => :oct))
+    LazyTextbookDiscretePost(Options(:overapproximation => Hyperrectangle))
 
 function init(op::LazyTextbookDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)

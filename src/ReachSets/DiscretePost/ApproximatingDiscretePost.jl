@@ -8,7 +8,7 @@ struct ApproximatingDiscretePost <: DiscretePost
 end
 
 ApproximatingDiscretePost() =
-    ApproximatingDiscretePost(Options(:overapproximation => :oct))
+    ApproximatingDiscretePost(Options(:overapproximation => Hyperrectangle))
 
 function init(op::ApproximatingDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
