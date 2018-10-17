@@ -65,5 +65,4 @@ sol = solve(system, options, Reachability.BFFPSV18(),
 
 # specify overapproximating discrete post-operator algorithm
 sol = solve(system, options, Reachability.BFFPSV18(),
-            Reachability.ReachSets.ApproximatingDiscretePost(
-                Options(:overapproximation=>Hyperrectangle)));
+            Reachability.ReachSets.ApproximatingDiscretePost());
