@@ -12,6 +12,7 @@ end
 function LazyTextbookDiscretePost()
     defaults = Options()
     setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
     setindex!(defaults, false, :lazy_R⋂I)
     setindex!(defaults, true, :lazy_R⋂G)
     setindex!(defaults, true, :lazy_A⌜R⋂G⌟⋂I)
@@ -45,7 +46,7 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
     dirs = op.options[:overapproximation]
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
-        if isempty(R⋂I)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         if !op.options[:lazy_R⋂I]

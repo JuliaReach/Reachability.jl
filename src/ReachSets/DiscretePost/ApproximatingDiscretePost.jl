@@ -7,8 +7,12 @@ struct ApproximatingDiscretePost <: DiscretePost
     options::Options
 end
 
-ApproximatingDiscretePost() =
-    ApproximatingDiscretePost(Options(:overapproximation => Hyperrectangle))
+function ApproximatingDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
+    return ApproximatingDiscretePost(defaults)
+end
 
 function init(op::ApproximatingDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -36,7 +40,7 @@ function tube⋂inv!(op::ApproximatingDiscretePost,
     dirs = get_overapproximation_option(op, dim(invariant))
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
-        if isempty(R⋂I)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         # return an overapproximation
