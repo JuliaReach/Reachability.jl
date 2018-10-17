@@ -1,5 +1,5 @@
 #=
-    reach_blocks!(ϕ, Xhat0, U, n, b, N, overapproximate, blocks, res)
+    reach_blocks!(ϕ, Xhat0, U, n, b, termination, overapproximate, blocks, res)
 
 Reachability computation of a given number of two-dimensional blocks of an
 affine system with undeterministic inputs.
@@ -12,7 +12,7 @@ INPUT:
 - `Xhat0` -- initial set as a cartesian product over 2d blocks
 - `U` -- input set of undeterministic inputs
 - `n` -- ambient dimension
-- `N` -- number of sets computed
+- `termination` -- termination check
 - `overapproximate` -- function for overapproximation
 - `blocks` -- the block indices to be computed
 - `partition` -- the partition into blocks
@@ -50,6 +50,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
+                       termination::Function,
                        res::Vector{<:ReachSet}
                        )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
@@ -59,7 +60,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if N == 1
+    if termination(1, X_store, t0)
         return nothing
     end
 
@@ -102,7 +103,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if k == N
+        if termination(k, X_store, t0)
             break
         end
 
@@ -133,6 +134,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
+                       termination::Function,
                        res::Vector{<:ReachSet}
                        )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
@@ -142,7 +144,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if N == 1
+    if termination(1, X_store, t0)
         return nothing
     end
 
@@ -187,7 +189,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if k == N
+        if termination(k, X_store, t0)
             break
         end
 
@@ -221,6 +223,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
+                       termination::Function,
                        res::Vector{<:ReachSet}
                        )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
@@ -230,7 +233,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if N == 1
+    if termination(1, X_store, t0)
         return nothing
     end
 
@@ -278,7 +281,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if k == N
+        if termination(k, X_store, t0)
             break
         end
 
@@ -303,6 +306,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
+                       termination::Function,
                        res::Vector{<:ReachSet}
                        )::Void where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
@@ -312,7 +316,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if N == 1
+    if termination(1, X_store, t0)
         return nothing
     end
 
@@ -360,7 +364,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if k == N
+        if termination(k, X_store, t0)
             break
         end
 

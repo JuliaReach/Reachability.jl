@@ -1,4 +1,5 @@
-import LazySets.CacheMinkowskiSum
+import LazySets: CacheMinkowskiSum,
+                 isdisjoint
 
 """
     reach(S, invariant, options)
@@ -172,6 +173,15 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # time step
     push!(args, options[:δ])
 
+    # termination function
+    if invariant isa ZeroSet
+        termination = (k, set, t0) -> termination_N(N, k, set, t0)
+    else
+        termination =
+            (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+    end
+    push!(args, termination)
+
     # choose algorithm backend
     algorithm = options[:algorithm]
     if algorithm == "explicit"
@@ -213,4 +223,12 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     tocc()
     Δ = matrix_conversion_lazy_explicit(Δ, options)
     return reach(Δ, invariant, options)
+end
+
+function termination_N(N, k, set, t0)
+    return k >= N
+end
+
+function termination_inv_N(N, inv, k, set, t0)
+    return k >= N || isdisjoint(set, inv)
 end
