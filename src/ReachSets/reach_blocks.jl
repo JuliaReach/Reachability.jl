@@ -6,7 +6,7 @@ affine system with undeterministic inputs.
 
 The variants have the following structure:
 
-INPUT:
+### Input
 
 - `ϕ` -- sparse matrix of a discrete affine system
 - `Xhat0` -- initial set as a cartesian product over 2d blocks
@@ -18,12 +18,14 @@ INPUT:
 - `partition` -- the partition into blocks
 - `res` -- storage space for the result, a linear array of CartesianProductArray
 
-OUTPUT:
+### Output
 
-Array of the cartesian product of two-dimensional sets for the given block
-indices, and ZeroSet's for the rest of them.
-It is obtained by reachability computation of a discrete affine system with
-nondeterministic inputs.
+The index at which the computation has stopped.
+
+### Notes
+
+The reach sets are stored in `res`, an array of the cartesian product for the
+given block indices.
 =#
 
 # helper functions
@@ -52,7 +54,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Void where {NUM}
+                       )::Int where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -61,7 +63,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
     if termination(1, X_store, t0)
-        return nothing
+        return 1
     end
 
     b = length(blocks)
@@ -119,7 +121,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         k += 1
     end
 
-    return nothing
+    return k
 end
 
 # dense
@@ -136,7 +138,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Void where {NUM}
+                       )::Int where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -145,7 +147,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
     if termination(1, X_store, t0)
-        return nothing
+        return 1
     end
 
     b = length(blocks)
@@ -207,7 +209,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         k += 1
     end
 
-    return nothing
+    return k
 end
 
 # lazy_expm sparse
@@ -225,7 +227,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Void where {NUM}
+                       )::Int where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -234,7 +236,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
     if termination(1, X_store, t0)
-        return nothing
+        return 1
     end
 
     b = length(blocks)
@@ -289,7 +291,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return nothing
+    return k
 end
 
 
@@ -308,7 +310,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Void where {NUM}
+                       )::Int where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -317,7 +319,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
     if termination(1, X_store, t0)
-        return nothing
+        return 1
     end
 
     b = length(blocks)
@@ -372,5 +374,5 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return nothing
+    return k
 end

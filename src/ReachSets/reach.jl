@@ -196,7 +196,12 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # call the adequate function with the given arguments list
     info("- Computing successors")
     tic()
-    available_algorithms[algorithm_backend]["func"](args...)
+    index = available_algorithms[algorithm_backend]["func"](args...)
+    if index < N
+        # shrink result array
+        info("terminated prematurely, only computed $index/$N steps")
+        deleteat!(res, index+1:N)
+    end
     tocc()
 
     # return the result
