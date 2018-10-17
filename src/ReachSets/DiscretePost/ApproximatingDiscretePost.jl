@@ -30,39 +30,40 @@ function init(op::ApproximatingDiscretePost, system, options_input)
     return options
 end
 
-function tube⋂inv!(op::ApproximatingDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
-                   invariant,
-                   Rsets,
-                   start_interval
-                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
-    dirs = get_overapproximation_option(op, dim(invariant))
+function post(op::ApproximatingDiscretePost,
+              HS::HybridSystem,
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
+              passed_list,
+              reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+              Rsets,
+              start_interval,
+              source_loc_id,
+              jumps,
+              options
+             )::Void where {N}
+    # intersection with source invariant
+    source_invariant = HS.modes[source_loc_id].X
+    tube⋂inv = Vector{ReachSet{LazySet{N}, N}}()
+    dirs = get_overapproximation_option(op, dim(source_invariant))
     for reach_set in reach_tube
-        R⋂I = Intersection(invariant, reach_set.X)
+        R⋂I = Intersection(reach_set.X, source_invariant)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         # return an overapproximation
-        push!(intersections, ReachSet{LazySet{N}, N}(
+        push!(tube⋂inv, ReachSet{LazySet{N}, N}(
             overapproximate(R⋂I, dirs),
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
     end
 
-    append!(Rsets, intersections)
-    return intersections
-end
+    append!(Rsets, tube⋂inv)
 
-function post(op::ApproximatingDiscretePost,
-              HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
-              passed_list,
-              source_loc_id,
-              tube⋂inv,
-              jumps,
-              options
-             ) where {N}
+    # terminate if no jump should be taken anymore
+    if jumps == options[:max_jumps]
+        return nothing
+    end
+
     jumps += 1
     dirs = get_overapproximation_option(op, options[:n])
     for trans in out_transitions(HS, source_loc_id)
@@ -108,4 +109,5 @@ function post(op::ApproximatingDiscretePost,
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
+    return nothing
 end

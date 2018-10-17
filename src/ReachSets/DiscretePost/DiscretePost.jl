@@ -4,15 +4,6 @@ import LazySets.use_precise_ρ
     DiscretePost
 
 Abstract supertype of all discrete post operators.
-
-### Notes
-
-All discrete post operators should provide the following method, in addition
-to those provided for general post operators:
-```julia
-tube⋂inv!(op::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
-          invariant, Rsets, start_interval)::Vector{ReachSet{LazySet{N}, N}}
-```
 """
 abstract type DiscretePost <: PostOperator end
 
@@ -112,4 +103,16 @@ function get_overapproximation_option(op::DiscretePost, n::Int)
     else
         error("received unknown :overapproximation option $oa")
     end
+end
+
+function get_Hrep_info(set::LazySet)
+    return (false, false)
+end
+
+function get_Hrep_info(set::HPolytope)
+    return (true, true)
+end
+
+function get_Hrep_info(set::HPolyhedron)
+    return (true, false)
 end

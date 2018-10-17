@@ -44,19 +44,25 @@ function init(op::TextbookDiscretePost, system, options_input)
     return options
 end
 
-function tube⋂inv!(op::TextbookDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
-                   invariant,
-                   Rsets,
-                   start_interval
-                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
-    # take intersection with source invariant
+function post(op::TextbookDiscretePost,
+              HS::HybridSystem,
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
+              passed_list,
+              reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+              Rsets,
+              start_interval,
+              source_loc_id,
+              jumps,
+              options
+             )::Void where {N}
+    # intersection with source invariant
 
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+    tube⋂inv = Vector{ReachSet{LazySet{N}, N}}()
+    source_invariant = HS.modes[source_loc_id].X
     for reach_set in reach_tube
         rs = reach_set.X
         @assert rs isa CartesianProductArray
@@ -67,28 +73,22 @@ function tube⋂inv!(op::TextbookDiscretePost,
         else
             rs_converted = HPolytope(constraints_list(rs))
         end
-        R⋂I = intersection(invariant, rs_converted)
+        R⋂I = intersection(rs_converted, source_invariant)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
+        push!(tube⋂inv, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
     end
 
-    append!(Rsets, intersections)
-    return intersections
-end
+    append!(Rsets, tube⋂inv)
 
-function post(op::TextbookDiscretePost,
-              HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
-              passed_list,
-              source_loc_id,
-              tube⋂inv,
-              jumps,
-              options
-             ) where {N}
+    # terminate if no jump should be taken anymore
+    if jumps == options[:max_jumps]
+        return nothing
+    end
+
     jumps += 1
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
@@ -126,4 +126,5 @@ function post(op::TextbookDiscretePost,
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
+    return nothing
 end

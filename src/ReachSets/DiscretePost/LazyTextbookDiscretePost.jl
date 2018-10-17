@@ -36,40 +36,41 @@ function init(op::LazyTextbookDiscretePost, system, options_input)
     return options
 end
 
-function tube⋂inv!(op::LazyTextbookDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
-                   invariant,
-                   Rsets,
-                   start_interval
-                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+function post(op::LazyTextbookDiscretePost,
+              HS::HybridSystem,
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
+              passed_list,
+              reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+              Rsets,
+              start_interval,
+              source_loc_id,
+              jumps,
+              options
+             )::Void where {N}
+    # intersection with source invariant
+    tube⋂inv = Vector{ReachSet{LazySet{N}, N}}()
+    source_invariant = HS.modes[source_loc_id].X
     dirs = op.options[:overapproximation]
     for reach_set in reach_tube
-        R⋂I = Intersection(reach_set.X, invariant)
+        R⋂I = Intersection(reach_set.X, source_invariant)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         if !op.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
+        push!(tube⋂inv, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
     end
 
-    append!(Rsets, intersections)
-    return intersections
-end
+    append!(Rsets, tube⋂inv)
 
-function post(op::LazyTextbookDiscretePost,
-              HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
-              passed_list,
-              source_loc_id,
-              tube⋂inv,
-              jumps,
-              options
-             ) where {N}
+    # terminate if no jump should be taken anymore
+    if jumps == options[:max_jumps]
+        return nothing
+    end
+
     jumps += 1
     dirs = get_overapproximation_option(op, options[:n])
     source_invariant = HS.modes[source_loc_id].X
@@ -142,18 +143,7 @@ function post(op::LazyTextbookDiscretePost,
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
-end
-
-function get_Hrep_info(set::LazySet)
-    return (false, false)
-end
-
-function get_Hrep_info(set::HPolytope)
-    return (true, true)
-end
-
-function get_Hrep_info(set::HPolyhedron)
-    return (true, false)
+    return nothing
 end
 
 # --- line search policies ---
