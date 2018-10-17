@@ -45,7 +45,7 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
     intersections = Vector{ReachSet{LazySet{N}, N}}()
     dirs = op.options[:overapproximation]
     for reach_set in reach_tube
-        R⋂I = Intersection(invariant, reach_set.X)
+        R⋂I = Intersection(reach_set.X, invariant)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
@@ -72,6 +72,8 @@ function post(op::LazyTextbookDiscretePost,
              ) where {N}
     jumps += 1
     dirs = get_overapproximation_option(op, options[:n])
+    source_invariant = HS.modes[source_loc_id].X
+    inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -81,13 +83,32 @@ function post(op::LazyTextbookDiscretePost,
         guard = trans_annot.X
         assignment = trans_annot.A
 
+        if inv_isa_Hrep
+            guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
+        end
+
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, length(tube⋂inv))
         for reach_set in tube⋂inv
             # check intersection with guard
-            R⋂G = Intersection(reach_set.X, guard)
-            isempty(R⋂G) && continue
+            taken_intersection = false
+            if inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
+                # combine the constraints of invariant and guard
+                T = inv_isa_H_polytope || guard_isa_H_polytope ?
+                    HPolytope :
+                    HPolyhedron
+                invariant_guard = T([constraints_list(source_invariant);
+                    constraints_list(guard)])
+                R⋂G = Intersection(reach_set.X.X, invariant_guard)
+                taken_intersection = true
+            end
+            if !taken_intersection
+                R⋂G = Intersection(reach_set.X, guard)
+            end
+            if isempty(R⋂G)
+                continue
+            end
 
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
@@ -121,6 +142,18 @@ function post(op::LazyTextbookDiscretePost,
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
+end
+
+function get_Hrep_info(set::LazySet)
+    return (false, false)
+end
+
+function get_Hrep_info(set::HPolytope)
+    return (true, true)
+end
+
+function get_Hrep_info(set::HPolyhedron)
+    return (true, false)
 end
 
 # --- line search policies ---
