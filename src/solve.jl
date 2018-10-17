@@ -1,6 +1,6 @@
 export solve
 
-function default_operator(system::InitialValueProblem{<:S}) where
+function default_operator(system::InitialValueProblem{S}) where
         {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
     if S <: LinearContinuousSystem ||
             S <: LinearControlContinuousSystem ||
@@ -48,19 +48,19 @@ To see all available input options, see
 """
 function solve(system::InitialValueProblem,
                options::Options;
-               op::PostOperator=default_operator(system))
+               op::ContinuousPost=default_operator(system))
     solve!(system, Options(copy(options.dict)), op=op)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
-function solve!(system::InitialValueProblem{<:SYS},
+function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
+                                                     AbstractDiscreteSystem}},
                 options_input::Options;
-                op::PostOperator=default_operator(system),
+                op::ContinuousPost=default_operator(system),
                 invariant::LazySet=ZeroSet(statedim(system))
-               )::AbstractSolution where {SYS<:Union{AbstractContinuousSystem,
-                                                     AbstractDiscreteSystem}}
+               )::AbstractSolution
     options = init(op, system, options_input)
 
     # coordinate transformation
