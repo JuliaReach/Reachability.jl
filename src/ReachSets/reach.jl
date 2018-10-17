@@ -196,11 +196,11 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # call the adequate function with the given arguments list
     info("- Computing successors")
     tic()
-    index = available_algorithms[algorithm_backend]["func"](args...)
-    if index < N
+    index, skip = available_algorithms[algorithm_backend]["func"](args...)
+    if index < N || skip
         # shrink result array
         info("terminated prematurely, only computed $index/$N steps")
-        deleteat!(res, index+1:N)
+        deleteat!(res, (skip ? index : index + 1):N)
     end
     tocc()
 
@@ -231,9 +231,15 @@ function reach(system::IVP{<:AbstractContinuousSystem},
 end
 
 function termination_N(N, k, set, t0)
-    return k >= N
+    return (k >= N, false)
 end
 
 function termination_inv_N(N, inv, k, set, t0)
-    return k >= N || isdisjoint(set, inv)
+    if k >= N
+        return (true, false)
+    elseif isdisjoint(set, inv)
+        return (true, true)
+    else
+        return (false, false)
+    end
 end

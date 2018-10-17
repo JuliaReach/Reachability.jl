@@ -54,7 +54,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Int where {NUM}
+                       )::Tuple{Int, Bool} where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -62,8 +62,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if termination(1, X_store, t0)
-        return 1
+    terminate, skip = termination(1, X_store, t0)
+    if terminate
+        return 1, skip
     end
 
     b = length(blocks)
@@ -105,7 +106,8 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if termination(k, X_store, t0)
+        terminate, skip = termination(k, X_store, t0)
+        if terminate
             break
         end
 
@@ -121,7 +123,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         k += 1
     end
 
-    return k
+    return k, skip
 end
 
 # dense
@@ -138,7 +140,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Int where {NUM}
+                       )::Tuple{Int, Bool} where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -146,8 +148,9 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if termination(1, X_store, t0)
-        return 1
+    terminate, skip = termination(1, X_store, t0)
+    if terminate
+        return 1, skip
     end
 
     b = length(blocks)
@@ -191,7 +194,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if termination(k, X_store, t0)
+        terminate, skip = termination(k, X_store, t0)
+        if terminate
             break
         end
 
@@ -209,7 +213,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         k += 1
     end
 
-    return k
+    return k, skip
 end
 
 # lazy_expm sparse
@@ -227,7 +231,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Int where {NUM}
+                       )::Tuple{Int, Bool} where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -235,8 +239,9 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if termination(1, X_store, t0)
-        return 1
+    terminate, skip = termination(1, X_store, t0)
+    if terminate
+        return 1, skip
     end
 
     b = length(blocks)
@@ -283,7 +288,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if termination(k, X_store, t0)
+        terminate, skip = termination(k, X_store, t0)
+        if terminate
             break
         end
 
@@ -291,7 +297,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return k
+    return k, skip
 end
 
 
@@ -310,7 +316,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        δ::NUM,
                        termination::Function,
                        res::Vector{<:ReachSet}
-                       )::Int where {NUM}
+                       )::Tuple{Int, Bool} where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -318,8 +324,9 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if termination(1, X_store, t0)
-        return 1
+    terminate, skip = termination(1, X_store, t0)
+    if terminate
+        return 1, skip
     end
 
     b = length(blocks)
@@ -366,7 +373,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if termination(k, X_store, t0)
+        terminate, skip = termination(k, X_store, t0)
+        if terminate
             break
         end
 
@@ -374,5 +382,5 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         k += 1
     end
 
-    return k
+    return k, skip
 end
