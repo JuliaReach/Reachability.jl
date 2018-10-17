@@ -79,10 +79,12 @@ function post(op::ApproximatingDiscretePost,
             if isempty(R⋂G)
                 continue
             end
+
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
-            # intersect with target invariant
             A⌜R⋂G⌟o = overapproximate(A⌜R⋂G⌟, dirs)
+
+            # intersect with target invariant
             A⌜R⋂G⌟o⋂I = Intersection(target_invariant, A⌜R⋂G⌟o)
 
             # check if the final set is empty

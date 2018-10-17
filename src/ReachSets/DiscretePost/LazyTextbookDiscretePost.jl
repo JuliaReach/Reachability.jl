@@ -86,27 +86,30 @@ function post(op::LazyTextbookDiscretePost,
         for reach_set in tube⋂inv
             # check intersection with guard
             R⋂G = Intersection(reach_set.X, guard)
-            if isempty(R⋂G)
-                continue
-            end
-            if !op.options[:lazy_R⋂G]
-               R⋂G = overapproximate(R⋂G, dirs)
-            end
+            isempty(R⋂G) && continue
+
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
+            if !op.options[:lazy_R⋂G]
+               A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
+            end
+
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
-            # overapproximate final set
+
+            # check if the final set is empty
+            if isempty(A⌜R⋂G⌟⋂I)
+                continue
+            end
+
+            # overapproximate final set once more
             if !op.options[:lazy_A⌜R⋂G⌟⋂I]
                 res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
             else
                 res = A⌜R⋂G⌟⋂I
             end
 
-            # check if the final set is empty
-            if isempty(res)
-                continue
-            end
+
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(res,
