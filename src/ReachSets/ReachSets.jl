@@ -208,6 +208,7 @@ export BFFPSV18
 include("DiscretePost/TextbookDiscretePost.jl")
 include("DiscretePost/LazyTextbookDiscretePost.jl")
 include("DiscretePost/ApproximatingDiscretePost.jl")
+include("DiscretePost/NoAssignmentDiscretePost.jl")
 
 export TextbookDiscretePost,
        LazyTextbookDiscretePost,
