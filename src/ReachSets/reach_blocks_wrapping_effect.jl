@@ -11,14 +11,16 @@ function reach_blocks_wrapping_effect!(
         blocks::AbstractVector{Int},
         partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
         δ::NUM,
+        termination::Function,
         res::Vector{<:ReachSet}
-       )::Void where {NUM}
+       )::Tuple{Int, Bool} where {NUM}
     X_store = CartesianProductArray(Xhat0)
     t0 = zero(δ)
     t1 = δ
     store!(res, 1, X_store, t0, t1, NUM)
-    if N == 1
-        return nothing
+    terminate, skip = termination(1, X_store, t0)
+    if terminate
+        return 1, skip
     end
 
     b = length(partition)
@@ -54,7 +56,8 @@ function reach_blocks_wrapping_effect!(
         t1 += δ
         store!(res, k, X_store, t0, t1, NUM)
 
-        if k == N
+        terminate, skip = termination(k, X_store, t0)
+        if terminate
             break
         end
 
@@ -69,5 +72,5 @@ function reach_blocks_wrapping_effect!(
         k += 1
     end
 
-    return nothing
+    return k, skip
 end

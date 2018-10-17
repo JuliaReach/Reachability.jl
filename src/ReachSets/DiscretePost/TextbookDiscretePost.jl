@@ -24,6 +24,7 @@ end
 function TextbookDiscretePost()
     defaults = Options()
     setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
     return TextbookDiscretePost(defaults)
 end
 
@@ -67,7 +68,7 @@ function tube⋂inv!(op::TextbookDiscretePost,
             rs_converted = HPolytope(constraints_list(rs))
         end
         R⋂I = intersection(invariant, rs_converted)
-        if isempty(R⋂I)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,

@@ -1,16 +1,16 @@
-import LazySets.CacheMinkowskiSum
+import LazySets: CacheMinkowskiSum,
+                 isdisjoint
 
 """
-    reach(S, options; [numeric_type])
+    reach(S, invariant, options)
 
 Interface to reachability algorithms for an LTI system.
 
 ### Input
 
-- `S`            -- LTI system, discrete or continuous
-- `options`      -- additional options
-- `numeric_type` -- (optional, default: `Float64`) numeric type of the resulting
-                    sets
+- `S`         -- LTI system, discrete or continuous
+- `invariant` -- invariant
+- `options`   -- additional options
 
 ### Output
 
@@ -22,9 +22,9 @@ A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
 function reach(S::IVP{<:AbstractDiscreteSystem},
-               options::Options;
-               numeric_type::Type=Float64
-              )::Vector{<:ReachSet}
+               invariant::LazySet{NUM},
+               options::Options
+              )::Vector{<:ReachSet} where {NUM<:Real}
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -53,7 +53,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
-        Xhat0 = LazySet{numeric_type}[S.x0]
+        Xhat0 = LazySet{NUM}[S.x0]
     else
         info("- Decomposing X0")
         tic()
@@ -80,20 +80,17 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
 
     # preallocate output vector
     if output_function == nothing
-        res_type = ReachSet{
-            CartesianProductArray{numeric_type, LazySet{numeric_type}},
-            numeric_type}
+        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}, NUM}
     else
-        res_type = ReachSet{Hyperrectangle{numeric_type}, numeric_type}
+        res_type = ReachSet{Hyperrectangle{NUM}, NUM}
     end
     res = Vector{res_type}(N)
 
     # shortcut if only the initial set is required
     if N == 1
         res[1] = res_type(
-            CartesianProductArray{numeric_type,
-                                  LazySet{numeric_type}}(Xhat0[blocks]),
-            zero(numeric_type), options[:δ])
+            CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
+            zero(NUM), options[:δ])
         return res
     end
     push!(args, Xhat0)
@@ -176,6 +173,15 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # time step
     push!(args, options[:δ])
 
+    # termination function
+    if invariant isa ZeroSet
+        termination = (k, set, t0) -> termination_N(N, k, set, t0)
+    else
+        termination =
+            (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+    end
+    push!(args, termination)
+
     # choose algorithm backend
     algorithm = options[:algorithm]
     if algorithm == "explicit"
@@ -190,7 +196,12 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # call the adequate function with the given arguments list
     info("- Computing successors")
     tic()
-    available_algorithms[algorithm_backend]["func"](args...)
+    index, skip = available_algorithms[algorithm_backend]["func"](args...)
+    if index < N || skip
+        # shrink result array
+        info("terminated prematurely, only computed $index/$N steps")
+        deleteat!(res, (skip ? index : index + 1):N)
+    end
     tocc()
 
     # return the result
@@ -198,9 +209,9 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function reach(system::IVP{<:AbstractContinuousSystem},
-               options::Options;
-               numeric_type::Type=Float64
-              )::Vector{<:ReachSet}
+               invariant::LazySet{NUM},
+               options::Options
+              )::Vector{<:ReachSet} where {NUM<:Real}
     # ===================
     # Time discretization
     # ===================
@@ -216,5 +227,19 @@ function reach(system::IVP{<:AbstractContinuousSystem},
         )
     tocc()
     Δ = matrix_conversion_lazy_explicit(Δ, options)
-    return reach(Δ, options; numeric_type=numeric_type)
+    return reach(Δ, invariant, options)
+end
+
+function termination_N(N, k, set, t0)
+    return (k >= N, false)
+end
+
+function termination_inv_N(N, inv, k, set, t0)
+    if k >= N
+        return (true, false)
+    elseif isdisjoint(set, inv)
+        return (true, true)
+    else
+        return (false, false)
+    end
 end
