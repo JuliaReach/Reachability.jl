@@ -26,14 +26,14 @@ function init(op::BFFPSV18, system, options_input)
     return options
 end
 
-function post(op::BFFPSV18, system, options)
+function post(op::BFFPSV18, system, invariant, options)
     # convert matrix
     system = matrix_conversion(system, options)
 
     if options[:mode] == "reach"
         info("Reachable States Computation...")
         tic()
-        Rsets = reach(system, options)
+        Rsets = reach(system, invariant, options)
         info("- Total")
         tocc()
 
@@ -50,6 +50,7 @@ function post(op::BFFPSV18, system, options)
         return ReachSolution(RsetsProj, options)
 
     elseif options[:mode] == "check"
+        info("invariants are currently not supported in 'check' mode")
 
         # Input -> Output variable mapping in property
         options.dict[:property] =

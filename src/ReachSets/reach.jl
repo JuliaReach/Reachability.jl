@@ -1,16 +1,15 @@
 import LazySets.CacheMinkowskiSum
 
 """
-    reach(S, options; [numeric_type])
+    reach(S, invariant, options)
 
 Interface to reachability algorithms for an LTI system.
 
 ### Input
 
-- `S`            -- LTI system, discrete or continuous
-- `options`      -- additional options
-- `numeric_type` -- (optional, default: `Float64`) numeric type of the resulting
-                    sets
+- `S`         -- LTI system, discrete or continuous
+- `invariant` -- invariant
+- `options`   -- additional options
 
 ### Output
 
@@ -22,9 +21,9 @@ A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
 """
 function reach(S::IVP{<:AbstractDiscreteSystem},
-               options::Options;
-               numeric_type::Type=Float64
-              )::Vector{<:ReachSet}
+               invariant::LazySet{NUM},
+               options::Options
+              )::Vector{<:ReachSet} where {NUM<:Real}
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -53,7 +52,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
-        Xhat0 = LazySet{numeric_type}[S.x0]
+        Xhat0 = LazySet{NUM}[S.x0]
     else
         info("- Decomposing X0")
         tic()
@@ -80,20 +79,17 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
 
     # preallocate output vector
     if output_function == nothing
-        res_type = ReachSet{
-            CartesianProductArray{numeric_type, LazySet{numeric_type}},
-            numeric_type}
+        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}, NUM}
     else
-        res_type = ReachSet{Hyperrectangle{numeric_type}, numeric_type}
+        res_type = ReachSet{Hyperrectangle{NUM}, NUM}
     end
     res = Vector{res_type}(N)
 
     # shortcut if only the initial set is required
     if N == 1
         res[1] = res_type(
-            CartesianProductArray{numeric_type,
-                                  LazySet{numeric_type}}(Xhat0[blocks]),
-            zero(numeric_type), options[:δ])
+            CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
+            zero(NUM), options[:δ])
         return res
     end
     push!(args, Xhat0)
@@ -198,9 +194,9 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function reach(system::IVP{<:AbstractContinuousSystem},
-               options::Options;
-               numeric_type::Type=Float64
-              )::Vector{<:ReachSet}
+               invariant::LazySet{NUM},
+               options::Options
+              )::Vector{<:ReachSet} where {NUM<:Real}
     # ===================
     # Time discretization
     # ===================
@@ -216,5 +212,5 @@ function reach(system::IVP{<:AbstractContinuousSystem},
         )
     tocc()
     Δ = matrix_conversion_lazy_explicit(Δ, options)
-    return reach(Δ, options; numeric_type=numeric_type)
+    return reach(Δ, invariant, options)
 end
