@@ -7,7 +7,7 @@ inputs = next_set(U)
 input_remains_constant = inputs.center == c && inputs.radius == r
 @test input_remains_constant
 for i in 1:5
-    inputs = next(U, i)[1]
+    inputs = next_set(U, i)
     input_remains_constant = input_remains_constant && inputs.center == c && inputs.radius == r
 end
 

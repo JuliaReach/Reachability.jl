@@ -34,8 +34,8 @@ DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, e
 DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
 
 # convenience functions
-next_set(inputs::ConstantInput) = next(inputs, 1)[1]
-next_set(inputs::AbstractInput, state::Int64) = next(inputs, state)[1]
+next_set(inputs::ConstantInput) = collect(nextinput(inputs, 1))[1]
+next_set(inputs::AbstractInput, state::Int64) = collect(nextinput(inputs, state))[1]
 
 """
     add_dimension(A::AbstractMatrix, m=1)
