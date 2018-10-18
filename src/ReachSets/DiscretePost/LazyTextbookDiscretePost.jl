@@ -13,7 +13,7 @@ function LazyTextbookDiscretePost()
     defaults = Options()
     setindex!(defaults, Hyperrectangle, :overapproximation)
     setindex!(defaults, false, :check_invariant_intersection)
-    setindex!(defaults, true, :lazy_R⋂I)
+    setindex!(defaults, false, :lazy_R⋂I)
     setindex!(defaults, true, :lazy_R⋂G)
     setindex!(defaults, true, :lazy_A⌜R⋂G⌟⋂I)
     return LazyTextbookDiscretePost(defaults)
@@ -42,8 +42,10 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
                    Rsets,
                    start_interval
                   ) where {N}
-    #intersections = Vector{ReachSet{LazySet{N}, N}}()
+
     dirs = op.options[:overapproximation]
+
+    # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
         R⋂I = Intersection(reach_set.X, invariant)
@@ -69,15 +71,13 @@ function post(op::LazyTextbookDiscretePost,
               source_loc_id,
               tube⋂inv,
               jumps,
-              options,
-              count_tube⋂inv
+              options
              ) where {N}
     jumps += 1
     dirs = get_overapproximation_option(op, options[:n])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
-    tube⋂inv = @view tube⋂inv[length(tube⋂inv) - count_tube⋂inv + 1 : end]
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -93,7 +93,7 @@ function post(op::LazyTextbookDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, count_tube⋂inv)
+        sizehint!(post_jump, length(tube⋂inv))
         for reach_set in tube⋂inv
             # check intersection with guard
             taken_intersection = false
@@ -134,8 +134,6 @@ function post(op::LazyTextbookDiscretePost,
             else
                 res = A⌜R⋂G⌟⋂I
             end
-
-
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(res,

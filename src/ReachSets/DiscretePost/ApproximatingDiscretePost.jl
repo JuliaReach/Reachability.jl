@@ -35,23 +35,25 @@ function tube⋂inv!(op::ApproximatingDiscretePost,
                    invariant,
                    Rsets,
                    start_interval
-                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+                  ) where {N}
+
     dirs = get_overapproximation_option(op, dim(invariant))
+
+    # counts the number of sets R⋂I added to Rsets
+    count = 0
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         # return an overapproximation
-        push!(intersections, ReachSet{LazySet{N}, N}(
+        push!(Rsets, ReachSet{LazySet{N}, N}(
             overapproximate(R⋂I, dirs),
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
-
-    append!(Rsets, intersections)
-    return intersections
+    return count
 end
 
 function post(op::ApproximatingDiscretePost,
