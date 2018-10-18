@@ -2,12 +2,12 @@
 function reach_blocks_wrapping_effect!(
         ϕ::AbstractMatrix{NUM},
         Xhat0::Vector{<:LazySet{NUM}},
-        U::Union{ConstantInput, Void},
+        U::Union{ConstantInput, Nothing},
         overapproximate::Function,
         overapproximate_inputs::Function,
         n::Int,
         N::Int,
-        output_function::Void, # ignored
+        output_function::Nothing, # ignored
         blocks::AbstractVector{Int},
         partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
         δ::NUM,
