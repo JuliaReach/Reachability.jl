@@ -96,7 +96,7 @@ function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuo
         # affine case; TODO: unify Constant and Varying input branches?
         Uset = inputset(cont_sys)
         if Uset isa ConstantInput
-            U = next(Uset, 1)[1]
+            U = next_set(Uset)
             RU = norm(U, Inf)
             α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
             β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
@@ -254,7 +254,7 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         if pade_expm
             ϕ = padm(A*δ)
         else
-            ϕ = expm(Matrix(A*δ))
+            ϕ = expmat(Matrix(A*δ))
         end
     end
 
@@ -278,7 +278,7 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
                       spzeros(n, 2*n) sparse(δ*I, n, n);
                       spzeros(n, 3*n)])
         else
-            P = expm(Matrix([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
+            P = expmat(Matrix([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                            spzeros(n, 2*n) sparse(δ*I, n, n);
                            spzeros(n, 3*n)]))
         end
