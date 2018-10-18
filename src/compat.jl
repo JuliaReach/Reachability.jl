@@ -18,7 +18,7 @@ export _At_mul_B
     end
     expmat = expm
 else
-    using SparseArrays
+    using SparseArrays, Printf
     @inline function _At_mul_B(A, B)
         return transpose(A) * B
     end

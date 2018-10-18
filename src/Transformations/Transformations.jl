@@ -72,7 +72,7 @@ function schur_transform(S::InitialValueProblem)
 
 
     # recall that for Schur matrices, inv(T) == T'
-    Z_inverse = T_new.'
+    Z_inverse = copy(transpose(T_new))
 
     # apply transformation to the initial states
     X0_new = Z_inverse * S.x0

@@ -12,7 +12,7 @@ for i in 1:5
 end
 
 # Testing time-varying non-deterministic input
-c = [zeros(4), 1. + ones(4), 2. + ones(4)]
+c = [zeros(4), 1. .+ ones(4), 2. .+ ones(4)]
 r = [0.1, 0.2, 0.3]
 
 U = VaryingInput([BallInf(c[i], r[i]) for i in 1:3])
