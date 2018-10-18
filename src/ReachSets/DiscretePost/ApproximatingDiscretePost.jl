@@ -62,6 +62,7 @@ function post(op::ApproximatingDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -78,8 +79,8 @@ function post(op::ApproximatingDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             R⋂G = Intersection(reach_set.X, guard)
             if isempty(R⋂G)

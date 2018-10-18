@@ -70,6 +70,7 @@ function post(op::LazyTextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -93,8 +94,8 @@ function post(op::LazyTextbookDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             taken_intersection = false
             if inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
