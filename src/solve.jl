@@ -216,15 +216,15 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             end
         end
 
-        tube⋂inv = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
-                             [X0.t_start, X0.t_end])
+        count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+                                [X0.t_start, X0.t_end])
 
         if jumps == max_jumps
             continue
         end
 
-        post(opD, HS, waiting_list, passed_list, loc_id, tube⋂inv, jumps,
-             options)
+        post(opD, HS, waiting_list, passed_list, loc_id, Rsets, jumps,
+             options, count_Rsets)
     end
 
     # Projection
