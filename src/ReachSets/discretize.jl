@@ -83,8 +83,8 @@ function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuo
                                 δ::Float64)
 
     A, X0 = cont_sys.s.A, cont_sys.x0
-    Anorm = norm(full(A), Inf)
-    ϕ = expm(full(A))
+    Anorm = norm(Matrix(A), Inf)
+    ϕ = expmat(Matrix(A))
     RX0 = norm(X0, Inf)
 
     if inputdim(cont_sys) == 0
@@ -165,7 +165,7 @@ function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem
         if pade_expm
             ϕ = padm(A * δ)
         else
-            ϕ = expm(full(A * δ))
+            ϕ = expmat(Matrix(A * δ))
         end
     end
 
@@ -189,7 +189,7 @@ function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem
                       spzeros(n, 2*n) sparse(δ*I, n, n);
                       spzeros(n, 3*n)])
         else
-            P = expm(full([A*δ sparse(δ*I, n, n) spzeros(n, n);
+            P = expmat(Matrix([A*δ sparse(δ*I, n, n) spzeros(n, n);
                            spzeros(n, 2*n) sparse(δ*I, n, n);
                            spzeros(n, 3*n)]))
         end
@@ -254,7 +254,7 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
         if pade_expm
             ϕ = padm(A*δ)
         else
-            ϕ = expm(full(A*δ))
+            ϕ = expm(Matrix(A*δ))
         end
     end
 
@@ -278,7 +278,7 @@ function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractConti
                       spzeros(n, 2*n) sparse(δ*I, n, n);
                       spzeros(n, 3*n)])
         else
-            P = expm(full([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
+            P = expm(Matrix([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
                            spzeros(n, 2*n) sparse(δ*I, n, n);
                            spzeros(n, 3*n)]))
         end

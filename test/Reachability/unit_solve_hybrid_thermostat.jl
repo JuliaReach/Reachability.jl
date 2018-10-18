@@ -19,14 +19,14 @@ A = hcat(-c_a);
 B = hcat(30.);
 X = HalfSpace([1.0], 22.0); # x <= 22
 U = Singleton([c_a]);
-m_on = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
+m_on = ConstrainedLinearControlContinuousSystem(A, Matrix{eltype(A)}(I, size(B, 1)), X, B*U);
 
 # mode off
 A = hcat(-c_a);
 B = hcat(0.0);
 X = HalfSpace([-1.0], -18.0); # x >= 18
 U = Singleton([0.0]);
-m_off = ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U);
+m_off = ConstrainedLinearControlContinuousSystem(A, Matrix{eltype(A)}(I, size(B, 1)), X, B*U);
 
 # transition from on to off
 A = hcat(1.0);

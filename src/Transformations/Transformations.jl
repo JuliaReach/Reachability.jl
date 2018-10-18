@@ -68,7 +68,7 @@ of the coefficients matrix ``A``.
 """
 function schur_transform(S::InitialValueProblem)
 
-    A_new, T_new = schur(full(S.A)) # full (dense) matrix is required
+    A_new, T_new = schur(Matrix(S.A)) # full (dense) matrix is required
 
 
     # recall that for Schur matrices, inv(T) == T'
