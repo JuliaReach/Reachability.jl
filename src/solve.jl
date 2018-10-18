@@ -220,7 +220,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                                 [X0.t_start, X0.t_end])
 
-        #tube⋂inv = @view Rsets[length(Rsets) - count_Rsets + 1 : end]
         if jumps == max_jumps
             continue
         end
