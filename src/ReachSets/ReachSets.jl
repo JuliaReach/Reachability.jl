@@ -85,7 +85,9 @@ AUTHORS:
 module ReachSets
 
 using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter,
-      HybridSystems, Compat
+      HybridSystems
+
+include("../compat.jl")
 
 import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
