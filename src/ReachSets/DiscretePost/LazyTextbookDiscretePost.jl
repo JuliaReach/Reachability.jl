@@ -41,9 +41,12 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
                    invariant,
                    Rsets,
                    start_interval
-                  )::Vector{ReachSet{LazySet{N}, N}} where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+                  ) where {N}
+
     dirs = op.options[:overapproximation]
+
+    # counts the number of sets R⋂I added to Rsets
+    count = 0
     for reach_set in reach_tube
         R⋂I = Intersection(reach_set.X, invariant)
         if op.options[:check_invariant_intersection] && isempty(R⋂I)
@@ -52,13 +55,13 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
         if !op.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
+        push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
 
-    append!(Rsets, intersections)
-    return intersections
+    return count
 end
 
 function post(op::LazyTextbookDiscretePost,
@@ -67,6 +70,7 @@ function post(op::LazyTextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -74,6 +78,7 @@ function post(op::LazyTextbookDiscretePost,
     dirs = get_overapproximation_option(op, options[:n])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
+
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -89,8 +94,8 @@ function post(op::LazyTextbookDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             taken_intersection = false
             if inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
@@ -130,8 +135,6 @@ function post(op::LazyTextbookDiscretePost,
             else
                 res = A⌜R⋂G⌟⋂I
             end
-
-
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(res,
