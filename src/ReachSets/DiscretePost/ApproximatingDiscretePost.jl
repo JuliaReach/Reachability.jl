@@ -3,8 +3,6 @@
 # intersection followed by an overapproximation.
 # ==================================================================
 
-using Optim
-
 struct ApproximatingDiscretePost <: DiscretePost
     options::Options
 end
