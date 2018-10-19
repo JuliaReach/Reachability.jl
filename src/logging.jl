@@ -4,7 +4,7 @@ import Memento: debug
 export info, warn, debug, tocc,
        configure_logger, add_file_logger
 
-global LOGGER = Memento.getlogger(current_module())
+global LOGGER = Memento.getlogger(@__MODULE__)
 
 const DEFAULT_LOG_LEVEL = "warn"
 
@@ -73,7 +73,7 @@ that is defined by the constant `DEFAULT_LOG_LEVEL`.
             [Memento.jl](https://invenia.github.io/Memento.jl/latest/man/intro.html#Logging-levels-1)
             package.
 """
-function configure_logger(level::Union{String, Int, Void}=DEFAULT_LOG_LEVEL)
+function configure_logger(level::Union{String, Int, Nothing}=DEFAULT_LOG_LEVEL)
     if level isa String
         level_string = level
     elseif level isa Int
@@ -101,7 +101,7 @@ Sets up an additional logger to a file.
 
 - `filename` -- (optional, default: `tempname()`) the log file name
 """
-function add_file_logger(filename::String=tempname())::Void
+function add_file_logger(filename::String=tempname())::Nothing
     formatter = Memento.DefaultFormatter("[{date}|{level}] {msg}")
     handler = Memento.DefaultHandler(filename, formatter)
     push!(LOGGER, handler)

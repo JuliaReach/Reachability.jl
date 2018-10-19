@@ -14,7 +14,7 @@ A = [0.0 1.0; 0.0 0.0];
 B = reshape([0.0, -1.0], (2, 1));
 X = HalfSpace([-1.0, 0.0], 0.0); # x >= 0
 U = Singleton([1.0]);
-m = [ConstrainedLinearControlContinuousSystem(A, eye(size(B, 1)), X, B*U)];
+m = [ConstrainedLinearControlContinuousSystem(A, Matrix{eltype(A)}(I, size(B, 1), size(B, 1)), X, B*U)];
 
 # reset map
 A = [1.0 0.0; 0.0 -0.75];

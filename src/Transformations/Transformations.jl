@@ -4,7 +4,9 @@ Module to apply coordinate transformations.
 """
 module Transformations
 
-using LazySets, ..Utils, MathematicalSystems, Compat
+using LazySets, ..Utils, MathematicalSystems
+
+include("../compat.jl")
 
 export transform
 
@@ -66,11 +68,11 @@ of the coefficients matrix ``A``.
 """
 function schur_transform(S::InitialValueProblem)
 
-    A_new, T_new = schur(full(S.A)) # full (dense) matrix is required
+    A_new, T_new = schur(Matrix(S.A)) # full (dense) matrix is required
 
 
     # recall that for Schur matrices, inv(T) == T'
-    Z_inverse = T_new.'
+    Z_inverse = copy(transpose(T_new))
 
     # apply transformation to the initial states
     X0_new = Z_inverse * S.x0

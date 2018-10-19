@@ -335,7 +335,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::String  ->  v in ["forward", "backward",
                                                        "firstorder", "nobloating"])
         elseif key == :property
-            expected_type = Union{Property, Void}
+            expected_type = Union{Property, Nothing}
         elseif key == :δ
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
@@ -355,7 +355,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types
-            expected_type = Union{Void,
+            expected_type = Union{Nothing,
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}}
         elseif key == :block_types_init
             expected_type =
@@ -419,13 +419,13 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :assume_homogeneous
             expected_type = Bool
         elseif key == :projection_matrix
-            expected_type = Union{AbstractMatrix, Void}
+            expected_type = Union{AbstractMatrix, Nothing}
         elseif key == :project_reachset
             expected_type = Bool
         elseif key == :eager_checking
             expected_type = Bool
         elseif key == :lazy_inputs_interval
-            expected_type = Union{Int, Function, Void}
+            expected_type = Union{Int, Function, Nothing}
             domain_constraints = (v  ->  !(v isa Int) || v >= -1)
         elseif key == :lazy_expm_discretize
             expected_type = Bool
