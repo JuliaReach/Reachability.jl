@@ -23,7 +23,7 @@ function project_reach(
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
 
     # parse input
-    assert(length(vars) == 2)
+    @assert(length(vars) == 2)
     if n == 2
         return project_2d_reach(Rsets, vars, n, options)
     end
@@ -75,11 +75,11 @@ function project_reach(
     ε = options[:ε_proj]
     if ε < Inf
         oa = x -> overapproximate(x, HPolygon, ε)
-        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(N)
+        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(undef, N)
     else
         set_type = options[:set_type_proj]
         oa = x -> overapproximate(x, set_type)
-        RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(N)
+        RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(undef, N)
     end
 
     δ = options[:δ]
@@ -168,11 +168,11 @@ function project_2d_reach(
     ε = options[:ε_proj]
     if ε < Inf
         oa = x -> overapproximate(x, HPolygon, ε)
-        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(N)
+        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(undef, N)
     else
         set_type = options[:set_type_proj]
         oa = x -> overapproximate(x, set_type)
-        RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(N)
+        RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(undef, N)
     end
 
     δ = options[:δ]

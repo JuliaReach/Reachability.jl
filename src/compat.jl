@@ -10,18 +10,17 @@ using Compat.LinearAlgebra
 import Compat.LinearAlgebra: norm, checksquare, LAPACKException,
                              SingularException, eye, ×
 import Compat.InteractiveUtils.subtypes
-export _At_mul_B
+export _At_mul_B, _A_mul_B!
 
 @static if VERSION < v"0.7-"
-    @inline function _At_mul_B(A, B)
-        return At_mul_B(A, B)
-    end
+    @inline _At_mul_B(A, B) = At_mul_B(A, B)
+    @inline _A_mul_B!(C, A, B) = A_mul_B!(C, A, B)
     expmat = expm
 else
     using SparseArrays, Printf
-    @inline function _At_mul_B(A, B)
-        return transpose(A) * B
-    end
+
+    @inline _At_mul_B(A, B) = transpose(A) * B
+    @inline _A_mul_B!(C, A, B) = mul!(C, A, B)
     expmat = exp
 end
 

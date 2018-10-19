@@ -172,8 +172,8 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
             end
         end
 
-        A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
-        copy!(ϕpowerk, ϕpowerk_cache)
+        _A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
+        copyto!(ϕpowerk, ϕpowerk_cache)
         k += 1
     end
 

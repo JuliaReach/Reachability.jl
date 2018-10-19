@@ -37,7 +37,7 @@ function inout_map_reach(partition::AbstractVector{<:AbstractVector{Int}},
         else
             @assert next_block_idx > i || next_block_idx == 0
             # block/variables not present in output
-            inout[bi] = 0
+            inout[bi] .= 0
         end
     end
     return inout

@@ -438,7 +438,7 @@ function matrix_conversion(Δ, options; A_passed=nothing)
         if A isa SparseMatrixExp
             # ignore this case
             A_new = A
-        elseif !method_exists(sparse, Tuple{typeof(A)})
+        elseif !hasmethod(sparse, Tuple{typeof(A)})
             info("`assume_sparse` option cannot be applied to a matrix of " *
                  "type $(typeof(A)) and will be ignored")
             A_new = A
@@ -455,7 +455,7 @@ function matrix_conversion(Δ, options; A_passed=nothing)
     end
     if create_new_system
         # set new matrix
-        if method_exists(inputset, Tuple{typeof(Δ.s)})
+        if hasmethod(inputset, Tuple{typeof(Δ.s)})
             Δ = DiscreteSystem(A_new, Δ.x0, inputset(Δ))
         else
             Δ = DiscreteSystem(A_new, Δ.x0)
