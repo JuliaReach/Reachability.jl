@@ -1,6 +1,6 @@
-import Base: merge, merge!, getindex, keys, values, setindex!, copy
+import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy
 
-export Options, merge, merge!, getindex
+export Options, merge, merge!, getindex, haskey
 
 available_keywords = Set{Symbol}([])
 
@@ -131,7 +131,7 @@ function getindex(op::Options, sym::Symbol)
 end
 
 """
-    setindex!(op, value key)
+    setindex!(op, value, key)
 
 Store the given value at the given key in the options.
 
@@ -169,6 +169,21 @@ Create a shallow copy of the given options.
 A new `Options` instance whose dictionary is a copy of `op`'s dictionary.
 """
 copy(op::Options) = Options(copy(op.dict))
+
+"""
+    haskey(op::Options, key)
+
+Determine whether the given options has a mapping for a given key.
+
+### Input
+
+- `op` -- options object
+
+### Output
+
+`true` if `op` contains the option `key` and `false` otherwise.
+"""
+haskey(op::Options, key) = haskey(op.dict, key)
 
 """
     validate_solver_options_and_add_default_values!(options)
