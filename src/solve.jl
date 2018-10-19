@@ -63,6 +63,8 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
                )::AbstractSolution
     options = init(op, system, options_input)
 
+    # coordinate transformation
+    options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         tic()
