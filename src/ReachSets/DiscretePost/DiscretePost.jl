@@ -67,12 +67,26 @@ function cluster(op::DiscretePost,
     elseif clustering_strategy == :chull
         # cluster all sets in a convex hull and overapproximate that set with
         # oct directions
-        chull = ConvexHullArray(
-            LazySet{N}[reach_set.X for reach_set in reach_sets])
-        chull_oa = overapproximate(chull,
-                                   dirs)
-        return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
-                reach_sets[end].t_end)]
+        k = 5
+        i = 1
+        n = length(reach_sets)
+        res = Vector{ReachSet{LazySet{N}, N}}()
+        while i < n
+            j = min(i+k, n)
+            chull = ConvexHullArray(
+                LazySet{N}[reach_set.X for reach_set in reach_sets[i:j]])
+            chull_oa = overapproximate(chull, dirs)
+            reach_set = ReachSet{LazySet{N}, N}(chull_oa, reach_sets[i].t_start,
+                reach_sets[j].t_end)
+            push!(res, reach_set)
+            i += k
+        end
+        return res
+#         chull = ConvexHullArray(
+#             LazySet{N}[reach_set.X for reach_set in reach_sets])
+#         chull_oa = overapproximate(chull, dirs)
+#         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
+#                 reach_sets[end].t_end)]
     end
 end
 
