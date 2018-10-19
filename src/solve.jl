@@ -49,7 +49,7 @@ To see all available input options, see
 function solve(system::InitialValueProblem,
                options::Options;
                op::ContinuousPost=default_operator(system))
-    solve!(system, Options(copy(options.dict)), op=op)
+    solve!(system, copy(options), op=op)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
@@ -140,7 +140,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    delete_N = !haskey(options_input.dict, :N)
+    delete_N = !haskey(options_input, :N)
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
@@ -181,18 +181,18 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         source_invariant = loc.X
 
         # compute reach tube
-        options_copy = Options(copy(options.dict))
+        options_copy = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
         delete!(options_copy.dict, :inout_map)
         if delete_N # TODO add more conditions or fix option clashes in general
             delete!(options_copy.dict, :N)
         end
-        if haskey(options_copy.dict, :block_types) &&
+        if haskey(options_copy, :block_types) &&
                 options_copy.dict[:block_types] == nothing
             delete!(options_copy.dict, :block_types)
         end
-        if haskey(options_copy.dict, :blocks)
+        if haskey(options_copy, :blocks)
             delete!(options_copy.dict, :blocks)
         end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
