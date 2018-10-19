@@ -23,6 +23,9 @@ function init(op::BFFPSV18, system, options_input)
         options[:output_function] = options[:projection_matrix]
     end
 
+    # coordinate transformation
+    options[:transformation_matrix] = nothing
+
     return options
 end
 
