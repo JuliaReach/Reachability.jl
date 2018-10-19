@@ -340,13 +340,13 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     # use optimal partition type
     if !has_kD_blocks
         # only 1D blocks
-        partition_out = Vector{Int}(length(partition))
+        partition_out = Vector{Int}(undef, length(partition))
         for (i, block) in enumerate(partition)
             partition_out[i] = block[1]
         end
     else
         # at least one kD block for k > 1
-        partition_out = Vector{UnitRange{Int}}(length(partition))
+        partition_out = Vector{UnitRange{Int}}(undef, length(partition))
         for (i, block) in enumerate(partition)
             partition_out[i] = block[1]:block[end]
         end
@@ -400,7 +400,7 @@ A vector where the ``i``th entry contains the size of the ``i``th block.
 """
 function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
                             )::Vector{Int}
-    res = Vector{Int}(length(partition))
+    res = Vector{Int}(undef, length(partition))
     for (i, block) in enumerate(partition)
         res[i] = length(block)
     end
@@ -414,7 +414,7 @@ Eventually this should be handled in LazySets.
 """
 function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
                           n::Int=dim(S)) where {N}
-    result = Vector{LazySet{N}}(length(blocks))
+    result = Vector{LazySet{N}}(undef, length(blocks))
     block_start = 1
     @inbounds for (i, bi) in enumerate(blocks)
         M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)

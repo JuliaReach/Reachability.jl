@@ -19,7 +19,7 @@ A vector mapping from input dimension (index) to output dimension (entry).
 function inout_map_reach(partition::AbstractVector{<:AbstractVector{Int}},
                          blocks::AbstractVector{Int},
                          n::Int)
-    inout = Vector{Int}(n)
+    inout = Vector{Int}(undef, n)
     blocks_idx = 1
     next_block_idx = blocks[blocks_idx]
     out_idx = 1

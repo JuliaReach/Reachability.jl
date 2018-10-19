@@ -104,7 +104,7 @@ function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuo
             discr_U =  δ * U + Ball2(zeros(size(ϕ, 1)), β)
             return DiscreteSystem(ϕ, Ω0, discr_U)
         elseif Uset isa VaryingInput
-            discr_U = Vector{LazySet}(length(Uset))
+            discr_U = Vector{LazySet}(undef, length(Uset))
             for (i, Ui) in enumerate(Uset)
                 RU = norm(Ui, Inf)
                 α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
