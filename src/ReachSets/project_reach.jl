@@ -23,7 +23,7 @@ function project_reach(
         options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
 
     # parse input
-    assert(length(vars) == 2)
+    @assert(length(vars) == 2)
     if n == 2
         return project_2d_reach(Rsets, vars, n, options)
     end
