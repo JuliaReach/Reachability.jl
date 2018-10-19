@@ -84,8 +84,9 @@ AUTHORS:
 """
 module ReachSets
 
-using LazySets, MathematicalSystems, Expokit, ..Utils, ProgressMeter,
-      HybridSystems
+using ..Utils
+using LazySets, MathematicalSystems, HybridSystems
+using Expokit, Optim, ProgressMeter
 
 include("../compat.jl")
 
