@@ -84,7 +84,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     else
         res_type = ReachSet{Hyperrectangle{NUM}, NUM}
     end
-    res = Vector{res_type}(N)
+    res = Vector{res_type}(undef, N)
 
     # shortcut if only the initial set is required
     if N == 1

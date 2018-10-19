@@ -7,7 +7,7 @@ end
 
 function init(op::BFFPSV18, system, options_input)
     # state dimension for (purely continuous or purely discrete systems)
-    options_copy = Options(copy(options_input.dict))
+    options_copy = copy(options_input)
     options_copy.dict[:n] = statedim(system)
 
     # solver-specific options (adds default values for unspecified options)

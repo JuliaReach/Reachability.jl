@@ -83,9 +83,9 @@ function inout_map_property(prop::LinearConstraintProperty{N},
     proj = projection_map(partition, blocks)
 
     # create modified property
-    clauses = Vector{Clause{N}}(length(prop.clauses))
+    clauses = Vector{Clause{N}}(undef, length(prop.clauses))
     for (ic, c) in enumerate(prop.clauses)
-        atoms = Vector{LinearConstraint{N}}(length(c.atoms))
+        atoms = Vector{LinearConstraint{N}}(undef, length(c.atoms))
         for (ia, atom) in enumerate(c.atoms)
             @assert check_projection(atom.a, proj) "blocks incompatible with property"
             atoms[ia] = LinearConstraint{N}(atom.a[proj], atom.b)

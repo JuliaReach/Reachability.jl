@@ -68,11 +68,11 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     end
 
     b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = copy(ϕ)
 
     if U != nothing
-        Whatk = Vector{LazySet{NUM}}(b)
+        Whatk = Vector{LazySet{NUM}}(undef, b)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
@@ -154,12 +154,12 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     end
 
     b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = copy(ϕ)
     ϕpowerk_cache = similar(ϕ)
 
     if U != nothing
-        Whatk = Vector{LazySet{NUM}}(b)
+        Whatk = Vector{LazySet{NUM}}(undef, b)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
@@ -168,7 +168,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     end
 
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
-    arr = Vector{LazySet{NUM}}(arr_length)
+    arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
@@ -245,11 +245,11 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     end
 
     b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
     if U != nothing
-        Whatk = Vector{LazySet{NUM}}(b)
+        Whatk = Vector{LazySet{NUM}}(undef, b)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
@@ -330,11 +330,11 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     end
 
     b = length(blocks)
-    Xhatk = Vector{LazySet{NUM}}(b)
+    Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = SparseMatrixExp(copy(ϕ.M))
 
     if U != nothing
-        Whatk = Vector{LazySet{NUM}}(b)
+        Whatk = Vector{LazySet{NUM}}(undef, b)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
@@ -343,7 +343,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     end
 
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
-    arr = Vector{LazySet{NUM}}(arr_length)
+    arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
