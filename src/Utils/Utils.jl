@@ -4,7 +4,9 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, Compat
+using LazySets, MathematicalSystems
+
+include("../compat.jl")
 
 import Reachability.tocc
 

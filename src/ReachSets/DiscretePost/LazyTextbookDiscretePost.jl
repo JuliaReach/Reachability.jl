@@ -8,8 +8,16 @@ struct LazyTextbookDiscretePost <: DiscretePost
     options::Options
 end
 
-LazyTextbookDiscretePost() =
-    LazyTextbookDiscretePost(Options(:overapproximation => :oct))
+# default options for the LazyTextbookDiscretePost discrete post operator
+function LazyTextbookDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
+    setindex!(defaults, false, :lazy_R⋂I)
+    setindex!(defaults, true, :lazy_R⋂G)
+    setindex!(defaults, true, :lazy_A⌜R⋂G⌟⋂I)
+    return LazyTextbookDiscretePost(defaults)
+end
 
 function init(op::LazyTextbookDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -23,6 +31,7 @@ function init(op::LazyTextbookDiscretePost, system, options_input)
 
     # set up operator-specific options
     @assert haskey(op.options.dict, :overapproximation)
+    
 
     return options
 end
@@ -33,18 +42,26 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
                    Rsets,
                    start_interval
                   ) where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+
+    dirs = op.options[:overapproximation]
+
+    # counts the number of sets R⋂I added to Rsets
+    count = 0
     for reach_set in reach_tube
-        R⋂I = Intersection(invariant, reach_set.X)
-        if isempty(R⋂I)
+        R⋂I = Intersection(reach_set.X, invariant)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
+        if !op.options[:lazy_R⋂I]
+            R⋂I = overapproximate(R⋂I, dirs)
+        end
+        push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
 
-    append!(Rsets, intersections)
+    return count
 end
 
 function post(op::LazyTextbookDiscretePost,
@@ -53,11 +70,15 @@ function post(op::LazyTextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
     jumps += 1
     dirs = get_overapproximation_option(op, options[:n])
+    source_invariant = HS.modes[source_loc_id].X
+    inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
+
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -67,25 +88,52 @@ function post(op::LazyTextbookDiscretePost,
         guard = trans_annot.X
         assignment = trans_annot.A
 
+        if inv_isa_Hrep
+            guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
+        end
+
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            R⋂G = Intersection(reach_set.X, guard)
+            taken_intersection = false
+            if inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
+                # combine the constraints of invariant and guard
+                T = inv_isa_H_polytope || guard_isa_H_polytope ?
+                    HPolytope :
+                    HPolyhedron
+                invariant_guard = T([constraints_list(source_invariant);
+                    constraints_list(guard)])
+                R⋂G = Intersection(reach_set.X.X, invariant_guard)
+                taken_intersection = true
+            end
+            if !taken_intersection
+                R⋂G = Intersection(reach_set.X, guard)
+            end
             if isempty(R⋂G)
                 continue
             end
+
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
+            if !op.options[:lazy_R⋂G]
+               A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
+            end
+
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
-            # overapproximate final set
-            res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
 
             # check if the final set is empty
-            if isempty(res)
+            if isempty(A⌜R⋂G⌟⋂I)
                 continue
+            end
+
+            # overapproximate final set once more
+            if !op.options[:lazy_A⌜R⋂G⌟⋂I]
+                res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+            else
+                res = A⌜R⋂G⌟⋂I
             end
 
             # store result
@@ -97,6 +145,18 @@ function post(op::LazyTextbookDiscretePost,
         postprocess(op, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
+end
+
+function get_Hrep_info(set::LazySet)
+    return (false, false)
+end
+
+function get_Hrep_info(set::HPolytope)
+    return (true, true)
+end
+
+function get_Hrep_info(set::HPolyhedron)
+    return (true, false)
 end
 
 # --- line search policies ---

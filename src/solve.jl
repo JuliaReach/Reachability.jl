@@ -1,6 +1,6 @@
 export solve
 
-function default_operator(system::InitialValueProblem{<:S}) where
+function default_operator(system::InitialValueProblem{S}) where
         {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
     if S <: LinearContinuousSystem ||
             S <: LinearControlContinuousSystem ||
@@ -48,18 +48,19 @@ To see all available input options, see
 """
 function solve(system::InitialValueProblem,
                options::Options;
-               op::PostOperator=default_operator(system))
+               op::ContinuousPost=default_operator(system))
     solve!(system, Options(copy(options.dict)), op=op)
 end
 
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
-function solve!(system::InitialValueProblem{<:SYS},
+function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
+                                                     AbstractDiscreteSystem}},
                 options_input::Options;
-                op::PostOperator=default_operator(system)
-               )::AbstractSolution where {SYS<:Union{AbstractContinuousSystem,
-                                                     AbstractDiscreteSystem}}
+                op::ContinuousPost=default_operator(system),
+                invariant::LazySet=ZeroSet(statedim(system))
+               )::AbstractSolution
     options = init(op, system, options_input)
 
     # coordinate transformation
@@ -71,9 +72,10 @@ function solve!(system::InitialValueProblem{<:SYS},
             transform(system, options[:coordinate_transformation])
         tocc()
         options[:transformation_matrix] = transformation_matrix
+        invariant = options[:coordinate_transformation] * invariant
     end
 
-    post(op, system, options)
+    post(op, system, invariant, options)
 end
 
 """
@@ -150,8 +152,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}}()
 
     for (loc_id, x0) in init_sets
-        mode = HS.modes[loc_id]
-        source_invariant = mode.X
+        loc = HS.modes[loc_id]
+        source_invariant = loc.X
 
         # TODO temporary conversion
         if source_invariant isa HalfSpace
@@ -176,6 +178,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     while (!isempty(waiting_list))
         loc_id, X0, jumps = pop!(waiting_list)
         loc = HS.modes[loc_id]
+        source_invariant = loc.X
 
         # compute reach tube
         options_copy = Options(copy(options.dict))
@@ -192,9 +195,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         if haskey(options_copy.dict, :blocks)
             delete!(options_copy.dict, :blocks)
         end
-        reach_tube = solve(ContinuousSystem(loc.A, X0.X, loc.U),
-                           options_copy,
-                           op=opC)
+        reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
+                            options_copy,
+                            op=opC,
+                            invariant=source_invariant)
 
         # add the very first initial approximation
         if passed_list != nothing &&
@@ -206,20 +210,22 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             @assert reach_set.X isa CartesianProductArray
             X0hat = array(reach_set.X)[1]
             if !(X0hat isa ConvexHull)
-                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(reach_set.X,
-                    reach_set.t_start, reach_set.t_end)]
+                Xoa = LazySets.Approximations.overapproximate(reach_set.X)
+                ti, tf = reach_set.t_start, reach_set.t_end
+                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
             end
         end
 
-        tube⋂inv = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
-                             [X0.t_start, X0.t_end])
+        # count_Rsets counts the number of new reach sets added to Rsets
+        count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+                                [X0.t_start, X0.t_end])
 
         if jumps == max_jumps
             continue
         end
 
-        post(opD, HS, waiting_list, passed_list, loc_id, tube⋂inv, jumps,
-             options)
+        post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
+             jumps, options)
     end
 
     # Projection

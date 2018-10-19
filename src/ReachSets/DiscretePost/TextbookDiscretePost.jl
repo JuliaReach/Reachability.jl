@@ -18,6 +18,14 @@
 # ====================================================
 
 struct TextbookDiscretePost <: DiscretePost
+    options::Options
+end
+
+function TextbookDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
+    return TextbookDiscretePost(defaults)
 end
 
 function init(op::TextbookDiscretePost, system, options_input)
@@ -48,7 +56,9 @@ function tube⋂inv!(op::TextbookDiscretePost,
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
     #      twice. This is currently the case for 'Polyhedra' polytopes.
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+
+    # counts the number of sets R⋂I added to Rsets
+    count = 0
     for reach_set in reach_tube
         rs = reach_set.X
         @assert rs isa CartesianProductArray
@@ -60,15 +70,16 @@ function tube⋂inv!(op::TextbookDiscretePost,
             rs_converted = HPolytope(constraints_list(rs))
         end
         R⋂I = intersection(invariant, rs_converted)
-        if isempty(R⋂I)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
-        push!(intersections, ReachSet{LazySet{N}, N}(R⋂I,
+        push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
 
-    append!(Rsets, intersections)
+    return count
 end
 
 function post(op::TextbookDiscretePost,
@@ -77,6 +88,7 @@ function post(op::TextbookDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -92,8 +104,8 @@ function post(op::TextbookDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             R⋂G = intersection(guard, HPolytope(constraints_list(reach_set.X)))
             if isempty(R⋂G)

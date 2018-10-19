@@ -9,8 +9,12 @@ struct ApproximatingDiscretePost <: DiscretePost
     options::Options
 end
 
-ApproximatingDiscretePost() =
-    ApproximatingDiscretePost(Options(:overapproximation => :oct))
+function ApproximatingDiscretePost()
+    defaults = Options()
+    setindex!(defaults, Hyperrectangle, :overapproximation)
+    setindex!(defaults, false, :check_invariant_intersection)
+    return ApproximatingDiscretePost(defaults)
+end
 
 function init(op::ApproximatingDiscretePost, system, options_input)
     options_input.dict[:n] = statedim(system, 1)
@@ -34,21 +38,24 @@ function tube⋂inv!(op::ApproximatingDiscretePost,
                    Rsets,
                    start_interval
                   ) where {N}
-    intersections = Vector{ReachSet{LazySet{N}, N}}()
+
     dirs = get_overapproximation_option(op, dim(invariant))
+
+    # counts the number of sets R⋂I added to Rsets
+    count = 0
     for reach_set in reach_tube
         R⋂I = Intersection(invariant, reach_set.X)
-        if isempty(R⋂I)
+        if op.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         # return an overapproximation
-        push!(intersections, ReachSet{LazySet{N}, N}(
+        push!(Rsets, ReachSet{LazySet{N}, N}(
             overapproximate(R⋂I, dirs),
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
-
-    append!(Rsets, intersections)
+    return count
 end
 
 function post(op::ApproximatingDiscretePost,
@@ -57,6 +64,7 @@ function post(op::ApproximatingDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
+              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -73,17 +81,19 @@ function post(op::ApproximatingDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
-        sizehint!(post_jump, length(tube⋂inv))
-        for reach_set in tube⋂inv
+        sizehint!(post_jump, count_Rsets)
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             R⋂G = Intersection(reach_set.X, guard)
             if isempty(R⋂G)
                 continue
             end
+
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
-            # intersect with target invariant
             A⌜R⋂G⌟o = overapproximate(A⌜R⋂G⌟, dirs)
+
+            # intersect with target invariant
             A⌜R⋂G⌟o⋂I = Intersection(target_invariant, A⌜R⋂G⌟o)
 
             # check if the final set is empty
