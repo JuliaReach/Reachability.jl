@@ -188,7 +188,7 @@ julia> dim(next_set(inputset(sext), 1))
 function add_dimension(cs, m=1)
     Aext = add_dimension(cs.s.A, m)
     X0ext = add_dimension(cs.x0, m)
-    if method_exists(inputset, Tuple{typeof(cs.s)})
+    if hasmethod(inputset, Tuple{typeof(cs.s)})
         Uext = map(x -> add_dimension(x, m), inputset(cs))
         return ContinuousSystem(Aext, X0ext, Uext)
     else
