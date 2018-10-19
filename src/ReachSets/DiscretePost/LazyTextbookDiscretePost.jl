@@ -91,6 +91,13 @@ function post(op::LazyTextbookDiscretePost,
         if inv_isa_Hrep
             guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
         end
+        combine_constraints = inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
+        if combine_constraints # combine the constraints of invariant and guard
+            T = inv_isa_H_polytope || guard_isa_H_polytope ? HPolytope : HPolyhedron
+            # TODO: remove redundant constraints => use intersection(..)
+            invariant_guard = T([constraints_list(source_invariant);
+                                 constraints_list(guard)])
+        end
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
@@ -98,13 +105,7 @@ function post(op::LazyTextbookDiscretePost,
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             taken_intersection = false
-            if inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
-                # combine the constraints of invariant and guard
-                T = inv_isa_H_polytope || guard_isa_H_polytope ?
-                    HPolytope :
-                    HPolyhedron
-                invariant_guard = T([constraints_list(source_invariant);
-                    constraints_list(guard)])
+            if combine_constraints
                 R⋂G = Intersection(reach_set.X.X, invariant_guard)
                 taken_intersection = true
             end
