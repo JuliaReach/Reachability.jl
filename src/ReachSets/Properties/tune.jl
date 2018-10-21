@@ -44,18 +44,19 @@ function tune_δ(algorithm::Function,
     i = 0
     while true
         i += 1
-        info("Iteration ", i)
-        info("δ: ", δ)
+        info("Iteration $i")
+        info("δ: $δ")
 
-        @assert (δ >= biggest_working && δ <= smallest_failing) "invalid δ: $δ (not in [$biggest_working, $smallest_failing])"
+        @assert (δ >= biggest_working && δ <= smallest_failing) "invalid δ: " *
+            "$δ (not in [$biggest_working, $smallest_failing])"
 
         # choose N according to δ
         N = ceil(Int, time_horizon / δ)
 
         # check property
-        tic()
-        answer = algorithm(N, δ)
-        runtime = toq()
+        runtime = @elapsed begin
+            answer = algorithm(N, δ)
+        end
         if answer
             # success
             biggest_working = δ
@@ -93,7 +94,8 @@ function tune_δ(algorithm::Function,
 
         δ = δ_new
     end
-    info("biggest working δ found: ", biggest_working, " (runs in ", runtime_best, " sec)")
-    info("smallest failing δ found: ", smallest_failing_modified ? smallest_failing : "--")
+    info("biggest working δ found: $biggest_working, runs in $runtime_best sec)")
+    info("smallest failing δ found: " *
+         (smallest_failing_modified ? "$smallest_failing" : "--"))
     return δ
 end
