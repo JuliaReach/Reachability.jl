@@ -50,10 +50,6 @@ table.
 For additional information on other algorithms see the documentation in their
 corresponding source files.
 
-[1] Decomposing Reachability Computations for Affine Systems.
-Sergiy Bogomolov, M. F., Goran Frehse, Andreas Podelski, Christian Schilling,
-Frédéric Viry. 2017, to be submitted.
-
 ## Projections
 
 The final goal of any reachability computation is a sequence of points (vertices)
