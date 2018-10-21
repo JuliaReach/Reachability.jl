@@ -84,6 +84,8 @@ using ..Utils
 using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 
+import Reachability.info
+
 include("../compat.jl")
 
 import LazySets.Approximations:symmetric_interval_hull,

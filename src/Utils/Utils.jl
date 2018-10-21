@@ -239,11 +239,11 @@ function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, p
     labels = copy(plot_labels)
     if isempty(labels[1])
         xaxis = plot_vars[1]
-        labels[1] = (xaxis == 0) ? "t" : "x" * dec(xaxis)
+        labels[1] = (xaxis == 0) ? "t" : "x" * string(xaxis)
     end
     if isempty(labels[2])
         yaxis = plot_vars[2]
-        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * dec(yaxis))
+        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * string(yaxis))
     end
     return labels
 end
