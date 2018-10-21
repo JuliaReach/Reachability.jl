@@ -89,7 +89,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 block = ϕpowerk[bi, bj]
-                if findfirst(block) != 0
+                if hasnz(block)
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
@@ -267,7 +267,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 πbi = block(ϕpowerk_πbi, bj)
-                if findfirst(πbi) != 0
+                if hasnz(πbi)
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
