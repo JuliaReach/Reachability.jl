@@ -4,39 +4,42 @@
 
 import LazySets.use_precise_ρ
 
-struct LazyTextbookDiscretePost <: DiscretePost
-    options::Options
+struct LazyDiscretePost <: DiscretePost
+    𝑂::Options
 end
 
-# default options for the LazyTextbookDiscretePost discrete post operator
-function LazyTextbookDiscretePost()
-    defaults = Options()
-    setindex!(defaults, Hyperrectangle, :overapproximation)
-    setindex!(defaults, false, :check_invariant_intersection)
-    setindex!(defaults, false, :lazy_R⋂I)
-    setindex!(defaults, true, :lazy_R⋂G)
-    setindex!(defaults, true, :lazy_A⌜R⋂G⌟⋂I)
-    return LazyTextbookDiscretePost(defaults)
+# convenience constructor from pairs of symbols
+LazyDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
+
+# default options for the LazyDiscretePost discrete post operator
+LazyDiscretePost() = LazyDiscretePost(Options())
+
+function LazyDiscretePost(𝑂::Options)
+    𝑂copy = copy(𝑂)
+    # TODO: pass 𝑂 directly?
+    check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
+    check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], false)
+    check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
+    check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
+    check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
+    return LazyDiscretePost(𝑂copy)
 end
 
-function init(op::LazyTextbookDiscretePost, system, options_input)
-    options_input.dict[:n] = statedim(system, 1)
+init(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒟, 𝒮, 𝑂)
+
+function init!(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
+    𝑂[:n] = statedim(𝒮, 1)
 
     # solver-specific options (adds default values for unspecified options)
-    options = validate_solver_options_and_add_default_values!(options_input)
+    𝑂out = validate_solver_options_and_add_default_values!(𝑂)
 
     # Input -> Output variable mapping
-    options.dict[:inout_map] =
-        inout_map_reach(options[:partition], options[:blocks], options[:n])
+    𝑂out[:inout_map] = inout_map_reach(𝑂out[:partition], 𝑂out[:blocks], 𝑂out[:n])
 
-    # set up operator-specific options
-    @assert haskey(op.options.dict, :overapproximation)
-    
-
-    return options
+    return 𝑂out
 end
 
-function tube⋂inv!(op::LazyTextbookDiscretePost,
+function tube⋂inv!(op::LazyDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
@@ -64,7 +67,7 @@ function tube⋂inv!(op::LazyTextbookDiscretePost,
     return count
 end
 
-function post(op::LazyTextbookDiscretePost,
+function post(op::LazyDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
@@ -163,13 +166,13 @@ end
 # --- line search policies ---
 
 # usually do not use line search
-function use_precise_ρ(op::LazyTextbookDiscretePost,
+function use_precise_ρ(op::LazyDiscretePost,
                              cap::Intersection{N})::Bool where N<:Real
     return false
 end
 
 # use line search for the outermost level, which is a LinearMap
-function use_precise_ρ(op::LazyTextbookDiscretePost,
+function use_precise_ρ(op::LazyDiscretePost,
                              cap::Intersection{N, <:LinearMap{N}}
                             )::Bool where N<:Real
     return true

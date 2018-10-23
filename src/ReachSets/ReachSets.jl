@@ -181,7 +181,7 @@ export PostOperator,
        tube⋂inv!,
        TextbookDiscretePost,
        ApproximatingDiscretePost,
-       LazyTextbookDiscretePost
+       LazyDiscretePost
 
 # ========================
 # Reachability Algorithms
@@ -207,11 +207,11 @@ include("ContinuousPost/BFFPSV18.jl")
 export BFFPSV18
 
 include("DiscretePost/TextbookDiscretePost.jl")
-include("DiscretePost/LazyTextbookDiscretePost.jl")
+include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ApproximatingDiscretePost.jl")
 
 export TextbookDiscretePost,
-       LazyTextbookDiscretePost,
+       LazyDiscretePost,
        ApproximatingDiscretePost
 
 # =========================
