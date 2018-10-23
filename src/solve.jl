@@ -25,7 +25,7 @@ Return the default post operators for a given hybrid system.
 
 ### Input
 
-- `𝒮` -- initial value problem of an hybrid systen, for dispatch
+- `𝒮` -- initial value problem of a hybrid system
 
 ### Output
 
