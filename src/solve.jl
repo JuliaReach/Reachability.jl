@@ -18,9 +18,23 @@ function default_operator(system::InitialValueProblem{S}) where
     return op
 end
 
-function default_operator(system::InitialValueProblem{<:HybridSystem})
+"""
+    default_operator(𝒮::InitialValueProblem{<:HybridSystem})
+
+Return the default post operators for a given hybrid system.
+
+### Input
+
+- `𝒮` -- initial value problem of a hybrid system
+
+### Output
+
+The pair `opC, opD` where `opC` is a continuous post-operator and `opD` is a
+discrete post-operator.
+"""
+function default_operator(𝒮::InitialValueProblem{<:HybridSystem})
     opC = BFFPSV18()
-    opD = TextbookDiscretePost()
+    opD = LazyDiscretePost()
     return opC, opD
 end
 

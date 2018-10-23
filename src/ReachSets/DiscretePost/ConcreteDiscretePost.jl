@@ -1,34 +1,34 @@
-# ====================================================
-# Textbook implementation of a discrete post operator.
-# Uses concrete intersection.
-#
-### Notes
-#
-# The current implementation requires that the `Polyhedra` # library is loaded,
-# because some concrete operations between polytopes are used.
-#
-# Currently, we assume that source invariants, target invariants and guards are
-# polytopes in constraint representation resp. HalfSpaces.
-#
-### Algorithm
-#
-# The algorithm is based on [Flowpipe-Guard Intersection for Reachability
-# Computations with Support Functions](
-# http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
-# ====================================================
+"""
+    ConcreteDiscretePost <: DiscretePost
 
-struct TextbookDiscretePost <: DiscretePost
+Textbook implementation of a discrete post operator, using concrete polyhedra
+intersections.
+
+### Notes
+
+This operator requires that the `Polyhedra` library is loaded,
+because some concrete operations between polytopes are used.
+
+Currently, we assume that source invariants, target invariants and guards are
+polytopes in constraint representation resp. half-spaces.
+
+### Algorithm
+
+The algorithm is based on [Flowpipe-Guard Intersection for Reachability
+Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
+"""
+struct ConcreteDiscretePost <: DiscretePost
     options::Options
 end
 
-function TextbookDiscretePost()
+function ConcreteDiscretePost()
     defaults = Options()
     setindex!(defaults, Hyperrectangle, :overapproximation)
     setindex!(defaults, false, :check_invariant_intersection)
-    return TextbookDiscretePost(defaults)
+    return ConcreteDiscretePost(defaults)
 end
 
-function init(op::TextbookDiscretePost, system, options_input)
+function init(op::ConcreteDiscretePost, system, options_input)
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
@@ -44,7 +44,7 @@ function init(op::TextbookDiscretePost, system, options_input)
     return options
 end
 
-function tube⋂inv!(op::TextbookDiscretePost,
+function tube⋂inv!(op::ConcreteDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
@@ -82,7 +82,7 @@ function tube⋂inv!(op::TextbookDiscretePost,
     return count
 end
 
-function post(op::TextbookDiscretePost,
+function post(op::ConcreteDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
