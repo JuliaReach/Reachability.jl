@@ -42,8 +42,7 @@ options = Options(:mode=>"reach", :vars=>[1, 2], :T=>5.0, :δ=>0.1,
 sol = solve(system, options);
 
 # specify lazy discrete post operator
-sol = solve(system, options, Reachability.BFFPSV18(),
-            Reachability.ReachSets.LazyDiscretePost());
+sol = solve(system, options, BFFPSV18(), LazyDiscretePost());
 
 # specify overapproximating discrete post operator
 sol = solve(system, options, Reachability.BFFPSV18(),
