@@ -30,7 +30,7 @@ init(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒟, 
 
 # TODO: use 𝑂 only?
 function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
-    𝑂[:n] = statedim(𝒫, 1)
+    𝑂[:n] = statedim(𝒮, 1)
 
     # solver-specific options (adds default values for unspecified options)
     𝑂out = validate_solver_options_and_add_default_values!(𝑂)
