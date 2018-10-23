@@ -29,8 +29,8 @@ LazyDiscretePost() = LazyDiscretePost(Options())
 init(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒟, 𝒮, copy(𝑂))
 
 # TODO: use 𝑂 only?
-function init!(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
-    𝑂[:n] = statedim(𝒮, 1)
+function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
+    𝑂[:n] = statedim(𝒫, 1)
 
     # solver-specific options (adds default values for unspecified options)
     𝑂out = validate_solver_options_and_add_default_values!(𝑂)
@@ -41,23 +41,23 @@ function init!(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     return 𝑂out
 end
 
-function tube⋂inv!(op::LazyDiscretePost,
+function tube⋂inv!(𝒫::LazyDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
                   ) where {N}
 
-    dirs = op.options[:overapproximation]
+    dirs = 𝒫.options[:overapproximation]
 
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
         R⋂I = Intersection(reach_set.X, invariant)
-        if op.options[:check_invariant_intersection] && isempty(R⋂I)
+        if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
-        if !op.options[:lazy_R⋂I]
+        if !𝒫.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
@@ -69,7 +69,7 @@ function tube⋂inv!(op::LazyDiscretePost,
     return count
 end
 
-function post(op::LazyDiscretePost,
+function post(𝒫::LazyDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
@@ -80,7 +80,7 @@ function post(op::LazyDiscretePost,
               options
              ) where {N}
     jumps += 1
-    dirs = get_overapproximation_option(op, options[:n])
+    dirs = get_overapproximation_option(𝒫, options[:n])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
@@ -96,7 +96,7 @@ function post(op::LazyDiscretePost,
         if inv_isa_Hrep
             guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
         end
-        combine_constraints = inv_isa_Hrep && guard_isa_Hrep && op.options[:lazy_R⋂I]
+        combine_constraints = inv_isa_Hrep && guard_isa_Hrep && 𝒫.options[:lazy_R⋂I]
         if combine_constraints # combine the constraints of invariant and guard
             T = inv_isa_H_polytope || guard_isa_H_polytope ? HPolytope : HPolyhedron
             # TODO: remove redundant constraints => use intersection(..)
@@ -123,7 +123,7 @@ function post(op::LazyDiscretePost,
 
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
-            if !op.options[:lazy_R⋂G]
+            if !𝒫.options[:lazy_R⋂G]
                A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
             end
 
@@ -136,7 +136,7 @@ function post(op::LazyDiscretePost,
             end
 
             # overapproximate final set once more
-            if !op.options[:lazy_A⌜R⋂G⌟⋂I]
+            if !𝒫.options[:lazy_A⌜R⋂G⌟⋂I]
                 res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
             else
                 res = A⌜R⋂G⌟⋂I
@@ -148,7 +148,7 @@ function post(op::LazyDiscretePost,
                                                      reach_set.t_end))
         end
 
-        postprocess(op, HS, post_jump, options, waiting_list, passed_list,
+        postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
 end
@@ -168,14 +168,14 @@ end
 # --- line search policies ---
 
 # usually do not use line search
-function use_precise_ρ(op::LazyDiscretePost,
-                             cap::Intersection{N})::Bool where N<:Real
+function use_precise_ρ(𝒫::LazyDiscretePost,
+                       cap::Intersection{N})::Bool where N<:Real
     return false
 end
 
 # use line search for the outermost level, which is a LinearMap
-function use_precise_ρ(op::LazyDiscretePost,
-                             cap::Intersection{N, <:LinearMap{N}}
-                            )::Bool where N<:Real
+function use_precise_ρ(𝒫::LazyDiscretePost,
+                       cap::Intersection{N, <:LinearMap{N}}
+                       )::Bool where N<:Real
     return true
 end
