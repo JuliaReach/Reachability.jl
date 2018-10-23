@@ -179,7 +179,7 @@ export PostOperator,
        init,
        post,
        tube⋂inv!,
-       TextbookDiscretePost,
+       ConcreteDiscretePost,
        ApproximatingDiscretePost,
        LazyDiscretePost
 
@@ -206,11 +206,11 @@ include("ContinuousPost/BFFPSV18.jl")
 
 export BFFPSV18
 
-include("DiscretePost/TextbookDiscretePost.jl")
+include("DiscretePost/ConcreteDiscretePost.jl")
 include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ApproximatingDiscretePost.jl")
 
-export TextbookDiscretePost,
+export ConcreteDiscretePost,
        LazyDiscretePost,
        ApproximatingDiscretePost
 

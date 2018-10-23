@@ -20,7 +20,7 @@ end
 
 function default_operator(system::InitialValueProblem{<:HybridSystem})
     opC = BFFPSV18()
-    opD = TextbookDiscretePost()
+    opD = ConcreteDiscretePost()
     return opC, opD
 end
 

@@ -30,7 +30,7 @@ include("solve.jl")
 include("plot_recipes.jl")
 
 # specify behavior of line search algorithm by dispatching on post operator
-global discrete_post_operator = TextbookDiscretePost()
+global discrete_post_operator = ConcreteDiscretePost()
 
 @suppress_err begin
     function use_precise_ρ(cap::Intersection{N})::Bool where N<:Real
