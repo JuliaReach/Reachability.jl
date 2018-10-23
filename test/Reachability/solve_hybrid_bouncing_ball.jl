@@ -45,5 +45,4 @@ sol = solve(system, options);
 sol = solve(system, options, BFFPSV18(), LazyDiscretePost());
 
 # specify overapproximating discrete post operator
-sol = solve(system, options, Reachability.BFFPSV18(),
-            Reachability.ReachSets.ApproximatingDiscretePost());
+sol = solve(system, options, BFFPSV18(), ApproximatingDiscretePost());
