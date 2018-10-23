@@ -856,11 +856,12 @@ end
     check_aliases_and_add_default_value!(dict, dict_copy, aliases, default_value, [modify_dict])
 
 This function has several purposes:
+
 - translate aliases to the option that is used internally
 - check that not several aliases were used at the same time
 - assign default values for undefined options
 
-INPUT:
+### Input
 
 - `dict`          -- a dictionary of options
 - `dict_copy`     -- a copy of the dictionary of options for internal names

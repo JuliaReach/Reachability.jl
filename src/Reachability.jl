@@ -16,10 +16,9 @@ include("options.jl")
 include("ReachSets/ReachSets.jl")
 include("Transformations/Transformations.jl")
 
-@reexport using Reachability.Utils
-
-using Reachability.ReachSets,
-      Reachability.Transformations
+@reexport using Reachability.Utils,
+                Reachability.ReachSets,
+                Reachability.Transformations
 
 export project,
        LinearConstraintProperty, Clause,
