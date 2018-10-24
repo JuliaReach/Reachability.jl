@@ -7,9 +7,9 @@ export BFFPSV18
 """
     BFFPSV18 <: ContinuousPost
 
-Implementation of the reachability algorithm for purely continuous linear affine
-systems using block decompositons by
-Bogomolov, Forets, Frehse, Podelski, Schilling, Viry. HSCC 2018
+Implementation of the reachability algorithm for purely continuous linear
+time-invariant systems using block decompositons by S. Bogomolov, M. Forets,
+G. Frehse, A. Podelski, C. Schilling and F. Viry [1].
 
 ### Fields
 
@@ -17,7 +17,9 @@ Bogomolov, Forets, Frehse, Podelski, Schilling, Viry. HSCC 2018
 
 ### Algorithm
 
-See [Reach Set Approximation through Decomposition with Low-dimensional Sets
+We refer to [1] for technical details.
+
+[1] [Reach Set Approximation through Decomposition with Low-dimensional Sets
 and High-dimensional Matrices](https://dl.acm.org/citation.cfm?id=3178128).
 S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry.
 HSCC '18 Proceedings of the 21st International Conference on Hybrid Systems:
