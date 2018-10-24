@@ -30,7 +30,7 @@ struct ConcreteDiscretePost <: DiscretePost
         𝑂copy = copy(𝑂)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
-        return new(defaults)
+        return new(𝑂copy)
     end
 end
 
