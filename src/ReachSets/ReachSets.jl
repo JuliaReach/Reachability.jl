@@ -200,11 +200,15 @@ push!(available_algorithms,
 
 export available_algorithms
 
+# ==========================
+# Continuous post operators
+# ==========================
 include("ContinuousPost/BFFPSV18.jl")
-
-export BFFPSV18
-
 include("DiscretePost/ConcreteDiscretePost.jl")
+
+# ==========================
+# Discrete post operators
+# ==========================
 include("DiscretePost/LazyDiscretePost.jl")
 
 # =========================

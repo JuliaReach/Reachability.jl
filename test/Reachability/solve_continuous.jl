@@ -22,8 +22,6 @@ s = solve(ContinuousSystem(A, X0), :T=>0.1, :partition=>[1:2, 3:4], :vars=>[1,3]
 # but Hyperrectangle for set_type_proj
 s = solve(ContinuousSystem(A, X0), :T=>0.1, :vars=>[1,3])
 
-
-
 # ===============================
 # Test projection
 # ===============================
