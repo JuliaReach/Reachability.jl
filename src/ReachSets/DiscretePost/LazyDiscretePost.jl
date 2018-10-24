@@ -1,21 +1,30 @@
-# ==============================================================================
-# Textbook implementation of a discrete post operator, but with lazy operations.
-# ==============================================================================
-
 import LazySets.use_precise_ρ
-import Reachability.check_aliases_and_add_default_value!
 
+"""
+    LazyDiscretePost <: DiscretePost
+
+Textbook implementation of a discrete post operator, but with lazy intersections.
+
+### Fields
+
+- `options` -- an `Options` structure that holds the algorithm-specific options
+
+### Algorithm
+
+The algorithm is based on [Flowpipe-Guard Intersection for Reachability
+Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
+"""
 struct LazyDiscretePost <: DiscretePost
     options::Options
 
     function LazyDiscretePost(𝑂::Options)
         𝑂copy = copy(𝑂)
         # TODO: pass 𝑂 directly?
-        check_aliases_and_add_default_value!(𝑂copy.dict, 𝑂.dict, [:check_invariant_intersection], false)
-        check_aliases_and_add_default_value!(𝑂copy.dict, 𝑂.dict, [:overapproximation], Hyperrectangle)
-        check_aliases_and_add_default_value!(𝑂copy.dict, 𝑂.dict, [:lazy_R⋂I], false)
-        check_aliases_and_add_default_value!(𝑂copy.dict, 𝑂.dict, [:lazy_R⋂G], true)
-        check_aliases_and_add_default_value!(𝑂copy.dict, 𝑂.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
         return new(𝑂)
     end
 end
@@ -26,7 +35,7 @@ LazyDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyDiscretePost(Options(Dict{Sy
 # default options for the LazyDiscretePost discrete post operator
 LazyDiscretePost() = LazyDiscretePost(Options())
 
-init(𝒟::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒟, 𝒮, copy(𝑂))
+init(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
 
 # TODO: use 𝑂 only?
 function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
