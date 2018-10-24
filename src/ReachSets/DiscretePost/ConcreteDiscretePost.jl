@@ -1,3 +1,5 @@
+export ConcreteDiscretePost
+
 """
     ConcreteDiscretePost <: DiscretePost
 

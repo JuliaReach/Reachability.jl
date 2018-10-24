@@ -1,3 +1,6 @@
+export LazyDiscretePost,
+       ApproximatingDiscretePost
+
 import LazySets.use_precise_ρ
 
 """
@@ -35,6 +38,29 @@ LazyDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyDiscretePost(Options(Dict{Sy
 # default options for the LazyDiscretePost discrete post operator
 LazyDiscretePost() = LazyDiscretePost(Options())
 
+"""
+    ApproximatingDiscretePost()
+
+Textbook implementation of a discrete post operator, but with lazy intersections
+followed by an overapproximation. This is a particular case of the
+`LazyDiscretePost`.
+"""
+function ApproximatingDiscretePost()
+    return LazyDiscretePost(:check_invariant_intersection=>false,
+                            :overapproximation=>Hyperrectangle,
+                            :lazy_R⋂I=>false,
+                            :lazy_R⋂G=>false,
+                            :lazy_A⌜R⋂G⌟⋂I=>false)
+end
+
+function ApproximatingDiscretePost(𝑂::Options)
+    𝑂_default = Options(:lazy_R⋂I=>false,
+                        :lazy_R⋂G=>false,
+                        :lazy_A⌜R⋂G⌟⋂I=>false)
+    merge!(𝑂_default, 𝑂)
+    LazyDiscretePost(𝑂_default)
+end
+
 init(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
 
 # TODO: use 𝑂 only?
@@ -57,11 +83,12 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
                    start_interval
                   ) where {N}
 
+    # TODO dirs = get_overapproximation_option(op, dim(invariant)) ?
     dirs = 𝒫.options[:overapproximation]
 
     # counts the number of sets R⋂I added to Rsets
     count = 0
-    for reach_set in reach_tube
+    @inbounds for reach_set in reach_tube
         R⋂I = Intersection(reach_set.X, invariant)
         if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
             break
@@ -89,6 +116,7 @@ function post(𝒫::LazyDiscretePost,
               options
              ) where {N}
     jumps += 1
+    # TODO? dirs = 𝒫.options[:overapproximation]
     dirs = get_overapproximation_option(𝒫, options[:n])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
