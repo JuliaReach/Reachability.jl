@@ -109,7 +109,7 @@ for conflicting keys a later object overrides a previous value.
 An `Options` object.
 """
 function merge!(op1::Options, opn::Options...)::Options
-    dict = Dict{Symbol,Any}(op1.dict)
+    dict = op1.dict
     for i in 1 : length(opn)
         merge!(dict, opn[i].dict)
     end
