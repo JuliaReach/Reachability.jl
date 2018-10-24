@@ -25,7 +25,7 @@ struct LazyDiscretePost <: DiscretePost
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
-        return new(𝑂)
+        return new(𝑂copy)
     end
 end
 
