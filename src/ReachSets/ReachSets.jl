@@ -178,10 +178,7 @@ export PostOperator,
        DiscretePost,
        init,
        post,
-       tube⋂inv!,
-       ConcreteDiscretePost,
-       ApproximatingDiscretePost,
-       LazyDiscretePost
+       tube⋂inv!
 
 # ========================
 # Reachability Algorithms
@@ -209,11 +206,6 @@ export BFFPSV18
 
 include("DiscretePost/ConcreteDiscretePost.jl")
 include("DiscretePost/LazyDiscretePost.jl")
-include("DiscretePost/ApproximatingDiscretePost.jl")
-
-export ConcreteDiscretePost,
-       LazyDiscretePost,
-       ApproximatingDiscretePost
 
 # =========================
 # External reach interface
