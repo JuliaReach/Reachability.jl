@@ -95,9 +95,7 @@ end
 """
     merge!(op1, opn)
 
-Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
-Values are inserted in the order in which the function arguments occur, i.e.,
-for conflicting keys a later object overrides a previous value.
+Updates the first argument options `op1` with options from `opn`.
 
 ### Input
 
@@ -107,6 +105,12 @@ for conflicting keys a later object overrides a previous value.
 ### Output
 
 An `Options` object.
+
+### Algorithm 
+
+Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
+Values are inserted in the order in which the function arguments occur, i.e.,
+for conflicting keys a later object overrides a previous value.
 """
 function merge!(op1::Options, opn::Options...)::Options
     dict = op1.dict
