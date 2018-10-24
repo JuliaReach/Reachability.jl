@@ -118,10 +118,10 @@ function post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
             return CheckSolution(true, -1, 𝑂)
         else
             info("The property may be violated at index $answer," *
-                " (time point $(answer * options[:δ]))!")
+                " (time point $(answer * 𝑂[:δ]))!")
             return CheckSolution(false, answer, 𝑂)
         end
     else
-        error("unsupported mode $(options[:mode])")
+        error("unsupported mode $(𝑂[:mode])")
     end # mode
 end
