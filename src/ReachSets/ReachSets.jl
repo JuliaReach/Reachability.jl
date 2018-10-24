@@ -186,6 +186,7 @@ export PostOperator,
 # ========================
 # Reachability Algorithms
 # ========================
+import Reachability.check_aliases_and_add_default_value!
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()

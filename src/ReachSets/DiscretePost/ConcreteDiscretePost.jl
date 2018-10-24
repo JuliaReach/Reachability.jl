@@ -4,6 +4,10 @@
 Textbook implementation of a discrete post operator, using concrete polyhedra
 intersections.
 
+### Fields
+
+- `options` -- an `Options` structure that holds the algorithm-specific options
+
 ### Notes
 
 This operator requires that the `Polyhedra` library is loaded,
@@ -19,32 +23,38 @@ Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/
 """
 struct ConcreteDiscretePost <: DiscretePost
     options::Options
+
+    function ConcreteDiscretePost(𝑂::Options)
+        𝑂copy = copy(𝑂)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
+        return new(𝑂copy)
+    end
 end
 
-function ConcreteDiscretePost()
-    defaults = Options()
-    setindex!(defaults, Hyperrectangle, :overapproximation)
-    setindex!(defaults, false, :check_invariant_intersection)
-    return ConcreteDiscretePost(defaults)
-end
+# convenience constructor from pairs of symbols
+ConcreteDiscretePost(𝑂::Pair{Symbol,<:Any}...) = ConcreteDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
 
-function init(op::ConcreteDiscretePost, system, options_input)
+# default options for the LazyDiscretePost discrete post operator
+ConcreteDiscretePost() = ConcreteDiscretePost(Options())
+
+init(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
+
+function init!(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
-    options_input.dict[:n] = statedim(system, 1)
+    𝑂.dict[:n] = statedim(𝒮, 1)
 
     # solver-specific options (adds default values for unspecified options)
-    options = validate_solver_options_and_add_default_values!(options_input)
+    𝑂out = validate_solver_options_and_add_default_values!(𝑂)
 
     # Input -> Output variable mapping
-    options.dict[:inout_map] =
-        inout_map_reach(options[:partition], options[:blocks], options[:n])
-
-    return options
+    𝑂out.dict[:inout_map] = inout_map_reach(𝑂out[:partition], 𝑂out[:blocks], 𝑂out[:n])
+    return 𝑂out
 end
 
-function tube⋂inv!(op::ConcreteDiscretePost,
+function tube⋂inv!(𝒫::ConcreteDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
@@ -70,7 +80,7 @@ function tube⋂inv!(op::ConcreteDiscretePost,
             rs_converted = HPolytope(constraints_list(rs))
         end
         R⋂I = intersection(invariant, rs_converted)
-        if op.options[:check_invariant_intersection] && isempty(R⋂I)
+        if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
@@ -82,7 +92,7 @@ function tube⋂inv!(op::ConcreteDiscretePost,
     return count
 end
 
-function post(op::ConcreteDiscretePost,
+function post(𝒫::ConcreteDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
@@ -126,7 +136,7 @@ function post(op::ConcreteDiscretePost,
                                                      reach_set.t_end))
         end
 
-        postprocess(op, HS, post_jump, options, waiting_list, passed_list,
+        postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
 end
