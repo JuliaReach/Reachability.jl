@@ -27,10 +27,12 @@ struct ConcreteDiscretePost <: DiscretePost
     options::Options
 
     function ConcreteDiscretePost(𝑂::Options)
-        𝑂copy = copy(𝑂)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
-        return new(𝑂copy)
+        𝑂new = Options(
+            :check_invariant_intersection => false,
+            :overapproximation => Hyperrectangle
+            )
+        merge!(𝑂new, 𝑂)
+        return new(𝑂new)
     end
 end
 
