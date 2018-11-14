@@ -9,7 +9,8 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 @reexport using LazySets
 
 import LazySets.use_precise_ρ
-
+import LazySets.LinearMap
+ 
 include("logging.jl")
 include("Utils/Utils.jl")
 include("options.jl")
