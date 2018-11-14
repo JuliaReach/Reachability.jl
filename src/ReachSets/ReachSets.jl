@@ -84,6 +84,8 @@ using ..Utils
 using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 
+# fix namespace conflicts with MathematicalSystems
+import LazySets.LinearMap
 import Reachability.info
 
 include("../compat.jl")

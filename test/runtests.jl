@@ -1,6 +1,9 @@
 #!/usr/bin/env julia
 using LazySets, Reachability, MathematicalSystems
 
+# fix namespace conflicts with MathematicalSystems
+import LazySets.LinearMap
+
 # compatibility between Julia versions
 include("../src/compat.jl")
 using Compat.Test
