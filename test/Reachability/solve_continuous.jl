@@ -3,6 +3,11 @@
 # ===============================
 using Reachability, MathematicalSystems
 
+# compatibility of julia versions
+if VERSION >= v"0.7"
+    using LinearAlgebra, SparseArrays
+end
+
 # linear ODE: x' = Ax
 A = [ 0.0509836  0.168159  0.95246   0.33644
       0.42377    0.67972   0.129232  0.126662
@@ -88,3 +93,33 @@ A = [1 2 1.; 0 0. 1; -2 1 4]
 X0 = BallInf(ones(3), 0.1)
 system = ContinuousSystem(A, X0)
 s = solve(system, :T=>0.1, :vars=>1:3, :partition=>[1:2, 3:3])
+
+# =======================================================
+# Affine ODE with a nondeterministic input, x' = Ax + Bu
+# =======================================================
+# linear ODE: x' = Ax + Bu
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+
+B = [0.866688  0.771231
+    0.065935  0.349839
+    0.109643  0.904222
+    0.292474  0.227857]
+
+# non-deterministic inputs
+U = Interval(0.99, 1.01) × Interval(0.99, 1.01)
+
+# initial set
+X0 = BallInf(ones(4), 0.1)
+
+# dense identity matrix
+E = Matrix{Float64}(I, size(A))
+
+# instantiate system
+Δ = ConstrainedLinearControlContinuousSystem(A, E, nothing, ConstantInput(B*U))
+𝒮 = InitialValueProblem(Δ, X0)
+
+# default options (computes all variables)
+s = solve(𝒮, :T=>0.1)
