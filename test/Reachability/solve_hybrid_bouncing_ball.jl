@@ -2,7 +2,7 @@
 # See: https://juliareach.github.io/SX.jl/latest/examples/bball.html
 # ============================
 
-using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra
+using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra, Optim
 import LazySets.HalfSpace
 
 # Transition graph (automaton)
