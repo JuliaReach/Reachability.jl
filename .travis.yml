@@ -5,7 +5,6 @@ os:
 julia:
   - 0.6
   - 0.7
-  - 1
 notifications:
   email: false
 git:
@@ -15,7 +14,6 @@ git:
 matrix:
  allow_failures:
    - julia: 0.7
-   - julia: 1
 
 ## uncomment the following lines to override the default test script
 script:
