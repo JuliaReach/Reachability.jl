@@ -3,7 +3,7 @@
 # Section 1.3.4.
 # ============================
 
-using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra, Optim
+using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra
 
 # fix namamespace conflicts with Polyhedra
 import LazySets.HalfSpace
