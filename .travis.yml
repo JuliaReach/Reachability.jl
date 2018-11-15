@@ -19,7 +19,12 @@ matrix:
 
 ## uncomment the following lines to override the default test script
 script:
- - julia -e 'Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.checkout("LazySets"); Pkg.test("Reachability"; coverage=true)'
+ - julia -e 'VERSION >= v"0.7-" && using Pkg;
+             VERSION >= v"0.7-" && Pkg.develop("LazySets");
+             Pkg.clone(pwd());
+             VERSION < v"0.7-" && Pkg.checkout("LazySets");
+             Pkg.build("Reachability");
+             Pkg.test("Reachability"; coverage=true)'
 after_success:
   - julia -e 'Pkg.add("Documenter")'
   - julia -e 'cd(Pkg.dir("Reachability")); include(joinpath("docs", "make.jl"))'
