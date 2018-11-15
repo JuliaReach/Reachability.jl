@@ -4,6 +4,8 @@
 # ============================
 
 using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra
+
+# fix namamespace conflicts with Polyhedra
 import LazySets.HalfSpace
 import Reachability.ReachSet
 
