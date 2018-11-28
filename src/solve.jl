@@ -119,6 +119,31 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
     return solve!(sys_new, copy(options), opC, opD)
 end
 
+
+"""
+get_necessary_vars(HS::HybridSystem):: Vector{Int64}
+
+Function to get only variables which are used for guard and invariant constraints
+
+### Input
+
+- `HS`  -- hybrid system
+"""
+function get_necessary_vars(HS::HybridSystem):: Vector{Int64}
+   vars = Vector{Int64}()
+   for mode in states(HS)
+       for constraint in constraints_list(HS.modes[mode].X)
+           vars = unique(vcat(vars, find(constraint.a)))
+       end
+   end
+   for transition in transitions(HS)
+       for constraint in constraints_list(HS.resetmaps[symbol(HS, transition)].X)
+           vars = unique(vcat(vars, find(constraint.a)))
+       end
+   end
+   return vars
+end
+
 function init_states_sys_from_init_set_sys(
         system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
     HS = system.s
