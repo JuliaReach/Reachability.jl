@@ -121,9 +121,9 @@ end
 
 
 """
-get_necessary_vars(HS::HybridSystem):: Vector{Int64}
+    get_necessary_vars(HS::HybridSystem)::Vector{Int64}
 
-Function to get only variables which are used for guard and invariant constraints
+Return all coordinates which appear in any guard or invariant constraint.
 
 ### Input
 
@@ -132,16 +132,16 @@ Function to get only variables which are used for guard and invariant constraint
 function get_necessary_vars(HS::HybridSystem):: Vector{Int64}
    vars = Vector{Int64}()
    for mode in states(HS)
-       for constraint in constraints_list(HS.modes[mode].X)
-           vars = unique(vcat(vars, find(constraint.a)))
+       for constraint in constraints_list(stateset(HS, mode))
+           vars = vcat(vars, findall(!iszero, constraint.a))
        end
    end
    for transition in transitions(HS)
-       for constraint in constraints_list(HS.resetmaps[symbol(HS, transition)].X)
-           vars = unique(vcat(vars, find(constraint.a)))
+       for constraint in constraints_list(stateset(HS, transition))
+           vars = vcat(vars, findall(!iszero, constraint.a))
        end
    end
-   return vars
+   return unique(vars)
 end
 
 function init_states_sys_from_init_set_sys(
