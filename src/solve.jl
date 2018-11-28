@@ -73,7 +73,7 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
                                                      AbstractDiscreteSystem}},
                 options_input::Options;
                 op::ContinuousPost=default_operator(system),
-                invariant::LazySet=ZeroSet(statedim(system))
+                invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
     options = init(op, system, options_input)
 

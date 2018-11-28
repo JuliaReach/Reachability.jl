@@ -174,7 +174,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, options[:δ])
 
     # termination function
-    if invariant isa ZeroSet
+    if invariant == nothing
         termination = (k, set, t0) -> termination_N(N, k, set, t0)
     else
         termination =
