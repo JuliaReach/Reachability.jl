@@ -1,6 +1,8 @@
 import LazySets: CacheMinkowskiSum,
                  isdisjoint
 
+import ..Utils: LDS, CLCDS
+
 """
     reach(S, invariant, options)
 
@@ -20,11 +22,17 @@ A sequence of [`ReachSet`](@ref)s.
 
 A dictionary with available algorithms is available via
 `Reachability.available_algorithms`.
+
+The numeric type of the system's coefficients and the set of initial states
+is inferred from the first parameter of the system (resp. lazy set), ie.
+`NUM = first(typeof(S.s).parameters)`.
 """
-function reach(S::IVP{<:AbstractDiscreteSystem},
-               invariant::LazySet{NUM},
+function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
+                        IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
+               invariant::Union{LazySet, Nothing},
                options::Options
-              )::Vector{<:ReachSet} where {NUM<:Real}
+              )::Vector{<:ReachSet} where {NUM <: Real}
+
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -174,7 +182,7 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
     push!(args, options[:δ])
 
     # termination function
-    if invariant isa ZeroSet
+    if invariant == nothing
         termination = (k, set, t0) -> termination_N(N, k, set, t0)
     else
         termination =
@@ -209,9 +217,9 @@ function reach(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function reach(system::IVP{<:AbstractContinuousSystem},
-               invariant::LazySet{NUM},
+               invariant::Union{LazySet, Nothing},
                options::Options
-              )::Vector{<:ReachSet} where {NUM<:Real}
+              )::Vector{<:ReachSet}
     # ===================
     # Time discretization
     # ===================
