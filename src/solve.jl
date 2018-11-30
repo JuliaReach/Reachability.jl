@@ -121,27 +121,30 @@ end
 
 
 """
-    get_necessary_vars(HS::HybridSystem)::Vector{Int64}
+    get_necessary_vars(HS::HybridSystem)::Dict{Int,Vector{Int}}
 
-Return all coordinates which appear in any guard or invariant constraint.
+Return all coordinates which appear in any guard or invariant constraint for each location.
 
 ### Input
 
 - `HS`  -- hybrid system
 """
-function get_necessary_vars(HS::HybridSystem):: Vector{Int64}
-   vars = Vector{Int64}()
+function get_necessary_vars(HS::HybridSystem)::Dict{Int,Vector{Int}}
+   result = Dict{Int,Vector{Int}}()
    for mode in states(HS)
+       vars = Vector{Int}()
        for constraint in constraints_list(stateset(HS, mode))
-           vars = vcat(vars, findall(!iszero, constraint.a))
+            append!(vars, findall(!iszero, constraint.a))
        end
-   end
-   for transition in transitions(HS)
-       for constraint in constraints_list(stateset(HS, transition))
-           vars = vcat(vars, findall(!iszero, constraint.a))
+       for transition in out_transitions(HS, mode)
+           for constraint in constraints_list(stateset(HS, transition))
+                append!(vars, findall(!iszero, constraint.a))
+           end
        end
+       result[mode] = unique(vars)
    end
-   return unique(vars)
+
+   return result
 end
 
 function init_states_sys_from_init_set_sys(
