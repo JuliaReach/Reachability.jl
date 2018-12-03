@@ -130,17 +130,17 @@ Return all coordinates which appear in any guard or invariant constraint for eac
 - `HS`  -- hybrid system
 """
 function get_necessary_vars(HS::HybridSystem)::Dict{Int,Vector{Int}}
-  result = Dict{Int,Vector{Int}}()
-  for mode in states(HS)
-      vars = Vector{Int}()
-      append!(vars, constrained_dimensions(stateset(HS, mode)))
-      for transition in out_transitions(HS, mode)
-           append!(vars, constrained_dimensions(stateset(HS, transition)))
-      end
-      result[mode] = unique(vars)
-  end
+    result = Dict{Int,Vector{Int}}()
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
 
-  return result
+    return result
 end
 
 
