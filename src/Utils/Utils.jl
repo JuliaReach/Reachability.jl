@@ -240,13 +240,16 @@ Creates the axis labels for plotting.
 """
 function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, plot_labels::Vector{String}=["", ""])
     labels = copy(plot_labels)
+
+    # convert integer to subindex, such that e.g. x1 is displayed as x₁
+    tosubindex = i -> join(Char.(0x2080 .+ convert.(UInt16, digits(i)[end:-1:1])))
     if isempty(labels[1])
         xaxis = plot_vars[1]
-        labels[1] = (xaxis == 0) ? "t" : "x" * string(xaxis)
+        labels[1] = (xaxis == 0) ? "t" : "x" * tosubindex(xaxis)
     end
     if isempty(labels[2])
         yaxis = plot_vars[2]
-        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * string(yaxis))
+        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * tosubindex(yaxis))
     end
     return labels
 end
