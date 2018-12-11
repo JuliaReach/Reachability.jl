@@ -121,7 +121,7 @@ end
 
 
 """
-    get_necessary_vars(HS::HybridSystem)::Dict{Int,Vector{Int}}
+    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
 
 Return all coordinates which appear in any guard or invariant constraint for each location.
 
@@ -129,8 +129,9 @@ Return all coordinates which appear in any guard or invariant constraint for eac
 
 - `HS`  -- hybrid system
 """
-function get_necessary_vars(HS::HybridSystem)::Dict{Int,Vector{Int}}
+function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
     result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
     for mode in states(HS)
         vars = Vector{Int}()
         append!(vars, constrained_dimensions(stateset(HS, mode)))
