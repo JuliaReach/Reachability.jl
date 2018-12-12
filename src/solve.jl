@@ -174,11 +174,18 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             source_invariant = HPolyhedron([source_invariant])
         end
 
-        loc_x0set = intersection(source_invariant, x0)
+        #project source invariant and x0
+        #TODO add an option for low-dim
+        source_invariant_proj = project(source_invariant, nonzero_vars[loc_id], LinearMap)
+        x0_proj = project(x0, nonzero_vars[loc_id], LinearMap)
+        low_dim_x0_inter = overapproximate(source_invariant_proj ∩ x0_proj, Hyperrectangle)
+        if !isempty(low_dim_x0_inter)
+            loc_x0set = intersection(source_invariant, x0)
 
-        if !isempty(loc_x0set)
-            push!(waiting_list, (loc_id,
-                ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
+            if !isempty(loc_x0set)
+                push!(waiting_list, (loc_id,
+                    ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
+            end
         end
     end
 
@@ -208,12 +215,18 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         if haskey(options_copy, :blocks)
             delete!(options_copy.dict, :blocks)
+            #TODO check low-dim option
+            options_copy_low[:blocks] = nonzero_vars
         end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
 
+        reach_tube_low = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
+                            options_copy_low,
+                            op=opC,
+                            invariant=source_invariant)
         # add the very first initial approximation
         if passed_list != nothing &&
                 (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
