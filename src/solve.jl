@@ -81,10 +81,8 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
     options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
-        tic()
         (system, transformation_matrix) =
-            transform(system, options[:coordinate_transformation])
-        tocc()
+            @timing transform(system, options[:coordinate_transformation])
         options[:transformation_matrix] = transformation_matrix
         invariant = options[:coordinate_transformation] * invariant
     end
@@ -245,9 +243,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # Projection
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
-        tic()
-        RsetsProj = project(Rsets, options)
-        tocc()
+        RsetsProj = @timing project(Rsets, options)
     else
         RsetsProj = Rsets
     end

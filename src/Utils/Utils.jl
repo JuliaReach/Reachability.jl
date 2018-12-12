@@ -8,7 +8,7 @@ using LazySets, MathematicalSystems
 
 include("../compat.jl")
 
-import Reachability.tocc
+import Reachability.@timing
 
 # Visualization
 export print_sparsity,
@@ -497,17 +497,17 @@ function matrix_conversion_lazy_explicit(Δ, options)
     A = Δ.s.A
     if !options[:lazy_expm] && options[:lazy_expm_discretize]
         info("Making lazy matrix exponential explicit...")
-        tic()
-        n = options.dict[:n]
-        if options[:assume_sparse]
-            B = sparse(Int[], Int[], eltype(A)[], n, n)
-        else
-            B = Matrix{eltype(A)}(n, n)
+        @timing begin
+            n = options.dict[:n]
+            if options[:assume_sparse]
+                B = sparse(Int[], Int[], eltype(A)[], n, n)
+            else
+                B = Matrix{eltype(A)}(n, n)
+            end
+            for i in 1:n
+                B[i, :] = get_row(A, i)
+            end
         end
-        for i in 1:n
-            B[i, :] = get_row(A, i)
-        end
-        tocc()
     else
         B = nothing
     end
