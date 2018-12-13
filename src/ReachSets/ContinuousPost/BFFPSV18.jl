@@ -81,17 +81,15 @@ function post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
 
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
-        tic()
-        Rsets = reach(𝒮, invariant, 𝑂)
-        info("- Total")
-        tocc()
+        @timing begin
+            Rsets = reach(𝒮, invariant, 𝑂)
+            info("- Total")
+        end
 
         # Projection
         if 𝑂[:project_reachset] || 𝑂[:projection_matrix] != nothing
             info("Projection...")
-            tic()
-            RsetsProj = project(Rsets, 𝑂)
-            tocc()
+            RsetsProj = @timing project(Rsets, 𝑂)
         else
             RsetsProj = Rsets
         end
@@ -108,10 +106,10 @@ function post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
         # Property checking
         # =================
         info("Property Checking...")
-        tic()
-        answer = check_property(𝒮, 𝑂)
-        info("- Total")
-        tocc()
+        @timing begin
+            answer = check_property(𝒮, 𝑂)
+            info("- Total")
+        end
 
         if answer == 0
             info("The property is satisfied!")

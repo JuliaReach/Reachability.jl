@@ -64,21 +64,22 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         Xhat0 = LazySet{NUM}[S.x0]
     else
         info("- Decomposing X0")
-        tic()
-        if options[:lazy_X0]
-            Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
-        elseif dir != nothing
-            Xhat0 = array(decompose(S.x0, directions=dir, blocks=block_sizes))
-        elseif !isempty(options[:block_types_init])
-            Xhat0 = array(decompose(S.x0, ε=ε_init,
-                                    block_types=options[:block_types_init]))
-        elseif set_type_init == LazySets.Interval
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
-                                    blocks=ones(Int, n)))
-        else
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+        @timing begin
+            if options[:lazy_X0]
+                Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
+            elseif dir != nothing
+                Xhat0 = array(decompose(S.x0, directions=dir,
+                                        blocks=block_sizes))
+            elseif !isempty(options[:block_types_init])
+                Xhat0 = array(decompose(S.x0, ε=ε_init,
+                                        block_types=options[:block_types_init]))
+            elseif set_type_init == LazySets.Interval
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+                                        blocks=ones(Int, n)))
+            else
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+            end
         end
-        tocc()
     end
 
     # determine output function: linear map with the given matrix
@@ -203,14 +204,14 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
 
     # call the adequate function with the given arguments list
     info("- Computing successors")
-    tic()
-    index, skip = available_algorithms[algorithm_backend]["func"](args...)
-    if index < N || skip
-        # shrink result array
-        info("terminated prematurely, only computed $index/$N steps")
-        deleteat!(res, (skip ? index : index + 1):N)
+    @timing begin
+        index, skip = available_algorithms[algorithm_backend]["func"](args...)
+        if index < N || skip
+            # shrink result array
+            info("terminated prematurely, only computed $index/$N steps")
+            deleteat!(res, (skip ? index : index + 1):N)
+        end
     end
-    tocc()
 
     # return the result
     return res
@@ -224,16 +225,16 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
-    tic()
-    Δ = discretize(
-        system,
-        options[:δ],
-        approx_model=options[:approx_model],
-        pade_expm=options[:pade_expm],
-        lazy_expm=options[:lazy_expm_discretize],
-        lazy_sih=options[:lazy_sih]
+    Δ = @timing begin
+        discretize(
+            system,
+            options[:δ],
+            approx_model=options[:approx_model],
+            pade_expm=options[:pade_expm],
+            lazy_expm=options[:lazy_expm_discretize],
+            lazy_sih=options[:lazy_sih]
         )
-    tocc()
+    end
     Δ = matrix_conversion_lazy_explicit(Δ, options)
     return reach(Δ, invariant, options)
 end
