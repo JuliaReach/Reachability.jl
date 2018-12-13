@@ -82,7 +82,7 @@ macro timing(expr, func=info, digits=2)
         local t0 = time()
         local val = $(esc(expr))
         local t1 = time()
-        $func("elapsed time: " * string(round(t1 - t0, digits=$digits)) *
+        $func("elapsed time: " * string(Compat.round(t1 - t0, digits=$digits)) *
               " seconds")
         val
     end
