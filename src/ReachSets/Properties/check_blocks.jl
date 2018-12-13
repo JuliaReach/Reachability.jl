@@ -67,7 +67,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 block = ϕpowerk[bi, bj]
-                if hasnz(block)
+                if !iszero(block)
                     Xhatk_bi = Xhatk_bi + block * Xhat0[j]
                 end
             end
@@ -226,7 +226,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             Xhatk_bi = ZeroSet(length(bi))
             for (j, bj) in enumerate(partition)
                 πbi = block(ϕpowerk_πbi, bj)
-                if hasnz(πbi)
+                if !iszero(πbi)
                     Xhatk_bi = Xhatk_bi + πbi * Xhat0[j]
                 end
             end
