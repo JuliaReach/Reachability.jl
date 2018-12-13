@@ -79,12 +79,12 @@ julia> @timing(1+1)
 [info | Reachability]: elapsed time: 1.269e-6 seconds
 ```
 """
-macro timing(expr, func=info, digits=2)
+macro timing(expr, func=info, sigdigits=3)
     return quote
         local t0 = time()
         local val = $(esc(expr))
         local t1 = time()
-        $func("elapsed time: " * string(Compat.round(t1 - t0, digits=$digits)) *
+        $func("elapsed time: " * string(Compat.round(t1 - t0, sigdigits=$sigdigits)) *
               " seconds")
         val
     end
