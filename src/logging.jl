@@ -1,4 +1,4 @@
-import Base: info, warn, toc
+import Base: info, warn
 import Memento: debug
 
 export info, warn, debug, @timing,
