@@ -1,4 +1,6 @@
-import Base: info, warn
+@static if VERSION < v"1.0-"
+    import Base: info, warn
+end
 import Memento: debug
 
 export info, warn, debug, @timing,
