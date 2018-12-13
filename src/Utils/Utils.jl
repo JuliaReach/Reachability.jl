@@ -36,9 +36,6 @@ export interpret_template_direction_symbol,
 # temporary helper function
 export decompose_helper
 
-# convenience
-export hasnz
-
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
@@ -148,7 +145,7 @@ function print_sparsity(ϕ::AbstractMatrix{Float64}, name::String="")
     @inline F(bi::Int64, bj::Int64) = ϕ[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
     for bj in 1:b
         for bi in 1:b
-            if !hasnz(F(bi, bj))
+            if iszero(F(bi, bj))
                 zero_blocks += 1
             end
         end
@@ -165,7 +162,7 @@ function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
     for bi in 1:b
         block_row_bi = F(bi)
         for bj in 1:b
-            if !hasnz(block_row_bi[1:2, (2*bj-1):(2*bj)])
+            if iszero(block_row_bi[1:2, (2*bj-1):(2*bj)])
                 zero_blocks += 1
             end
         end
@@ -279,28 +276,6 @@ macro relpath(name::String)
         end
         pathdir * $name
     end
-end
-
-"""
-    hasnz(v::AbstractArray{N})::Bool where N<:Real
-
-Check if an array contains a non-zero entry.
-
-### Input
-
-- `a` -- array
-
-### Output
-
-`true` iff the array contains a non-zero entry.
-"""
-@inline function hasnz(a::AbstractArray{N})::Bool where N<:Real
-    @inbounds for e in a
-       if e != zero(N)
-           return true
-       end
-    end
-    return false
 end
 
 """
