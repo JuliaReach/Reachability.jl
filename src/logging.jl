@@ -1,6 +1,10 @@
 @static if VERSION < v"1.0-"
     import Base: info, warn
 end
+
+@static if VERSION >= v"0.7"
+    using Printf
+end
 import Memento: debug
 
 export info, warn, debug, @timing,
@@ -59,8 +63,6 @@ function.
 
 - `expr`   -- expression
 - `func`   -- (optional, default: `info`) log function
-- `digits` -- (optional, default: `2`) number of digits after the decimal point
-              for timing output
 
 ### Output
 
@@ -76,16 +78,16 @@ This function is taken from the
 
 ```julia
 julia> @timing(1+1)
-[info | Reachability]: elapsed time: 1.269e-6 seconds
+[info | Reachability]: elapsed time: 1.269e-06 seconds
+2
 ```
 """
-macro timing(expr, func=info, digits=2)
+macro timing(expr, func=info)
     return quote
         local t0 = time()
         local val = $(esc(expr))
         local t1 = time()
-        $func("elapsed time: " * string(Compat.round(t1 - t0, digits=$digits)) *
-              " seconds")
+        $func(@sprintf "elapsed time: %1.3e seconds" t1-t0)
         val
     end
 end
