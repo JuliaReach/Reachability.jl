@@ -55,12 +55,15 @@ function.
 
 ### Input
 
-- `expr` -- expression
-- `func` -- (optional, default: `info`) log function
+- `expr`   -- expression
+- `func`   -- (optional, default: `info`) log function
+- `digits` -- (optional, default: `2`) number of digits after the decimal point
+              for timing output
 
 ### Output
 
-The result of evaluating the expression `expr`.
+The macro returns the result of evaluating the expression `expr`.
+The timing information is printed to the logger.
 
 ### Notes
 
@@ -74,12 +77,13 @@ julia> @timing(1+1)
 [info | Reachability]: elapsed time: 1.269e-6 seconds
 ```
 """
-macro timing(expr, func=info)
+macro timing(expr, func=info, digits=2)
     return quote
         local t0 = time()
         local val = $(esc(expr))
         local t1 = time()
-        $func("elapsed time: " * string(t1 - t0) * " seconds")
+        $func("elapsed time: " * string(round(t1 - t0, digits=$digits)) *
+              " seconds")
         val
     end
 end
