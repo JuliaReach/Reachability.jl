@@ -63,8 +63,6 @@ function.
 
 - `expr`   -- expression
 - `func`   -- (optional, default: `info`) log function
-- `digits` -- (optional, default: `2`) number of digits after the decimal point
-              for timing output
 
 ### Output
 
@@ -84,7 +82,7 @@ julia> @timing(1+1)
 2
 ```
 """
-macro timing(expr, func=info, sigdigits=3)
+macro timing(expr, func=info)
     return quote
         local t0 = time()
         local val = $(esc(expr))
