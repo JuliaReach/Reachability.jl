@@ -5,6 +5,7 @@ os:
 julia:
   - 0.6
   - 0.7
+  - 1.0
 notifications:
   email: false
 git:
@@ -13,7 +14,7 @@ git:
 ## allow failures (tests will run but not make your overall status red)
 matrix:
  allow_failures:
-   - julia: 0.7
+   - julia: 1.0
 
 ## uncomment the following lines to override the default test script
 script:
