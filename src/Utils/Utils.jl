@@ -224,7 +224,7 @@ function plot_sparsity(ϕ::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float6
 end
 
 """
-    add_plot_labels(plot_vars, [project_output], [plot_labels])
+    add_plot_labels(plot_vars, [project_output], [plot_labels], [use_subindices])
 
 Creates the axis labels for plotting.
 
@@ -233,13 +233,27 @@ Creates the axis labels for plotting.
 - `plot_vars`      -- variable indices for plotting (0 stands for time)
 - `project_output` -- (optional, default: false) flag indicating if the y axis
                       is an output function
-- `plot_labels`    -- (optional) vector of plot labels (empty strings are ignored)
+- `plot_labels`    -- (optional, default: empty strings) vector of plot labels,
+                      empty strings are ignored
+- `use_subindices` -- (optional, default: `true`) if `true`, use subindices
+                      for the labels, e.g. `x1` is displayed as `x₁`
+
+### Output
+
+Axis labels with the specified properties.
 """
-function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, plot_labels::Vector{String}=["", ""])
+function add_plot_labels(plot_vars::Vector{Int64};
+                         project_output::Bool=false,
+                         plot_labels::Vector{String}=["", ""],
+                         use_subindices::Bool=true)
     labels = copy(plot_labels)
 
     # convert integer to subindex, such that e.g. x1 is displayed as x₁
-    tosubindex = i -> join(Char.(0x2080 .+ convert.(UInt16, digits(i)[end:-1:1])))
+    if use_subindices
+        tosubindex = i -> join(Char.(0x2080 .+ convert.(UInt16, digits(i)[end:-1:1])))
+    else
+        tosubindex = i -> string(i)
+    end
     if isempty(labels[1])
         xaxis = plot_vars[1]
         labels[1] = (xaxis == 0) ? "t" : "x" * tosubindex(xaxis)
@@ -265,7 +279,8 @@ file relative to its own location.
 """
 macro relpath(name::String)
     return quote
-        f = @__FILE__
+        f = Compat.@__FILE__
+        println("f = ", f)
         if f == nothing
             pathdir = ""
         else
