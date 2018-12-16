@@ -18,6 +18,8 @@ Plots the solution of a reachability problem in 2D with the given options.
                        axes with the variables being plotted; this option can be
                        passed through `sol.options`, or as a pair of integers,
                        where 0 indicates the time variable
+- `use_subindices`  -- (optional, default: `true`) if `true`, use subindices
+                       for the labels, e.g. `x1` is displayed as `x₁`
 
 ### Notes
 
@@ -29,16 +31,17 @@ argument. For additional options, consult the Plots.jl reference manual.
                           fillcolor=:auto,
                           seriestype=:shape,
                           label="", grid=true, alpha=0.5,
-                          indices=nothing, vars=nothing)
+                          indices=nothing, vars=nothing,
+                          use_subindices=true)
     @assert dim(sol.Xk[1].X) == 2 "we only support plotting 2D sets"
 
     options = check_aliases_and_add_default_value(sol)
 
     if vars != nothing
-        vars = add_plot_labels(vars)
+        vars = add_plot_labels(vars, use_subindices=use_subindices)
         xguide --> vars[1]; yguide --> vars[2]
     elseif options.dict[:plot_vars] != nothing
-        vars = add_plot_labels(options.dict[:plot_vars])
+        vars = add_plot_labels(options.dict[:plot_vars], use_subindices=use_subindices)
         xguide --> vars[1]; yguide --> vars[2]
     end
 
