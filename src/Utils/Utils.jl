@@ -279,8 +279,7 @@ file relative to its own location.
 """
 macro relpath(name::String)
     return quote
-        f = Compat.@__FILE__
-        println("f = ", f)
+        f = @__FILE__
         if f == nothing
             pathdir = ""
         else
