@@ -10,7 +10,6 @@ using Compat.LinearAlgebra
 import Compat.LinearAlgebra: norm, checksquare, LAPACKException,
                              SingularException, ×
 import Compat.InteractiveUtils.subtypes
-export _At_mul_B, _A_mul_B!
 
 @static if VERSION < v"0.7-"
     @inline _At_mul_B(A, B) = At_mul_B(A, B)
