@@ -314,7 +314,7 @@ d = open(@relpath "x.dat")
 In this example, the macro `@relpath "s.jl"` evaluates to the string
 `/home/projects/P1/x.dat`. The script `s.jl` can be evaluated from the command line
 from any folder, e.g. suppose that the path working directory is `/home/projects`,
-then one can do `$ julia -e 'include("P1/s.jl")'` without having to change `a.jl`.
+then one can do `$ julia -e 'include("P1/s.jl")'` without having to change `s.jl`.
 """
 macro relpath(name::String)
     return quote
