@@ -265,21 +265,63 @@ function add_plot_labels(plot_vars::Vector{Int64};
     return labels
 end
 
+@static if VERSION >= v"0.7"
+    # Taken from an older Julia version, see Reachability #414 or
+    # https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
+    function source_path(default::Union{AbstractString, Nothing}="")
+        t = current_task()
+        while true
+            s = t.storage
+            if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
+                return s[:SOURCE_PATH]
+            end
+            if isa(t, t.parent)
+                return default
+            end
+            t = t.parent
+        end
+    end
+end
 
 """
    @relpath(name)
 
 Returns the path of the current code file.
-This is handy, e.g., when calling a function from anywhere that wants to open a
-file relative to its own location.
 
 ### Input
 
 - `name` -- file name
+
+### Output
+
+A string.
+
+### Notes
+
+This macro is handy, e.g., when calling a function that uses a file relative to
+its own location.
+
+For example, suppose that the folder `/home/projects/P1` contains the script `s.jl`
+which loads the data `x.dat` and performs some calculations with it:
+
+```julia
+# file /home/projects/P1/s.jl
+d = open(@relpath "x.dat")
+# do stuff with d
+```
+In this example, the macro `@relpath "s.jl"` evaluates to the string
+`/home/projects/P1/x.dat`. The script `s.jl` can be evaluated from the command line
+from any folder, e.g. suppose that the path working directory is `/home/projects`,
+then one can do `julia -e 'include("P1/s.jl")'` without having to change `s.jl`.
 """
 macro relpath(name::String)
     return quote
-        f = @__FILE__
+        @static if VERSION < v"0.7"
+            f = @__FILE__
+        else
+            f = source_path()
+        end
+
         if f == nothing
             pathdir = ""
         else
