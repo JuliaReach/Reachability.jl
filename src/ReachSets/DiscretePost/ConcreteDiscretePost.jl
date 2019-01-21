@@ -125,6 +125,7 @@ function post(𝒫::ConcreteDiscretePost,
             end
 
             # apply assignment
+            # TODO converting to HPolytope ?? handle automatically ??
             A⌜R⋂G⌟ = convert(HPolytope, linear_map(assignment, R⋂G))
 
             # intersect with target invariant
