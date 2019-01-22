@@ -4,6 +4,7 @@
 
 using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra
 import LazySets.HalfSpace
+import Reachability.constrained_dimensions
 
 # Transition graph (automaton)
 a = LightAutomaton(1);
@@ -38,7 +39,11 @@ system = InitialValueProblem(HS, inits);
 options = Options(:mode=>"reach", :vars=>[1, 2], :T=>5.0, :δ=>0.1,
                   :plot_vars=>[1, 2], :max_jumps=>1, :verbosity=>1);
 
-# # default algorithm
+
+# test constrained_dimensions
+@test constrained_dimensions(HS) == Dict{Int,Vector{Int}}(1=>[1, 2])
+
+# default algorithm
 sol = solve(system, options);
 
 # specify lazy discrete post operator
