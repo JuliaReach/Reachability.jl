@@ -1,4 +1,5 @@
 export solve
+import LazySets.constrained_dimensions
 
 function default_operator(system::InitialValueProblem{S}) where
         {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
