@@ -1,7 +1,13 @@
-import Base: info, warn, toc
+@static if VERSION < v"1.0-"
+    import Base: info, warn
+end
+
+@static if VERSION >= v"0.7"
+    using Printf
+end
 import Memento: debug
 
-export info, warn, debug, tocc,
+export info, warn, debug, @timing,
        configure_logger, add_file_logger
 
 global LOGGER = Memento.getlogger(@__MODULE__)
@@ -48,16 +54,42 @@ Prints a message on debug level.
 end
 
 """
-    tocc(func)
+    @timing(expr, [func]=info)
 
-Prints the output of `toc()` using the given log function (default: `info`).
+Executes the expression `expr` and prints the elapsed time using the given log
+function.
 
 ### Input
 
-- `func` - (optional, default: `info`) log function
+- `expr`   -- expression
+- `func`   -- (optional, default: `info`) log function
+
+### Output
+
+The macro returns the result of evaluating the expression `expr`.
+The timing information is printed to the logger.
+
+### Notes
+
+This function is taken from the
+[Julia documentation](https://docs.julialang.org/en/v1/manual/metaprogramming/#Hygiene-1).
+
+### Examples
+
+```julia
+julia> @timing(1+1)
+[info | Reachability]: elapsed time: 1.269e-06 seconds
+2
+```
 """
-@inline function tocc(func::Function=info)
-    func("elapsed time: $(toq()) seconds")
+macro timing(expr, func=info)
+    return quote
+        local t0 = time()
+        local val = $(esc(expr))
+        local t1 = time()
+        $func(@sprintf "elapsed time: %1.3e seconds" t1-t0)
+        val
+    end
 end
 
 """

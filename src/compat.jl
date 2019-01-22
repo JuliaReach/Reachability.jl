@@ -8,9 +8,8 @@ using Compat: copyto!, axes, argmax
 import Compat.String
 using Compat.LinearAlgebra
 import Compat.LinearAlgebra: norm, checksquare, LAPACKException,
-                             SingularException, eye, ×
+                             SingularException, ×
 import Compat.InteractiveUtils.subtypes
-export _At_mul_B, _A_mul_B!
 
 @static if VERSION < v"0.7-"
     @inline _At_mul_B(A, B) = At_mul_B(A, B)
@@ -26,4 +25,6 @@ end
 
 if VERSION > v"1.0-"
     export eye
+else
+    import Compat.LinearAlgebra.eye
 end

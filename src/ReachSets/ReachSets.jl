@@ -94,7 +94,7 @@ import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability:tocc,
+import Reachability:@timing,
                     Options,
                     validate_solver_options_and_add_default_values!
 
