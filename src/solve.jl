@@ -1,3 +1,4 @@
+import LazySets.Approximations:decompose, overapproximate
 export solve
 import LazySets.constrained_dimensions
 
@@ -183,6 +184,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
+    nonzero_vars = constrained_dimensions(HS)
+    println("22NONZero vars:\n")
+    println(nonzero_vars)
 
     # waiting_list entries:
     # - (discrete) location
@@ -201,12 +205,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
         #project source invariant and x0
         #TODO add an option for low-dim
-        source_invariant_proj = project(source_invariant, nonzero_vars[loc_id], LinearMap)
-        x0_proj = project(x0, nonzero_vars[loc_id], LinearMap)
+        source_invariant_proj = LazySets.Approximations.project(source_invariant, nonzero_vars[loc_id], LinearMap)
+        x0_proj = LazySets.Approximations.project(x0, nonzero_vars[loc_id], LinearMap)
         low_dim_x0_inter = overapproximate(source_invariant_proj ∩ x0_proj, Hyperrectangle)
         if !isempty(low_dim_x0_inter)
             loc_x0set = intersection(source_invariant, x0)
-
             if !isempty(loc_x0set)
                 push!(waiting_list, (loc_id,
                     ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
@@ -228,6 +231,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
         # compute reach tube
         options_copy = copy(options)
+        options_copy_low = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
         delete!(options_copy.dict, :inout_map)
@@ -240,9 +244,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         if haskey(options_copy, :blocks)
             delete!(options_copy.dict, :blocks)
-            #TODO check low-dim option
-            options_copy_low[:blocks] = nonzero_vars
         end
+        #TODO check low-dim option
+        options_copy_low = copy(options_copy)
+        options_copy_low.dict[:vars] = nonzero_vars[loc_id]
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,
@@ -267,17 +272,30 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                 passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
             end
         end
-
+        low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
+        #TODO Add option for lowdim
+        if (opD == LazyLowDimDiscretePost())
+            low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         # count_Rsets counts the number of new reach sets added to Rsets
-        count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, reach_tube_low.Xk, loc.X, Rsets, low_dim_sets,
+                                [X0.t_start, X0.t_end], nonzero_vars[loc_id])
+
+            if jumps == max_jumps
+                continue
+            end
+
+            post(opD, HS, waiting_list, passed_list, loc_id, Rsets, low_dim_sets, count_Rsets,
+                 jumps, nonzero_vars[loc_id], options)
+        else
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                                 [X0.t_start, X0.t_end])
 
-        if jumps == max_jumps
-            continue
-        end
+            if jumps == max_jumps
+                continue
+            end
 
-        post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
-             jumps, options)
+            post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
+                 jumps, options)
     end
 
     # Projection
