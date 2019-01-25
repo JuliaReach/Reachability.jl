@@ -274,7 +274,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         #TODO Add option for lowdim
-        if (opD == LazyLowDimDiscretePost())
+
+        if (opD isa LazyLowDimDiscretePost)
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         # count_Rsets counts the number of new reach sets added to Rsets
             count_Rsets = tube⋂inv!(opD, reach_tube.Xk, reach_tube_low.Xk, loc.X, Rsets, low_dim_sets,
@@ -296,6 +297,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
             post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
                  jumps, options)
+        end
     end
 
     # Projection

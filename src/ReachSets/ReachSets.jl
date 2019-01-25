@@ -212,6 +212,7 @@ include("DiscretePost/ConcreteDiscretePost.jl")
 # Discrete post operators
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
+include("DiscretePost/LazyLowDimDiscretePost.jl")
 
 # =========================
 # External reach interface

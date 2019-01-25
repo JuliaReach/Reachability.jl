@@ -1,12 +1,11 @@
-export LazyLowDimDiscretePost,
-       ApproximatingDiscretePost
+export LazyLowDimDiscretePost
 
 import LazySets.use_precise_ρ
 
 """
     LazyLowDimDiscretePost <: DiscretePost
 
-Textbook implementation of a discrete post operator, but with lazy intersections.
+Textbook implementation of a discrete post operator, but with lazy intersections in low-dimensional systems first.
 
 ### Fields
 
@@ -37,29 +36,6 @@ LazyLowDimDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyLowDimDiscretePost(Opt
 
 # default options for the LazyLowDimDiscretePost discrete post operator
 LazyLowDimDiscretePost() = LazyLowDimDiscretePost(Options())
-
-"""
-    ApproximatingDiscretePost()
-
-Textbook implementation of a discrete post operator, but with lazy intersections
-followed by an overapproximation. This is a particular case of the
-`LazyLowDimDiscretePost`.
-"""
-function ApproximatingDiscretePost()
-    return LazyLowDimDiscretePost(:check_invariant_intersection=>false,
-                            :overapproximation=>Hyperrectangle,
-                            :lazy_R⋂I=>false,
-                            :lazy_R⋂G=>false,
-                            :lazy_A⌜R⋂G⌟⋂I=>false)
-end
-
-function ApproximatingDiscretePost(𝑂::Options)
-    𝑂_default = Options(:lazy_R⋂I=>false,
-                        :lazy_R⋂G=>false,
-                        :lazy_A⌜R⋂G⌟⋂I=>false)
-    merge!(𝑂_default, 𝑂)
-    LazyLowDimDiscretePost(𝑂_default)
-end
 
 init(𝒫::LazyLowDimDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
 
@@ -110,7 +86,6 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
                 reach_set.t_start + start_interval[1],
                 reach_set.t_end + start_interval[2]))
             count = count + 1
-            end
         end
     end
 
@@ -126,7 +101,7 @@ function post(𝒫::LazyLowDimDiscretePost,
               low_temp_sets,
               count_Rsets,
               jumps,
-              nonzero_vars[loc_id]
+              nonzero_vars,
               options
              ) where {N}
     jumps += 1
