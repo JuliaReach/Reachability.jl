@@ -69,8 +69,7 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
     count = 0
     @inbounds for i = 1:length(low_reach_tube)
         invariant_proj = LazySets.Approximations.project(invariant, nonzero_vars, LinearMap)
-        low_dim_reach_inter = overapproximate(invariant_proj ∩ low_reach_tube[i].X, dirs)
-        if !isempty(low_dim_reach_inter)
+        if !isempty(invariant_proj ∩ overapproximate(low_reach_tube[i].X, dirs))
             reach_set = reach_tube[i]
             R⋂I = Intersection(reach_set.X, invariant)
             if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
@@ -79,6 +78,8 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
             if !𝒫.options[:lazy_R⋂I]
                 R⋂I = overapproximate(R⋂I, dirs)
             end
+            low_dim_reach_inter = invariant_proj ∩ low_reach_tube[i].X
+
             push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
                 reach_set.t_start + start_interval[1],
                 reach_set.t_end + start_interval[2]))
@@ -143,21 +144,22 @@ function post(𝒫::LazyLowDimDiscretePost,
             low_reach_set = low_temp_sets[i]
             high_reach_set = tube⋂inv[length(tube⋂inv) - count_Rsets + i]
             # check intersection with guard
+            islow_dim_inter_empty = combine_constraints
+                ? isempty(proj_invariant_guard ∩ low_reach_set.X.X)
+                : isempty(proj_guard ∩ low_reach_set.X.X)
             taken_intersection = false
             if combine_constraints
-                low_dim_reach_inter = overapproximate(proj_invariant_guard ∩ low_reach_set.X.X, dirs)
-                if !isempty(low_dim_reach_inter)
+                if !islow_dim_inter_empty
                     R⋂G = Intersection(high_reach_set.X.X, invariant_guard)
                     taken_intersection = true
                 end
             end
             if !taken_intersection
-                low_dim_reach_inter = overapproximate(proj_guard ∩ low_reach_set.X.X, dirs)
-                if !isempty(low_dim_reach_inter)
+                if !islow_dim_inter_empty
                     R⋂G = Intersection(reach_set.X, guard)
                 end
             end
-            if isempty(R⋂G) || isempty(low_dim_reach_inter)
+            if isempty(R⋂G) || islow_dim_inter_empty
                 continue
             end
 
