@@ -144,6 +144,30 @@ function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
     return result
 end
 
+"""
+    constrained_blocks(blocks, nonzero_vars)::Dict{Int,Vector{Int}}
+
+Return all blocks which contain nonzero coordinates.
+
+### Input
+
+- `blocks`  -- blocks structure
+"""
+function constrained_blocks(blocks, nonzero_vars)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
+end
+
 
 function init_states_sys_from_init_set_sys(
         system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
@@ -207,8 +231,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #TODO add an option for low-dim
         source_invariant_proj = LazySets.Approximations.project(source_invariant, nonzero_vars[loc_id], LinearMap)
         x0_proj = LazySets.Approximations.project(x0, nonzero_vars[loc_id], LinearMap)
+        println(x0)
         low_dim_x0_inter = overapproximate(source_invariant_proj ∩ x0_proj, Hyperrectangle)
         if !isempty(low_dim_x0_inter)
+            println(low_dim_x0_inter)
             loc_x0set = intersection(source_invariant, x0)
             if !isempty(loc_x0set)
                 push!(waiting_list, (loc_id,
@@ -252,11 +278,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
-
-        reach_tube_low = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
-                            options_copy_low,
-                            op=opC,
-                            invariant=source_invariant)
+        print("reach tube")
         # add the very first initial approximation
         if passed_list != nothing &&
                 (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
@@ -278,7 +300,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         if (opD isa LazyLowDimDiscretePost)
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         # count_Rsets counts the number of new reach sets added to Rsets
-            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, reach_tube_low.Xk, loc.X, Rsets, low_dim_sets,
+            println("count Rsets")
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
                                 [X0.t_start, X0.t_end], nonzero_vars[loc_id])
 
             if jumps == max_jumps

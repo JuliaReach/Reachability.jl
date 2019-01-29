@@ -1,11 +1,11 @@
-export LazyLowDimDiscretePost
+export LazyLowBlockInterDiscretePost
 
 import LazySets.use_precise_ρ
 
 """
-    LazyLowDimDiscretePost <: DiscretePost
+    LazyLowBlockInterDiscretePost <: DiscretePost
 
-Textbook implementation of a discrete post operator, but with lazy intersections in low-dimensional systems first.
+Textbook implementation of a discrete post operator, but with lazy intersections.
 
 ### Fields
 
@@ -16,10 +16,10 @@ Textbook implementation of a discrete post operator, but with lazy intersections
 The algorithm is based on [Flowpipe-Guard Intersection for Reachability
 Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-struct LazyLowDimDiscretePost <: DiscretePost
+struct LazyLowBlockInterDiscretePost <: DiscretePost
     options::Options
 
-    function LazyLowDimDiscretePost(𝑂::Options)
+    function LazyLowBlockInterDiscretePost(𝑂::Options)
         𝑂copy = copy(𝑂)
         # TODO: pass 𝑂 directly?
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
@@ -32,15 +32,15 @@ struct LazyLowDimDiscretePost <: DiscretePost
 end
 
 # convenience constructor from pairs of symbols
-LazyLowDimDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyLowDimDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
+LazyLowBlockInterDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyLowBlockInterDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
 
-# default options for the LazyLowDimDiscretePost discrete post operator
-LazyLowDimDiscretePost() = LazyLowDimDiscretePost(Options())
+# default options for the LazyLowBlockInterDiscretePost discrete post operator
+LazyLowBlockInterDiscretePost() = LazyLowBlockInterDiscretePost(Options())
 
-init(𝒫::LazyLowDimDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
+init(𝒫::LazyLowBlockInterDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
 
 # TODO: use 𝑂 only?
-function init!(𝒫::LazyLowDimDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
+function init!(𝒫::LazyLowBlockInterDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     𝑂[:n] = statedim(𝒮, 1)
 
     # solver-specific options (adds default values for unspecified options)
@@ -52,13 +52,11 @@ function init!(𝒫::LazyLowDimDiscretePost, 𝒮::AbstractSystem, 𝑂::Options
     return 𝑂out
 end
 
-function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
+function tube⋂inv!(𝒫::LazyLowBlockInterDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
-                   low_temp_sets,
-                   start_interval,
-                   nonzero_vars
+                   start_interval
                   ) where {N}
 
     # TODO dirs = get_overapproximation_option(op, dim(invariant)) ?
@@ -66,46 +64,38 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
 
     # counts the number of sets R⋂I added to Rsets
     count = 0
-    @inbounds for i = 1:length(reach_tube)
-        invariant_proj = LazySets.Approximations.project(invariant, nonzero_vars, LinearMap)
-        Rimage_proj = LazySets.Approximations.project(reach_tube[i].X, nonzero_vars, LinearMap)
-
-        println("check Empty inter Rimage_proj and invariant_proj")
-        if !isempty(invariant_proj ∩ Rimage_proj)
-            println("non empty inter Rimage_proj and invariant_proj")
-            reach_set = reach_tube[i]
-            R⋂I = Intersection(reach_set.X, invariant)
-            if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
-                break
-            end
-            if !𝒫.options[:lazy_R⋂I]
-                R⋂I = overapproximate(R⋂I, dirs)
-            end
-            low_dim_reach_inter = invariant_proj ∩ Rimage_proj
-
-            push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
-                reach_set.t_start + start_interval[1],
-                reach_set.t_end + start_interval[2]))
-            push!(low_temp_sets, ReachSet{LazySet{N}, N}(low_dim_reach_inter,
-                reach_set.t_start + start_interval[1],
-                reach_set.t_end + start_interval[2]))
-            count = count + 1
+    @inbounds for reach_set in reach_tube
+        if (haskey(𝒫.options, :blocks) &&
+             𝒫.options[:blocks] == nothing) ||
+             !haskey(𝒫.options, :blocks)
+            decomposed_inv = decompose(invariant)
+        else
+            decomposed_inv = decompose(invariant, blocks=𝒫.options[:blocks])
         end
+        R⋂I = Intersection(reach_set.X, decomposed_inv)
+        if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
+            break
+        end
+        if !𝒫.options[:lazy_R⋂I]
+            R⋂I = overapproximate(R⋂I, dirs)
+        end
+        push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
+            reach_set.t_start + start_interval[1],
+            reach_set.t_end + start_interval[2]))
+        count = count + 1
     end
 
     return count
 end
 
-function post(𝒫::LazyLowDimDiscretePost,
+function post(𝒫::LazyLowBlockInterDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
-              low_temp_sets,
               count_Rsets,
               jumps,
-              nonzero_vars,
               options
              ) where {N}
     jumps += 1
@@ -132,42 +122,37 @@ function post(𝒫::LazyLowDimDiscretePost,
             # TODO: remove redundant constraints => use intersection(..)
             invariant_guard = T([constraints_list(source_invariant);
                                  constraints_list(guard)])
-            proj_invariant_guard = LazySets.Approximations.project(invariant_guard, nonzero_vars, LinearMap)
-
+            if (haskey(𝒫.options, :blocks) &&
+                 𝒫.options[:blocks] == nothing) ||
+                 !haskey(𝒫.options, :blocks)
+                decomposed_inv_g = decompose(invariant_guard)
+            else
+                decomposed_inv_g = decompose(invariant_guard, blocks=𝒫.options[:blocks])
+            end
         else
-            proj_guard = LazySets.Approximations.project(guard, nonzero_vars, LinearMap)
+            if (haskey(𝒫.options, :blocks) &&
+                 𝒫.options[:blocks] == nothing) ||
+                 !haskey(𝒫.options, :blocks)
+                decomposed_guard = decompose(guard)
+            else
+                decomposed_guard = decompose(guard, blocks=𝒫.options[:blocks])
+            end
         end
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
-
-        #tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
-        println("before low_temp_sets")
-        for i=1:length(low_temp_sets)
-            println("inside low_temp_sets")
-            low_reach_set = low_temp_sets[i]
-            high_reach_set = tube⋂inv[length(tube⋂inv) - count_Rsets + i]
+        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            if combine_constraints
-                islow_dim_inter_empty = isempty(proj_invariant_guard ∩ low_reach_set.X)
-            else
-                islow_dim_inter_empty = isempty(proj_guard ∩ low_reach_set.X)
-            end
-
             taken_intersection = false
             if combine_constraints
-                if !islow_dim_inter_empty
-                    R⋂G = Intersection(high_reach_set.X.X, invariant_guard)
-                    taken_intersection = true
-                end
+                R⋂G = Intersection(reach_set.X.X, decomposed_inv_g)
+                taken_intersection = true
             end
             if !taken_intersection
-                if !islow_dim_inter_empty
-                    R⋂G = Intersection(reach_set.X, guard)
-                end
+                R⋂G = Intersection(reach_set.X, decomposed_guard)
             end
-            if isempty(R⋂G) || islow_dim_inter_empty
+            if isempty(R⋂G)
                 continue
             end
 
@@ -218,13 +203,13 @@ end
 # --- line search policies ---
 
 # usually do not use line search
-function use_precise_ρ(𝒫::LazyLowDimDiscretePost,
+function use_precise_ρ(𝒫::LazyLowBlockInterDiscretePost,
                        cap::Intersection{N})::Bool where N<:Real
     return false
 end
 
 # use line search for the outermost level, which is a LinearMap
-function use_precise_ρ(𝒫::LazyLowDimDiscretePost,
+function use_precise_ρ(𝒫::LazyLowBlockInterDiscretePost,
                        cap::Intersection{N, <:LinearMap{N}}
                        )::Bool where N<:Real
     return true
