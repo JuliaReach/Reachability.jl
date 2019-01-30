@@ -16,6 +16,7 @@ makedocs(
         "Discretization" => "lib/discretize.md",
         "Distributed computations" => "lib/distributed.md"],
         "Publications" => "publications.md",
+        "Citations" => "citations.md",
         "About" => "about.md"
     ]
 )
