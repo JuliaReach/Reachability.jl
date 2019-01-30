@@ -11,9 +11,6 @@
 - flowpipe computation of affine ODEs with nondeterministic inputs
 - hybrid dynamical systems (hybrid automata) with nondeterministic affine ODEs in each mode
 
-`Reachability` is written in [Julia](http://julialang.org), a modern high-performance language
-for scientific computing.
-
 ## Resources
 
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
