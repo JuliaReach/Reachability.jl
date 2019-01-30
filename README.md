@@ -24,10 +24,10 @@ Currently this package implements algorithms that can handle:
 
 ## Installing
 
-### Dependencies
-
 This package requires Julia v1.0 or later. Refer to the [official documentation](https://julialang.org/downloads)
 on how to install and run Julia in your system.
+
+### Dependencies
 
 The set computations depend on the core library [LazySets.jl](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
 
