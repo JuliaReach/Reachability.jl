@@ -3,22 +3,25 @@ language: julia
 os:
   - linux
 julia:
-  - 0.6
-# - 0.7
-# - nightly
+  - 1.0
+  - nightly
 notifications:
   email: false
 git:
   depth: 99999999
 
 ## allow failures (tests will run but not make your overall status red)
-#matrix:
-# allow_failures:
-#   - julia: nightly
+matrix:
+ allow_failures:
+   - julia: nightly
 
 ## uncomment the following lines to override the default test script
 script:
- - julia -e 'Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.checkout("LazySets"); Pkg.test("Reachability"; coverage=true)'
+ - julia -e 'using Pkg;
+             Pkg.develop("LazySets");
+             Pkg.clone(pwd());
+             Pkg.build("Reachability");
+             Pkg.test("Reachability"; coverage=true)'
 after_success:
   - julia -e 'Pkg.add("Documenter")'
   - julia -e 'cd(Pkg.dir("Reachability")); include(joinpath("docs", "make.jl"))'

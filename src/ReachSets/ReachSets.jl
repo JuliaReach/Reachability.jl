@@ -84,6 +84,8 @@ using ..Utils
 using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 
+# fix namespace conflicts with MathematicalSystems
+import LazySets.LinearMap
 import Reachability.info
 
 include("../compat.jl")
@@ -92,7 +94,7 @@ import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability:tocc,
+import Reachability:@timing,
                     Options,
                     validate_solver_options_and_add_default_values!
 
@@ -180,6 +182,13 @@ export PostOperator,
        post,
        tube⋂inv!
 
+# ==========================
+# Continuous post operators
+# ==========================
+include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
+include("ContinuousPost/BFFPSV18/reach_blocks.jl")
+include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
+
 # ========================
 # Reachability Algorithms
 # ========================
@@ -189,11 +198,9 @@ import Reachability.check_aliases_and_add_default_value!
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-include("reach_blocks.jl")
 push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
 
-include("reach_blocks_wrapping_effect.jl")
 push!(available_algorithms,
       "wrap"=>Dict("func"=>reach_blocks_wrapping_effect!,
                    "is_explicit"=>true))
@@ -201,15 +208,10 @@ push!(available_algorithms,
 export available_algorithms
 
 # ==========================
-# Continuous post operators
-# ==========================
-include("ContinuousPost/BFFPSV18.jl")
-include("DiscretePost/ConcreteDiscretePost.jl")
-
-# ==========================
 # Discrete post operators
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
+include("DiscretePost/ConcreteDiscretePost.jl")
 
 # =========================
 # External reach interface

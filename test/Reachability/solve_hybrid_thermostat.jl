@@ -4,8 +4,11 @@
 # ============================
 
 using Reachability, HybridSystems, MathematicalSystems, LazySets, Polyhedra
+
+# fix namamespace conflicts with Polyhedra
 import LazySets.HalfSpace
 import Reachability.ReachSet
+import Reachability.constrained_dimensions
 
 c_a = 0.1;
 
@@ -55,6 +58,9 @@ system = InitialValueProblem(HS, X0);
 
 options = Options(:mode=>"reach", :vars=>[1], :T=>5.0, :δ=>0.1,
                   :max_jumps=>1, :verbosity=>1);
+
+# test constrained_dimensions
+@test constrained_dimensions(HS) == Dict{Int,Vector{Int}}(1=>[1], 2=>[1])
 
 # default algorithm
 sol = solve(system, options);

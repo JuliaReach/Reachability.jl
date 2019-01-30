@@ -47,21 +47,22 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         Xhat0 = [S.x0]
     else
         info("- Decomposing X0")
-        tic()
-        if options[:lazy_X0]
-            Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
-        elseif dir != nothing
-            Xhat0 = array(decompose(S.x0, directions=dir, blocks=block_sizes))
-        elseif !isempty(options[:block_types_init])
-            Xhat0 = array(decompose(S.x0, ε=ε_init,
-                                    block_types=options[:block_types_init]))
-        elseif set_type_init == LazySets.Interval
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
-                                    blocks=ones(Int, n)))
-        else
-            Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+        @timing begin
+            if options[:lazy_X0]
+                Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
+            elseif dir != nothing
+                Xhat0 = array(decompose(S.x0, directions=dir,
+                                        blocks=block_sizes))
+            elseif !isempty(options[:block_types_init])
+                Xhat0 = array(decompose(S.x0, ε=ε_init,
+                                        block_types=options[:block_types_init]))
+            elseif set_type_init == LazySets.Interval
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+                                        blocks=ones(Int, n)))
+            else
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+            end
         end
-        tocc()
     end
 
     # shortcut if only the initial set is required
@@ -163,9 +164,8 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
 
     # call the adequate function with the given arguments list
     info("- Computing successors")
-    tic()
-    answer = available_algorithms_check[algorithm_backend]["func"](args...)
-    tocc()
+    answer =
+        @timing available_algorithms_check[algorithm_backend]["func"](args...)
 
     # return the result
     return answer
@@ -178,16 +178,16 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
-    tic()
-    Δ = discretize(
-        S,
-        options[:δ],
-        approx_model=options[:approx_model],
-        pade_expm=options[:pade_expm],
-        lazy_expm=options[:lazy_expm_discretize],
-        lazy_sih=options[:lazy_sih]
+    Δ = @timing begin
+        discretize(
+            S,
+            options[:δ],
+            approx_model=options[:approx_model],
+            pade_expm=options[:pade_expm],
+            lazy_expm=options[:lazy_expm_discretize],
+            lazy_sih=options[:lazy_sih]
         )
-    tocc()
+    end
     Δ = matrix_conversion_lazy_explicit(Δ, options)
     return check_property(Δ, options)
 end

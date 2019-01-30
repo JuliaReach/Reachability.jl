@@ -8,7 +8,7 @@ using LazySets, MathematicalSystems
 
 include("../compat.jl")
 
-import Reachability.tocc
+import Reachability.@timing
 
 # Visualization
 export print_sparsity,
@@ -35,9 +35,6 @@ export interpret_template_direction_symbol,
 
 # temporary helper function
 export decompose_helper
-
-# convenience
-export hasnz
 
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
@@ -148,7 +145,7 @@ function print_sparsity(ϕ::AbstractMatrix{Float64}, name::String="")
     @inline F(bi::Int64, bj::Int64) = ϕ[(2*bi-1):(2*bi), (2*bj-1):(2*bj)]
     for bj in 1:b
         for bi in 1:b
-            if !hasnz(F(bi, bj))
+            if iszero(F(bi, bj))
                 zero_blocks += 1
             end
         end
@@ -165,7 +162,7 @@ function print_sparsity(ϕ::SparseMatrixExp{Float64}, name::String="")
     for bi in 1:b
         block_row_bi = F(bi)
         for bj in 1:b
-            if !hasnz(block_row_bi[1:2, (2*bj-1):(2*bj)])
+            if iszero(block_row_bi[1:2, (2*bj-1):(2*bj)])
                 zero_blocks += 1
             end
         end
@@ -227,7 +224,7 @@ function plot_sparsity(ϕ::Union{AbstractMatrix{Float64}, SparseMatrixExp{Float6
 end
 
 """
-    add_plot_labels(plot_vars, [project_output], [plot_labels])
+    add_plot_labels(plot_vars, [project_output], [plot_labels], [use_subindices])
 
 Creates the axis labels for plotting.
 
@@ -236,36 +233,88 @@ Creates the axis labels for plotting.
 - `plot_vars`      -- variable indices for plotting (0 stands for time)
 - `project_output` -- (optional, default: false) flag indicating if the y axis
                       is an output function
-- `plot_labels`    -- (optional) vector of plot labels (empty strings are ignored)
+- `plot_labels`    -- (optional, default: empty strings) vector of plot labels,
+                      empty strings are ignored
+- `use_subindices` -- (optional, default: `true`) if `true`, use subindices
+                      for the labels, e.g. `x1` is displayed as `x₁`
+
+### Output
+
+Axis labels with the specified properties.
 """
-function add_plot_labels(plot_vars::Vector{Int64}, project_output::Bool=false, plot_labels::Vector{String}=["", ""])
+function add_plot_labels(plot_vars::Vector{Int64};
+                         project_output::Bool=false,
+                         plot_labels::Vector{String}=["", ""],
+                         use_subindices::Bool=true)
     labels = copy(plot_labels)
+
+    # convert integer to subindex, such that e.g. x1 is displayed as x₁
+    if use_subindices
+        tosubindex = i -> join(Char.(0x2080 .+ convert.(UInt16, digits(i)[end:-1:1])))
+    else
+        tosubindex = i -> string(i)
+    end
     if isempty(labels[1])
         xaxis = plot_vars[1]
-        labels[1] = (xaxis == 0) ? "t" : "x" * string(xaxis)
+        labels[1] = (xaxis == 0) ? "t" : "x" * tosubindex(xaxis)
     end
     if isempty(labels[2])
         yaxis = plot_vars[2]
-        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * string(yaxis))
+        labels[2] = (yaxis == 0) ? "t" : (project_output ? "y" : "x" * tosubindex(yaxis))
     end
     return labels
 end
 
+# Taken from an older Julia version, see Reachability #414 or
+# https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
+function source_path(default::Union{AbstractString, Nothing}="")
+    t = current_task()
+    while true
+        s = t.storage
+        if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
+            return s[:SOURCE_PATH]
+        end
+        if isa(t, t.parent)
+            return default
+        end
+        t = t.parent
+    end
+end
 
 """
    @relpath(name)
 
 Returns the path of the current code file.
-This is handy, e.g., when calling a function from anywhere that wants to open a
-file relative to its own location.
 
 ### Input
 
 - `name` -- file name
+
+### Output
+
+A string.
+
+### Notes
+
+This macro is handy, e.g., when calling a function that uses a file relative to
+its own location.
+
+For example, suppose that the folder `/home/projects/P1` contains the script `s.jl`
+which loads the data `x.dat` and performs some calculations with it:
+
+```julia
+# file /home/projects/P1/s.jl
+d = open(@relpath "x.dat")
+# do stuff with d
+```
+In this example, the macro `@relpath "s.jl"` evaluates to the string
+`/home/projects/P1/x.dat`. The script `s.jl` can be evaluated from the command line
+from any folder, e.g. suppose that the path working directory is `/home/projects`,
+then one can do `julia -e 'include("P1/s.jl")'` without having to change `s.jl`.
 """
 macro relpath(name::String)
     return quote
-        f = @__FILE__
+        f = source_path()
         if f == nothing
             pathdir = ""
         else
@@ -276,28 +325,6 @@ macro relpath(name::String)
         end
         pathdir * $name
     end
-end
-
-"""
-    hasnz(v::AbstractArray{N})::Bool where N<:Real
-
-Check if an array contains a non-zero entry.
-
-### Input
-
-- `a` -- array
-
-### Output
-
-`true` iff the array contains a non-zero entry.
-"""
-@inline function hasnz(a::AbstractArray{N})::Bool where N<:Real
-    @inbounds for e in a
-       if e != zero(N)
-           return true
-       end
-    end
-    return false
 end
 
 """
@@ -494,17 +521,17 @@ function matrix_conversion_lazy_explicit(Δ, options)
     A = Δ.s.A
     if !options[:lazy_expm] && options[:lazy_expm_discretize]
         info("Making lazy matrix exponential explicit...")
-        tic()
-        n = options.dict[:n]
-        if options[:assume_sparse]
-            B = sparse(Int[], Int[], eltype(A)[], n, n)
-        else
-            B = Matrix{eltype(A)}(n, n)
+        @timing begin
+            n = options.dict[:n]
+            if options[:assume_sparse]
+                B = sparse(Int[], Int[], eltype(A)[], n, n)
+            else
+                B = Matrix{eltype(A)}(n, n)
+            end
+            for i in 1:n
+                B[i, :] = get_row(A, i)
+            end
         end
-        for i in 1:n
-            B[i, :] = get_row(A, i)
-        end
-        tocc()
     else
         B = nothing
     end

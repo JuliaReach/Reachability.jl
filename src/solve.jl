@@ -1,4 +1,5 @@
 export solve
+import LazySets.constrained_dimensions
 
 function default_operator(system::InitialValueProblem{S}) where
         {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
@@ -73,7 +74,7 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
                                                      AbstractDiscreteSystem}},
                 options_input::Options;
                 op::ContinuousPost=default_operator(system),
-                invariant::LazySet=ZeroSet(statedim(system))
+                invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
     options = init(op, system, options_input)
 
@@ -81,10 +82,8 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
     options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
-        tic()
         (system, transformation_matrix) =
-            transform(system, options[:coordinate_transformation])
-        tocc()
+            @timing transform(system, options[:coordinate_transformation])
         options[:transformation_matrix] = transformation_matrix
         invariant = options[:coordinate_transformation] * invariant
     end
@@ -118,6 +117,32 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
     sys_new = init_states_sys_from_init_set_sys(system)
     return solve!(sys_new, copy(options), opC, opD)
 end
+
+
+"""
+    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+
+Return all coordinates which appear in any guard or invariant constraint for each location.
+
+### Input
+
+- `HS`  -- hybrid system
+"""
+function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
+end
+
 
 function init_states_sys_from_init_set_sys(
         system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
@@ -245,9 +270,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # Projection
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
-        tic()
-        RsetsProj = project(Rsets, options)
-        tocc()
+        RsetsProj = @timing project(Rsets, options)
     else
         RsetsProj = Rsets
     end

@@ -123,9 +123,11 @@ function post(𝒫::ConcreteDiscretePost,
             if isempty(R⋂G)
                 continue
             end
+
             # apply assignment
-            # TODO converting to HPolytope; this should be handled automatically
-            A⌜R⋂G⌟ = linear_map(assignment, R⋂G, output_type=HPolytope)
+            # TODO converting to HPolytope ?? handle automatically ??
+            A⌜R⋂G⌟ = convert(HPolytope, linear_map(assignment, R⋂G))
+
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
             if isempty(A⌜R⋂G⌟⋂I)
