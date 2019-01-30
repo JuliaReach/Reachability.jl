@@ -94,9 +94,10 @@ import LazySets.Approximations:symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability:@timing,
-                    Options,
-                    validate_solver_options_and_add_default_values!
+import Reachability: @timing
+
+include("../Options/dictionary.jl")
+include("../Options/validation.jl")
 
 # ========================================
 # Discretize and compute bloating factors
@@ -188,11 +189,11 @@ export PostOperator,
 include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
+include("ContinuousPost/BFFPSV18/options.jl")
 
 # ========================
 # Reachability Algorithms
 # ========================
-import Reachability.check_aliases_and_add_default_value!
 
 # dictionary of registered algorithms
 available_algorithms = Dict{String, Dict{String, Any}}()

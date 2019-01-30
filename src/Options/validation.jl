@@ -1,9 +1,11 @@
+#=============================================
+Validation methods for dictionaries of options
+==============================================#
+
+available_keywords = Set{Symbol}([])
+
 """
-    check_aliases_and_add_default_value!(options, aliases, default_value, [modify_dict])
-
-Update the given options with a 
-
- options by checking aliases and adding a default value 
+    check_aliases_and_add_default_value!(dict, dict_copy, aliases, default_value, [modify_dict])
 
 This function has several purposes:
 
@@ -20,10 +22,8 @@ This function has several purposes:
 - `modify_dict`   -- (optional, default: `false`) indicates if `dict` should be
                      modified
 """
-function update!(options::Options,
-                 aliases::Vector{Symbol},
-                 default_value::Any)
-    check_aliases!(aliases)
+function check_aliases_and_add_default_value!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol}, default_value::Any, modify_dict::Bool=false)
+    check_aliases!(dict, dict_copy, aliases)
 
     if !haskey(dict_copy, aliases[1])
         # no alias and no value
@@ -43,11 +43,11 @@ This function has several purposes:
 - translate aliases to the option that is used internally
 - check that not several aliases were used at the same time
 
-INPUT:
+### Input
 
-- `dict` -- a dictionary of options
+- `dict`      -- a dictionary of options
 - `dict_copy` -- a copy of the dictionary of options for internal names
-- `aliases` -- option aliases; the first name is the one we use internally
+- `aliases`   -- option aliases; the first name is the one we use internally
 """
 function check_aliases!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any}, aliases::Vector{Symbol})
     # find aliases and check consistency in case several aliases have been used
@@ -109,4 +109,128 @@ The error message.
 function get_unrecognized_key_message(key)
     return "Unrecognized option '$key' found. See " *
         "`keys(Reachability.available_keywords.dict)` for all valid keywords."
+end
+
+"""
+    check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any})
+
+Handling of the special triple `:δ`, `:N`, `:T`. Usually two of them should be
+defined and the third one is automatically inferred.
+If three of them are defined, they must be consistent.
+If only `:T` is defined, we use `:N = 100`.
+
+### Input
+
+- `dict`      -- a dictionary of options
+- `dict_copy` -- a copy of the dictionary of options for internal names
+
+### Notes
+
+Supported options:
+
+- `:δ` (time step)
+- alias: `:sampling_time`
+- `:N` (number of time steps)
+- `:T` (time horizon)
+- alias: `:time_horizon`
+"""
+function check_and_add_δ_N_T!(dict::Dict{Symbol,Any}, dict_copy::Dict{Symbol,Any})
+    δ_aliases = [:δ, :sampling_time]
+    T_aliases = [:T, :time_horizon]
+    check_aliases!(dict, dict_copy, δ_aliases)
+    check_aliases!(dict, dict_copy, [:N])
+    check_aliases!(dict, dict_copy, T_aliases)
+
+    defined = 0
+    if haskey(dict_copy, :δ)
+        value = dict_copy[:δ]
+        if !(value isa Float64 && value > 0.)
+            error("$value is not a valid value for option $δ_aliases.")
+        end
+        defined += 1
+    end
+    if haskey(dict_copy, :N)
+        value = dict_copy[:N]
+        if !(value isa Int && value > 0)
+            error("$value is not a valid value for option :N.")
+        end
+        defined += 1
+    end
+    if haskey(dict_copy, :T)
+        value = dict_copy[:T]
+        if !(value isa Float64 && value > 0.)
+            error("$value is not a valid value for option $T_aliases.")
+        end
+        defined += 1
+    end
+
+    if defined == 1 && haskey(dict_copy, :T)
+        N = 100
+        dict[:N] = N
+        dict_copy[:N] = N
+        δ = dict_copy[:T] / dict_copy[:N]
+        dict[:δ] = δ
+        dict_copy[:δ] = δ
+    elseif defined == 2
+        if !haskey(dict_copy, :δ)
+            δ = dict_copy[:T] / dict_copy[:N]
+            dict[:δ] = δ
+            dict_copy[:δ] = δ
+        end
+        if !haskey(dict_copy, :N)
+            N = (Int)(ceil(dict_copy[:T] / dict_copy[:δ]))
+            dict[:N] = N
+            dict_copy[:N] = N
+        end
+        if !haskey(dict_copy, :T)
+            T = dict_copy[:N] * dict_copy[:δ]
+            dict[:T] = T
+            dict_copy[:T] = T
+        end
+    elseif defined == 3
+        N_computed = (Int)(ceil(dict_copy[:T] / dict_copy[:δ]))
+        if N_computed != dict_copy[:N]
+            error("Values for :δ ($(dict_copy[:δ])), :N ($(dict_copy[:N])), and :T ($(dict_copy[:T])) were defined, but they are inconsistent.")
+        end
+    else
+        error("Need two of the following options: :δ, :N, :T (or at least :T and using default values)")
+    end
+end
+
+"""
+    check_and_add_plot_vars!(dict::Dict{Symbol,Any},
+                             dict_copy::Dict{Symbol,Any})
+
+Handling of the special option `:plot_vars`.
+
+### Input
+
+- `dict`      -- dictionary of options
+- `dict_copy` -- copy of the dictionary of options for internal names
+
+### Notes:
+
+If no value is given, we take the first two dimensions from `:vars`.
+If `:vars` has only one element, we use time for the other.
+"""
+function check_and_add_plot_vars!(dict::Dict{Symbol,Any},
+                                 dict_copy::Dict{Symbol,Any})
+    check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
+    if !haskey(dict_copy, :plot_vars)
+        vars = dict_copy[:vars]
+        if length(vars) == 1
+            plot_vars = [0, vars[1]]
+        else
+            plot_vars = [vars[1], vars[2]]
+        end
+        dict_copy[:plot_vars] = plot_vars
+    else
+        # sanity check
+        vars = dict_copy[:vars]
+        for i in dict_copy[:plot_vars]
+            if i != 0 && i ∉ vars
+                error("$(dict_copy[:plot_vars]) is not a subset of the variables $vars")
+            end
+        end
+    end
 end
