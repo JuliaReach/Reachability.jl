@@ -37,6 +37,7 @@ The latest stable release of [LazySets.jl](https://github.com/JuliaReach/LazySet
 
 To install this package, use the following command inside Julia's REPL:
 ```julia
+using Pkg
 Pkg.clone("https://github.com/JuliaReach/Reachability.jl")
 ```
 
