@@ -4,7 +4,7 @@
 Pages = ["citations.md"]
 ```
 
-This page list publications citing packages or papers from the JuliaReach ecosystem.
+This page lists publications citing packages or papers from the JuliaReach ecosystem.
 
 ## Conference Proceedings
 
