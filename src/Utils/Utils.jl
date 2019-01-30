@@ -265,21 +265,19 @@ function add_plot_labels(plot_vars::Vector{Int64};
     return labels
 end
 
-@static if VERSION >= v"0.7"
-    # Taken from an older Julia version, see Reachability #414 or
-    # https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
-    function source_path(default::Union{AbstractString, Nothing}="")
-        t = current_task()
-        while true
-            s = t.storage
-            if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
-                return s[:SOURCE_PATH]
-            end
-            if isa(t, t.parent)
-                return default
-            end
-            t = t.parent
+# Taken from an older Julia version, see Reachability #414 or
+# https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
+function source_path(default::Union{AbstractString, Nothing}="")
+    t = current_task()
+    while true
+        s = t.storage
+        if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
+            return s[:SOURCE_PATH]
         end
+        if isa(t, t.parent)
+            return default
+        end
+        t = t.parent
     end
 end
 
@@ -316,12 +314,7 @@ then one can do `julia -e 'include("P1/s.jl")'` without having to change `s.jl`.
 """
 macro relpath(name::String)
     return quote
-        @static if VERSION < v"0.7"
-            f = @__FILE__
-        else
-            f = source_path()
-        end
-
+        f = source_path()
         if f == nothing
             pathdir = ""
         else

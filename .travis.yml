@@ -3,8 +3,6 @@ language: julia
 os:
   - linux
 julia:
-  - 0.6
-  - 0.7
   - 1.0
   - nightly
 notifications:
@@ -19,10 +17,9 @@ matrix:
 
 ## uncomment the following lines to override the default test script
 script:
- - julia -e 'VERSION >= v"0.7-" && using Pkg;
-             VERSION >= v"0.7-" && Pkg.develop("LazySets");
+ - julia -e 'using Pkg;
+             Pkg.develop("LazySets");
              Pkg.clone(pwd());
-             VERSION < v"0.7-" && Pkg.checkout("LazySets");
              Pkg.build("Reachability");
              Pkg.test("Reachability"; coverage=true)'
 after_success:
