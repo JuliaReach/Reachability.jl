@@ -6,7 +6,11 @@
 [![Code coverage](http://codecov.io/github/JuliaReach/Reachability.jl/coverage.svg?branch=master)](https://codecov.io/github/JuliaReach/Reachability.jl?branch=master)
 [![Join the chat at https://gitter.im/JuliaReach/Lobby](https://badges.gitter.im/JuliaReach/Lobby.svg)](https://gitter.im/JuliaReach/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`Reachability` is a software for reachability analysis and safety property checking that performs flowpipe computation of dynamical systems given by ordinary differential equations models (ODEs) in continuous or discrete time. Currently this package implements algorithms that can handle:
+`Reachability` is a software for reachability analysis and safety property checking that performs flowpipe computation of dynamical systems given by ordinary differential equations models (ODEs) in continuous or discrete time. 
+It is written in [Julia](http://julialang.org), a modern high-performance language
+for scientific computing.
+
+Currently this package implements algorithms that can handle:
 
 - flowpipe computation of affine ODEs with nondeterministic inputs
 - hybrid dynamical systems (hybrid automata) with nondeterministic affine ODEs in each mode
@@ -17,11 +21,6 @@
 - [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
 - [Publications using JuliaReach](http://juliareach.github.io/Reachability.jl/latest/publications.html)
 
-`Reachability` is a software for reach set approximation and safety properties
-of affine ordinary differential equations (ODEs) with nondeterministic inputs.
-
-It is written in [Julia](http://julialang.org), a modern high-performance language
-for scientific computing.
 
 ## Installing
 
