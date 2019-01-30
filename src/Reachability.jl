@@ -13,7 +13,9 @@ import LazySets.LinearMap
  
 include("logging.jl")
 include("Utils/Utils.jl")
-include("options.jl")
+include("Options/dictionary.jl")
+include("Options/validation.jl")
+include("Options/BFFPSV18_options.jl")
 include("ReachSets/ReachSets.jl")
 include("Transformations/Transformations.jl")
 
