@@ -2,11 +2,7 @@
 # Test minimal (default) options
 # ===============================
 using Reachability, MathematicalSystems
-
-# compatibility of julia versions
-if VERSION >= v"0.7"
-    using LinearAlgebra, SparseArrays
-end
+using LinearAlgebra, SparseArrays
 
 # linear ODE: x' = Ax
 A = [ 0.0509836  0.168159  0.95246   0.33644

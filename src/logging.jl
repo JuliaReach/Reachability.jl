@@ -1,10 +1,5 @@
-@static if VERSION < v"1.0-"
-    import Base: info, warn
-end
+using Printf
 
-@static if VERSION >= v"0.7"
-    using Printf
-end
 import Memento: debug
 
 export info, warn, debug, @timing,
