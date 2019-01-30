@@ -26,11 +26,6 @@ of affine ordinary differential equations (ODEs) with nondeterministic inputs.
 It is written in [Julia](http://julialang.org), a modern high-performance language
 for scientific computing.
 
-## Resources
-
-- [Manual](http://juliareach.github.io/Reachability.jl/latest/)
-- [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
-
 ## Installing
 
 ### Dependencies
