@@ -297,6 +297,86 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "publications.html#",
+    "page": "Publications",
+    "title": "Publications",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "publications.html#Publications-1",
+    "page": "Publications",
+    "title": "Publications",
+    "category": "section",
+    "text": "Pages = [\"publications.md\"]This page list publications about the JuliaReach ecosystem and its applications."
+},
+
+{
+    "location": "publications.html#JuliaReach:-a-Toolbox-for-Set-Based-Reachability-1",
+    "page": "Publications",
+    "title": "JuliaReach: a Toolbox for Set-Based Reachability",
+    "category": "section",
+    "text": "JuliaReach: a Toolbox for Set-Based Reachability. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. Accepted in Proceedings of HSCC\'19: 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC\'19).In 2019, this conference is part of the Cyber-Physical Systems and Internet-Of-Things Week.Abstract. We present JuliaReach, a toolbox for set-based reachability analysis of dynamical systems. JuliaReach consists of two main packages: Reachability, containing implementations of reachability algorithms for continuous and hybrid systems, and LazySets, a standalone library that implements state-of-the-art algorithms for calculus with convex sets. The library offers both concrete and lazy set representations, where the latter stands for the ability to delay set computations until they are needed. The choice of the programming language Julia and the accompanying documentation of our toolbox allow researchers to easily translate set-based algorithms from mathematics to software in a platform-independent way, while achieving runtime performance that is comparable to statically compiled languages. Combining lazy operations in high dimensions and explicit computations in low dimensions, JuliaReach can be applied to solve complex, large-scale problems.The repeatability evaluation package for this conference tool paper is available at HSCC2019_RE."
+},
+
+{
+    "location": "publications.html#ARCH-2018-Competition-AFF-Category-Report-1",
+    "page": "Publications",
+    "title": "ARCH 2018 Competition AFF Category Report",
+    "category": "section",
+    "text": "ARCH-COMP18 Category Report: Continuous and Hybrid Systems with Linear Continuous Dynamics. Matthias Althoff, Stanley Bak, Xin Chen, Chuchu Fan,    Marcelo Forets, Goran Frehse, Niklas Kochdumper, Yangge Li, Sayan Mitra, Rajarshi Ray, Christian Schilling and Stefan Schupp (2018) ARCH18. 5th International Workshop on Applied Verification of Continuous and Hybrid Systems, 54: 23–52. doi: 10.29007/73mb. Packages: Reachability.jl.Abstract. This report presents the results of a friendly competition for formal verification of continuous and hybrid systems with linear continuous dynamics. The friendly competition took place as part of the workshop Applied Verification for Continuous and Hybrid Systems (ARCH) in 2018. In its second edition, 9 tools have been applied to solve six different benchmark problems in the category for linear continuous dynamics (in alphabetical order): CORA, CORA/SX, C2E2, FlowStar, HyDRA, Hylaa, Hylaa-Continuous, JuliaReach, SpaceEx, and XSpeed. This report is a snapshot of the current landscape of tools and the types of benchmarks they are particularly suited for. Due to the diversity of problems, we are not ranking tools, yet the presented results probably provide the most complete assessment of tools for the safety verification of continuous and hybrid systems with linear continuous dynamics up to this date.The repeatability evaluation package for JuliaReach is available at ARCH2018_RE.The repeatability evaluation packages of all tools participating in this report is available in the ARCH-COMP gitlab repo."
+},
+
+{
+    "location": "publications.html#Reach-Set-Approximation-through-Decomposition-1",
+    "page": "Publications",
+    "title": "Reach Set Approximation through Decomposition",
+    "category": "section",
+    "text": "Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Frédéric Viry, Andreas Podelski and Christian Schilling (2018) HSCC\'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control: 41–50. See the ACM Digital Library link, or the arXiv: 1801.09526. Packages: LazySets.jl and Reachability.jl. Abstract. Approximating the set of reachable states of a dynamical system is an algorithmic yet mathematically rigorous way to reason about its safety. Although progress has been made in the development of efficient algorithms for affine dynamical systems, available algorithms still lack scalability to ensure their wide adoption in the industrial setting. While modern linear algebra packages are efficient for matrices with tens of thousands of dimensions, set-based image computations are limited to a few hundred. We propose to decompose reach set computations such that set operations are performed in low dimensions, while matrix operations like exponentiation are carried out in the full dimension. Our method is applicable both in dense- and discrete-time settings. For a set of standard benchmarks, it shows a speed-up of up to two orders of magnitude compared to the respective state-of-the art tools, with only modest losses in accuracy. For the dense-time case, we show an experiment with more than 10.000 variables, roughly two orders of magnitude higher than possible with previous approaches.For the evaluation of the SLICOT benchmarks see ReachabilityBenchmarks."
+},
+
+{
+    "location": "citations.html#",
+    "page": "Citations",
+    "title": "Citations",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "citations.html#Citations-1",
+    "page": "Citations",
+    "title": "Citations",
+    "category": "section",
+    "text": "Pages = [\"citations.md\"]This page list publications citing packages or papers from the JuliaReach ecosystem."
+},
+
+{
+    "location": "citations.html#Conference-Proceedings-1",
+    "page": "Citations",
+    "title": "Conference Proceedings",
+    "category": "section",
+    "text": "Schupp, Stefan, and Erika Ábrahám. \"Spread the Work: Multi-threaded Safety Analysis for Hybrid Systems.\" International Conference on Software Engineering and Formal Methods. Springer, Cham, 2018.\nBak, Stanley, Hoang-Dung Tran, and Taylor T. Johnson. \"Numerical Verification of Affine Systems with up to a Billion Dimensions.\" arXiv preprint arXiv:1804.01583 (2018). Accepted in Proceedings of HSCC\'19: 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC\'19).\nSchupp, Stefan, Justin Winkens, and Erika Ábrahám. \"Context-Dependent Reachability Analysis for Hybrid Systems.\" 2018 IEEE International Conference on Information Reuse and Integration (IRI). IEEE, 2018."
+},
+
+{
+    "location": "citations.html#Preprints-1",
+    "page": "Citations",
+    "title": "Preprints",
+    "category": "section",
+    "text": "Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. \"Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling.\" arXiv preprint arXiv:1901.01006 (2019)."
+},
+
+{
+    "location": "citations.html#Theses-1",
+    "page": "Citations",
+    "title": "Theses",
+    "category": "section",
+    "text": "Rocca, Alexandre. Formal methods for modelling and validation of biological models. Diss. Grenoble Alpes, 2018.\nSchilling, Christian. \"Fundamental techniques for the scalable analysis of systems.\" (2018)."
+},
+
+{
     "location": "about.html#",
     "page": "About",
     "title": "About",
