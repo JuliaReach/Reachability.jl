@@ -189,8 +189,6 @@ include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 
-include("DiscretePost/ConcreteDiscretePost.jl")
-
 # ========================
 # Reachability Algorithms
 # ========================
@@ -200,11 +198,9 @@ import Reachability.check_aliases_and_add_default_value!
 available_algorithms = Dict{String, Dict{String, Any}}()
 
 # "explicit" backends
-#include("reach_blocks.jl")
 push!(available_algorithms, "explicit_blocks"=>Dict("func"=>reach_blocks!,
                                                     "is_explicit"=>true))
 
-#include("reach_blocks_wrapping_effect.jl")
 push!(available_algorithms,
       "wrap"=>Dict("func"=>reach_blocks_wrapping_effect!,
                    "is_explicit"=>true))
@@ -215,6 +211,7 @@ export available_algorithms
 # Discrete post operators
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
+include("DiscretePost/ConcreteDiscretePost.jl")
 
 # =========================
 # External reach interface
