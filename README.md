@@ -30,7 +30,7 @@ for scientific computing.
 
 ### Dependencies
 
-This package requires Julia v0.6 or later. Refer to the [official documentation](https://julialang.org/downloads)
+This package requires Julia v1.0 or later. Refer to the [official documentation](https://julialang.org/downloads)
 on how to install and run Julia in your system.
 
 The set computations depend on the core library [LazySets.jl](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
