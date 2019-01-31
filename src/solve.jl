@@ -1,8 +1,21 @@
 export solve
-import LazySets.constrained_dimensions
 
-function default_operator(system::InitialValueProblem{S}) where
-        {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
+"""
+    default_operator(system::InitialValueProblem{S}) where {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
+
+Return the default continous post operator for the initial value problem of a
+discrete or continuous system.
+
+### Input
+
+- `system` -- an initial value problem wrapping a mathematical system (continuous or
+              discrete) and a set of initial states
+
+### Output
+
+An instante with default options of a continuous post operator.
+"""
+function default_operator(system::InitialValueProblem{S}) where {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
     if S <: LinearContinuousSystem ||
             S <: LinearControlContinuousSystem ||
             S <: ConstrainedLinearContinuousSystem ||
@@ -20,23 +33,24 @@ function default_operator(system::InitialValueProblem{S}) where
 end
 
 """
-    default_operator(𝒮::InitialValueProblem{<:HybridSystem})
+    distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet)
 
-Return the default post operators for a given hybrid system.
+Distributed an initial state over all the modes of a hybrid system.
 
 ### Input
 
-- `𝒮` -- initial value problem of a hybrid system
+- `system` -- an initial value problem wrapping a mathematical system (hybrid)
+              and a set of initial states
 
 ### Output
 
-The pair `opC, opD` where `opC` is a continuous post-operator and `opD` is a
-discrete post-operator.
+A new initial value problem with the same hybrid system but where the set of initial
+states is the list of tuples `(state, X0)`, for each state in the hybrid system.
 """
-function default_operator(𝒮::InitialValueProblem{<:HybridSystem})
-    opC = BFFPSV18()
-    opD = LazyDiscretePost()
-    return opC, opD
+function distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet})
+    HS, X0 = system.s, system.x0
+    initial_states = [(state, X0) for state in states(HS)]
+    return InitialValueProblem(HS, initial_states)
 end
 
 """
@@ -102,69 +116,20 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 - `system`  -- hybrid system
 - `options` -- options for solving the problem
 """
-function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
-               options::Options)::AbstractSolution where N<:Real
-    sys_new = init_states_sys_from_init_set_sys(system)
-    opC, opD = default_operator(sys_new)
-    return solve!(sys_new, copy(options), opC, opD)
-end
-
-function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+function solve(system::InitialValueProblem{<:HybridSystem, S},
                options::Options,
-               opC::ContinuousPost,
-               opD::DiscretePost
-              )::AbstractSolution where N<:Real
-    sys_new = init_states_sys_from_init_set_sys(system)
+               opC::ContinuousPost=BFFPSV18(),
+               opD::DiscretePost=LazyDiscretePost())::AbstractSolution where {N, S}
+    sys_new = distribute_initial_set(system)
     return solve!(sys_new, copy(options), opC, opD)
-end
-
-
-"""
-    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
-
-Return all coordinates which appear in any guard or invariant constraint for each location.
-
-### Input
-
-- `HS`  -- hybrid system
-"""
-function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
-    result = Dict{Int,Vector{Int}}()
-    sizehint!(result, nstates(HS))
-    for mode in states(HS)
-        vars = Vector{Int}()
-        append!(vars, constrained_dimensions(stateset(HS, mode)))
-        for transition in out_transitions(HS, mode)
-            append!(vars, constrained_dimensions(stateset(HS, transition)))
-        end
-        result[mode] = unique(vars)
-    end
-
-    return result
-end
-
-
-function init_states_sys_from_init_set_sys(
-        system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
-    HS = system.s
-    X0 = system.x0
-    inits = [(n, X0) for n in states(HS)]
-    return InitialValueProblem(HS, inits)
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem,
                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options::Options,
-               opC::ContinuousPost,
-               opD::DiscretePost
+               opC::ContinuousPost=BFFPSV18(),
+               opD::DiscretePost=LazyDiscretePost()
               )::AbstractSolution where N<:Real
-    return solve!(system, copy(options), opC, opD)
-end
-
-function solve(system::InitialValueProblem{<:HybridSystem,
-               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
-               options::Options)::AbstractSolution where N<:Real
-    opC, opD = default_operator(system)
     return solve!(system, copy(options), opC, opD)
 end
 

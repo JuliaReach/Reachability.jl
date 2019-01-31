@@ -11,6 +11,8 @@ const CLCDS = ConstrainedLinearControlDiscreteSystem
 
 import Base: *
 
+import LazySets.constrained_dimensions
+
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
 
 # no input: x' = Ax, x(0) = X0
@@ -194,4 +196,28 @@ function add_dimension(cs, m=1)
     else
         return ContinuousSystem(Aext, X0ext)
     end
+end
+
+"""
+    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+
+Return all coordinates which appear in any guard or invariant constraint for each location.
+
+### Input
+
+- `HS`  -- hybrid system
+"""
+function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
 end

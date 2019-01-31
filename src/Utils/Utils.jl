@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, MathematicalSystems
+using LazySets, MathematicalSystems, HybridSystems
 
 include("../compat.jl")
 
