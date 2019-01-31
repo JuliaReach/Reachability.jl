@@ -201,11 +201,17 @@ end
 """
     constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
 
-Return all coordinates which appear in any guard or invariant constraint for each location.
+For each location, compute all dimensions that are constrained in the invariant
+or the guard of any outgoing transition.
 
 ### Input
 
 - `HS`  -- hybrid system
+
+### Output
+
+A dictionary mapping the index of each location ``ℓ`` to the dimension indices
+that are constrained in ``ℓ``.
 """
 function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
     result = Dict{Int,Vector{Int}}()

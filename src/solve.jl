@@ -13,7 +13,7 @@ discrete or continuous system.
 
 ### Output
 
-An instante with default options of a continuous post operator.
+A continuous post operator with default options.
 """
 function default_operator(system::InitialValueProblem{S}) where {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
     if S <: LinearContinuousSystem ||
@@ -35,7 +35,7 @@ end
 """
     distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet)
 
-Distributed an initial state over all the modes of a hybrid system.
+Distribute the set of initial states to each mode of a hybrid system.
 
 ### Input
 
@@ -49,7 +49,7 @@ states is the list of tuples `(state, X0)`, for each state in the hybrid system.
 """
 function distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet})
     HS, X0 = system.s, system.x0
-    initial_states = [(state, X0) for state in states(HS)]
+    initial_states = [(loc, X0) for loc in states(HS)]
     return InitialValueProblem(HS, initial_states)
 end
 
@@ -116,25 +116,24 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 - `system`  -- hybrid system
 - `options` -- options for solving the problem
 """
-function solve(system::InitialValueProblem{<:HybridSystem, S},
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet},
                options::Options,
                opC::ContinuousPost=BFFPSV18(),
-               opD::DiscretePost=LazyDiscretePost())::AbstractSolution where {N, S}
-    sys_new = distribute_initial_set(system)
-    return solve!(sys_new, copy(options), opC, opD)
+               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
+    return solve!(distribute_initial_set(system), copy(options), opC, opD)
 end
 
+# if the initial states are distributed, no need to call distribute_initial_set(system)
 function solve(system::InitialValueProblem{<:HybridSystem,
-               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+                                           <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options::Options,
                opC::ContinuousPost=BFFPSV18(),
-               opD::DiscretePost=LazyDiscretePost()
-              )::AbstractSolution where N<:Real
+               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
     return solve!(system, copy(options), opC, opD)
 end
 
 function solve!(system::InitialValueProblem{<:HybridSystem,
-                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+                                            <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost
