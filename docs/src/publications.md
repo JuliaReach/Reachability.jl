@@ -8,7 +8,7 @@ This page list publications about the JuliaReach ecosystem and its applications.
 
 ## JuliaReach: a Toolbox for Set-Based Reachability
 
-- **JuliaReach: a Toolbox for Set-Based Reachability.** Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. Accepted in Proceedings of [HSCC'19](http://hscc2019.eecs.umich.edu/): 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC'19).
+- **JuliaReach: a Toolbox for Set-Based Reachability.** Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. Accepted in Proceedings of [HSCC'19](http://hscc2019.eecs.umich.edu/): 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC'19). [Get pdf from arXiv: 1901.10736](https://arxiv.org/abs/1901.10736).
 
 In 2019, this conference is part of the [Cyber-Physical Systems and Internet-Of-Things Week](http://www.cpsweek.org/).
 
