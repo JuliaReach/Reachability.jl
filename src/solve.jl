@@ -125,7 +125,7 @@ end
 
 # if the initial states are distributed, no need to call distribute_initial_set(system)
 function solve(system::InitialValueProblem{<:HybridSystem,
-                                           <:Vector{<:Tuple{Int64,<:LazySet{N}}}},
+                                           <:Vector{<:Tuple{Int64,<:LazySet}}},
                options::Options,
                opC::ContinuousPost=BFFPSV18(),
                opD::DiscretePost=LazyDiscretePost())::AbstractSolution
