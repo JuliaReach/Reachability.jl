@@ -110,9 +110,8 @@ function post(𝒫::ConcreteDiscretePost,
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
         target_invariant = target_loc.X
-        trans_annot = HS.resetmaps[symbol(HS, trans)]
-        guard = trans_annot.X
-        assignment = trans_annot.A
+        constrained_map = resetmap(HS, trans)
+        guard = stateset(constrained_map)
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
@@ -125,8 +124,7 @@ function post(𝒫::ConcreteDiscretePost,
             end
 
             # apply assignment
-            # TODO converting to HPolytope ?? handle automatically ??
-            A⌜R⋂G⌟ = convert(HPolytope, linear_map(assignment, R⋂G))
+            A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
 
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
@@ -143,4 +141,13 @@ function post(𝒫::ConcreteDiscretePost,
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
+end
+
+# --- handling assignments ---
+
+function apply_assignment(𝒫::ConcreteDiscretePost,
+                          constrained_map::ConstrainedLinearMap,
+                          R⋂G::LazySet;
+                          kwargs...)
+    return linear_map(constrained_map.A, R⋂G)
 end
