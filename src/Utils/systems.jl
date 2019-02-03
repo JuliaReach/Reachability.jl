@@ -38,6 +38,27 @@ next_set(inputs::ConstantInput) = collect(nextinput(inputs, 1))[1]
 next_set(inputs::AbstractInput, state::Int64) = collect(nextinput(inputs, state))[1]
 
 """
+    guard_assignment(ℋ::HybridSystem, transition)
+
+Read out the guard and assignment of a hybrid automaton's transition.
+
+### Input
+
+- `ℋ`         -- hybrid automaton
+- `transition` -- transition
+
+### Output
+
+A pair `(guard, assignment)`.
+"""
+function guard_assignment(ℋ::HybridSystem, transition)
+    transition_annotation = ℋ.resetmaps[symbol(ℋ, transition)]
+    guard = transition_annotation.X
+    assignment = transition_annotation.A
+    return (guard, assignment)
+end
+
+"""
     add_dimension(A::AbstractMatrix, m=1)
 
 Adds an extra zero row and column to a matrix.

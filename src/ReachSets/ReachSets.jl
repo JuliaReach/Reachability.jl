@@ -81,6 +81,7 @@ AUTHORS:
 module ReachSets
 
 using ..Utils
+using ..Utils: guard_assignment
 using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 

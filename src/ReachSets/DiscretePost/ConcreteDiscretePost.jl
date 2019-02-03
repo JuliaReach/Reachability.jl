@@ -110,9 +110,7 @@ function post(𝒫::ConcreteDiscretePost,
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
         target_invariant = target_loc.X
-        trans_annot = HS.resetmaps[symbol(HS, trans)]
-        guard = trans_annot.X
-        assignment = trans_annot.A
+        guard, assignment = guard_assignment(HS, trans)
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
