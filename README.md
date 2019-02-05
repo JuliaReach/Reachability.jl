@@ -19,7 +19,7 @@ Currently this package implements algorithms that can handle:
 
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
 - [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
-- [Publications using JuliaReach](http://juliareach.github.io/Reachability.jl/latest/publications.html)
+- [Publications](http://juliareach.github.io/Reachability.jl/latest/publications.html)
 
 
 ## Installing
