@@ -4,7 +4,7 @@
 Pages = ["publications.md"]
 ```
 
-This page list publications about the JuliaReach ecosystem and its applications.
+This page lists publications about the JuliaReach ecosystem and its applications.
 
 ## JuliaReach: a Toolbox for Set-Based Reachability
 
@@ -42,7 +42,7 @@ The repeatability evaluation packages of all tools participating in this report 
 
 ### Award to JuliaReach
 
-The *Most Promising Research Award* of the ARCH 2018 Friendly Competition was given to JuliaReach for the results obtained in [ARCH2018_RE](https://github.com/JuliaReach/ARCH2018_RE) for the affine category; see the [announcement here](https://cps-vo.org/node/55228):
+The *ARCH 2018 Best Friendly Competition Result* of the ARCH 2018 Friendly Competition was given to JuliaReach for the results obtained in [ARCH2018_RE](https://github.com/JuliaReach/ARCH2018_RE) for the affine category; see the [announcement here](https://cps-vo.org/node/55228):
 
 > It is our pleasure to announce that Marcelo Forets and Christian Schilling receive the ARCH 2018 Best Friendly Competition Result. They develop the tool JuliaReach, which showed significant improvements for computing reachable sets of linear continuous systems. The award comes with a 500 Euro prize from Bosch. Goran Frehse received the prize from Thomas Heinz of Bosch on their behalf.
 
@@ -53,4 +53,4 @@ The *Most Promising Research Award* of the ARCH 2018 Friendly Competition was gi
 
 **Abstract.** *Approximating the set of reachable states of a dynamical system is an algorithmic yet mathematically rigorous way to reason about its safety. Although progress has been made in the development of efficient algorithms for affine dynamical systems, available algorithms still lack scalability to ensure their wide adoption in the industrial setting. While modern linear algebra packages are efficient for matrices with tens of thousands of dimensions, set-based image computations are limited to a few hundred. We propose to decompose reach set computations such that set operations are performed in low dimensions, while matrix operations like exponentiation are carried out in the full dimension. Our method is applicable both in dense- and discrete-time settings. For a set of standard benchmarks, it shows a speed-up of up to two orders of magnitude compared to the respective state-of-the art tools, with only modest losses in accuracy. For the dense-time case, we show an experiment with more than 10.000 variables, roughly two orders of magnitude higher than possible with previous approaches.*
 
-For the evaluation of the SLICOT benchmarks see [ReachabilityBenchmarks](https://github.com/JuliaReach/ReachabilityBenchmarks).
+For the models with the SLICOT benchmarks and the repeatability evaluation see [ReachabilityBenchmarks](https://github.com/JuliaReach/ReachabilityBenchmarks).
