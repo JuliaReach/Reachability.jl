@@ -40,6 +40,13 @@ The repeatability evaluation package for JuliaReach is available at [ARCH2018_RE
 
 The repeatability evaluation packages of all tools participating in this report is available in the [ARCH-COMP gitlab repo](https://gitlab.com/goranf/ARCH-COMP).
 
+### Award to JuliaReach
+
+The *Most Promising Research Award* of the ARCH 2018 Friendly Competition was given to JuliaReach for the results obtained in the ARCH2018_RE, see the [announcement here](https://cps-vo.org/node/55228):
+
+> It is our pleasure to announce that Marcelo Forets and Christian Schilling receive the ARCH 2018 Best Friendly Competition Result. They develop the tool JuliaReach, which showed significant improvements for computing reachable sets of linear continuous systems. The award comes with a 500 Euro prize from Bosch. Goran Frehse received the prize from Thomas Heinz of Bosch on their behalf.
+
+
 ## Reach Set Approximation through Decomposition
 
 - **Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices.** Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Frédéric Viry, Andreas Podelski and Christian Schilling (2018) [HSCC'18](https://www.hscc2018.deib.polimi.it/) Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control: 41–50. See the [ACM Digital Library link](http://dx.doi.org/10.1145/3178126.3178128), or the [arXiv: 1801.09526](https://arxiv.org/abs/1801.09526). Packages: [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) and [Reachability.jl](https://github.com/JuliaReach/Reachability.jl). 
