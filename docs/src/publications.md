@@ -42,7 +42,7 @@ The repeatability evaluation packages of all tools participating in this report 
 
 ### Award to JuliaReach
 
-The *Most Promising Research Award* of the ARCH 2018 Friendly Competition was given to JuliaReach for the results obtained in the ARCH2018_RE, see the [announcement here](https://cps-vo.org/node/55228):
+The *Most Promising Research Award* of the ARCH 2018 Friendly Competition was given to JuliaReach for the results obtained in [ARCH2018_RE](https://github.com/JuliaReach/ARCH2018_RE) for the affine category; see the [announcement here](https://cps-vo.org/node/55228):
 
 > It is our pleasure to announce that Marcelo Forets and Christian Schilling receive the ARCH 2018 Best Friendly Competition Result. They develop the tool JuliaReach, which showed significant improvements for computing reachable sets of linear continuous systems. The award comes with a 500 Euro prize from Bosch. Goran Frehse received the prize from Thomas Heinz of Bosch on their behalf.
 
