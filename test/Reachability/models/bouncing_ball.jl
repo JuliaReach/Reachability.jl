@@ -27,8 +27,7 @@ function bouncing_ball()
     guard = HPolyhedron([HalfSpace([0.0, 1.0], 0.0),   # v ≤ 0
                          HalfSpace([-1.0, 0.0], 0.0),  # x ≥ 0
                          HalfSpace([1.0, 0.0], 0.0)])  # x ≤ 0
-    t1 = ConstrainedLinearDiscreteSystem(A, guard)  # old interface
-    # t1 = ConstrainedLinearMap(A, guard)  # new interface
+    t1 = ConstrainedLinearMap(A, guard)
 
     # transition annotations
     resetmaps = [t1]
