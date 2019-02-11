@@ -143,12 +143,13 @@ export CheckSolution
 # dictionary of registered algorithms
 available_algorithms_check = Dict{String, Dict{String, Any}}()
 
-# "explicit" backends
-include("Properties/check_blocks.jl")
-push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,
-                                                    "is_explicit"=>true))
+include("ContinuousPost/BFFPSV18/check_blocks.jl")
+include("ContinuousPost/BFFPSV18/check_property.jl")
+include("ContinuousPost/BFFPSV18/partitions.jl")
 
-include("Properties/check_property.jl")
+# "explicit" backends
+push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,
+                                                          "is_explicit"=>true))
 
 export available_algorithms_check,
        check_property
