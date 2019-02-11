@@ -186,6 +186,7 @@ export PostOperator,
 # Continuous post operators
 # ==========================
 include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
+include("ContinuousPost/XFZ18/XFZ18.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 
