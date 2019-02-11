@@ -1,7 +1,7 @@
 export solve
 
 """
-    default_operator(system::InitialValueProblem{S}) where {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
+    default_operator(system::InitialValueProblem)
 
 Return the default continous post operator for the initial value problem of a
 discrete or continuous system.
@@ -15,15 +15,8 @@ discrete or continuous system.
 
 A continuous post operator with default options.
 """
-function default_operator(system::InitialValueProblem{S}) where {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
-    if S <: LinearContinuousSystem ||
-            S <: LinearControlContinuousSystem ||
-            S <: ConstrainedLinearContinuousSystem ||
-            S <: ConstrainedLinearControlContinuousSystem ||
-            S <: LinearDiscreteSystem ||
-            S <: LinearControlDiscreteSystem ||
-            S <: ConstrainedLinearDiscreteSystem ||
-            S <: ConstrainedLinearControlDiscreteSystem
+function default_operator(system::InitialValueProblem)
+    if islinear(system)
         op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *
