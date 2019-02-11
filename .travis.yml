@@ -19,6 +19,8 @@ matrix:
 script:
  - julia -e 'using Pkg;
              Pkg.develop("LazySets");
+             Pkg.develop("MathematicalSystems");
+             Pkg.develop("HybridSystems");
              Pkg.clone(pwd());
              Pkg.build("Reachability");
              Pkg.test("Reachability"; coverage=true)'
