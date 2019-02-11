@@ -10,13 +10,13 @@ Abstract supertype of all discrete post operators.
 All discrete post operators should provide the following method, in addition
 to those provided for general post operators:
 ```julia
-tube⋂inv!(op::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
           invariant, Rsets, start_interval)::Vector{ReachSet{LazySet{N}, N}}
 ```
 """
 abstract type DiscretePost <: PostOperator end
 
-function postprocess(op,
+function postprocess(𝒫,
                      HS,
                      post_jump,
                      options,
@@ -29,7 +29,7 @@ function postprocess(op,
     if fixpoint_strategy == :eager
         # eager fixpoint checking
         post_jump_filtered =
-            filter(x -> !isfixpoint(op, x, passed_list, target_loc_id),
+            filter(x -> !isfixpoint(𝒫, x, passed_list, target_loc_id),
                    post_jump)
     else
         post_jump_filtered = post_jump
@@ -41,13 +41,13 @@ function postprocess(op,
     end
 
     # apply clustering
-    clustered = cluster(op, post_jump_filtered, options)
+    clustered = cluster(𝒫, post_jump_filtered, options)
 
     # push new sets after jump (unless a fixpoint is detected)
     for reach_set in clustered
         if fixpoint_strategy != :none
             if fixpoint_strategy == :lazy &&
-                    isfixpoint(op, reach_set, passed_list, target_loc_id)
+                    isfixpoint(𝒫, reach_set, passed_list, target_loc_id)
                 continue
             end
             push!(passed_list[target_loc_id], reach_set)
@@ -56,11 +56,11 @@ function postprocess(op,
     end
 end
 
-function cluster(op::DiscretePost,
+function cluster(𝒫::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
                  options::Options) where N<:Real
     clustering_strategy = options[:clustering]
-    dirs = op.options[:overapproximation]
+    dirs = 𝒫.options[:overapproximation]
     if clustering_strategy == :none
         # no clustering
         return reach_sets
@@ -76,7 +76,7 @@ function cluster(op::DiscretePost,
     end
 end
 
-function isfixpoint(op::DiscretePost,
+function isfixpoint(𝒫::DiscretePost,
                     reach_set::ReachSet{LazySet{N}, N},
                     passed_list,
                     loc_id
@@ -97,13 +97,13 @@ function isfixpoint(op::DiscretePost,
 end
 
 # default: always apply line search
-function use_precise_ρ(op::DiscretePost,
+function use_precise_ρ(𝒫::DiscretePost,
                              cap::Intersection{N})::Bool where N<:Real
     return true
 end
 
-function get_overapproximation_option(op::DiscretePost, n::Int)
-    oa = op.options.dict[:overapproximation]
+function get_overapproximation_option(𝒫::DiscretePost, n::Int)
+    oa = 𝒫.options.dict[:overapproximation]
     if oa isa Symbol
         dirs = Utils.interpret_template_direction_symbol(oa)
         return dirs(n)
@@ -112,4 +112,13 @@ function get_overapproximation_option(op::DiscretePost, n::Int)
     else
         error("received unknown :overapproximation option $oa")
     end
+end
+
+# --- default methods for handling assignments ---
+
+function apply_assignment(𝒫::DiscretePost,
+                          constrained_map::AbstractMap,
+                          R⋂G::LazySet;
+                          kwargs...)
+    return apply(constrained_map, R⋂G)
 end

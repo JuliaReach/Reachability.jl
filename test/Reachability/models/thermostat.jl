@@ -35,14 +35,12 @@ function thermostat()
     # transition from on to off
     add_transition!(automaton, 1, 2, 1)
     guard = HalfSpace([-1.0], -21.0)  # x ≥ 21
-    t_on2off = ConstrainedLinearDiscreteSystem(hcat(1.0), guard)  # old interface
-    # t_on2off = ConstrainedIdentityMap(2, guard)  # new interface
+    t_on2off = ConstrainedIdentityMap(2, guard)
 
     # transition from off to on
     add_transition!(automaton, 2, 1, 2)
     guard = HalfSpace([1.0], 19.0)  # x ≤ 19
-    t_off2on = ConstrainedLinearDiscreteSystem(hcat(1.0), guard)  # old interface
-    # t_off2on = ConstrainedIdentityMap(2, guard)  # new interface
+    t_off2on = ConstrainedIdentityMap(2, guard)
 
     # transition annotations
     resetmaps = [t_on2off, t_off2on]

@@ -116,8 +116,8 @@ function post(𝒫::LazyDiscretePost,
               options
              ) where {N}
     jumps += 1
-    # TODO? dirs = 𝒫.options[:overapproximation]
-    dirs = get_overapproximation_option(𝒫, options[:n])
+    # TODO? oa = 𝒫.options[:overapproximation]
+    oa = get_overapproximation_option(𝒫, options[:n])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
@@ -126,9 +126,8 @@ function post(𝒫::LazyDiscretePost,
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
         target_invariant = target_loc.X
-        trans_annot = HS.resetmaps[symbol(HS, trans)]
-        guard = trans_annot.X
-        assignment = trans_annot.A
+        constrained_map = resetmap(HS, trans)
+        guard = stateset(constrained_map)
 
         if inv_isa_Hrep
             guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
@@ -159,9 +158,9 @@ function post(𝒫::LazyDiscretePost,
             end
 
             # apply assignment
-            A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
+            A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
             if !𝒫.options[:lazy_R⋂G]
-               A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
+                A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, oa)
             end
 
             # intersect with target invariant
@@ -174,7 +173,7 @@ function post(𝒫::LazyDiscretePost,
 
             # overapproximate final set once more
             if !𝒫.options[:lazy_A⌜R⋂G⌟⋂I]
-                res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+                res = overapproximate(A⌜R⋂G⌟⋂I, oa)
             else
                 res = A⌜R⋂G⌟⋂I
             end
@@ -202,7 +201,7 @@ function get_Hrep_info(set::HPolyhedron)
     return (true, false)
 end
 
-# --- line search policies ---
+# --- line-search policies ---
 
 # usually do not use line search
 function use_precise_ρ(𝒫::LazyDiscretePost,
