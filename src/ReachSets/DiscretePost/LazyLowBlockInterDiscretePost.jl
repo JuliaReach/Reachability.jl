@@ -22,7 +22,7 @@ struct LazyLowBlockInterDiscretePost <: DiscretePost
     function LazyLowBlockInterDiscretePost(𝑂::Options)
         𝑂copy = copy(𝑂)
         # TODO: pass 𝑂 directly?
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
@@ -68,16 +68,25 @@ function tube⋂inv!(𝒫::LazyLowBlockInterDiscretePost,
         if (haskey(𝒫.options, :blocks) &&
              𝒫.options[:blocks] == nothing) ||
              !haskey(𝒫.options, :blocks)
-            decomposed_inv = decompose(invariant)
-        else
-            decomposed_inv = decompose(invariant, blocks=𝒫.options[:blocks])
         end
-        R⋂I = Intersection(reach_set.X, decomposed_inv)
+
+        #@time R⋂I = Intersection(reach_set.X, invariant)
+
+        R⋂I = intersection(reach_set.X, invariant)
+
+        #println("isempty(R⋂I)")
+        #@time isrempty = isempty(R⋂I)
+        #println("isempty(R⋂I)")
         if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
+
             break
         end
         if !𝒫.options[:lazy_R⋂I]
+        #    println("R⋂I overapproximate")
+        #@time R⋂I = overapproximate(R⋂I, dirs)
             R⋂I = overapproximate(R⋂I, dirs)
+
+        #    println("R⋂I overapproximate")
         end
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
@@ -104,6 +113,7 @@ function post(𝒫::LazyLowBlockInterDiscretePost,
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
+
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -125,17 +135,11 @@ function post(𝒫::LazyLowBlockInterDiscretePost,
             if (haskey(𝒫.options, :blocks) &&
                  𝒫.options[:blocks] == nothing) ||
                  !haskey(𝒫.options, :blocks)
-                decomposed_inv_g = decompose(invariant_guard)
-            else
-                decomposed_inv_g = decompose(invariant_guard, blocks=𝒫.options[:blocks])
             end
         else
             if (haskey(𝒫.options, :blocks) &&
                  𝒫.options[:blocks] == nothing) ||
                  !haskey(𝒫.options, :blocks)
-                decomposed_guard = decompose(guard)
-            else
-                decomposed_guard = decompose(guard, blocks=𝒫.options[:blocks])
             end
         end
 
@@ -146,11 +150,15 @@ function post(𝒫::LazyLowBlockInterDiscretePost,
             # check intersection with guard
             taken_intersection = false
             if combine_constraints
-                R⋂G = Intersection(reach_set.X.X, decomposed_inv_g)
+            #    println("R⋂InvG")
+             R⋂G = intersection(reach_set.X.X, invariant_guard)
+            #    @time R⋂G = Intersection(reach_set.X.X, invariant_guard)
                 taken_intersection = true
             end
             if !taken_intersection
-                R⋂G = Intersection(reach_set.X, decomposed_guard)
+                #println("R⋂G")
+                #@time R⋂G = Intersection(reach_set.X, guard)
+                R⋂G = intersection(reach_set.X, guard)
             end
             if isempty(R⋂G)
                 continue
@@ -159,20 +167,28 @@ function post(𝒫::LazyLowBlockInterDiscretePost,
             # apply assignment
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
             if !𝒫.options[:lazy_R⋂G]
-               A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
+            #    println("A⌜R⋂G⌟ overapproximate")
+            #@time A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
+                A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
             end
 
             # intersect with target invariant
+            #println("A⌜R⋂G⌟⋂I  overapprIntersectionoximate")
+            #@time A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
 
             # check if the final set is empty
+            #println("A⌜R⋂G⌟⋂I  isempty")
+            #@time isariempty = isempty(A⌜R⋂G⌟⋂I)
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
 
             # overapproximate final set once more
             if !𝒫.options[:lazy_A⌜R⋂G⌟⋂I]
-                res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+            #    println("A⌜R⋂G⌟ overapproximate")
+            #@time res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
+            res = overapproximate(A⌜R⋂G⌟⋂I, dirs)
             else
                 res = A⌜R⋂G⌟⋂I
             end

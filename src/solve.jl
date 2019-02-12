@@ -209,8 +209,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
     nonzero_vars = constrained_dimensions(HS)
-    println("22NONZero vars:\n")
-    println(nonzero_vars)
 
     # waiting_list entries:
     # - (discrete) location
@@ -231,10 +229,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #TODO add an option for low-dim
         source_invariant_proj = LazySets.Approximations.project(source_invariant, nonzero_vars[loc_id], LinearMap)
         x0_proj = LazySets.Approximations.project(x0, nonzero_vars[loc_id], LinearMap)
-        println(x0)
         low_dim_x0_inter = overapproximate(source_invariant_proj ∩ x0_proj, Hyperrectangle)
         if !isempty(low_dim_x0_inter)
-            println(low_dim_x0_inter)
             loc_x0set = intersection(source_invariant, x0)
             if !isempty(loc_x0set)
                 push!(waiting_list, (loc_id,
@@ -278,7 +274,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
-        print("reach tube")
         # add the very first initial approximation
         if passed_list != nothing &&
                 (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
@@ -296,11 +291,12 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         #TODO Add option for lowdim
-
         if (opD isa LazyLowDimDiscretePost)
+            #println("LazyLowDimDiscretePost")
+
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         # count_Rsets counts the number of new reach sets added to Rsets
-            println("count Rsets")
+
             count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
                                 [X0.t_start, X0.t_end], nonzero_vars[loc_id])
 
@@ -310,17 +306,22 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
             post(opD, HS, waiting_list, passed_list, loc_id, Rsets, low_dim_sets, count_Rsets,
                  jumps, nonzero_vars[loc_id], options)
+
         else
+        #    println("!LazyLowDimDiscretePost")
+
             count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                                 [X0.t_start, X0.t_end])
-
             if jumps == max_jumps
                 continue
             end
 
             post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
                  jumps, options)
+
         end
+        #println("Discrete post ends")
+
     end
 
     # Projection
