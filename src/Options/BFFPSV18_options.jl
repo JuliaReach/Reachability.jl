@@ -64,7 +64,8 @@ Supported options:
                                   generally may also be a predicate over indices
 - `:lazy_expm_discretize`      -- switch to use lazy matrix exponential in the
                                   discretization phase (see also `:lazy_expm`)
-- `:max_jumps`     -- maximum number of discrete jumps in a hybrid automaton
+- `:max_jumps`     -- maximum number of discrete jumps in a hybrid automaton;
+                      `-1` for deactivation
 - `:fixpoint_check` -- check for a fixpoint when analyzing a hybrid automaton
 - `:clustering`    -- clustering strategy when analyzing a hybrid automaton
 - `:plot_vars`     -- variables for projection and plotting;
@@ -115,7 +116,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm_discretize],
                                          dict_copy[:lazy_expm])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], 5)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], -1)
     check_aliases_and_add_default_value!(dict, dict_copy, [:clustering], :chull)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
@@ -263,7 +264,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             end
         elseif key == :max_jumps
             expected_type = Int
-            domain_constraints = (v::Int  ->  v >= 0)
+            domain_constraints = (v::Int  ->  v >= -1)
         elseif key == :fixpoint_check
             expected_type = Symbol
             domain_constraints = (v::Symbol  ->  v in [:none, :eager, :lazy])
