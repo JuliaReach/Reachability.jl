@@ -22,9 +22,9 @@ struct LazyLowDimDiscretePost <: DiscretePost
     function LazyLowDimDiscretePost(𝑂::Options)
         𝑂copy = copy(𝑂)
         # TODO: pass 𝑂 directly?
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], false)
         return new(𝑂copy)
@@ -72,7 +72,7 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
         proj_inter = intersection(reach_tube[i].X,invariant, nonzero_vars)
         if !isempty(proj_inter)
             reach_set = reach_tube[i]
-            R⋂I = Intersection(reach_set.X, invariant)
+            R⋂I = intersection(reach_set.X, invariant)
 
             if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
                 break
@@ -153,13 +153,13 @@ function post(𝒫::LazyLowDimDiscretePost,
             taken_intersection = false
             if combine_constraints
                 if !islow_dim_inter_empty
-                    R⋂G = Intersection(high_reach_set.X.X, invariant_guard)
+                    R⋂G = intersection(high_reach_set.X, invariant_guard)
                     taken_intersection = true
                 end
             end
             if !taken_intersection
                 if !islow_dim_inter_empty
-                    R⋂G = Intersection(high_reach_set.X, guard)
+                    R⋂G = intersection(high_reach_set.X, guard)
                 end
             end
             if isempty(R⋂G)
