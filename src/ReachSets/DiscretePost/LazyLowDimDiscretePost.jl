@@ -25,8 +25,8 @@ struct LazyLowDimDiscretePost <: DiscretePost
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], false)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], false)
         return new(𝑂copy)
     end
 end
@@ -67,26 +67,24 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
     # counts the number of sets R⋂I added to Rsets
     count = 0
     @inbounds for i = 1:length(reach_tube)
-        invariant_proj = LazySets.Approximations.project(invariant, nonzero_vars, LinearMap)
-        Rimage_proj = LazySets.Approximations.project(reach_tube[i].X, nonzero_vars, LinearMap)
-
-        println("check Empty inter Rimage_proj and invariant_proj")
-        if !isempty(invariant_proj ∩ Rimage_proj)
-            println("non empty inter Rimage_proj and invariant_proj")
+        # invariant_proj = LazySets.Approximations.project(invariant, nonzero_vars, LinearMap)
+        # Rimage_proj = LazySets.Approximations.project(reach_tube[i].X, nonzero_vars, LinearMap)
+        proj_inter = intersection(reach_tube[i].X,invariant, nonzero_vars)
+        if !isempty(proj_inter)
             reach_set = reach_tube[i]
             R⋂I = Intersection(reach_set.X, invariant)
+
             if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
                 break
             end
             if !𝒫.options[:lazy_R⋂I]
                 R⋂I = overapproximate(R⋂I, dirs)
             end
-            low_dim_reach_inter = invariant_proj ∩ Rimage_proj
 
             push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
                 reach_set.t_start + start_interval[1],
                 reach_set.t_end + start_interval[2]))
-            push!(low_temp_sets, ReachSet{LazySet{N}, N}(low_dim_reach_inter,
+            push!(low_temp_sets, ReachSet{LazySet{N}, N}(proj_inter,
                 reach_set.t_start + start_interval[1],
                 reach_set.t_end + start_interval[2]))
             count = count + 1
@@ -132,10 +130,7 @@ function post(𝒫::LazyLowDimDiscretePost,
             # TODO: remove redundant constraints => use intersection(..)
             invariant_guard = T([constraints_list(source_invariant);
                                  constraints_list(guard)])
-            proj_invariant_guard = LazySets.Approximations.project(invariant_guard, nonzero_vars, LinearMap)
 
-        else
-            proj_guard = LazySets.Approximations.project(guard, nonzero_vars, LinearMap)
         end
 
         # perform jumps
@@ -143,18 +138,18 @@ function post(𝒫::LazyLowDimDiscretePost,
         sizehint!(post_jump, count_Rsets)
 
         #tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
-        println("before low_temp_sets")
         for i=1:length(low_temp_sets)
-            println("inside low_temp_sets")
-            low_reach_set = low_temp_sets[i]
+            low_reach_set = low_temp_sets[i].X
             high_reach_set = tube⋂inv[length(tube⋂inv) - count_Rsets + i]
             # check intersection with guard
             if combine_constraints
-                islow_dim_inter_empty = isempty(proj_invariant_guard ∩ low_reach_set.X)
+                islow_dim_inter_empty = isempty(intersection(invariant_guard, low_reach_set))
             else
-                islow_dim_inter_empty = isempty(proj_guard ∩ low_reach_set.X)
+                islow_dim_inter_empty = isempty(intersection(guard, low_reach_set))
             end
-
+            if islow_dim_inter_empty
+                continue
+            end
             taken_intersection = false
             if combine_constraints
                 if !islow_dim_inter_empty
@@ -164,10 +159,10 @@ function post(𝒫::LazyLowDimDiscretePost,
             end
             if !taken_intersection
                 if !islow_dim_inter_empty
-                    R⋂G = Intersection(reach_set.X, guard)
+                    R⋂G = Intersection(high_reach_set.X, guard)
                 end
             end
-            if isempty(R⋂G) || islow_dim_inter_empty
+            if isempty(R⋂G)
                 continue
             end
 
@@ -194,8 +189,8 @@ function post(𝒫::LazyLowDimDiscretePost,
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(res,
-                                                     reach_set.t_start,
-                                                     reach_set.t_end))
+                                                     high_reach_set.t_start,
+                                                     high_reach_set.t_end))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
