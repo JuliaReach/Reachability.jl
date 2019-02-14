@@ -146,12 +146,9 @@ function post(𝒫::LazyDiscretePost,
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            taken_intersection = false
             if combine_constraints
                 R⋂G = Intersection(reach_set.X.X, invariant_guard)
-                taken_intersection = true
-            end
-            if !taken_intersection
+            else
                 R⋂G = Intersection(reach_set.X, guard)
             end
             if isempty(R⋂G)
@@ -169,21 +166,15 @@ function post(𝒫::LazyDiscretePost,
 
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
-
-            # check if the final set is empty
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
-
-            # overapproximate final set once more
             if !𝒫.options[:lazy_A⌜R⋂G⌟⋂I]
-                res = overapproximate(A⌜R⋂G⌟⋂I, oa)
-            else
-                res = A⌜R⋂G⌟⋂I
+                A⌜R⋂G⌟⋂I = overapproximate(A⌜R⋂G⌟⋂I, oa)
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(res,
+            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end))
         end
