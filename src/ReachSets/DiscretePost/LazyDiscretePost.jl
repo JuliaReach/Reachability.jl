@@ -27,6 +27,7 @@ struct LazyDiscretePost <: DiscretePost
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
         return new(𝑂copy)
     end
@@ -156,10 +157,13 @@ function post(𝒫::LazyDiscretePost,
             if isempty(R⋂G)
                 continue
             end
+            if !𝒫.options[:lazy_R⋂G]
+                R⋂G = overapproximate(R⋂G, oa)
+            end
 
             # apply assignment
             A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
-            if !𝒫.options[:lazy_R⋂G]
+            if !𝒫.options[:lazy_A⌜R⋂G⌟]
                 A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, oa)
             end
 
