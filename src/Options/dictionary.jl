@@ -1,10 +1,12 @@
-#=============================================================
+#============================================================
 Struct with the dictionary of options and basic functionality
-=============================================================#
+============================================================#
 
-import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy
+import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy,
+             iterate, show
 
-export Options, merge, merge!, getindex, haskey
+export Options,
+       TwoLayerOptions, specified_keys, specified_values
 
 """
     Options
@@ -190,3 +192,97 @@ Determine whether the given options has a mapping for a given key.
 `true` if `op` contains the option `key` and `false` otherwise.
 """
 haskey(op::Options, key) = haskey(op.dict, key)
+
+"""
+    iterate(op::Options)
+
+Iterate over options.
+
+### Input
+
+- `op` -- options object
+"""
+iterate(op::Options) = iterate(op.dict)
+
+iterate(op::Options, i::Int) = iterate(op.dict, i)
+
+#=================================================
+Struct for two-layered options with default values
+=================================================#
+
+"""
+    Options
+
+Type that wraps two `Options` structs, one for specified options and one for
+fallback defaults.
+
+### Fields
+
+- `specified` -- specified options
+- `defaults`  -- default options
+
+### Notes
+
+It is possible to define `specified` options that are not contained in the
+`defaults` options.
+
+### Examples
+
+```jldoctest
+julia> def = Options(:o1 => "v1", :o2 => "v2");
+
+julia> spec = Options(:o2 => "v2", :o3 => "v3");
+
+julia> o = TwoLayerOptions(spec, def)
+specified options:
+ o2 => v2
+ o3 => v3
+unspecified (default) options:
+ o1 => v1
+
+```
+"""
+struct TwoLayerOptions
+    specified::Options
+    defaults::Options
+end
+
+keys(𝑂::TwoLayerOptions) = keys(𝑂.defaults)
+
+specified_keys(𝑂::TwoLayerOptions) = keys(𝑂.specified)
+
+function values(𝑂::TwoLayerOptions)
+    vals = values(𝑂.specified)
+    for (key, val) in 𝑂.defaults
+        if !haskey(𝑂.specified, key)
+            push!(vals, val)
+        end
+    end
+    return vals
+end
+
+specified_values(𝑂::TwoLayerOptions) = values(𝑂.specified)
+
+function getindex(𝑂::TwoLayerOptions, sym::Symbol)
+    if haskey(𝑂.specified)
+        return getindex(𝑂.specified, sym)
+    end
+    return getindex(𝑂.defaults, sym)
+end
+
+function setindex!(𝑂::TwoLayerOptions, value, key)
+    error("setting values in TwoLayerOptions is not allowed")
+end
+
+function show(io::IO, 𝑂::TwoLayerOptions)
+    print(io, "specified options:")
+    for (key, val) in 𝑂.specified
+        print(io, "\n $key => $val")
+    end
+    print(io, "\nunspecified (default) options:")
+    for (key, val) in 𝑂.defaults
+        if !haskey(𝑂.specified, key)
+            print(io, "\n $key => $val")
+        end
+    end
+end
