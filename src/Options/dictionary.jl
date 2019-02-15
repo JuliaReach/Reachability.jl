@@ -6,7 +6,8 @@ import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy,
              iterate, show
 
 export Options,
-       TwoLayerOptions, specified_keys, specified_values
+       TwoLayerOptions, specified_keys, specified_values,
+       OptionSpec
 
 """
     Options
@@ -284,5 +285,80 @@ function show(io::IO, 𝑂::TwoLayerOptions)
         if !haskey(𝑂.specified, key)
             print(io, "\n $key => $val")
         end
+    end
+end
+
+#====================================
+Struct for specifying a single option
+====================================#
+
+"""
+    OptionSpec{T}
+
+Type that wraps the specification of an option.
+
+### Fields
+
+- `name`         -- name of the option as a symbol
+- `default`      -- default value
+- `aliases`      -- list of aliases (symbols)
+- `domain_check` -- function for domain checks
+- `info`         -- additional info text
+
+### Examples
+
+```jldoctest
+julia> os1 = OptionSpec(:option1, nothing)
+option :option1 of type Any has default value 'nothing'
+
+julia> os2 = OptionSpec(:option2, 0; aliases=[:othername, :yetanothername],
+       domain=Number, domain_check=x->x>=0, info="the value is nonnegative")
+option :option2 of type Number with aliases :othername and :yetanothername has default value '0' such that the value is nonnegative
+
+```
+"""
+struct OptionSpec{T}
+    name::Symbol
+    default::T
+    aliases::Vector{Symbol}
+    domain_check::Function
+    info::String
+
+    OptionSpec(name::Symbol,
+               default;
+               aliases::Vector{Symbol}=Symbol[],
+               domain::Type{T}=Any,
+               domain_check::Function=(x -> true),
+               info::String="") where {T} =
+        new{T}(name, default, aliases, domain_check, info)
+end
+
+function show(io::IO, os::OptionSpec{T}) where {T}
+    print(io, "option :", os.name, " of type ", string(T), " ")
+    if !isempty(os.aliases)
+        if length(os.aliases) == 1
+            print(io, "with alias :", os.aliases[1], " ")
+        elseif length(os.aliases) == 2
+            print(io, "with aliases :", os.aliases[1], " and :", os.aliases[2],
+                      " ")
+        else
+            print(io, "with aliases :")
+            i = 1
+            while i < length(os.aliases)
+                print(io, os.aliases[i], ", :")
+                i += 1
+            end
+            print(io, "and :", os.aliases[end], " ")
+        end
+    end
+    print(io, "has default value '")
+    if os.default == nothing
+        print(io, "nothing")
+    else
+        print(io, os.default)
+    end
+    print(io, "' ")
+    if !isempty(os.info)
+        print(io, "such that ", os.info)
     end
 end
