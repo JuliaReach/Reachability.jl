@@ -21,14 +21,15 @@ struct LazyDiscretePost <: DiscretePost
     options::Options
 
     function LazyDiscretePost(𝑂::Options)
-        𝑂copy = copy(𝑂)
-        # TODO: pass 𝑂 directly?
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
-        return new(𝑂copy)
+        𝑂new = Options(
+            :check_invariant_intersection => false,
+            :overapproximation => Hyperrectangle,
+            :lazy_R⋂I => false,
+            :lazy_R⋂G => true,
+            :lazy_A⌜R⋂G⌟⋂I => true
+            )
+        merge!(𝑂new, 𝑂)
+        return new(𝑂new)
     end
 end
 
