@@ -87,6 +87,9 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 - `𝑂` -- algorithm-specific options
 """
 function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
+    # TODO temporary hack for refactoring
+    𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
+
     # convert matrix
     system = matrix_conversion(𝑆, 𝑂)
 

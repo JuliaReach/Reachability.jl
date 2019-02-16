@@ -120,6 +120,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:clustering], :chull)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:transformation_matrix], nothing)
 
     # special options: δ, N, T
     check_and_add_δ_N_T!(dict, dict_copy)
@@ -277,6 +278,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :n
             expected_type = Int
             domain_constraints = (v::Int  ->  v > 0)
+        elseif key == :transformation_matrix
+            expected_type = Any
         else
             error(get_unrecognized_key_message(key))
         end
