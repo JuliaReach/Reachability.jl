@@ -1,14 +1,15 @@
 import LazySets.CacheMinkowskiSum
 
 """
-    check_property(S, options)
+    check_property(S, property, options)
 
 Interface to property checking algorithms for an LTI system.
 
 ### Input
 
-- `S`                  -- LTI system, discrete or continuous
-- `options`            -- additional options
+- `S`        -- LTI system, discrete or continuous
+- `property` -- property
+- `options`  -- additional options
 
 ### Notes
 
@@ -16,6 +17,7 @@ A dictionary with available algorithms is available via
 `available_algorithms_check`.
 """
 function check_property(S::IVP{<:AbstractDiscreteSystem},
+                        property::Property,
                         options::TwoLayerOptions
                        )::Int
     # list containing the arguments passed to any reachability function
@@ -72,7 +74,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         else
             Xhat0_mod = CartesianProductArray(Xhat0)
         end
-        return check_property(Xhat0_mod, options[:property]) ? 0 : 1
+        return check_property(Xhat0_mod, property) ? 0 : 1
     end
     push!(args, Xhat0)
 
@@ -160,7 +162,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     push!(args, options[:eager_checking])
 
     # add property
-    push!(args, options[:property])
+    push!(args, property)
 
     # call the adequate function with the given arguments list
     info("- Computing successors")
@@ -172,6 +174,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function check_property(S::IVP{<:AbstractContinuousSystem},
+                        property::Property,
                         options::TwoLayerOptions
                        )::Int
     # ===================
@@ -189,5 +192,5 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
         )
     end
     Δ = matrix_conversion_lazy_explicit(Δ, options)
-    return check_property(Δ, options)
+    return check_property(Δ, property, options)
 end

@@ -111,14 +111,14 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
         info("invariants are currently not supported in 'check' mode")
 
         # Input -> Output variable mapping in property
-        𝑂[:property] = inout_map_property(𝑂[:property], 𝑂[:partition], 𝑂[:blocks], 𝑂[:n])
+        property = inout_map_property(𝑂[:property], 𝑂[:partition], 𝑂[:blocks], 𝑂[:n])
 
         # =================
         # Property checking
         # =================
         info("Property Checking...")
         @timing begin
-            answer = check_property(𝑆, 𝑂)
+            answer = check_property(𝑆, property, 𝑂)
             info("- Total")
         end
 
