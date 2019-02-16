@@ -283,11 +283,17 @@ end
 function show(io::IO, 𝑂::TwoLayerOptions)
     print(io, "specified options:")
     for (key, val) in 𝑂.specified
+        if val == nothing
+            val = "nothing"
+        end
         print(io, "\n $key => $val")
     end
     print(io, "\nunspecified (default) options:")
     for (key, val) in 𝑂.defaults
         if !haskey(𝑂.specified, key)
+            if val == nothing
+                val = "nothing"
+            end
             print(io, "\n $key => $val")
         end
     end
