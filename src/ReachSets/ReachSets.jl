@@ -106,13 +106,6 @@ include("discretize.jl")
 
 export discretize
 
-# =======================================
-# Mapping from input to output variables
-# =======================================
-include("inout_map_reach.jl")
-
-export inout_map_reach
-
 # ==============================
 # Property struct and evaluation
 # ==============================
@@ -147,6 +140,7 @@ available_algorithms_check = Dict{String, Dict{String, Any}}()
 include("ContinuousPost/BFFPSV18/check_blocks.jl")
 include("ContinuousPost/BFFPSV18/check_property.jl")
 include("ContinuousPost/BFFPSV18/partitions.jl")
+include("ContinuousPost/BFFPSV18/inout_map_reach.jl")
 
 # "explicit" backends
 push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,
