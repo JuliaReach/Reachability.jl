@@ -229,7 +229,7 @@ It is possible to define `specified` options that are not contained in the
 
 ### Examples
 
-```jldoctest
+```julia
 julia> def = Options(:o1 => "v1", :o2 => "v2");
 
 julia> spec = Options(:o2 => "v2", :o3 => "v3");
@@ -307,7 +307,7 @@ Type that wraps the specification of an option.
 
 ### Examples
 
-```jldoctest
+```julia
 julia> os1 = OptionSpec(:option1, nothing)
 option :option1 of type Any has default value 'nothing'
 
