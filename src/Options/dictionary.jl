@@ -270,7 +270,7 @@ end
 specified_values(𝑂::TwoLayerOptions) = values(𝑂.specified)
 
 function getindex(𝑂::TwoLayerOptions, sym::Symbol)
-    if haskey(𝑂.specified)
+    if haskey(𝑂.specified, sym)
         return getindex(𝑂.specified, sym)
     end
     return getindex(𝑂.defaults, sym)
