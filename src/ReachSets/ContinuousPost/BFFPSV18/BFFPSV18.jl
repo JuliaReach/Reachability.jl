@@ -4,6 +4,10 @@ export BFFPSV18
 # Bogomolov, Forets, Frehse, Podelski, Schilling, Viry. HSCC 2018
 # ===============================================================
 
+function options_BFFPSV18()
+    return OptionSpec[]
+end
+
 """
     BFFPSV18 <: ContinuousPost
 
@@ -14,6 +18,14 @@ G. Frehse, A. Podelski, C. Schilling and F. Viry [1].
 ### Fields
 
 - `options` -- an `Options` structure that holds the algorithm-specific options
+
+### Notes
+
+The following options are available:
+
+```julia
+$(print_option_spec(options_BFFPSV18()))
+```
 
 ### Algorithm
 
@@ -26,12 +38,11 @@ HSCC '18 Proceedings of the 21st International Conference on Hybrid Systems:
 Computation and Control (part of CPS Week).
 """
 struct BFFPSV18 <: ContinuousPost
-    options::Options
+    options::TwoLayerOptions
 
     function BFFPSV18(𝑂::Options)
-        𝑂copy = copy(𝑂)
-        # TODO set defaults for this algorithm here
-        return new(𝑂copy)
+        normalized_𝑂 = validate_and_wrap_options(𝑂, options_BFFPSV18())
+        return new(normalized_𝑂)
     end
 end
 

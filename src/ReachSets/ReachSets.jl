@@ -85,17 +85,18 @@ using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 
 # fix namespace conflicts with MathematicalSystems
-import LazySets.LinearMap
-import Reachability.info
+using LazySets: LinearMap
+using Reachability: info
 
 include("../compat.jl")
 
-import LazySets.Approximations:symmetric_interval_hull,
+using LazySets.Approximations: symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability:@timing,
-                    Options,
+using Reachability: @timing,
+                    Options, OptionSpec, TwoLayerOptions,
+                    validate_and_wrap_options, print_option_spec,
                     validate_solver_options_and_add_default_values!
 
 # ========================================

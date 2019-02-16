@@ -528,3 +528,24 @@ function validate_and_wrap_options(𝑂::Options,
         spec.name => spec.default for spec in specs_list))
     return TwoLayerOptions(𝑂_normalized, 𝑂_default)
 end
+
+"""
+    print_option_spec(specs::AbstractVector{<:OptionSpec})
+
+Pretty printing of a list of option specifications.
+
+### Input
+
+- `specs` -- list of option specifications
+
+### Output
+
+A string representation of the option specifications.
+"""
+function print_option_spec(specs::AbstractVector{<:OptionSpec})
+    io = IOBuffer();
+    for spec in specs
+        print(io, spec)
+    end
+    return String(take!(io))
+end
