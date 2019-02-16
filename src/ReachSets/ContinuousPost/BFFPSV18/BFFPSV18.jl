@@ -9,6 +9,8 @@ function options_BFFPSV18()
         OptionSpec(:approx_model, "forward", domain=String, domain_check=(
             v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
             info="model for bloating/continuous time analysis"),
+        OptionSpec(:algorithm, "explicit", domain=String, domain_check=(
+            v  ->  v in ["explicit", "wrap"]), info="algorithm backend"),
     ]
 end
 

@@ -17,7 +17,6 @@ Supported options:
 - `:δ`             -- time step; alias: `:sampling_time`
 - `:N`             -- number of time steps
 - `:T`             -- time horizon; alias `:time_horizon`
-- `:algorithm`     -- algorithm backend
 - `:vars`          -- variables of interest
 - `:partition`     -- block partition; elements are 2D vectors containing the
                       start and end of a block
@@ -100,7 +99,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:vars], 1:options.dict[:n])
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
@@ -169,9 +167,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :algorithm
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["explicit", "wrap"])
         elseif key == :vars
             expected_type = AbstractVector{Int}
             domain_constraints =
