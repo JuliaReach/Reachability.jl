@@ -362,3 +362,51 @@ function show(io::IO, os::OptionSpec{T}) where {T}
         print(io, " such that ", os.info)
     end
 end
+
+"""
+    optionsspeclist_2_optionsspecmap(specs::AbstractVector{<:OptionSpec}
+                                    )::Dict{Symbol, <:OptionSpec}
+
+Crate a map from option names (including aliases) to the corresponding
+specification.
+
+### Input
+
+- `specs` -- list of option specifications
+
+### Output
+
+A map from option names to option specification.
+
+### Examples
+
+```julia
+julia> specs_list = [OptionSpec(:option1, nothing),
+                     OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2])];
+
+julia> Reachability.optionsspeclist_2_optionsspecmap(specs_list)
+Dict{Symbol,OptionSpec} with 4 entries:
+  :option2 => option :option2 of type Any with aliases :op2 and :op2_v2 has default value 'nothing'
+  :op2     => option :option2 of type Any with aliases :op2 and :op2_v2 has default value 'nothing'
+  :op2_v2  => option :option2 of type Any with aliases :op2 and :op2_v2 has default value 'nothing'
+  :option1 => option :option1 of type Any has default value 'nothing'
+```
+"""
+function optionsspeclist_2_optionsspecmap(specs::AbstractVector{<:OptionSpec}
+                                         )::Dict{Symbol, <:OptionSpec}
+    function _add!(map, key, val)
+        if haskey(map, key)
+            throw(DomainError(":" * string(key), "duplicate option"))
+        end
+        map[key] = val
+    end
+
+    specs_map = Dict{Symbol, OptionSpec}()
+    for spec in specs
+        _add!(specs_map, spec.name, spec)
+        for alias in spec.aliases
+            _add!(specs_map, alias, spec)
+        end
+    end
+    return specs_map
+end
