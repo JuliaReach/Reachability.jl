@@ -52,12 +52,12 @@ BFFPSV18(𝑂::Pair{Symbol,<:Any}...) = BFFPSV18(Options(Dict{Symbol,Any}(𝑂))
 # default options
 BFFPSV18() = BFFPSV18(Options())
 
-init(𝒫::BFFPSV18, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
+init(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝑆, copy(𝑂))
 
-function init!(𝒫::BFFPSV18, 𝒮::AbstractSystem, 𝑂::Options)
+function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
     # state dimension for (purely continuous or purely discrete systems)
     𝑂copy = copy(𝑂)
-    𝑂copy[:n] = statedim(𝒮)
+    𝑂copy[:n] = statedim(𝑆)
 
     # solver-specific options (adds default values for unspecified options)
     𝑂validated = validate_solver_options_and_add_default_values!(𝑂copy)
@@ -75,25 +75,25 @@ function init!(𝒫::BFFPSV18, 𝒮::AbstractSystem, 𝑂::Options)
 end
 
 """
-    post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
+    post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
 
 Calculate the reachable states of the given initial value problem using `BFFPSV18`.
 
 ### Input
 
 - `𝒫` -- post operator of type `BFFPSV18`
-- `𝒮` -- sytem, initial value problem for a continuous ODE
+- `𝑆` -- sytem, initial value problem for a continuous ODE
 - `invariant` -- constraint invariant on the mode
 - `𝑂` -- algorithm-specific options
 """
-function post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
+function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
     # convert matrix
-    system = matrix_conversion(𝒮, 𝑂)
+    system = matrix_conversion(𝑆, 𝑂)
 
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
         @timing begin
-            Rsets = reach(𝒮, invariant, 𝑂)
+            Rsets = reach(𝑆, invariant, 𝑂)
             info("- Total")
         end
 
@@ -118,7 +118,7 @@ function post(𝒫::BFFPSV18, 𝒮::AbstractSystem, invariant, 𝑂::Options)
         # =================
         info("Property Checking...")
         @timing begin
-            answer = check_property(𝒮, 𝑂)
+            answer = check_property(𝑆, 𝑂)
             info("- Total")
         end
 
