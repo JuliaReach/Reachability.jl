@@ -485,3 +485,48 @@ function validate_options(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})
     end
     nothing
 end
+
+"""
+    validate_and_wrap_options(𝑂::Options,
+                              specs_list::AbstractVector{<:OptionSpec}
+                             )::TwoLayerOptions
+
+Normalize, validate, and merge given options with respect to default options.
+
+### Input
+
+- `𝑂`     -- options
+- `specs` -- list of option specifications
+
+### Output
+
+A normalized options wrapper.
+
+### Examples
+
+```julia
+julia> 𝑂 = Options(:option1 => 1.0, :op2 => "value");
+
+julia> specs_list = [OptionSpec(:option1, nothing),
+                     OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2]),
+                     OptionSpec(:option3, 2.0),];
+
+julia> Reachability.validate_and_wrap_options(𝑂, specs_list)
+specified options:
+ option2 => value
+ option1 => 1.0
+unspecified (default) options:
+ option3 => 2.0
+
+```
+"""
+function validate_and_wrap_options(𝑂::Options,
+                                   specs_list::AbstractVector{<:OptionSpec}
+                                  )::TwoLayerOptions
+    specs_map = optionsspeclist_2_optionsspecmap(specs_list)
+    𝑂_normalized = unify_aliases(𝑂, specs_map)
+    validate_options(𝑂_normalized, specs_map)
+    𝑂_default = Options(Dict{Symbol, Any}(
+        spec.name => spec.default for spec in specs_list))
+    return TwoLayerOptions(𝑂_normalized, 𝑂_default)
+end
