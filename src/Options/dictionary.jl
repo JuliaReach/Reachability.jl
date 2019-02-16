@@ -8,7 +8,14 @@ import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy,
 export Options
 
 """
-    Options
+    AbstractOptions
+
+Abstract supertype of options wrappers.
+"""
+abstract type AbstractOptions end
+
+"""
+    Options <: AbstractOptions
 
 Type that wraps a dictionary used for options.
 
@@ -16,7 +23,7 @@ Type that wraps a dictionary used for options.
 
 - `dict` -- the wrapped dictionary
 """
-struct Options
+struct Options <: AbstractOptions
     dict::Dict{Symbol,Any}
     Options(args::Pair{Symbol,<:Any}...) = new(Dict{Symbol,Any}(args))
     Options(dict::Dict{Symbol,Any}) = new(dict)
@@ -210,7 +217,7 @@ Struct for two-layered options with default values
 =================================================#
 
 """
-    Options
+    TwoLayerOptions <: AbstractOptions
 
 Type that wraps two `Options` structs, one for specified options and one for
 fallback defaults.
@@ -241,7 +248,7 @@ unspecified (default) options:
 
 ```
 """
-struct TwoLayerOptions
+struct TwoLayerOptions <: AbstractOptions
     specified::Options
     defaults::Options
 end
