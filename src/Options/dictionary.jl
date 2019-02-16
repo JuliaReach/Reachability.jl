@@ -363,6 +363,10 @@ function show(io::IO, os::OptionSpec{T}) where {T}
     end
 end
 
+function domain(::OptionSpec{T})::Type{T} where {T}
+    return T
+end
+
 """
     optionsspeclist_2_optionsspecmap(specs::AbstractVector{<:OptionSpec}
                                     )::Dict{Symbol, <:OptionSpec}
@@ -451,4 +455,33 @@ function unify_aliases(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})::Option
         end
     end
     return 𝑂_new
+end
+
+"""
+    validate_options(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})
+
+Validate the given options with respect to the given specifications.
+
+### Input
+
+- `𝑂`     -- options
+- `specs` -- map from option names to option specifications
+
+### Output
+
+Nothing if the validation succeeds, and an error otherwise.
+"""
+function validate_options(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})
+    for (name, val) in 𝑂
+        spec = specs[name]
+        type = domain(spec)
+        if !(val isa type)
+            throw(DomainError(val, "option ':$name' must be of type $type"))
+        end
+        if !(spec.domain_check(val))
+            throw(DomainError(val, "option ':$name' does not satisfy domain " *
+                "constraint"))
+        end
+    end
+    nothing
 end
