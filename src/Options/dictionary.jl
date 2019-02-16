@@ -410,3 +410,45 @@ function optionsspeclist_2_optionsspecmap(specs::AbstractVector{<:OptionSpec}
     end
     return specs_map
 end
+
+"""
+    unify_aliases(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})::Options
+
+Crate a new options wrapper that uses the internal name for each option.
+
+### Input
+
+- `𝑂`     -- options wrapper
+- `specs` -- list of option specifications
+
+### Output
+
+A new options wrapper.
+
+### Examples
+
+```jldoctest
+julia> 𝑂 = Options(:option1 => 1.0, :op2 => "value");
+
+julia> specs_list = [OptionSpec(:option1, nothing),
+                     OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2])];
+
+julia> specs_map = Reachability.optionsspeclist_2_optionsspecmap(specs_list);
+
+julia> Reachability.unify_aliases(𝑂, specs_map)
+Options(Dict{Symbol,Any}(:option2=>"value",:option1=>1.0))
+
+```
+"""
+function unify_aliases(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})::Options
+    𝑂_new = Options()
+    for (name, value) in 𝑂
+        spec = get(specs, name, nothing)
+        if spec == nothing
+            warn("illegal option ':$name' detected; option will be ignored")
+        else
+            𝑂_new[spec.name] = value
+        end
+    end
+    return 𝑂_new
+end
