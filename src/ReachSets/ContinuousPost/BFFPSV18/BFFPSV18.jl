@@ -5,7 +5,11 @@ export BFFPSV18
 # ===============================================================
 
 function options_BFFPSV18()
-    return OptionSpec[]
+    return OptionSpec[
+        OptionSpec(:approx_model, "forward", domain=String, domain_check=(
+            v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
+            info="model for bloating/continuous time analysis"),
+    ]
 end
 
 """

@@ -13,7 +13,6 @@ Supported options:
 - `:verbosity`     -- controls logging output
 - `:logfile`       -- name of a log file
 - `:mode`          -- main analysis mode
-- `:approx_model`  -- model for bloating/continuous time analysis
 - `:property`      -- a safety property
 - `:δ`             -- time step; alias: `:sampling_time`
 - `:N`             -- number of time steps
@@ -100,7 +99,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:approx_model], "forward")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:vars], 1:options.dict[:n])
@@ -160,10 +158,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             if value == "check" && dict_copy[:property] == nothing
                 error("No property has been defined.")
             end
-        elseif key == :approx_model
-            expected_type = String
-            domain_constraints = (v::String  ->  v in ["forward", "backward",
-                                                       "firstorder", "nobloating"])
         elseif key == :property
             expected_type = Union{Property, Nothing}
         elseif key == :δ
