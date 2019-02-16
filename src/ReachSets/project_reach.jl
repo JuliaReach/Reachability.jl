@@ -20,7 +20,7 @@ function project_reach(
         Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
-        options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
+        options::AbstractOptions)::Vector{<:ReachSet} where {numeric_type<:Real}
 
     # parse input
     @assert(length(vars) == 2)
@@ -129,7 +129,7 @@ function project_2d_reach(
         Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
-        options::Options)::Vector{<:ReachSet} where {numeric_type<:Real}
+        options::AbstractOptions)::Vector{<:ReachSet} where {numeric_type<:Real}
 
     # first projection dimension
     xaxis = vars[1]
@@ -220,7 +220,7 @@ Projects a sequence of sets according to the settings defined in the options.
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Vector{<:ReachSet}, options::Options)
+function project(Rsets::Vector{<:ReachSet}, options::AbstractOptions)
     plot_vars = copy(options[:plot_vars])
     for i in 1:length(plot_vars)
         if plot_vars[i] != 0

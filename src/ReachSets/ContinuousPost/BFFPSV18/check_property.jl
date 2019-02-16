@@ -16,7 +16,7 @@ A dictionary with available algorithms is available via
 `available_algorithms_check`.
 """
 function check_property(S::IVP{<:AbstractDiscreteSystem},
-                        options::Options
+                        options::TwoLayerOptions
                        )::Int
     # list containing the arguments passed to any reachability function
     args = []
@@ -172,7 +172,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function check_property(S::IVP{<:AbstractContinuousSystem},
-                        options::Options
+                        options::TwoLayerOptions
                        )::Int
     # ===================
     # Time discretization

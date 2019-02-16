@@ -30,7 +30,7 @@ is inferred from the first parameter of the system (resp. lazy set), ie.
 function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
                         IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                invariant::Union{LazySet, Nothing},
-               options::Options
+               options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
 
     # list containing the arguments passed to any reachability function
@@ -219,7 +219,7 @@ end
 
 function reach(system::IVP{<:AbstractContinuousSystem},
                invariant::Union{LazySet, Nothing},
-               options::Options
+               options::TwoLayerOptions
               )::Vector{<:ReachSet}
     # ===================
     # Time discretization
