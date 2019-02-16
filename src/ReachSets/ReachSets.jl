@@ -188,6 +188,7 @@ export PostOperator,
 # Continuous post operators
 # ==========================
 include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
+include("ContinuousPost/BFFPSV18/reach.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 
@@ -214,13 +215,6 @@ export available_algorithms
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ConcreteDiscretePost.jl")
-
-# =========================
-# External reach interface
-# =========================
-include("reach.jl")
-
-export reach
 
 # ==============================================
 # Projection of the reach set in two dimensions
