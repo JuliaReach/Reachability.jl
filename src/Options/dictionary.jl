@@ -5,9 +5,7 @@ Struct with the dictionary of options and basic functionality
 import Base: merge, merge!, getindex, keys, haskey, values, setindex!, copy,
              iterate, show
 
-export Options,
-       TwoLayerOptions, specified_keys, specified_values,
-       OptionSpec
+export Options
 
 """
     Options
