@@ -59,8 +59,7 @@ function project_reach(
     end
 
     # apply optional transformation to projection matrix
-    if haskey(options, :transformation_matrix) &&
-            options[:transformation_matrix] != nothing
+    if options[:transformation_matrix] != nothing
         transformation_matrix = options[:transformation_matrix]
         if got_time
             # add another dimension for time: block matrix [S 0; 0 1]

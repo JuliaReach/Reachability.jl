@@ -117,7 +117,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         options[:template_directions_iter])
     if dir != nothing
         overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
-    elseif haskey(options, :block_types_iter)
+    elseif options[:block_types_iter] != nothing
         block_types_iter = block_to_set_map(options[:block_types_iter])
         overapproximate_fun = (i, x) -> (block_types_iter[i] == HPolygon) ?
                                         overapproximate(x, HPolygon, ε_iter) :
