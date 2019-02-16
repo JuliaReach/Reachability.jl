@@ -40,13 +40,13 @@ argument. For additional options, consult the Plots.jl reference manual.
     if vars != nothing
         vars = add_plot_labels(vars, use_subindices=use_subindices)
         xguide --> vars[1]; yguide --> vars[2]
-    elseif options.dict[:plot_vars] != nothing
-        vars = add_plot_labels(options.dict[:plot_vars], use_subindices=use_subindices)
+    elseif options[:plot_vars] != nothing
+        vars = add_plot_labels(options[:plot_vars], use_subindices=use_subindices)
         xguide --> vars[1]; yguide --> vars[2]
     end
 
     if indices == nothing
-        indices = options.dict[:plot_indices]
+        indices = options[:plot_indices]
     end
 
     N = length(indices)

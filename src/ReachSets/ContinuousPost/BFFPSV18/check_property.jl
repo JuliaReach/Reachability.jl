@@ -90,7 +90,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     if dir != nothing
         overapproximate_fun =
             (i, x) -> overapproximate(x, dir(length(partition[i])))
-    elseif haskey(options.dict, :block_types_iter)
+    elseif haskey(options, :block_types_iter)
         block_types_iter = block_to_set_map(options[:block_types_iter])
         overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
                               overapproximate(x, HPolygon, set_type_init) :
