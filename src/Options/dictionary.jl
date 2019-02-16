@@ -357,8 +357,8 @@ function show(io::IO, os::OptionSpec{T}) where {T}
     else
         print(io, os.default)
     end
-    print(io, "' ")
+    print(io, "'")
     if !isempty(os.info)
-        print(io, "such that ", os.info)
+        print(io, " such that ", os.info)
     end
 end
