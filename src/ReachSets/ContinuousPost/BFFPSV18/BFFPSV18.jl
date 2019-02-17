@@ -29,6 +29,8 @@ function options_BFFPSV18()
             info="use the Padé approximant method (instead of Julia's " *
                  " built-in 'exp') to compute the lazy matrix exponential " *
                  "in discretization?"),
+        OptionSpec(:assume_sparse, false, domain=Bool,
+            info="use an analysis for sparse discretized matrices?"),
     ]
 end
 

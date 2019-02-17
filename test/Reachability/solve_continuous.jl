@@ -79,16 +79,14 @@ s = solve(ContinuousSystem(A, X0),
           op=BFFPSV18(:vars=>[1,3], :lazy_sih=>false))
 
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4],
-          :assume_sparse=>false),
+          Options(:T=>0.1, :partition=>[1:2, 3:4]),
           op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
-                      :lazy_expm_discretize=>true))
+                      :lazy_expm_discretize=>true, :assume_sparse=>false))
 
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4],
-          :assume_sparse=>true),
+          Options(:T=>0.1, :partition=>[1:2, 3:4]),
           op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
-                      :lazy_expm_discretize=>true))
+                      :lazy_expm_discretize=>true, :assume_sparse=>true))
 
 s = solve(ContinuousSystem(sparse(A), X0),
           Options(:T=>0.1, :partition=>[[i] for i in 1:4],
