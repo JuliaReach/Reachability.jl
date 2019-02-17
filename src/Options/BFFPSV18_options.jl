@@ -38,7 +38,6 @@ Supported options:
 - `:set_type_proj` -- set type for the approximation of the states during
                       projection
 - `:assume_sparse` -- switch for sparse matrices
-- `:pade_expm`     -- switch for using Pade approximant method
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
 - `:template_directions`       -- short hand to set `template_directions_init`
                                   and `template_directions_iter`
@@ -88,7 +87,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
@@ -178,8 +176,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
         elseif key == :assume_sparse
-            expected_type = Bool
-        elseif key == :pade_expm
             expected_type = Bool
         elseif key == :lazy_X0
             expected_type = Bool

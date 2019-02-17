@@ -25,6 +25,10 @@ function options_BFFPSV18()
             info="use a lazy matrix exponential all the time?"),
         OptionSpec(:lazy_expm_discretize, false, domain=Bool,
             info="use a lazy matrix exponential in discretization?"),
+        OptionSpec(:pade_expm, false, domain=Bool,
+            info="use the Padé approximant method (instead of Julia's " *
+                 " built-in 'exp') to compute the lazy matrix exponential " *
+                 "in discretization?"),
     ]
 end
 
