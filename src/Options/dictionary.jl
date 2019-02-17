@@ -378,7 +378,7 @@ function show(io::IO, os::OptionSpec{T}) where {T}
     end
     print(io, "'")
     if !isempty(os.info)
-        print(io, " such that ", os.info)
+        print(io, "; ", os.info)
     end
 end
 
@@ -566,7 +566,7 @@ A string representation of the option specifications.
 function print_option_spec(specs::AbstractVector{<:OptionSpec})
     io = IOBuffer();
     for spec in specs
-        print(io, spec)
+        println(io, spec)
     end
     return String(take!(io))
 end
