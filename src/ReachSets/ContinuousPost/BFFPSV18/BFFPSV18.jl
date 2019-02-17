@@ -32,6 +32,10 @@ function options_BFFPSV18()
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
 
+        OptionSpec(:lazy_X0, false, domain=Bool,
+            info="keep the discretized and decomposed initial states a lazy " *
+                 "set?"),
+
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
             info="ignore dynamic inputs during the analysis?"),
