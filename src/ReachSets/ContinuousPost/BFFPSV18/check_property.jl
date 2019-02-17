@@ -41,6 +41,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
     set_type_init = options[:set_type_init]
+    ε_iter = options[:ε_iter]
     set_type_iter = options[:set_type_iter]
 
     # Cartesian decomposition of the initial set
@@ -97,11 +98,11 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     elseif options[:block_types_iter] != nothing
         block_types_iter = block_to_set_map(options[:block_types_iter])
         overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
-                              overapproximate(x, HPolygon, set_type_init) :
+                              overapproximate(x, HPolygon, ε_iter) :
                               overapproximate(x, block_types_iter[i])
-    elseif set_type_init < Inf
+    elseif ε_iter < Inf
         overapproximate_fun =
-            (i, x) -> overapproximate(x, set_type_iter, set_type_init)
+            (i, x) -> overapproximate(x, set_type_iter, ε_iter)
     else
         overapproximate_fun = (i, x) -> overapproximate(x, set_type_iter)
     end
@@ -118,7 +119,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         end
         # further sets of the series
         function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
-            if set_type_init == Inf
+            if ε_iter == Inf
                 # forget sets if we do not use epsilon-close approximation
                 forget_sets!(x.X)
             end
