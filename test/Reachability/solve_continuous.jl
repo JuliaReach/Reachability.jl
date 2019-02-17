@@ -19,8 +19,8 @@ s = solve(InitialValueProblem(LinearContinuousSystem(A), X0), :T=>0.1)
 
 # two variables and custom partition
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4]),
-          op=BFFPSV18(:vars=>[1,3]))
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
 
 # the default partition is used. uses Interval for set_type_init and set_type_iter
 # but Hyperrectangle for set_type_proj
@@ -32,8 +32,8 @@ s = solve(ContinuousSystem(A, X0),
 # Test projection
 # ===============================
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4], :project_reachset=>false),
-          op=BFFPSV18(:vars=>[1,3]))
+          Options(:T=>0.1, :project_reachset=>false),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
 ps = project(s)
 
 # ===============
@@ -47,17 +47,16 @@ A = [ 0.0509836  0.168159  0.95246   0.33644
 
 # check that x1 + x2 <= 2 doesn't hold
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :mode=>"check", :partition=>[1:2, 3:4],
+          Options(:T=>0.1, :mode=>"check",
           :property=>LinearConstraintProperty([1., 1., 0., 0.], 2.)),
-          op=BFFPSV18(:vars=>[1,2,3]))
+          op=BFFPSV18(:vars=>[1,2,3], :partition=>[1:2, 3:4]))
 @test s.violation == 1
 
 # check that x1 - x2 <= 2 holds
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1, :mode=>"check",
-          :partition=>[1:2, 3:4],
           :property=>LinearConstraintProperty([1., -1., 0., 0.], 2.)),
-          op=BFFPSV18(:vars=>[1,2,3]))
+          op=BFFPSV18(:vars=>[1,2,3], :partition=>[1:2, 3:4]))
 @test s.violation == -1
 
 # ===============================
@@ -66,41 +65,42 @@ s = solve(ContinuousSystem(A, X0),
 
 # template directions (eg. :box, :oct, :octbox)
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :template_directions => :oct,
-          :partition=>[1:4], :ε_proj=>1e-5),
-          op=BFFPSV18(:vars=>[1,3]))
+          Options(:T=>0.1, :template_directions => :oct, :ε_proj=>1e-5),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4]))
 
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4]),
-          op=BFFPSV18(:vars=>[1,3], :lazy_sih=>true))
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_sih=>true))
 
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4]),
-          op=BFFPSV18(:vars=>[1,3], :lazy_sih=>false))
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_sih=>false))
 
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4]),
-          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_expm=>true,
                       :lazy_expm_discretize=>true, :assume_sparse=>false))
 
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4]),
-          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_expm=>true,
                       :lazy_expm_discretize=>true, :assume_sparse=>true))
 
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :partition=>[[i] for i in 1:4],
-          :set_type=>Interval),
-          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
-                      :lazy_expm_discretize=>true))
+          Options(:T=>0.1, :set_type=>Interval),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[[i] for i in 1:4],
+                      :lazy_expm=>true, :lazy_expm_discretize=>true))
 
 # ===============================
 # System with an odd dimension
 # ===============================
 A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
 system = ContinuousSystem(A, X0)
-options = Options(Dict(:T=>0.1, :partition=>[1:2, 3:4, [5]], :block_types=>Dict(HPolygon=>[1:2, 3:4], Interval=>[[5]])))
-s = solve(system, options, op=BFFPSV18(:vars=>[1,3]))
+options = Options(:T=>0.1)
+s = solve(system, options,
+    op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4, [5]], :block_types=>
+                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
+                    HPolygon=>[1:2, 3:4], Interval=>[[5]])))
 
 # ===============================
 # System with an odd dimension
@@ -108,7 +108,7 @@ s = solve(system, options, op=BFFPSV18(:vars=>[1,3]))
 A = [1 2 1.; 0 0. 1; -2 1 4]
 X0 = BallInf(ones(3), 0.1)
 system = ContinuousSystem(A, X0)
-s = solve(system, Options(:T=>0.1, :partition=>[1:2, 3:3]), op=BFFPSV18(:vars=>1:3))
+s = solve(system, Options(:T=>0.1), op=BFFPSV18(:vars=>1:3, :partition=>[1:2, 3:3]))
 
 # =======================================================
 # Affine ODE with a nondeterministic input, x' = Ax + Bu

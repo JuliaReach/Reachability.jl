@@ -70,7 +70,8 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
             elseif dir != nothing
                 Xhat0 = array(decompose(S.x0, directions=dir,
                                         blocks=block_sizes))
-            elseif !isempty(options[:block_types_init])
+            elseif options[:block_types_init] != nothing &&
+                    !isempty(options[:block_types_init])
                 Xhat0 = array(decompose(S.x0, ε=ε_init,
                                         block_types=options[:block_types_init]))
             elseif set_type_init == LazySets.Interval

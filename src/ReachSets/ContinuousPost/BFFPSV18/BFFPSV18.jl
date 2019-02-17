@@ -8,6 +8,19 @@ export BFFPSV18
 lazy_inputs_interval_always = (k -> true)
 lazy_inputs_interval_never = (k -> false)
 
+function ispartition(partition::AbstractVector{<:AbstractVector{Int}})
+    current = 1
+    for block in partition
+        for i in block
+            if i != current
+                return false
+            end
+            current += 1
+        end
+    end
+    return true
+end
+
 function options_BFFPSV18()
     return OptionSpec[
         # general options
@@ -21,6 +34,11 @@ function options_BFFPSV18()
         OptionSpec(:vars, Int[], domain=AbstractVector{Int}, domain_check=(
             v  ->  length(v) > 0 && all(e -> e > 0, v)),
             info="variables of interest; default: all variables"),
+        OptionSpec(:partition, [Int[]],
+            domain=AbstractVector{<:AbstractVector{Int}}, domain_check=
+            ispartition,
+            info="block partition; a block is represented by a vector " *
+                 "containing its indices"),
 
         # discretization options
         OptionSpec(:lazy_sih, false, domain=Bool,
@@ -47,6 +65,20 @@ function options_BFFPSV18()
                  "lazy set (``-1`` for 'never'); may generally also be a " *
                  "predicate over indices; the default corresponds to ``-1``"),
 
+        # approximation options
+        OptionSpec(:block_types, nothing, domain=Union{Nothing,
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
+            info="short hand to set ':block_types_init' and " *
+                 "':block_types_iter'"),
+        OptionSpec(:block_types_init, nothing, domain=Union{Nothing,
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
+            info="set type for the approximation of the initial states for " *
+                 "each block"),
+        OptionSpec(:block_types_iter, nothing, domain=Union{Nothing,
+            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
+            info="set type for the approximation of the states ``X_k``, " *
+                 "``k>0``, for each block"),
+
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
             info="ignore dynamic inputs during the analysis?"),
@@ -70,6 +102,20 @@ function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
         end
     end
 
+    # :block_types options
+    block_types = nothing
+    dict_type = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
+    if !haskey_specified(𝑂, :block_types) && haskey(𝑂, :set_type) &&
+            haskey_specified(𝑂, :partition)
+        𝑂.specified[:block_types] = dict_type(𝑂[:set_type] => copy(𝑂[:partition]))
+    end
+    if !haskey_specified(𝑂, :block_types_init) && block_types != nothing
+        𝑂.specified[:block_types_init] = block_types
+    end
+    if !haskey_specified(𝑂, :block_types_iter) && block_types != nothing
+        𝑂.specified[:block_types_iter] = block_types
+    end
+
     nothing
 end
 
@@ -78,6 +124,20 @@ function validation_BFFPSV18(𝑂)
         throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
             "':lazy_expm' with deactivated option ':lazy_expm_discretize'"))
     end
+
+    if haskey_specified(𝑂, :block_types)
+        for (key, value) in 𝑂[:block_types]
+            if !(key <: LazySet)
+                 throw(DomainError(key, "the keys of the `:block_types` " *
+                                        "dictionary should be lazy sets"))
+            elseif !(typeof(value) <: AbstractVector{<:AbstractVector{Int}})
+                throw(DomainError(value, "the values of the `:block_types` " *
+                                         "dictionary should be vectors of " *
+                                         "vectors"))
+            end
+        end
+    end
+
     nothing
 end
 
@@ -138,8 +198,17 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
     𝑂validated = validate_solver_options_and_add_default_values!(𝑂copy)
 
     # :vars option; default: all variables
-    if !haskey(𝑂validated, :vars)
+    if haskey_specified(𝒫.options, :partition)
+        𝑂validated[:vars] = 𝒫.options[:vars]
+    else
         𝑂validated[:vars] = 1:𝑂validated[:n]
+    end
+
+    # :partition option: use 1D blocks
+    if haskey_specified(𝒫.options, :partition)
+        𝑂validated[:partition] = 𝒫.options[:partition]
+    else
+        𝑂validated[:partition] = [[i] for i in 1:𝑂validated[:n]]
     end
 
     # :blocks option (internal only)

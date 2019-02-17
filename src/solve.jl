@@ -179,10 +179,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
-        if haskey(options_copy, :block_types) &&
-                options_copy.dict[:block_types] == nothing
-            delete!(options_copy.dict, :block_types)
-        end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,

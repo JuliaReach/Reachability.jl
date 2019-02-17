@@ -15,14 +15,6 @@ Supported options:
 - `:mode`          -- main analysis mode
 - `:property`      -- a safety property
 - `:T`             -- time horizon; alias `:time_horizon`
-- `:partition`     -- block partition; elements are 2D vectors containing the
-                      start and end of a block
-- `:block_types`   -- short hand to set `:block_types_init` and
-                      `:block_types_iter`
-- `:block_types_init` -- set type for the approximation of the initial states
-                         for each block
-- `:block_types_iter` -- set type for the approximation of the states ``X_k``,
-                         ``k>0``, for each block
 - `:ε`             -- short hand to set `:ε_init` and `:ε_iter`
 - `:set_type`      -- short hand to set `:set_type_init` and `:set_type_iter`
 - `:ε_init`        -- error bound for the approximation of the initial states
@@ -98,9 +90,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     #                  template_directions_iter
     check_and_add_approximation!(dict, dict_copy)
 
-    # special options: partition, block_types, block_types_init, block_types_iter
-    check_and_add_partition_block_types!(dict, dict_copy)
-
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
 
@@ -126,17 +115,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :partition
-            expected_type = AbstractVector{<:AbstractVector{Int}}
-        elseif key == :block_types
-            expected_type = Union{Nothing,
-                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}}
-        elseif key == :block_types_init
-            expected_type =
-                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
-        elseif key == :block_types_iter
-            expected_type =
-                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
         elseif key == :ε
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
@@ -249,10 +227,6 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
     elseif ε < Inf
         # use polygons
         set_type = HPolygon
-    elseif !haskey(dict, :partition)
-        # use intervals
-        set_type = Interval
-        set_type_proj = Interval
     else
         # use hyperrectangles
         set_type = Hyperrectangle
@@ -296,58 +270,4 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
         (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) &&
         (dict_copy[:ε_proj] == Inf || dict_copy[:set_type_proj] == HPolygon) (
             "ε-close approximation is only supported with the HPolygon set type")
-end
-
-"""
-    check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
-                                         dict_copy::Dict{Symbol,Any})
-
-Handling of the special options `:partition` and `:block_types` resp. the
-subcases `:block_types_init` and `:block_types_iter`.
-
-### Input
-
-- `dict`      -- dictionary of options
-- `dict_copy` -- copy of the dictionary of options for internal names
-"""
-function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
-                                              dict_copy::Dict{Symbol,Any})
-    check_aliases!(dict, dict_copy, [:partition])
-    if !haskey(dict_copy, :partition)
-        partition = [[i] for i in 1:dict[:n]]
-        dict_copy[:partition] =  partition
-    end
-
-    block_types = nothing
-    if haskey(dict, :block_types)
-        for (key, value) in dict[:block_types]
-            @assert key <: LazySet "the keys of the `partition` dictionary should be lazy sets"
-            @assert typeof(value) <: AbstractVector{<:AbstractVector{Int}} "the keys of the `partition` dictionary should be vectors of vectors"
-        end
-        block_types = convert(Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}, dict[:block_types])
-    elseif haskey(dict, :set_type)
-        block_types = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(dict[:set_type] => copy(dict_copy[:partition]))
-    end
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types], block_types)
-    dict_copy[:block_types] = block_types
-
-    block_types_init = haskey(dict, :block_types_init) ?
-        dict[:block_types_init] :
-        block_types != nothing ? block_types :
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_init] => copy(dict_copy[:partition])
-            )
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_init],
-                                         block_types_init)
-
-    block_types_iter = haskey(dict, :block_types_iter) ?
-        dict[:block_types_iter] :
-        block_types != nothing ? block_types :
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                dict_copy[:set_type_iter] => copy(dict_copy[:partition])
-            )
-    check_aliases_and_add_default_value!(dict, dict_copy, [:block_types_iter],
-                                         block_types_iter)
-
-    # TODO add check that arguments are consistent
 end

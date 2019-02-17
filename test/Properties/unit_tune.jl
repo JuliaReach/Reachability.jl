@@ -10,10 +10,11 @@ S = ContinuousSystem(A, X0, U)
 time_horizon = 20.0
 prec = 1e-4
 initial_δ = 0.5
-algorithm(N, δ) = solve(S,
-                        Options(:mode => "check", :partition=>[1:2, 3:4],
-                                :plot_vars => [1, 3], :T => time_horizon,
-                                :property=>LinearConstraintProperty([24., 0., 1, 0],  375.));
-                        op=BFFPSV18(:δ => δ, :vars => [1, 3])).satisfied
+algorithm(N, δ) =
+    solve(S,
+          Options(:mode => "check", :plot_vars => [1, 3], :T => time_horizon,
+                  :property=>LinearConstraintProperty([24., 0., 1, 0],  375.));
+          op=BFFPSV18(:δ => δ, :vars => [1, 3], :partition=>[1:2, 3:4])
+         ).satisfied
 
 Reachability.tune_δ(algorithm, time_horizon, prec, initial_δ)
