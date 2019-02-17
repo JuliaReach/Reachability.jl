@@ -5,44 +5,6 @@ Validation methods for dictionaries of options
 available_keywords = Set{Symbol}([])
 
 """
-    check_and_add_plot_vars!(dict::Dict{Symbol,Any},
-                             dict_copy::Dict{Symbol,Any})
-
-Handling of the special option `:plot_vars`.
-
-### Input
-
-- `dict`      -- dictionary of options
-- `dict_copy` -- copy of the dictionary of options for internal names
-
-### Notes:
-
-If no value is given, we take the first two dimensions from `:vars`.
-If `:vars` has only one element, we use time for the other.
-"""
-function check_and_add_plot_vars!(dict::Dict{Symbol,Any},
-                                 dict_copy::Dict{Symbol,Any})
-    check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
-    if !haskey(dict_copy, :plot_vars)
-        vars = dict_copy[:vars]
-        if length(vars) == 1
-            plot_vars = [0, vars[1]]
-        else
-            plot_vars = [vars[1], vars[2]]
-        end
-        dict_copy[:plot_vars] = plot_vars
-    else
-        # sanity check
-        vars = dict_copy[:vars]
-        for i in dict_copy[:plot_vars]
-            if i != 0 && i ∉ vars
-                error("$(dict_copy[:plot_vars]) is not a subset of the variables $vars")
-            end
-        end
-    end
-end
-
-"""
     check_aliases!(dict, dict_copy, aliases)
 
 This function has several purposes:

@@ -15,7 +15,6 @@ Supported options:
 - `:mode`          -- main analysis mode
 - `:property`      -- a safety property
 - `:T`             -- time horizon; alias `:time_horizon`
-- `:vars`          -- variables of interest
 - `:partition`     -- block partition; elements are 2D vectors containing the
                       start and end of a block
 - `:block_types`   -- short hand to set `:block_types_init` and
@@ -68,10 +67,6 @@ Supported options:
                       alias: `:output_variables`
 - `:n`             -- system's dimension
 
-Internal options (inputs are ignored or even illegal):
-
-- `:blocks`        -- list of all interesting block indices in the partition
-
 We add default values for almost all undefined options, i.e., modify the input
 options. The benefit is that the user can print the options that were actually
 used. For supporting aliases, we create another copy that is actually used where
@@ -97,7 +92,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:vars], 1:options.dict[:n])
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
@@ -115,12 +109,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:transformation_matrix], nothing)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
 
     # special option: T
     check_aliases!(dict, dict_copy, [:T, :time_horizon])
-
-    # special option: plot_vars
-    check_and_add_plot_vars!(dict, dict_copy)
 
     # special options: ε, ε_init, ε_iter, ε_proj,
     #                  set_type, set_type_init, set_type_iter, set_type_proj,
@@ -159,10 +151,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :vars
-            expected_type = AbstractVector{Int}
-            domain_constraints =
-                (v::AbstractVector{Int}  ->  length(v) > 0 && all(x -> x > 0, v))
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types
@@ -174,10 +162,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :block_types_iter
             expected_type =
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
-        elseif key == :blocks
-            expected_type = AbstractVector{Int}
-            domain_constraints =
-                (v::AbstractVector{Int}  ->  length(v) > 0 && all(x -> x > 0, v))
         elseif key == :ε
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
@@ -353,9 +337,7 @@ function check_and_add_approximation!(dict::Dict{Symbol,Any},
              min(dict_copy[:ε_init], dict_copy[:ε_iter], ε)
     check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], ε_proj)
 
-    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon :
-        set_type == Interval && length(dict_copy[:plot_vars]) > 1 ?
-        Hyperrectangle : set_type
+    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon : Hyperrectangle
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], set_type_proj)
 
     @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
@@ -416,35 +398,6 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                          block_types_iter)
 
     # TODO add check that arguments are consistent
-
-    # compute :blocks
-    if haskey(dict, :blocks)
-        error("option :blocks is not allowed")
-    end
-    dict_copy[:blocks] = compute_blocks(dict_copy[:vars], dict_copy[:partition])
-end
-
-function compute_blocks(vars, partition)
-    blocks = Vector{Int}()
-    sizehint!(blocks, length(vars))
-    next = 0
-    var_idx = 1
-    for (i, block) in enumerate(partition)
-        next += length(block)
-        if vars[var_idx] <= next
-            push!(blocks, i)
-            var_idx += 1
-            while var_idx <= length(vars) && vars[var_idx] <= next
-                var_idx += 1
-            end
-            if var_idx > length(vars)
-                break
-            end
-        end
-    end
-    @assert var_idx == length(vars) + 1
-    sizehint!(blocks, length(blocks))
-    return blocks
 end
 
 """

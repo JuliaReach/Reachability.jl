@@ -13,6 +13,9 @@ function options_BFFPSV18()
             v  ->  v in ["explicit", "wrap"]), info="algorithm backend"),
         OptionSpec(:δ, 1e-2, domain=Float64, aliases=[:sampling_time],
             domain_check=(v  ->  v > 0.), info="time step"),
+        OptionSpec(:vars, Int[], domain=AbstractVector{Int}, domain_check=(
+            v  ->  length(v) > 0 && all(e -> e > 0, v)),
+            info="variables of interest; default: all variables"),
     ]
 end
 
@@ -69,6 +72,15 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
 
     # solver-specific options (adds default values for unspecified options)
     𝑂validated = validate_solver_options_and_add_default_values!(𝑂copy)
+
+    # :vars option; default: all variables
+    if !haskey(𝑂validated, :vars)
+        𝑂validated[:vars] = 1:𝑂validated[:n]
+    end
+
+    # :blocks option (internal only)
+    # list of all interesting block indices in the partition
+    𝑂validated[:blocks] = compute_blocks(𝑂validated[:vars], 𝑂validated[:partition])
 
     # Input -> Output variable mapping
     𝑂validated[:inout_map] = inout_map_reach(𝑂validated[:partition], 𝑂validated[:blocks], 𝑂validated[:n])
@@ -144,4 +156,27 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
     else
         error("unsupported mode $(𝑂[:mode])")
     end # mode
+end
+
+function compute_blocks(vars, partition)
+    blocks = Vector{Int}()
+    sizehint!(blocks, length(vars))
+    next = 0
+    var_idx = 1
+    for (i, block) in enumerate(partition)
+        next += length(block)
+        if vars[var_idx] <= next
+            push!(blocks, i)
+            var_idx += 1
+            while var_idx <= length(vars) && vars[var_idx] <= next
+                var_idx += 1
+            end
+            if var_idx > length(vars)
+                break
+            end
+        end
+    end
+    @assert var_idx == length(vars) + 1
+    sizehint!(blocks, length(blocks))
+    return blocks
 end

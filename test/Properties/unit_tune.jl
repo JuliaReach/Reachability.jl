@@ -12,9 +12,8 @@ prec = 1e-4
 initial_δ = 0.5
 algorithm(N, δ) = solve(S,
                         Options(:mode => "check", :partition=>[1:2, 3:4],
-                                :vars => [1, 3], :plot_vars => [1, 3],
-                                :T => time_horizon,
+                                :plot_vars => [1, 3], :T => time_horizon,
                                 :property=>LinearConstraintProperty([24., 0., 1, 0],  375.));
-                        op=BFFPSV18(:δ => δ)).satisfied
+                        op=BFFPSV18(:δ => δ, :vars => [1, 3])).satisfied
 
 Reachability.tune_δ(algorithm, time_horizon, prec, initial_δ)
