@@ -44,6 +44,10 @@ function options_BFFPSV18()
     ]
 end
 
+function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
+    nothing
+end
+
 function validation_BFFPSV18(𝑂)
     if !𝑂[:lazy_expm_discretize] && 𝑂[:lazy_expm]
         throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
@@ -86,7 +90,8 @@ struct BFFPSV18 <: ContinuousPost
 
     function BFFPSV18(𝑂::Options)
         normalized_𝑂 = validate_and_wrap_options(𝑂, options_BFFPSV18();
-                                                 validation=validation_BFFPSV18)
+            validation=validation_BFFPSV18,
+            normalization=normalization_BFFPSV18!)
         return new(normalized_𝑂)
     end
 end

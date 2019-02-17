@@ -514,10 +514,12 @@ Normalize, validate, and merge given options with respect to default options.
 
 ### Input
 
-- `𝑂`          -- options
-- `specs`      -- list of option specifications
-- `validation` -- (optional, default: no-op) function for algorithm-specific
-                  validation of the options
+- `𝑂`             -- options
+- `specs`         -- list of option specifications
+- `validation`    -- (optional, default: no-op) function for algorithm-specific
+                     validation of the options
+- `normalization` -- (optional, default: no-op) function for algorithm-specific
+                     normalization of the options
 
 ### Output
 
@@ -543,7 +545,8 @@ unspecified (default) options:
 """
 function validate_and_wrap_options(𝑂::Options,
                                    specs_list::AbstractVector{<:OptionSpec};
-                                   validation::Function=(x -> nothing)
+                                   validation::Function=(x -> nothing),
+                                   normalization::Function=(x -> nothing)
                                   )::TwoLayerOptions
     specs_map = optionsspeclist_2_optionsspecmap(specs_list)
     𝑂_normalized = unify_aliases(𝑂, specs_map)
@@ -551,6 +554,7 @@ function validate_and_wrap_options(𝑂::Options,
     𝑂_default = Options(Dict{Symbol, Any}(
         spec.name => spec.default for spec in specs_list))
     𝑂_result = TwoLayerOptions(𝑂_normalized, 𝑂_default)
+    normalization(𝑂_result)
     validation(𝑂_result)
     return 𝑂_result
 end
