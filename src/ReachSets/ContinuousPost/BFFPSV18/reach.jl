@@ -78,7 +78,8 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
                 Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
                                         blocks=ones(Int, n)))
             else
-                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+                                        blocks=block_sizes))
             end
         end
     end
