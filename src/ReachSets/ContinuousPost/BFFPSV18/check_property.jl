@@ -38,7 +38,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     dir = interpret_template_direction_symbol(
         options[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
-    N = options[:N]
+    N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
     set_type_init = options[:set_type_init]
     set_type_iter = options[:set_type_iter]

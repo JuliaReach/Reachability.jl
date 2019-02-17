@@ -51,7 +51,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     dir = interpret_template_direction_symbol(
         options[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
-    N = options[:N]
+    N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
     set_type_init = options[:set_type_init]
     ε_iter = options[:ε_iter]

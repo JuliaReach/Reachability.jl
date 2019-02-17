@@ -135,7 +135,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    delete_N = !haskey(options_input, :N)
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
@@ -180,9 +179,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
         delete!(options_copy.dict, :inout_map)
-        if delete_N # TODO add more conditions or fix option clashes in general
-            delete!(options_copy.dict, :N)
-        end
         if haskey(options_copy, :block_types) &&
                 options_copy.dict[:block_types] == nothing
             delete!(options_copy.dict, :block_types)
