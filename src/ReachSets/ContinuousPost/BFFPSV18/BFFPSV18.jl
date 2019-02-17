@@ -6,6 +6,7 @@ export BFFPSV18
 
 function options_BFFPSV18()
     return OptionSpec[
+        # general options
         OptionSpec(:approx_model, "forward", domain=String, domain_check=(
             v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
             info="model for bloating/continuous time analysis"),
@@ -16,6 +17,10 @@ function options_BFFPSV18()
         OptionSpec(:vars, Int[], domain=AbstractVector{Int}, domain_check=(
             v  ->  length(v) > 0 && all(e -> e > 0, v)),
             info="variables of interest; default: all variables"),
+
+        # discretization options
+        OptionSpec(:lazy_sih, false, domain=Bool,
+            info="use a lazy symmetric interval hull in discretization?"),
     ]
 end
 

@@ -71,12 +71,12 @@ s = solve(ContinuousSystem(A, X0),
           op=BFFPSV18(:vars=>[1,3]))
 
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4], :lazy_sih=>true),
-          op=BFFPSV18(:vars=>[1,3]))
+          Options(:T=>0.1, :partition=>[1:2, 3:4]),
+          op=BFFPSV18(:vars=>[1,3], :lazy_sih=>true))
 
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :partition=>[1:2, 3:4], :lazy_sih=>false),
-          op=BFFPSV18(:vars=>[1,3]))
+          Options(:T=>0.1, :partition=>[1:2, 3:4]),
+          op=BFFPSV18(:vars=>[1,3], :lazy_sih=>false))
 
 s = solve(ContinuousSystem(sparse(A), X0),
           Options(:T=>0.1, :partition=>[1:2, 3:4],
