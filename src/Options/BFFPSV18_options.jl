@@ -46,9 +46,6 @@ Supported options:
 - `:coordinate_transformation` -- coordinate transformation method
 - `:projection_matrix`         -- projection matrix
 - `:project_reachset`          -- switch for applying projection
-- `:lazy_inputs_interval`      -- length of interval in which the inputs are
-                                  handled as a lazy set (``-1`` for 'never');
-                                  generally may also be a predicate over indices
 - `:max_jumps`     -- maximum number of discrete jumps in a hybrid automaton;
                       `-1` for deactivation
 - `:fixpoint_check` -- check for a fixpoint when analyzing a hybrid automaton
@@ -103,9 +100,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
 
     # special options: partition, block_types, block_types_init, block_types_iter
     check_and_add_partition_block_types!(dict, dict_copy)
-
-    # special option: lazy_inputs_interval
-    check_and_add_lazy_inputs_interval!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -186,9 +180,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = Union{AbstractMatrix, Nothing}
         elseif key == :project_reachset
             expected_type = Bool
-        elseif key == :lazy_inputs_interval
-            expected_type = Union{Int, Function, Nothing}
-            domain_constraints = (v  ->  !(v isa Int) || v >= -1)
         elseif key == :max_jumps
             expected_type = Int
             domain_constraints = (v::Int  ->  v >= -1)
@@ -359,51 +350,4 @@ function check_and_add_partition_block_types!(dict::Dict{Symbol,Any},
                                          block_types_iter)
 
     # TODO add check that arguments are consistent
-end
-
-"""
-    check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
-                                        dict_copy::Dict{Symbol,Any})
-
-Handling of the special option `:lazy_inputs_interval`.
-
-### Input
-
-- `dict`      -- dictionary of options
-- `dict_copy` -- copy of the dictionary of options for internal names
-
-### Notes
-
-Originally, this option was used to overapproximate a lazy set of inputs at
-every multiple of ``k`` steps, where ``k`` was the controllable option; hence
-the term `interval` in the name.
-Meanwhile, this option was generalized to a predicate over integers.
-The predicate returns `true` iff the lazy set should be overapproximated.
-However, we still support index numbers as input, which are then translated into
-a predicate.
-
-The default value for this option is `nothing` or the index ``0``, which results
-in overapproximation in each iteration.
-Note that internally this has a different effect than passing the predicate that
-always returns `true` because functions cannot be checked for equality.
-Thus this option should simply not be set when not wanting this behavior (or the
-value ``0`` should be used).
-
-The input ``-1`` is interpreted as the predicate that always returns `false`.
-"""
-function check_and_add_lazy_inputs_interval!(dict::Dict{Symbol,Any},
-                                             dict_copy::Dict{Symbol,Any})
-    check_aliases!(dict, dict_copy, [:lazy_inputs_interval])
-    if haskey(dict_copy, :lazy_inputs_interval)
-        if dict_copy[:lazy_inputs_interval] == -1
-            dict_copy[:lazy_inputs_interval] = (k -> false)
-        elseif dict_copy[:lazy_inputs_interval] == 0
-            dict_copy[:lazy_inputs_interval] = nothing
-        elseif dict_copy[:lazy_inputs_interval] isa Int
-            m = dict_copy[:lazy_inputs_interval]
-            dict_copy[:lazy_inputs_interval] = (k -> k % m == 0)
-        end
-    else
-        dict_copy[:lazy_inputs_interval] = nothing
-    end
 end

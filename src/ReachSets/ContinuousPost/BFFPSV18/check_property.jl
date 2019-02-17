@@ -106,11 +106,9 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
 
     # overapproximate function for inputs
     lazy_inputs_interval = options[:lazy_inputs_interval]
-    if lazy_inputs_interval == nothing
+    if lazy_inputs_interval == lazy_inputs_interval_always
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
-        @assert lazy_inputs_interval isa Function "illegal internal value " *
-            "$lazy_inputs_interval for option :lazy_inputs_interval"
         # first set in a series
         function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"

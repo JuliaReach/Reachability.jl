@@ -132,7 +132,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
 
     # overapproximate function for inputs
     lazy_inputs_interval = options[:lazy_inputs_interval]
-    if lazy_inputs_interval == nothing
+    if lazy_inputs_interval == lazy_inputs_interval_always
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
         # first set in a series

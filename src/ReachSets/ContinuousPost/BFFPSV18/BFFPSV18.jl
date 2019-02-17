@@ -4,6 +4,10 @@ export BFFPSV18
 # Bogomolov, Forets, Frehse, Podelski, Schilling, Viry. HSCC 2018
 # ===============================================================
 
+# dummy functions for option :lazy_inputs_interval
+lazy_inputs_interval_always = (k -> true)
+lazy_inputs_interval_never = (k -> false)
+
 function options_BFFPSV18()
     return OptionSpec[
         # general options
@@ -32,9 +36,16 @@ function options_BFFPSV18()
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
 
+        # reachability options
         OptionSpec(:lazy_X0, false, domain=Bool,
             info="keep the discretized and decomposed initial states a lazy " *
                  "set?"),
+        OptionSpec(:lazy_inputs_interval, lazy_inputs_interval_always,
+            domain=Union{Int, Function},
+            domain_check=(v  ->  !(v isa Int) || v >= -1),
+            info="length of interval in which the inputs are handled as a " *
+                 "lazy set (``-1`` for 'never'); may generally also be a " *
+                 "predicate over indices; the default corresponds to ``-1``"),
 
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
@@ -45,6 +56,20 @@ function options_BFFPSV18()
 end
 
 function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
+    # :lazy_inputs_interval option: convert integers to functions
+    if haskey_specified(𝑂, :lazy_inputs_interval)
+        v = 𝑂[:lazy_inputs_interval]
+        if v isa Int
+            if v == -1
+                𝑂.specified[:lazy_inputs_interval] = lazy_inputs_interval_never
+            elseif v == 0
+                𝑂.specified[:lazy_inputs_interval] = lazy_inputs_interval_always
+            else
+                𝑂.specified[:lazy_inputs_interval] = (k -> k % v == 0)
+            end
+        end
+    end
+
     nothing
 end
 
