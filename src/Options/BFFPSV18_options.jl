@@ -37,7 +37,6 @@ Supported options:
                       projection
 - `:set_type_proj` -- set type for the approximation of the states during
                       projection
-- `:lazy_expm`     -- switch for using lazy matrix exponential all the time
 - `:assume_sparse` -- switch for sparse matrices
 - `:pade_expm`     -- switch for using Pade approximant method
 - `:lazy_X0`       -- switch for keeping the initial states a lazy set
@@ -55,8 +54,6 @@ Supported options:
 - `:lazy_inputs_interval`      -- length of interval in which the inputs are
                                   handled as a lazy set (``-1`` for 'never');
                                   generally may also be a predicate over indices
-- `:lazy_expm_discretize`      -- switch to use lazy matrix exponential in the
-                                  discretization phase (see also `:lazy_expm`)
 - `:max_jumps`     -- maximum number of discrete jumps in a hybrid automaton;
                       `-1` for deactivation
 - `:fixpoint_check` -- check for a fixpoint when analyzing a hybrid automaton
@@ -90,7 +87,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     # check for aliases and use default values for unspecified options
     check_aliases_and_add_default_value!(dict, dict_copy, [:mode], "reach")
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
@@ -99,8 +95,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:project_reachset], dict_copy[:projection_matrix] == nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm_discretize],
-                                         dict_copy[:lazy_expm])
     check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], -1)
     check_aliases_and_add_default_value!(dict, dict_copy, [:clustering], :chull)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
@@ -183,8 +177,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :set_type_proj
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
-        elseif key == :lazy_expm
-            expected_type = Bool
         elseif key == :assume_sparse
             expected_type = Bool
         elseif key == :pade_expm
@@ -217,12 +209,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :lazy_inputs_interval
             expected_type = Union{Int, Function, Nothing}
             domain_constraints = (v  ->  !(v isa Int) || v >= -1)
-        elseif key == :lazy_expm_discretize
-            expected_type = Bool
-            if !value && dict_copy[:lazy_expm]
-                error("cannot use option $(:lazy_expm) with deactivated " *
-                      "option $(:lazy_expm_discretize)")
-            end
         elseif key == :max_jumps
             expected_type = Int
             domain_constraints = (v::Int  ->  v >= -1)

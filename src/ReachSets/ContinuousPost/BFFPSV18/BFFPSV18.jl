@@ -21,10 +21,18 @@ function options_BFFPSV18()
         # discretization options
         OptionSpec(:lazy_sih, false, domain=Bool,
             info="use a lazy symmetric interval hull in discretization?"),
+        OptionSpec(:lazy_expm, false, domain=Bool,
+            info="use a lazy matrix exponential all the time?"),
+        OptionSpec(:lazy_expm_discretize, false, domain=Bool,
+            info="use a lazy matrix exponential in discretization?"),
     ]
 end
 
 function validation_BFFPSV18(𝑂)
+    if !𝑂[:lazy_expm_discretize] && 𝑂[:lazy_expm]
+        throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
+            "':lazy_expm' with deactivated option ':lazy_expm_discretize'"))
+    end
     nothing
 end
 

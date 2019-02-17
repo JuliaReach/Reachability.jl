@@ -80,18 +80,21 @@ s = solve(ContinuousSystem(A, X0),
 
 s = solve(ContinuousSystem(sparse(A), X0),
           Options(:T=>0.1, :partition=>[1:2, 3:4],
-          :lazy_expm=>true, :assume_sparse=>false),
-          op=BFFPSV18(:vars=>[1,3]))
+          :assume_sparse=>false),
+          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
+                      :lazy_expm_discretize=>true))
 
 s = solve(ContinuousSystem(sparse(A), X0),
           Options(:T=>0.1, :partition=>[1:2, 3:4],
-          :lazy_expm=>true, :assume_sparse=>true),
-          op=BFFPSV18(:vars=>[1,3]))
+          :assume_sparse=>true),
+          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
+                      :lazy_expm_discretize=>true))
 
 s = solve(ContinuousSystem(sparse(A), X0),
           Options(:T=>0.1, :partition=>[[i] for i in 1:4],
-          :set_type=>Interval, :lazy_expm=>true),
-          op=BFFPSV18(:vars=>[1,3]))
+          :set_type=>Interval),
+          op=BFFPSV18(:vars=>[1,3], :lazy_expm=>true,
+                      :lazy_expm_discretize=>true))
 
 # ===============================
 # System with an odd dimension
