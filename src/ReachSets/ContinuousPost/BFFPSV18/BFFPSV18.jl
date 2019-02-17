@@ -31,6 +31,10 @@ function options_BFFPSV18()
                  "in discretization?"),
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
+
+        # convenience options
+        OptionSpec(:assume_homogeneous, false, domain=Bool,
+            info="ignore dynamic inputs during the analysis?"),
     ]
 end
 

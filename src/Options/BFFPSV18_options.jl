@@ -45,7 +45,6 @@ Supported options:
 - `:template_directions_iter`  -- directions to use for the approximation of the
                                   states ``X_k``, ``k>0``, for each block
 - `:coordinate_transformation` -- coordinate transformation method
-- `:assume_homogeneous`        -- switch for ignoring inputs
 - `:projection_matrix`         -- projection matrix
 - `:project_reachset`          -- switch for applying projection
 - `:eager_checking`            -- switch for early terminating property checks
@@ -87,7 +86,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_X0], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
-    check_aliases_and_add_default_value!(dict, dict_copy, [:assume_homogeneous], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:project_reachset], dict_copy[:projection_matrix] == nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
@@ -190,8 +188,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :coordinate_transformation
             expected_type = String
             domain_constraints = (v::String  ->  v in ["", "schur"])
-        elseif key == :assume_homogeneous
-            expected_type = Bool
         elseif key == :projection_matrix
             expected_type = Union{AbstractMatrix, Nothing}
         elseif key == :project_reachset
