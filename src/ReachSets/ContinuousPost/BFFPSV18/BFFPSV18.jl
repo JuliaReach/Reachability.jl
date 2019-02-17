@@ -35,6 +35,8 @@ function options_BFFPSV18()
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
             info="ignore dynamic inputs during the analysis?"),
+        OptionSpec(:eager_checking, true, domain=Bool,
+            info="terminate as soon as property violation was detected?"),
     ]
 end
 

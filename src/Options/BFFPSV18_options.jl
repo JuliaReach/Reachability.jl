@@ -47,7 +47,6 @@ Supported options:
 - `:coordinate_transformation` -- coordinate transformation method
 - `:projection_matrix`         -- projection matrix
 - `:project_reachset`          -- switch for applying projection
-- `:eager_checking`            -- switch for early terminating property checks
 - `:lazy_inputs_interval`      -- length of interval in which the inputs are
                                   handled as a lazy set (``-1`` for 'never');
                                   generally may also be a predicate over indices
@@ -88,7 +87,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:coordinate_transformation], "")
     check_aliases_and_add_default_value!(dict, dict_copy, [:projection_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:project_reachset], dict_copy[:projection_matrix] == nothing)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:eager_checking], true)
     check_aliases_and_add_default_value!(dict, dict_copy, [:max_jumps], -1)
     check_aliases_and_add_default_value!(dict, dict_copy, [:clustering], :chull)
     check_aliases_and_add_default_value!(dict, dict_copy, [:fixpoint_check], :eager)
@@ -191,8 +189,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :projection_matrix
             expected_type = Union{AbstractMatrix, Nothing}
         elseif key == :project_reachset
-            expected_type = Bool
-        elseif key == :eager_checking
             expected_type = Bool
         elseif key == :lazy_inputs_interval
             expected_type = Union{Int, Function, Nothing}
