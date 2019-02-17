@@ -269,6 +269,14 @@ end
 
 specified_values(𝑂::TwoLayerOptions) = values(𝑂.specified)
 
+function haskey(𝑂::TwoLayerOptions, key)
+    return haskey(𝑂.specified, key) || haskey(𝑂.defaults, key)
+end
+
+function haskey_specified(𝑂::TwoLayerOptions, key)
+    return haskey(𝑂.specified, key)
+end
+
 function getindex(𝑂::TwoLayerOptions, sym::Symbol)
     if haskey(𝑂.specified, sym)
         return getindex(𝑂.specified, sym)

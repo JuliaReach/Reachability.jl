@@ -97,6 +97,7 @@ using LazySets.Approximations: symmetric_interval_hull,
 using Reachability: @timing,
                     Options, OptionSpec, TwoLayerOptions, AbstractOptions,
                     validate_and_wrap_options, print_option_spec,
+                    haskey_specified,
                     validate_solver_options_and_add_default_values!
 
 # ========================================
