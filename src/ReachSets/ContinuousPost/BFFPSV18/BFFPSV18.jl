@@ -24,6 +24,10 @@ function options_BFFPSV18()
     ]
 end
 
+function validation_BFFPSV18(𝑂)
+    nothing
+end
+
 """
     BFFPSV18 <: ContinuousPost
 
@@ -57,7 +61,8 @@ struct BFFPSV18 <: ContinuousPost
     options::TwoLayerOptions
 
     function BFFPSV18(𝑂::Options)
-        normalized_𝑂 = validate_and_wrap_options(𝑂, options_BFFPSV18())
+        normalized_𝑂 = validate_and_wrap_options(𝑂, options_BFFPSV18();
+                                                 validation=validation_BFFPSV18)
         return new(normalized_𝑂)
     end
 end
