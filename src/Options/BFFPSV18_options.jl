@@ -14,8 +14,6 @@ Supported options:
 - `:logfile`       -- name of a log file
 - `:mode`          -- main analysis mode
 - `:property`      -- a safety property
-- `:δ`             -- time step; alias: `:sampling_time`
-- `:N`             -- number of time steps
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:vars`          -- variables of interest
 - `:partition`     -- block partition; elements are 2D vectors containing the
@@ -118,8 +116,8 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:transformation_matrix], nothing)
 
-    # special options: δ, N, T
-    check_and_add_δ_N_T!(dict, dict_copy)
+    # special option: T
+    check_aliases!(dict, dict_copy, [:T, :time_horizon])
 
     # special option: plot_vars
     check_and_add_plot_vars!(dict, dict_copy)
@@ -158,12 +156,6 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             end
         elseif key == :property
             expected_type = Union{Property, Nothing}
-        elseif key == :δ
-            expected_type = Float64
-            domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :N
-            expected_type = Int
-            domain_constraints = (v::Int  ->  v > 0)
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)

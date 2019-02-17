@@ -81,7 +81,6 @@ function project_reach(
         RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(undef, N)
     end
 
-    δ = options[:δ]
     if got_time
         @inbounds for i in 1:N
             t0 = Rsets[i].t_start
@@ -174,7 +173,6 @@ function project_2d_reach(
         RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(undef, N)
     end
 
-    δ = options[:δ]
     if output_function
         @inbounds for i in 1:N
             t0 = Rsets[i].t_start

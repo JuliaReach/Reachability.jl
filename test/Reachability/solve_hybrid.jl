@@ -11,17 +11,19 @@ for model in models
 
     # --- reachability algorithms ---
 
+    opC = BFFPSV18(:δ=>0.1)
+
     # default algorithm
     sol = solve(system, options)
 
     # concrete discrete-post operator
-    sol = solve(system, options, BFFPSV18(), ConcreteDiscretePost())
+    sol = solve(system, options, opC, ConcreteDiscretePost())
 
     # lazy discrete-post operator
-    sol = solve(system, options, BFFPSV18(), LazyDiscretePost())
+    sol = solve(system, options, opC, LazyDiscretePost())
 
     # overapproximating discrete-post operator
-    sol = solve(system, options, BFFPSV18(), ApproximatingDiscretePost())
+    sol = solve(system, options, opC, ApproximatingDiscretePost())
 
     # --- model analysis ---
 

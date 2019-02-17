@@ -11,6 +11,8 @@ function options_BFFPSV18()
             info="model for bloating/continuous time analysis"),
         OptionSpec(:algorithm, "explicit", domain=String, domain_check=(
             v  ->  v in ["explicit", "wrap"]), info="algorithm backend"),
+        OptionSpec(:δ, 1e-2, domain=Float64, aliases=[:sampling_time],
+            domain_check=(v  ->  v > 0.), info="time step"),
     ]
 end
 
