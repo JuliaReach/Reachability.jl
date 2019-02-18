@@ -22,8 +22,7 @@ s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
 
-# the default partition is used. uses Interval for set_type_init and set_type_iter
-# but Hyperrectangle for set_type_proj
+# the default partition is used.
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3]))
@@ -65,8 +64,9 @@ s = solve(ContinuousSystem(A, X0),
 
 # template directions (eg. :box, :oct, :octbox)
 s = solve(ContinuousSystem(A, X0),
-          Options(:T=>0.1, :template_directions => :oct, :ε_proj=>1e-5),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4]))
+          Options(:T=>0.1, :ε_proj=>1e-5, :set_type_proj=>HPolygon),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4],
+                      :template_directions => :oct))
 
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1),
@@ -86,18 +86,19 @@ s = solve(ContinuousSystem(sparse(A), X0),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_expm=>true,
                       :lazy_expm_discretize=>true, :assume_sparse=>true))
 
+# uses Interval for set_type_init and set_type_iter but Hyperrectangle for
+# set_type_proj
 s = solve(ContinuousSystem(sparse(A), X0),
-          Options(:T=>0.1, :set_type=>Interval),
+          Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[[i] for i in 1:4],
-                      :lazy_expm=>true, :lazy_expm_discretize=>true))
+                      :lazy_expm=>true, :lazy_expm_discretize=>true,
+                      :set_type=>Interval))
 
 # ===============================
 # System with an odd dimension
 # ===============================
 A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
-system = ContinuousSystem(A, X0)
-options = Options(:T=>0.1)
-s = solve(system, options,
+s = solve(ContinuousSystem(A, X0), Options(:T=>0.1),
     op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4, [5]], :block_types=>
                 Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
                     HPolygon=>[1:2, 3:4], Interval=>[[5]])))
@@ -108,7 +109,8 @@ s = solve(system, options,
 A = [1 2 1.; 0 0. 1; -2 1 4]
 X0 = BallInf(ones(3), 0.1)
 system = ContinuousSystem(A, X0)
-s = solve(system, Options(:T=>0.1), op=BFFPSV18(:vars=>1:3, :partition=>[1:2, 3:3]))
+s = solve(system, Options(:T=>0.1),
+          op=BFFPSV18(:vars=>1:3, :partition=>[1:2, 3:3]))
 
 # =======================================================
 # Affine ODE with a nondeterministic input, x' = Ax + Bu

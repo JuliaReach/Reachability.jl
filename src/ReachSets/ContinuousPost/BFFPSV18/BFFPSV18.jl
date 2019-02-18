@@ -78,6 +78,37 @@ function options_BFFPSV18()
             Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
             info="set type for the approximation of the states ``X_k``, " *
                  "``k>0``, for each block"),
+        OptionSpec(:ε, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
+            info="short hand to set `:ε_init` and `:ε_iter`"),
+        OptionSpec(:ε_init, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
+            info="error bound for the approximation of the initial states" *
+                 "(during decomposition)"),
+        OptionSpec(:ε_iter, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
+            info="error bound for the approximation of the states ``X_k``, " *
+                 "``k>0``"),
+        OptionSpec(:set_type, Hyperrectangle, domain=Union{Type{HPolygon},
+            Type{Hyperrectangle}, Type{LazySets.Interval}},
+            info="short hand to set `:set_type_init` and `:set_type_iter`"),
+        OptionSpec(:set_type_init, Hyperrectangle, domain=Union{Type{HPolygon},
+            Type{Hyperrectangle}, Type{LazySets.Interval}},
+            info="set type for the approximation of the initial states" *
+                 "(during decomposition)"),
+        OptionSpec(:set_type_iter, Hyperrectangle, domain=Union{Type{HPolygon},
+            Type{Hyperrectangle}, Type{LazySets.Interval}},
+            info="set type for the approximation of the states ``X_k``, " *
+                 "``k>0``"),
+        OptionSpec(:template_directions, :nothing, domain=Symbol,
+            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
+            info="short hand to set `template_directions_init` and " *
+                 "`template_directions_iter`"),
+        OptionSpec(:template_directions_init, :nothing, domain=Symbol,
+            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
+            info="directions to use for the approximation of the initial " *
+                 "states (during decomposition)"),
+        OptionSpec(:template_directions_iter, :nothing, domain=Symbol,
+            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
+            info="directions to use for the approximation of the states " *
+                 "``X_k``, ``k>0``, for each block"),
 
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
@@ -116,15 +147,74 @@ function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
         𝑂.specified[:block_types_iter] = block_types
     end
 
+    # :ε, :set_type, and :template_directions options
+    ε = 𝑂[:ε]
+    if haskey_specified(𝑂, :set_type)
+        # use the provided set type
+        set_type = 𝑂[:set_type]
+    elseif ε < Inf
+        # use polygons
+        set_type = HPolygon
+        𝑂[:set_type] = HPolygon
+    else
+        # use hyperrectangles
+        set_type = 𝑂[:set_type]
+    end
+    #
+    if !haskey_specified(𝑂, :ε_init)
+        𝑂.specified[:ε_init] =
+            (haskey_specified(𝑂, :set_type_init) && 𝑂[:set_type_init] == HPolygon) ||
+            (!haskey_specified(𝑂, :set_type_init) && set_type == HPolygon) ?
+                ε :
+                Inf
+    end
+    #
+    if !haskey_specified(𝑂, :set_type_init)
+        𝑂.specified[:set_type_init] = 𝑂[:ε_init] < Inf ? HPolygon : set_type
+    end
+    #
+    if !haskey_specified(𝑂, :template_directions_init)
+        𝑂.specified[:template_directions_init] =
+            haskey_specified(𝑂, :template_directions_init) ?
+                𝑂[:template_directions_init] :
+                haskey_specified(𝑂, :template_directions) ?
+                    𝑂[:template_directions] :
+                    :nothing
+    end
+    #
+    if !haskey_specified(𝑂, :ε_iter)
+        𝑂.specified[:ε_iter] =
+            (haskey_specified(𝑂, :set_type_iter) && 𝑂[:set_type_iter] == HPolygon) ||
+            (!haskey_specified(𝑂, :set_type_iter) && set_type == HPolygon) ?
+                ε :
+                Inf
+    end
+    #
+    if !haskey_specified(𝑂, :set_type_iter)
+        𝑂.specified[:set_type_iter] = 𝑂[:ε_iter] < Inf ? HPolygon : set_type
+    end
+    #
+    if !haskey_specified(𝑂, :template_directions_iter)
+        𝑂.specified[:template_directions_iter] =
+            haskey_specified(𝑂, :template_directions_iter) ?
+                𝑂[:template_directions_iter] :
+                haskey_specified(𝑂, :template_directions) ?
+                    𝑂[:template_directions] :
+                    :nothing
+    end
+    #
+
     nothing
 end
 
 function validation_BFFPSV18(𝑂)
+    # lazy_expm_discretize & lazy_expm
     if !𝑂[:lazy_expm_discretize] && 𝑂[:lazy_expm]
         throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
             "':lazy_expm' with deactivated option ':lazy_expm_discretize'"))
     end
 
+    # block_types
     if haskey_specified(𝑂, :block_types)
         for (key, value) in 𝑂[:block_types]
             if !(key <: LazySet)
@@ -136,6 +226,13 @@ function validation_BFFPSV18(𝑂)
                                          "vectors"))
             end
         end
+    end
+
+    # ε-close approximation
+    if (𝑂[:ε_init] < Inf && 𝑂[:set_type_init] != HPolygon) ||
+       (𝑂[:ε_iter] < Inf && 𝑂[:set_type_iter] != HPolygon)
+        throw(DomainError("ε-close approximation is only supported with the " *
+                          "set type 'HPolygon'"))
     end
 
     nothing

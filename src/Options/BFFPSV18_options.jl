@@ -15,26 +15,10 @@ Supported options:
 - `:mode`          -- main analysis mode
 - `:property`      -- a safety property
 - `:T`             -- time horizon; alias `:time_horizon`
-- `:ε`             -- short hand to set `:ε_init` and `:ε_iter`
-- `:set_type`      -- short hand to set `:set_type_init` and `:set_type_iter`
-- `:ε_init`        -- error bound for the approximation of the initial states
-                      (during decomposition)
-- `:set_type_init` -- set type for the approximation of the initial states
-                      (during decomposition)
-- `:ε_iter`        -- error bound for the approximation of the states ``X_k``,
-                      ``k>0``
-- `:set_type_iter` -- set type for the approximation of the states ``X_k``,
-                      ``k>0``
 - `:ε_proj`        -- error bound for the approximation of the states during
                       projection
 - `:set_type_proj` -- set type for the approximation of the states during
                       projection
-- `:template_directions`       -- short hand to set `template_directions_init`
-                                  and `template_directions_iter`
-- `:template_directions_init`  -- directions to use for the approximation of the
-                                  initial states (during decomposition)
-- `:template_directions_iter`  -- directions to use for the approximation of the
-                                  states ``X_k``, ``k>0``, for each block
 - `:coordinate_transformation` -- coordinate transformation method
 - `:projection_matrix`         -- projection matrix
 - `:project_reachset`          -- switch for applying projection
@@ -80,15 +64,11 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:transformation_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], Inf)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], Hyperrectangle)
 
     # special option: T
     check_aliases!(dict, dict_copy, [:T, :time_horizon])
-
-    # special options: ε, ε_init, ε_iter, ε_proj,
-    #                  set_type, set_type_init, set_type_iter, set_type_proj,
-    #                  template_directions, template_directions_init,
-    #                  template_directions_iter
-    check_and_add_approximation!(dict, dict_copy)
 
     # validate that all input keywords are recognized
     check_valid_option_keywords(dict)
@@ -115,42 +95,12 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
-        elseif key == :ε
-            expected_type = Float64
-            domain_constraints = (v  ->  v > 0.)
-        elseif key == :ε_init
-            expected_type = Float64
-            domain_constraints = (v  ->  v > 0.)
-        elseif key == :ε_iter
-            expected_type = Float64
-            domain_constraints = (v  ->  v > 0.)
         elseif key == :ε_proj
             expected_type = Float64
             domain_constraints = (v  ->  v > 0.)
-        elseif key == :set_type
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
-                                  Type{LazySets.Interval}}
-        elseif key == :set_type_init
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
-                                  Type{LazySets.Interval}}
-        elseif key == :set_type_iter
-            expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
-                                  Type{LazySets.Interval}}
         elseif key == :set_type_proj
             expected_type = Union{Type{HPolygon}, Type{Hyperrectangle},
                                   Type{LazySets.Interval}}
-        elseif key == :template_directions
-            expected_type = Symbol
-            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
-                                                       :nothing])
-        elseif key == :template_directions_init
-            expected_type = Symbol
-            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
-                                                       :nothing])
-        elseif key == :template_directions_iter
-            expected_type = Symbol
-            domain_constraints = (v::Symbol  ->  v in [:box, :oct, :boxdiag,
-                                                       :nothing])
         elseif key == :coordinate_transformation
             expected_type = String
             domain_constraints = (v::String  ->  v in ["", "schur"])
@@ -188,86 +138,11 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             error("$value is not a valid value for option :$key.")
         end
     end
-
-    return options_copy
-end
-
-"""
-    check_and_add_approximation!(dict::Dict{Symbol,Any},
-                                 dict_copy::Dict{Symbol,Any})
-
-Handling of the special options `:ε` and `:set_type` resp. the subcases
-`:ε_init`, `:ε_iter`, `:ε_proj`, `:set_type_init`, `:set_type_iter`,
-`:set_type_proj`, `:template_directions`, `:template_directions_init`, and
-`:template_directions_iter`.
-
-### Input
-
-- `dict`      -- dictionary of options
-- `dict_copy` -- copy of the dictionary of options for internal names
-
-### Notes:
-
-`:ε` and `:set_type`, if defined, are used as fallbacks (if the more specific
-options are undefined).
-If both `:ε_init` and `:set_type_init` are defined, they must be consistent.
-"""
-function check_and_add_approximation!(dict::Dict{Symbol,Any},
-                                      dict_copy::Dict{Symbol,Any})
-    # fallback options
-    check_aliases!(dict, dict_copy, [:ε])
-    check_aliases!(dict, dict_copy, [:set_type])
-    check_aliases!(dict, dict_copy, [:template_directions])
-    ε = haskey(dict, :ε) ? dict[:ε] : Inf
-
-    # fallback set type
-    if haskey(dict, :set_type)
-        # use the provided set type
-        set_type = dict[:set_type]
-    elseif ε < Inf
-        # use polygons
-        set_type = HPolygon
-    else
-        # use hyperrectangles
-        set_type = Hyperrectangle
+    # ε-close approximation
+    if dict_copy[:ε_proj] < Inf && dict_copy[:set_type_proj] != HPolygon
+        throw(DomainError("ε-close approximation is only supported with the " *
+                          "set type 'HPolygon'"))
     end
 
-    ε_init = (haskey(dict, :set_type_init) && dict[:set_type_init] == HPolygon) ||
-             (!haskey(dict, :set_type_init) && set_type == HPolygon) ? ε : Inf
-    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_init], ε_init)
-
-    set_type_init = dict_copy[:ε_init] < Inf ? HPolygon : set_type
-    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_init], set_type_init)
-
-    template_directions_init = haskey(dict, :template_directions_init) ?
-        dict[:template_directions_init] : haskey(dict, :template_directions) ?
-        dict[:template_directions] : :nothing
-    check_aliases_and_add_default_value!(dict, dict_copy,
-        [:template_directions_init], template_directions_init)
-
-    ε_iter = (haskey(dict, :set_type_iter) && dict[:set_type_iter] == HPolygon) ||
-             (!haskey(dict, :set_type_iter) && set_type == HPolygon) ? ε : Inf
-    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_iter], ε_iter)
-
-    set_type_iter = dict_copy[:ε_iter] < Inf ? HPolygon : set_type
-    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_iter], set_type_iter)
-
-    template_directions_iter = haskey(dict, :template_directions_iter) ?
-        dict[:template_directions_iter] : haskey(dict, :template_directions) ?
-        dict[:template_directions] : :nothing
-    check_aliases_and_add_default_value!(dict, dict_copy,
-        [:template_directions_iter], template_directions_iter)
-
-    ε_proj = (haskey(dict, :set_type_proj) && dict[:set_type_proj] == HPolygon) ||
-             (!haskey(dict, :set_type_proj) && set_type == HPolygon) ? ε :
-             min(dict_copy[:ε_init], dict_copy[:ε_iter], ε)
-    check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], ε_proj)
-
-    set_type_proj = dict_copy[:ε_proj] < Inf ? HPolygon : Hyperrectangle
-    check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], set_type_proj)
-
-    @assert (dict_copy[:ε_init] == Inf || dict_copy[:set_type_init] == HPolygon) &&
-        (dict_copy[:ε_iter] == Inf || dict_copy[:set_type_iter] == HPolygon) &&
-        (dict_copy[:ε_proj] == Inf || dict_copy[:set_type_proj] == HPolygon) (
-            "ε-close approximation is only supported with the HPolygon set type")
+    return options_copy
 end
