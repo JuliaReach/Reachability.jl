@@ -103,7 +103,7 @@ function use_precise_ρ(𝒫::DiscretePost,
 end
 
 function get_overapproximation_option(𝒫::DiscretePost, n::Int)
-    oa = 𝒫.options.dict[:overapproximation]
+    oa = 𝒫.options[:overapproximation]
     if oa isa Symbol
         dirs = Utils.interpret_template_direction_symbol(oa)
         return dirs(n)

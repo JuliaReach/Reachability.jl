@@ -85,17 +85,19 @@ using LazySets, MathematicalSystems, HybridSystems
 using Expokit, Optim, ProgressMeter
 
 # fix namespace conflicts with MathematicalSystems
-import LazySets.LinearMap
-import Reachability.info
+using LazySets: LinearMap
+using Reachability: info
 
 include("../compat.jl")
 
-import LazySets.Approximations:symmetric_interval_hull,
+using LazySets.Approximations: symmetric_interval_hull,
                                decompose,
                                overapproximate,
                                box_approximation
-import Reachability:@timing,
-                    Options,
+using Reachability: @timing,
+                    Options, OptionSpec, TwoLayerOptions, AbstractOptions,
+                    validate_and_wrap_options, print_option_spec,
+                    haskey_specified,
                     validate_solver_options_and_add_default_values!
 
 # ========================================
@@ -104,13 +106,6 @@ import Reachability:@timing,
 include("discretize.jl")
 
 export discretize
-
-# =======================================
-# Mapping from input to output variables
-# =======================================
-include("inout_map_reach.jl")
-
-export inout_map_reach
 
 # ==============================
 # Property struct and evaluation
@@ -146,6 +141,7 @@ available_algorithms_check = Dict{String, Dict{String, Any}}()
 include("ContinuousPost/BFFPSV18/check_blocks.jl")
 include("ContinuousPost/BFFPSV18/check_property.jl")
 include("ContinuousPost/BFFPSV18/partitions.jl")
+include("ContinuousPost/BFFPSV18/inout_map_reach.jl")
 
 # "explicit" backends
 push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,
@@ -187,6 +183,7 @@ export PostOperator,
 # Continuous post operators
 # ==========================
 include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
+include("ContinuousPost/BFFPSV18/reach.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 
@@ -213,13 +210,6 @@ export available_algorithms
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ConcreteDiscretePost.jl")
-
-# =========================
-# External reach interface
-# =========================
-include("reach.jl")
-
-export reach
 
 # ==============================================
 # Projection of the reach set in two dimensions

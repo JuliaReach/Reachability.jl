@@ -12,6 +12,7 @@ makedocs(
         "Library" => Any[
         "User interface" => "lib/interface.md",
         "Systems" => "lib/systems.md",
+        "Algorithms" => "lib/algorithms.md",
         "Transformations" => "lib/transformations.md",
         "Discretization" => "lib/discretize.md",
         "Distributed computations" => "lib/distributed.md"],

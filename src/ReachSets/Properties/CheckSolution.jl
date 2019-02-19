@@ -17,7 +17,7 @@ contains the index at which the property might be violated for the first time.
 struct CheckSolution <: AbstractSolution
     satisfied::Bool
     violation::Int
-    options::Options
+    options::AbstractOptions
 end
 
 # constructor with no options

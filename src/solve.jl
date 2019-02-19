@@ -86,7 +86,6 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
     options = init(op, system, options_input)
 
     # coordinate transformation
-    options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         (system, transformation_matrix) =
@@ -136,10 +135,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    delete_N = !haskey(options_input, :N)
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
+    inout_map = nothing
 
     # waiting_list entries:
     # - (discrete) location
@@ -180,21 +179,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
-        delete!(options_copy.dict, :inout_map)
-        if delete_N # TODO add more conditions or fix option clashes in general
-            delete!(options_copy.dict, :N)
-        end
-        if haskey(options_copy, :block_types) &&
-                options_copy.dict[:block_types] == nothing
-            delete!(options_copy.dict, :block_types)
-        end
-        if haskey(options_copy, :blocks)
-            delete!(options_copy.dict, :blocks)
-        end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
+        inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
 
         # add the very first initial approximation
         if passed_list != nothing &&
@@ -225,6 +214,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     end
 
     # Projection
+    options[:inout_map] = inout_map
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(Rsets, options)

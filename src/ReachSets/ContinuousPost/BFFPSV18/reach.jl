@@ -30,7 +30,7 @@ is inferred from the first parameter of the system (resp. lazy set), ie.
 function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
                         IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                invariant::Union{LazySet, Nothing},
-               options::Options
+               options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
 
     # list containing the arguments passed to any reachability function
@@ -51,7 +51,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     dir = interpret_template_direction_symbol(
         options[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
-    N = options[:N]
+    N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
     set_type_init = options[:set_type_init]
     ε_iter = options[:ε_iter]
@@ -70,14 +70,16 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
             elseif dir != nothing
                 Xhat0 = array(decompose(S.x0, directions=dir,
                                         blocks=block_sizes))
-            elseif !isempty(options[:block_types_init])
+            elseif options[:block_types_init] != nothing &&
+                    !isempty(options[:block_types_init])
                 Xhat0 = array(decompose(S.x0, ε=ε_init,
                                         block_types=options[:block_types_init]))
             elseif set_type_init == LazySets.Interval
                 Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
                                         blocks=ones(Int, n)))
             else
-                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+                                        blocks=block_sizes))
             end
         end
     end
@@ -117,7 +119,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         options[:template_directions_iter])
     if dir != nothing
         overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
-    elseif haskey(options.dict, :block_types_iter)
+    elseif options[:block_types_iter] != nothing
         block_types_iter = block_to_set_map(options[:block_types_iter])
         overapproximate_fun = (i, x) -> (block_types_iter[i] == HPolygon) ?
                                         overapproximate(x, HPolygon, ε_iter) :
@@ -132,7 +134,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
 
     # overapproximate function for inputs
     lazy_inputs_interval = options[:lazy_inputs_interval]
-    if lazy_inputs_interval == nothing
+    if lazy_inputs_interval == lazy_inputs_interval_always
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
         # first set in a series
@@ -219,7 +221,7 @@ end
 
 function reach(system::IVP{<:AbstractContinuousSystem},
                invariant::Union{LazySet, Nothing},
-               options::Options
+               options::TwoLayerOptions
               )::Vector{<:ReachSet}
     # ===================
     # Time discretization

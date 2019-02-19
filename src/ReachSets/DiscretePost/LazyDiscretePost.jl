@@ -71,9 +71,6 @@ function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     # solver-specific options (adds default values for unspecified options)
     𝑂out = validate_solver_options_and_add_default_values!(𝑂)
 
-    # Input -> Output variable mapping
-    𝑂out[:inout_map] = inout_map_reach(𝑂out[:partition], 𝑂out[:blocks], 𝑂out[:n])
-
     return 𝑂out
 end
 
