@@ -13,7 +13,8 @@ Supported options:
 - `:verbosity`     -- controls logging output
 - `:logfile`       -- name of a log file
 - `:mode`          -- main analysis mode
-- `:property`      -- a safety property
+- `:property`      -- `nothing`, a safety property, or a mapping from a location
+                      to a safety property
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:ε_proj`        -- error bound for the approximation of the states during
                       projection
@@ -91,7 +92,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
                 error("No property has been defined.")
             end
         elseif key == :property
-            expected_type = Union{Property, Nothing}
+            expected_type = Union{Nothing, Property, Dict{Int, Property}}
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
