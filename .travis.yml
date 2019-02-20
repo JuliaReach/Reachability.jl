@@ -25,7 +25,8 @@ script:
              Pkg.build("Reachability");
              Pkg.test("Reachability"; coverage=true)'
 after_success:
-  - julia -e 'using Pkg; Pkg.add("Documenter")'
+  - julia -e 'using Pkg; Pkg.add("Documenter");
+              Pkg.pin(PackageSpec(name="Documenter", version="0.19.7"));'
   - julia -e 'using Pkg; cd(Pkg.dir("Reachability")); include(joinpath("docs", "make.jl"))'
   # code coverage (for both Coveralls and Codecov)
   - julia -e 'using Pkg; Pkg.add("Coverage")'
