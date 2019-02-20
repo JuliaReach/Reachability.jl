@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Library outline",
     "category": "section",
-    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/transformations.md\",\n    \"lib/discretize.md\",\n    \"lib/distributed.md\"\n]\nDepth = 2"
+    "text": "Pages = [\n    \"lib/interface.md\",\n    \"lib/systems.md\",\n    \"lib/algorithms.md\",\n    \"lib/transformations.md\",\n    \"lib/discretize.md\",\n    \"lib/distributed.md\"\n]\nDepth = 2"
 },
 
 {
@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "User interface",
     "title": "Reachability.solve",
     "category": "function",
-    "text": "solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)\n\nSolves a reachability problem s.t. the given options. If some options are not defined, we may fall back to default values.\n\nInput\n\nsystem    – a (discrete or continuoues) system specification\noptions   – algorithm options for solving the problem\nalgorithm – (optional, default: dispatched on the system\'s type) the                reachability algorithm for the computation\n\nOutput\n\nA solution object whose content depends on the input options.\n\nNotes\n\nTo see all available input options, see keys(Reachability.available_keywords.dict).\n\n\n\nsolve(system::InitialValueProblem{<:HybridSystem},\n      options::Options)::AbstractSolution\n\nInterface to reachability algorithms for a hybrid system PWA dynamics.\n\nInput\n\nsystem  – hybrid system\noptions – options for solving the problem\n\n\n\n"
+    "text": "solve(system, options)  or  solve(system, :key1 => val1, [...], keyK => valK)\n\nSolves a reachability problem s.t. the given options. If some options are not defined, we may fall back to default values.\n\nInput\n\nsystem    – a (discrete or continuoues) system specification\noptions   – algorithm options for solving the problem\nalgorithm – (optional, default: dispatched on the system\'s type) the                reachability algorithm for the computation\n\nOutput\n\nA solution object whose content depends on the input options.\n\nNotes\n\nTo see all available input options, see keys(Reachability.available_keywords.dict).\n\n\n\n\n\nsolve(system::InitialValueProblem{<:HybridSystem},\n      options::Options)::AbstractSolution\n\nInterface to reachability algorithms for a hybrid system PWA dynamics.\n\nInput\n\nsystem  – hybrid system\noptions – options for solving the problem\n\n\n\n\n\n"
 },
 
 {
@@ -153,6 +153,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "lib/algorithms.html#",
+    "page": "Algorithms",
+    "title": "Algorithms",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "lib/algorithms.html#Available-Algorithms-1",
+    "page": "Algorithms",
+    "title": "Available Algorithms",
+    "category": "section",
+    "text": "This section of the manual describes the algorithms that are available in this package.Pages = [\"interface.md\"]CurrentModule = Reachability.ReachSets"
+},
+
+{
+    "location": "lib/algorithms.html#Continuous-time-reachability-1",
+    "page": "Algorithms",
+    "title": "Continuous-time reachability",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "lib/algorithms.html#Reachability.ReachSets.BFFPSV18",
+    "page": "Algorithms",
+    "title": "Reachability.ReachSets.BFFPSV18",
+    "category": "type",
+    "text": "BFFPSV18 <: ContinuousPost\n\nImplementation of the reachability algorithm for purely continuous linear time-invariant systems using block decompositons by S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling and F. Viry [1].\n\nFields\n\noptions – an Options structure that holds the algorithm-specific options\n\nNotes\n\nThe following options are available:\n\noption :approx_model of type String has default value \'forward\'; model for bloating/continuous time analysis\noption :algorithm of type String has default value \'explicit\'; algorithm backend\noption :δ of type Float64 with alias :sampling_time has default value \'0.01\'; time step\noption :vars of type AbstractArray{Int64,1} has default value \'Int64[]\'; variables of interest; default: all variables\noption :partition of type AbstractArray{#s143,1} where #s143<:AbstractArray{Int64,1} has default value \'Array{Int64,1}[[]]\'; block partition; a block is represented by a vector containing its indices\noption :lazy_sih of type Bool has default value \'false\'; use a lazy symmetric interval hull in discretization?\noption :lazy_expm of type Bool has default value \'false\'; use a lazy matrix exponential all the time?\noption :lazy_expm_discretize of type Bool has default value \'false\'; use a lazy matrix exponential in discretization?\noption :pade_expm of type Bool has default value \'false\'; use the Padé approximant method (instead of Julia\'s  built-in \'exp\') to compute the lazy matrix exponential in discretization?\noption :assume_sparse of type Bool has default value \'false\'; use an analysis for sparse discretized matrices?\noption :lazy_X0 of type Bool has default value \'false\'; keep the discretized and decomposed initial states a lazy set?\noption :lazy_inputs_interval of type Union{Int64, Function} has default value \'getfield(Reachability.ReachSets, Symbol(\"##23#24\"))()\'; length of interval in which the inputs are handled as a lazy set (``-1`` for \'never\'); may generally also be a predicate over indices; the default corresponds to ``-1``\noption :block_types of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; short hand to set \':block_types_init\' and \':block_types_iter\'\noption :block_types_init of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the initial states for each block\noption :block_types_iter of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the states ``X_k``, ``k>0``, for each block\noption :ε of type Float64 has default value \'Inf\'; short hand to set `:ε_init` and `:ε_iter`\noption :ε_init of type Float64 has default value \'Inf\'; error bound for the approximation of the initial states(during decomposition)\noption :ε_iter of type Float64 has default value \'Inf\'; error bound for the approximation of the states ``X_k``, ``k>0``\noption :set_type of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; short hand to set `:set_type_init` and `:set_type_iter`\noption :set_type_init of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the initial states(during decomposition)\noption :set_type_iter of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the states ``X_k``, ``k>0``\noption :template_directions of type Symbol has default value \'nothing\'; short hand to set `template_directions_init` and `template_directions_iter`\noption :template_directions_init of type Symbol has default value \'nothing\'; directions to use for the approximation of the initial states (during decomposition)\noption :template_directions_iter of type Symbol has default value \'nothing\'; directions to use for the approximation of the states ``X_k``, ``k>0``, for each block\noption :assume_homogeneous of type Bool has default value \'false\'; ignore dynamic inputs during the analysis?\noption :eager_checking of type Bool has default value \'true\'; terminate as soon as property violation was detected?\n\n\nAlgorithm\n\nWe refer to [1] for technical details.\n\n[1] Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry. HSCC \'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control (part of CPS Week).\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/algorithms.html#Decomposition-based-approach-1",
+    "page": "Algorithms",
+    "title": "Decomposition-based approach",
+    "category": "section",
+    "text": "BFFPSV18"
+},
+
+{
     "location": "lib/transformations.html#",
     "page": "Transformations",
     "title": "Transformations",
@@ -173,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Transformations",
     "title": "Reachability.Transformations.transform",
     "category": "function",
-    "text": "transform(S; [method])\n\nInterface function that calls the respective transformation function.\n\nInput\n\nS      – discrete or continuous system\nmethod – (optional, default: \'schur\') transformation method name; valid             otions are:\n\'schur\'\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nNotes\n\nThe functions that are called in the background should return a the transformed system components A, X0, and U, and also an inverse transformation matrix M.\n\n\n\n"
+    "text": "transform(S; [method])\n\nInterface function that calls the respective transformation function.\n\nInput\n\nS      – discrete or continuous system\nmethod – (optional, default: \'schur\') transformation method name; valid             otions are:\n\'schur\'\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nNotes\n\nThe functions that are called in the background should return a the transformed system components A, X0, and U, and also an inverse transformation matrix M.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Transformations",
     "title": "Reachability.Transformations.schur_transform",
     "category": "function",
-    "text": "schur_transform(S)\n\nApplies a Schur transformation to a discrete or continuous system.\n\nInput\n\nS – discrete or continuous system\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nAlgorithm\n\nWe use Julia\'s default schurfact function to compute a Schur decomposition of the coefficients matrix A.\n\n\n\n"
+    "text": "schur_transform(S)\n\nApplies a Schur transformation to a discrete or continuous system.\n\nInput\n\nS – discrete or continuous system\n\nOutput\n\nA tuple containing:\n\ntransformed discrete or continuous system\ninverse transformation matrix for reverting the transformation\n\nAlgorithm\n\nWe use Julia\'s default schurfact function to compute a Schur decomposition of the coefficients matrix A.\n\n\n\n\n\n"
 },
 
 {
@@ -221,7 +261,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Discretization",
     "title": "Reachability.ReachSets.discretize",
     "category": "function",
-    "text": "discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])\n\nDiscretize a continuous system of ODEs with nondeterministic inputs.\n\nInput\n\ncont_sys     – continuous system\nδ            – step size\napprox_model – the method to compute the approximation model for the                   discretization, among:\nforward    – use forward-time interpolation\nbackward   – use backward-time interpolation\nfirstorder – use first order approximation of the ODE\nnobloating – do not bloat the initial states                 (use for discrete-time reachability)\npade_expm    – (optional, default = false) if true, use Pade approximant                   method to compute matrix exponentials of sparse matrices;                   otherwise use Julia\'s buil-in expm\nlazy_expm    – (optional, default = false) if true, compute the matrix                   exponential in a lazy way (suitable for very large systems)\nlazy_sih     – (optional, default = true) if true, compute the                   symmetric interval hull in a lazy way (suitable if only a                   few dimensions are of interest)\n\nOutput\n\nA discrete system.\n\nNotes\n\nThis function applies an approximation model to transform a continuous affine system into a discrete affine system. This transformation allows to do dense time reachability, i.e. such that the trajectories of the given continuous system are included in the computed flowpipe of the discretized system. For discrete-time reachability, use approx_model=\"nobloating\".\n\n\n\n"
+    "text": "discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])\n\nDiscretize a continuous system of ODEs with nondeterministic inputs.\n\nInput\n\ncont_sys     – continuous system\nδ            – step size\napprox_model – the method to compute the approximation model for the                   discretization, among:\nforward    – use forward-time interpolation\nbackward   – use backward-time interpolation\nfirstorder – use first order approximation of the ODE\nnobloating – do not bloat the initial states                 (use for discrete-time reachability)\npade_expm    – (optional, default = false) if true, use Pade approximant                   method to compute matrix exponentials of sparse matrices;                   otherwise use Julia\'s buil-in expm\nlazy_expm    – (optional, default = false) if true, compute the matrix                   exponential in a lazy way (suitable for very large systems)\nlazy_sih     – (optional, default = true) if true, compute the                   symmetric interval hull in a lazy way (suitable if only a                   few dimensions are of interest)\n\nOutput\n\nA discrete system.\n\nNotes\n\nThis function applies an approximation model to transform a continuous affine system into a discrete affine system. This transformation allows to do dense time reachability, i.e. such that the trajectories of the given continuous system are included in the computed flowpipe of the discretized system. For discrete-time reachability, use approx_model=\"nobloating\".\n\n\n\n\n\n"
 },
 
 {
@@ -237,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_bloat_firstorder",
     "category": "function",
-    "text": "bloat_firstorder(cont_sys, δ)\n\nCompute bloating factors using first order approximation.\n\nInput\n\ncont_sys – a continuous affine system\nδ        – step size\n\nNotes\n\nIn this algorithm, the infinity norm is used. See also: discr_bloat_interpolation for more accurate (less conservative) bounds.\n\nAlgorithm\n\nThis uses a first order approximation of the ODE, and matrix norm upper bounds, see Le Guernic, C., & Girard, A., 2010, Reachability analysis of linear systems using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.\n\n\n\n"
+    "text": "bloat_firstorder(cont_sys, δ)\n\nCompute bloating factors using first order approximation.\n\nInput\n\ncont_sys – a continuous affine system\nδ        – step size\n\nNotes\n\nIn this algorithm, the infinity norm is used. See also: discr_bloat_interpolation for more accurate (less conservative) bounds.\n\nAlgorithm\n\nThis uses a first order approximation of the ODE, and matrix norm upper bounds, see Le Guernic, C., & Girard, A., 2010, Reachability analysis of linear systems using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.\n\n\n\n\n\n"
 },
 
 {
@@ -245,7 +285,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_bloat_interpolation",
     "category": "function",
-    "text": "discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)\n\nCompute bloating factors using forward or backward interpolation.\n\nInput\n\ncs           – a continuous system\nδ            – step size\napprox_model – choose the approximation model among \"forward\" and                   \"backward\"\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm   –  if true, compute the matrix exponential in a lazy way                   suitable for very large systems)\n\nAlgorithm\n\nSee Frehse et al., CAV\'11, SpaceEx: Scalable Verification of Hybrid Systems, Lemma 3.\n\nNote that in the unlikely case that A is invertible, the result can also be obtained directly, as a function of the inverse of A and e^{At} - I.\n\nThe matrix P is such that: ϕAabs = P[1:n, 1:n], Phi1Aabsdelta = P[1:n, (n+1):2*n], and Phi2Aabs = P[1:n, (2*n+1):3*n].\n\n\n\n"
+    "text": "discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)\n\nCompute bloating factors using forward or backward interpolation.\n\nInput\n\ncs           – a continuous system\nδ            – step size\napprox_model – choose the approximation model among \"forward\" and                   \"backward\"\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm   –  if true, compute the matrix exponential in a lazy way                   suitable for very large systems)\n\nAlgorithm\n\nSee Frehse et al., CAV\'11, SpaceEx: Scalable Verification of Hybrid Systems, Lemma 3.\n\nNote that in the unlikely case that A is invertible, the result can also be obtained directly, as a function of the inverse of A and e^{At} - I.\n\nThe matrix P is such that: ϕAabs = P[1:n, 1:n], Phi1Aabsdelta = P[1:n, (n+1):2*n], and Phi2Aabs = P[1:n, (2*n+1):3*n].\n\n\n\n\n\n"
 },
 
 {
@@ -261,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Discretization",
     "title": "Reachability.ReachSets.discr_no_bloat",
     "category": "function",
-    "text": "discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)\n\nDiscretize a continuous system without bloating of the initial states, suitable for discrete-time reachability.\n\nInput\n\ncont_sys     – a continuous system\nδ            – step size\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm    – if true, compute the matrix exponential in a lazy way                   (suitable for very large systems)\n\nOutput\n\nA discrete system.\n\nAlgorithm\n\nThe transformation implemented here is the following:\n\nA -> Phi := exp(A*delta)\nU -> V := M*U\nX0 -> X0hat := X0\n\nwhere M corresponds to Phi1(A, delta) in Eq. (8) of SpaceEx: Scalable Verification of Hybrid Systems.\n\nIn particular, there is no bloating, i.e. we don\'t bloat the initial states and dont multiply the input by the step size δ, as required for the dense time case.\n\n\n\n"
+    "text": "discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)\n\nDiscretize a continuous system without bloating of the initial states, suitable for discrete-time reachability.\n\nInput\n\ncont_sys     – a continuous system\nδ            – step size\npade_expm    – if true, use Pade approximant method to compute the                   matrix exponential\nlazy_expm    – if true, compute the matrix exponential in a lazy way                   (suitable for very large systems)\n\nOutput\n\nA discrete system.\n\nAlgorithm\n\nThe transformation implemented here is the following:\n\nA -> Phi := exp(A*delta)\nU -> V := M*U\nX0 -> X0hat := X0\n\nwhere M corresponds to Phi1(A, delta) in Eq. (8) of SpaceEx: Scalable Verification of Hybrid Systems.\n\nIn particular, there is no bloating, i.e. we don\'t bloat the initial states and dont multiply the input by the step size δ, as required for the dense time case.\n\n\n\n\n\n"
 },
 
 {
@@ -309,7 +349,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Publications",
     "title": "Publications",
     "category": "section",
-    "text": "Pages = [\"publications.md\"]This page list publications about the JuliaReach ecosystem and its applications."
+    "text": "Pages = [\"publications.md\"]This page lists publications about the JuliaReach ecosystem and its applications."
 },
 
 {
@@ -317,7 +357,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Publications",
     "title": "JuliaReach: a Toolbox for Set-Based Reachability",
     "category": "section",
-    "text": "JuliaReach: a Toolbox for Set-Based Reachability. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. Accepted in Proceedings of HSCC\'19: 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC\'19).In 2019, this conference is part of the Cyber-Physical Systems and Internet-Of-Things Week.Abstract. We present JuliaReach, a toolbox for set-based reachability analysis of dynamical systems. JuliaReach consists of two main packages: Reachability, containing implementations of reachability algorithms for continuous and hybrid systems, and LazySets, a standalone library that implements state-of-the-art algorithms for calculus with convex sets. The library offers both concrete and lazy set representations, where the latter stands for the ability to delay set computations until they are needed. The choice of the programming language Julia and the accompanying documentation of our toolbox allow researchers to easily translate set-based algorithms from mathematics to software in a platform-independent way, while achieving runtime performance that is comparable to statically compiled languages. Combining lazy operations in high dimensions and explicit computations in low dimensions, JuliaReach can be applied to solve complex, large-scale problems.The repeatability evaluation package for this conference tool paper is available at HSCC2019_RE."
+    "text": "JuliaReach: a Toolbox for Set-Based Reachability. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. Accepted in Proceedings of HSCC\'19: 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC\'19). Get pdf from arXiv: 1901.10736.In 2019, this conference is part of the Cyber-Physical Systems and Internet-Of-Things Week.Abstract. We present JuliaReach, a toolbox for set-based reachability analysis of dynamical systems. JuliaReach consists of two main packages: Reachability, containing implementations of reachability algorithms for continuous and hybrid systems, and LazySets, a standalone library that implements state-of-the-art algorithms for calculus with convex sets. The library offers both concrete and lazy set representations, where the latter stands for the ability to delay set computations until they are needed. The choice of the programming language Julia and the accompanying documentation of our toolbox allow researchers to easily translate set-based algorithms from mathematics to software in a platform-independent way, while achieving runtime performance that is comparable to statically compiled languages. Combining lazy operations in high dimensions and explicit computations in low dimensions, JuliaReach can be applied to solve complex, large-scale problems.The repeatability evaluation package for this conference tool paper is available at HSCC2019_RE."
 },
 
 {
@@ -329,11 +369,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "publications.html#Award-to-JuliaReach-1",
+    "page": "Publications",
+    "title": "Award to JuliaReach",
+    "category": "section",
+    "text": "The Best Friendly Competition Result of the 2nd International Competition on Verifying Continuous and Hybrid Systems (ARCH) was given to JuliaReach for the results obtained in ARCH2018_RE for the affine category; see the announcement here:It is our pleasure to announce that Marcelo Forets and Christian Schilling receive the ARCH 2018 Best Friendly Competition Result. They develop the tool JuliaReach, which showed significant improvements for computing reachable sets of linear continuous systems. The award comes with a 500 Euro prize from Bosch. Goran Frehse received the prize from Thomas Heinz of Bosch on their behalf."
+},
+
+{
     "location": "publications.html#Reach-Set-Approximation-through-Decomposition-1",
     "page": "Publications",
     "title": "Reach Set Approximation through Decomposition",
     "category": "section",
-    "text": "Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Frédéric Viry, Andreas Podelski and Christian Schilling (2018) HSCC\'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control: 41–50. See the ACM Digital Library link, or the arXiv: 1801.09526. Packages: LazySets.jl and Reachability.jl. Abstract. Approximating the set of reachable states of a dynamical system is an algorithmic yet mathematically rigorous way to reason about its safety. Although progress has been made in the development of efficient algorithms for affine dynamical systems, available algorithms still lack scalability to ensure their wide adoption in the industrial setting. While modern linear algebra packages are efficient for matrices with tens of thousands of dimensions, set-based image computations are limited to a few hundred. We propose to decompose reach set computations such that set operations are performed in low dimensions, while matrix operations like exponentiation are carried out in the full dimension. Our method is applicable both in dense- and discrete-time settings. For a set of standard benchmarks, it shows a speed-up of up to two orders of magnitude compared to the respective state-of-the art tools, with only modest losses in accuracy. For the dense-time case, we show an experiment with more than 10.000 variables, roughly two orders of magnitude higher than possible with previous approaches.For the evaluation of the SLICOT benchmarks see ReachabilityBenchmarks."
+    "text": "Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Frédéric Viry, Andreas Podelski and Christian Schilling (2018) HSCC\'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control: 41–50. See the ACM Digital Library link, or the arXiv: 1801.09526. Packages: LazySets.jl and Reachability.jl. Abstract. Approximating the set of reachable states of a dynamical system is an algorithmic yet mathematically rigorous way to reason about its safety. Although progress has been made in the development of efficient algorithms for affine dynamical systems, available algorithms still lack scalability to ensure their wide adoption in the industrial setting. While modern linear algebra packages are efficient for matrices with tens of thousands of dimensions, set-based image computations are limited to a few hundred. We propose to decompose reach set computations such that set operations are performed in low dimensions, while matrix operations like exponentiation are carried out in the full dimension. Our method is applicable both in dense- and discrete-time settings. For a set of standard benchmarks, it shows a speed-up of up to two orders of magnitude compared to the respective state-of-the art tools, with only modest losses in accuracy. For the dense-time case, we show an experiment with more than 10.000 variables, roughly two orders of magnitude higher than possible with previous approaches.For the models with the SLICOT benchmarks and the repeatability evaluation see ReachabilityBenchmarks."
 },
 
 {
@@ -349,7 +397,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Citations",
     "title": "Citations",
     "category": "section",
-    "text": "Pages = [\"citations.md\"]This page list publications citing packages or papers from the JuliaReach ecosystem."
+    "text": "Pages = [\"citations.md\"]This page lists publications citing packages or papers from the JuliaReach ecosystem."
 },
 
 {
