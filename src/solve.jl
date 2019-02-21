@@ -139,6 +139,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
     inout_map = nothing
+    property = options[:mode] == "check" ? options[:property] : nothing
 
     # waiting_list entries:
     # - (discrete) location
@@ -179,11 +180,24 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
+        if property != nothing
+            # TODO temporary hack, to be resolved in #447
+            options_copy[:mode] = "reach"
+        end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
+        if property != nothing
+            # get the property for the current location
+            property_loc = property isa Dict ? property[loc] : property
+            for (i, reach_set) in enumerate(reach_tube.Xk)
+                if !check_property(reach_set.X, property_loc)
+                    return CheckSolution(false, i, options)
+                end
+            end
+        end
 
         # add the very first initial approximation
         if passed_list != nothing &&
@@ -211,6 +225,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
              jumps, options)
+    end
+    if options[:mode] == "check"
+        return CheckSolution(true, -1, options)
     end
 
     # Projection
