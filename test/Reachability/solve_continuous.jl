@@ -16,16 +16,19 @@ X0 = BallInf(ones(4), 0.1)
 
 # default options (computes all variables)
 s = solve(InitialValueProblem(LinearContinuousSystem(A), X0), :T=>0.1)
+@test dim(s.Xk[1].X) == 4
 
 # two variables and custom partition
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
+@test dim(s.Xk[1].X) == 4
 
 # the default partition is used.
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3]))
+@test dim(s.Xk[1].X) == 2
 
 # ===============================
 # Test projection
