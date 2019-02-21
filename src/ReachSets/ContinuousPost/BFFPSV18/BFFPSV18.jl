@@ -295,7 +295,7 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
     𝑂validated = validate_solver_options_and_add_default_values!(𝑂copy)
 
     # :vars option; default: all variables
-    if haskey_specified(𝒫.options, :partition)
+    if haskey_specified(𝒫.options, :vars)
         𝑂validated[:vars] = 𝒫.options[:vars]
     else
         𝑂validated[:vars] = 1:𝑂validated[:n]
