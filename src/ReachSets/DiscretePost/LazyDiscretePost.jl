@@ -29,6 +29,13 @@ struct LazyDiscretePost <: DiscretePost
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:combine_invariant_guard], 𝑂copy[:lazy_R⋂I])
+
+        if 𝑂copy[:combine_invariant_guard] && !𝑂copy[:lazy_R⋂I]
+            throw(ArgumentError("option :combine_invariant_guard only makes " *
+                                "sense in combination with option :lazy_R⋂I"))
+        end
+
         return new(𝑂copy)
     end
 end
@@ -127,10 +134,9 @@ function post(𝒫::LazyDiscretePost,
         constrained_map = resetmap(HS, trans)
         guard = stateset(constrained_map)
 
-        if inv_isa_Hrep
-            guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
-        end
-        combine_constraints = inv_isa_Hrep && guard_isa_Hrep && 𝒫.options[:lazy_R⋂I]
+        guard_isa_Hrep, guard_isa_H_polytope = get_Hrep_info(guard)
+        combine_constraints = 𝒫.options[:combine_invariant_guard] &&
+                              inv_isa_Hrep && guard_isa_Hrep
         if combine_constraints # combine the constraints of invariant and guard
             T = inv_isa_H_polytope || guard_isa_H_polytope ? HPolytope : HPolyhedron
             # TODO: remove redundant constraints => use intersection(..)
@@ -185,11 +191,11 @@ function get_Hrep_info(set::LazySet)
     return (false, false)
 end
 
-function get_Hrep_info(set::HPolytope)
+function get_Hrep_info(set::AbstractPolytope)
     return (true, true)
 end
 
-function get_Hrep_info(set::HPolyhedron)
+function get_Hrep_info(set::AbstractPolyhedron)
     return (true, false)
 end
 
