@@ -5,7 +5,7 @@ Type that represents a disjunction of linear constraints.
 
 ### Fields
 
-- ``atoms`` -- a vector of linear constraints
+- `atoms` -- a vector of linear constraints
 """
 struct Clause{N<:Real}
     atoms::AbstractVector{LinearConstraint{N}}
@@ -23,7 +23,7 @@ disjunctions of linear constraints.
 
 ### Fields
 
-- ``clauses`` -- a vector of `Clause` objects
+- `clauses` -- a vector of `Clause` objects
 """
 struct LinearConstraintProperty{N<:Real} <: Property
     clauses::AbstractVector{Clause{N}}
@@ -39,21 +39,20 @@ LinearConstraintProperty(linComb::AbstractVector{N}, bound::N) where {N<:Real} =
     LinearConstraintProperty{N}([Clause(LinearConstraint{N}(linComb, bound))])
 
 """
-    check_property(set::LazySet, prop::LinearConstraintProperty)::Bool
+    check(prop::LinearConstraintProperty, set::LazySet)::Bool
 
 Checks whether a convex set satisfies a property of linear constraints.
 
 ### Input
 
-- ``set``  -- convex set
-- ``prop`` -- property of linear constraints
+- `prop` -- property of linear constraints
+- `set`  -- convex set
 
 ### Output
 
 `true` iff the convex set satisfies the property of linear constraints.
 """
-@inline function check_property(set::LazySet, prop::LinearConstraintProperty
-                               )::Bool
+@inline function check(prop::LinearConstraintProperty, set::LazySet)::Bool
     @assert (length(prop.clauses) > 0) "empty properties are not allowed"
     for clause in prop.clauses
         @assert (length(clause.atoms) > 0) "empty clauses are not allowed"

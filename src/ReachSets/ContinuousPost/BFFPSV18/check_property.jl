@@ -1,5 +1,4 @@
 using LazySets: CacheMinkowskiSum
-import ..Properties: check_property
 
 """
     check_property(S, property, options)
@@ -78,7 +77,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         else
             Xhat0_mod = CartesianProductArray(Xhat0)
         end
-        return check_property(Xhat0_mod, property) ? 0 : 1
+        return check(property, Xhat0_mod) ? 0 : 1
     end
     push!(args, Xhat0)
 

@@ -11,7 +11,7 @@ using LazySets
 # ==============================
 include("Property.jl")
 export Property,
-       check_property
+       check
 
 include("LinearConstraintProperty.jl")
 export LinearConstraintProperty,

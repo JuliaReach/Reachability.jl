@@ -1,14 +1,14 @@
 """
     SubsetProperty{N<:Real} <: Property
 
-Type that represents a safety property characterized with a set of safe states.
-A safety property is satisfied by a given set of states if the set of states is
-fully contained in the set of safe states.
+Type that represents a safety property characterized by a set of safe states.
+The property is satisfied by a given set of states ``X`` if ``X`` is fully
+contained in the set of safe states.
 
 ### Fields
 
-- ``safe`` -- convex set representing the safe states
-- ``witness`` -- witness point (empty vector if not set)
+- `safe`    -- convex set representing the safe states
+- `witness` -- witness point (empty vector if not set)
 """
 mutable struct SubsetProperty{N<:Real} <: Property
     safe::LazySet
@@ -18,28 +18,27 @@ mutable struct SubsetProperty{N<:Real} <: Property
 end
 
 # type-less convenience constructor
-SubsetProperty(safe::LazySet{N}) where {N} = SubsetProperty{N}(safe)
+SubsetProperty(safe::LazySet{N}) where {N<:Real} = SubsetProperty{N}(safe)
 
 """
-    check_property(set::LazySet, prop::SubsetProperty)::Bool
+    check(𝑃::SubsetProperty, X::LazySet)::Bool
 
-Checks whether a convex set satisfies a safety property.
+Checks whether a convex set is contained in the set of safe states.
 
 ### Input
 
-- ``set``  -- convex set
-- ``prop`` -- safety property with safe states
+- `𝑃` -- safety property with safe states
+- `X` -- convex set
 
 ### Output
 
-`true` iff the safety property is satisfied for the given set of states.
-This is the case iff the set of states is a subset of the safe states.
+`true` iff the given set of states is a subset of the set of safe states.
 """
-@inline function check_property(set::LazySet, prop::SubsetProperty)::Bool
-    is_subset, witness = ⊆(set, prop.safe, true)
+@inline function check(𝑃::SubsetProperty, X::LazySet)::Bool
+    is_subset, witness = ⊆(X, 𝑃.safe, true)
     if !is_subset
         # store violation witness
-        prop.witness = witness
+        𝑃.witness = witness
     end
     return is_subset
 end
