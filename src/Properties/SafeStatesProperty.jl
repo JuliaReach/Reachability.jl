@@ -30,24 +30,25 @@ end
 SafeStatesProperty(safe::LazySet{N}) where {N<:Real} = SafeStatesProperty{N}(safe)
 
 """
-    check(𝑃::SafeStatesProperty, X::LazySet)::Bool
+    check(𝑃::SafeStatesProperty, X::LazySet; witness::Bool=false)
 
 Checks whether a convex set is contained in the set of safe states.
 
 ### Input
 
-- `𝑃` -- safety property with safe states
-- `X` -- convex set
+- `𝑃`       -- safety property with safe states
+- `X`       -- convex set
+- `witness` -- (optional, default: `false`) flag for returning a counterexample
+               if the property is violated
 
 ### Output
 
-`true` iff the given set of states is a subset of the set of safe states.
+Let ``Y`` be the safe states represented by 𝑃.
+* If `witness` option is deactivated: `true` iff ``X ⊆ Y``
+* If `witness` option is activated:
+  * `(true, [])` iff ``X ⊆ Y``
+  * `(false, v)` iff ``X ⊈ Y`` and ``v ∈ X \\setminus Y``
 """
-@inline function check(𝑃::SafeStatesProperty, X::LazySet)::Bool
-    is_subset, witness = ⊆(X, 𝑃.safe, true)
-    if !is_subset
-        # store violation witness
-        𝑃.witness = witness
-    end
-    return is_subset
+@inline function check(𝑃::SafeStatesProperty, X::LazySet; witness::Bool=false)
+    return ⊆(X, 𝑃.safe, witness)
 end

@@ -21,9 +21,9 @@ Property
 
 ```@docs
 Conjunction
-check(::Conjunction, ::LazySet)
+check(::Conjunction, ::LazySet{N}) where {N<:Real}
 Disjunction
-check(::Disjunction, ::LazySet)
+check(::Disjunction, ::LazySet{N}) where {N<:Real}
 ```
 
 ### Specific properties

@@ -31,25 +31,25 @@ BadStatesProperty(bad::LazySet{N}) where {N<:Real} =
     BadStatesProperty{N}(bad)
 
 """
-    check(𝑃::BadStatesProperty, X::LazySet)::Bool
+    check(𝑃::BadStatesProperty, X::LazySet; witness::Bool=false)
 
 Checks whether a convex set is disjoint from the set of bad states.
 
 ### Input
 
-- `𝑃` -- safety property with bad states
-- `X` -- convex set
+- `𝑃`       -- safety property with bad states
+- `X`       -- convex set
+- `witness` -- (optional, default: `false`) flag for returning a counterexample
+               if the property is violated
 
 ### Output
 
-`true` iff the given set of states does not intersect with the set of bad
-states.
+Let ``Y`` be the bad states represented by 𝑃.
+* If `witness` option is deactivated: `true` iff ``X ∩ Y = ∅``
+* If `witness` option is activated:
+  * `(true, [])` iff ``X ∩ Y = ∅``
+  * `(false, v)` iff ``X ∩ Y ≠ ∅`` and ``v ∈ X ∩ Y``
 """
-@inline function check(𝑃::BadStatesProperty, X::LazySet)::Bool
-    empty_intersection, witness = is_intersection_empty(X, 𝑃.bad, true)
-    if !empty_intersection
-        # store violation witness
-        𝑃.witness = witness
-    end
-    return empty_intersection
+@inline function check(𝑃::BadStatesProperty, X::LazySet; witness::Bool=false)
+    return isdisjoint(X, 𝑃.bad, witness)
 end

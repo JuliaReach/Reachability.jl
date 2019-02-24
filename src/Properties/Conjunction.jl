@@ -21,24 +21,36 @@ struct Conjunction <: Property
 end
 
 """
-    check(𝑃::Conjunction, X::LazySet)::Bool
+    check(𝑃::Conjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}
 
 Check whether a convex set satisfies a conjunction of properties.
 
 ### Input
 
-- `𝑃` -- conjunction of properties
-- `X` -- convex set
+- `𝑃`       -- conjunction of properties
+- `X`       -- convex set
+- `witness` -- (optional, default: `false`) flag for returning a counterexample
+               if the property is violated
 
 ### Output
 
-`true` iff `X` satisfies the conjunction of properties `𝑃`.
+* If `witness` option is deactivated: `true` iff `X` satisfies the property `𝑃`
+* If `witness` option is activated:
+  * `(true, [])` iff `X` satisfies the property `𝑃`
+  * `(false, v)` iff `X` does not satisfy the property `𝑃` with witness `v`
+
+### Notes
+
+By convention, the empty conjunction is equivalent to `true` and hence is
+satisfied by any set.
 """
-function check(𝑃::Conjunction, X::LazySet)::Bool
+function check(𝑃::Conjunction, X::LazySet{N};
+               witness::Bool=false) where {N<:Real}
     for conjunct in 𝑃.conjuncts
-        if !check(conjunct, X)
-            return false
+        result = check(conjunct, X; witness=witness)
+        if (witness && !result[1]) || !result
+            return result
         end
     end
-    return true
+    return witness ? (true, N[]) : true
 end
