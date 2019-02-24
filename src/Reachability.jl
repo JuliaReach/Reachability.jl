@@ -16,11 +16,13 @@ include("Utils/Utils.jl")
 include("Options/dictionary.jl")
 include("Options/validation.jl")
 include("Options/default_options.jl")
+include("Properties/Properties.jl")
 include("ReachSets/ReachSets.jl")
 include("Transformations/Transformations.jl")
 
 @reexport using Reachability.Utils,
                 Reachability.ReachSets,
+                Reachability.Properties,
                 Reachability.Transformations
 
 export project,

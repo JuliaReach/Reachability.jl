@@ -1,4 +1,5 @@
-import LazySets.CacheMinkowskiSum
+using LazySets: CacheMinkowskiSum
+import ..Properties: check_property
 
 """
     check_property(S, property, options)
