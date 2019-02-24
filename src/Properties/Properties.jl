@@ -13,6 +13,11 @@ include("Property.jl")
 export Property,
        check
 
+include("Conjunction.jl")
+include("Disjunction.jl")
+export Conjunction,
+       Disjunction
+
 include("LinearConstraintProperty.jl")
 export LinearConstraintProperty,
        Clause
