@@ -1,5 +1,5 @@
 """
-    SubsetProperty{N<:Real} <: Property
+    SafeStatesProperty{N<:Real} <: Property
 
 Type that represents a safety property characterized by a set of safe states.
 The property is satisfied by a given set of states ``X`` if ``X`` is fully
@@ -19,18 +19,18 @@ property characterized by a set of safe states 𝑃:
     X \\models 𝑃 \\iff X ⊆ 𝑃.\\texttt{safe}
 ```
 """
-mutable struct SubsetProperty{N<:Real} <: Property
+mutable struct SafeStatesProperty{N<:Real} <: Property
     safe::LazySet
     witness::Vector{N}
 
-    SubsetProperty{N}(safe::LazySet) where {N<:Real} = new(safe, N[])
+    SafeStatesProperty{N}(safe::LazySet) where {N<:Real} = new(safe, N[])
 end
 
 # type-less convenience constructor
-SubsetProperty(safe::LazySet{N}) where {N<:Real} = SubsetProperty{N}(safe)
+SafeStatesProperty(safe::LazySet{N}) where {N<:Real} = SafeStatesProperty{N}(safe)
 
 """
-    check(𝑃::SubsetProperty, X::LazySet)::Bool
+    check(𝑃::SafeStatesProperty, X::LazySet)::Bool
 
 Checks whether a convex set is contained in the set of safe states.
 
@@ -43,7 +43,7 @@ Checks whether a convex set is contained in the set of safe states.
 
 `true` iff the given set of states is a subset of the set of safe states.
 """
-@inline function check(𝑃::SubsetProperty, X::LazySet)::Bool
+@inline function check(𝑃::SafeStatesProperty, X::LazySet)::Bool
     is_subset, witness = ⊆(X, 𝑃.safe, true)
     if !is_subset
         # store violation witness

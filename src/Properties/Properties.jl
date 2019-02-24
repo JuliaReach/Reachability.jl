@@ -18,10 +18,10 @@ include("Disjunction.jl")
 export Conjunction,
        Disjunction
 
-include("IntersectionProperty.jl")
-export IntersectionProperty
+include("BadStatesProperty.jl")
+export BadStatesProperty
 
-include("SubsetProperty.jl")
-export SubsetProperty
+include("SafeStatesProperty.jl")
+export SafeStatesProperty
 
 end # module

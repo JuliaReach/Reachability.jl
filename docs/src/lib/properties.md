@@ -30,8 +30,8 @@ check(::Disjunction, ::LazySet)
 
 
 ```@docs
-SubsetProperty
-check(::SubsetProperty, ::LazySet)
-IntersectionProperty
-check(::IntersectionProperty, ::LazySet)
+SafeStatesProperty
+check(::SafeStatesProperty, ::LazySet)
+BadStatesProperty
+check(::BadStatesProperty, ::LazySet)
 ```

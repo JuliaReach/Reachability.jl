@@ -1,5 +1,5 @@
 """
-    IntersectionProperty{N<:Real} <: Property
+    BadStatesProperty{N<:Real} <: Property
 
 Type that represents a safety property characterized by a set of bad states.
 The property is satisfied by a given set of states if the intersection with the
@@ -19,19 +19,19 @@ property characterized by a set of bad states 𝑃:
     X \\models 𝑃 \\iff X ∩ 𝑃.\\texttt{bad} = ∅
 ```
 """
-mutable struct IntersectionProperty{N<:Real} <: Property
+mutable struct BadStatesProperty{N<:Real} <: Property
     bad::LazySet
     witness::Vector{N}
 
-    IntersectionProperty{N}(bad::LazySet) where {N<:Real} = new(bad, N[])
+    BadStatesProperty{N}(bad::LazySet) where {N<:Real} = new(bad, N[])
 end
 
 # type-less convenience constructor
-IntersectionProperty(bad::LazySet{N}) where {N<:Real} =
-    IntersectionProperty{N}(bad)
+BadStatesProperty(bad::LazySet{N}) where {N<:Real} =
+    BadStatesProperty{N}(bad)
 
 """
-    check(𝑃::IntersectionProperty, X::LazySet)::Bool
+    check(𝑃::BadStatesProperty, X::LazySet)::Bool
 
 Checks whether a convex set is disjoint from the set of bad states.
 
@@ -45,7 +45,7 @@ Checks whether a convex set is disjoint from the set of bad states.
 `true` iff the given set of states does not intersect with the set of bad
 states.
 """
-@inline function check(𝑃::IntersectionProperty, X::LazySet)::Bool
+@inline function check(𝑃::BadStatesProperty, X::LazySet)::Bool
     empty_intersection, witness = is_intersection_empty(X, 𝑃.bad, true)
     if !empty_intersection
         # store violation witness

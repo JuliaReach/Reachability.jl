@@ -54,16 +54,16 @@ function inout_map_property_helper(𝑃::Disjunction, M::AbstractMatrix)
     return Disjunction(new_disjuncts)
 end
 
-function inout_map_property_helper(𝑃::IntersectionProperty, M::AbstractMatrix)
+function inout_map_property_helper(𝑃::BadStatesProperty, M::AbstractMatrix)
     @assert dim(𝑃.bad) == size(M, 2) "the property has dimension " *
         "$(dim(𝑃.bad)) but should have dimension $(size(M, 2))"
-    return IntersectionProperty(M * 𝑃.bad)
+    return BadStatesProperty(M * 𝑃.bad)
 end
 
-function inout_map_property_helper(𝑃::SubsetProperty, M::AbstractMatrix)
+function inout_map_property_helper(𝑃::SafeStatesProperty, M::AbstractMatrix)
     @assert dim(𝑃.safe) == size(M, 2) "the property has dimension " *
         "$(dim(𝑃.safe)) but should have dimension $(size(M, 2))"
-    return SubsetProperty(M * 𝑃.safe)
+    return SafeStatesProperty(M * 𝑃.safe)
 end
 
 """

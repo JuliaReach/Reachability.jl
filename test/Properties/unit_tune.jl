@@ -10,7 +10,7 @@ S = ContinuousSystem(A, X0, U)
 time_horizon = 20.0
 prec = 1e-4
 initial_δ = 0.5
-property = SubsetProperty(LinearConstraint([24., 0., 1, 0], 375.))
+property = SafeStatesProperty(LinearConstraint([24., 0., 1, 0], 375.))
 algorithm(N, δ) =
     solve(S,
           Options(:mode => "check", :plot_vars => [1, 3], :T => time_horizon,
