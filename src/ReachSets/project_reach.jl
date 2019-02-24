@@ -77,7 +77,7 @@ function project_reach(
         RsetsProj = Vector{ReachSet{HPolygon{numeric_type}, numeric_type}}(undef, N)
     else
         set_type = options[:set_type_proj]
-        oa = x -> overapproximate(x, set_type)
+        oa = x -> overapproximate(x, set_type)::set_type
         RsetsProj = Vector{ReachSet{set_type{numeric_type}, numeric_type}}(undef, N)
     end
 
