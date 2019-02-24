@@ -5,7 +5,7 @@ Type that represents a disjunction of properties.
 
 ### Fields
 
-- `disjuncts` -- vector of properties (elements are reorder by this type)
+- `disjuncts` -- vector of properties (elements are reordered by this type)
 - `reorder`   -- flag to indicate whether shuffling is allowed
 
 ### Notes
