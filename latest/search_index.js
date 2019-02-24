@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Algorithms",
     "title": "Reachability.ReachSets.BFFPSV18",
     "category": "type",
-    "text": "BFFPSV18 <: ContinuousPost\n\nImplementation of the reachability algorithm for purely continuous linear time-invariant systems using block decompositons by S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling and F. Viry [1].\n\nFields\n\noptions – an Options structure that holds the algorithm-specific options\n\nNotes\n\nThe following options are available:\n\noption :approx_model of type String has default value \'forward\'; model for bloating/continuous time analysis\noption :algorithm of type String has default value \'explicit\'; algorithm backend\noption :δ of type Float64 with alias :sampling_time has default value \'0.01\'; time step\noption :vars of type AbstractArray{Int64,1} has default value \'Int64[]\'; variables of interest; default: all variables\noption :partition of type AbstractArray{#s143,1} where #s143<:AbstractArray{Int64,1} has default value \'Array{Int64,1}[[]]\'; block partition; a block is represented by a vector containing its indices\noption :lazy_sih of type Bool has default value \'false\'; use a lazy symmetric interval hull in discretization?\noption :lazy_expm of type Bool has default value \'false\'; use a lazy matrix exponential all the time?\noption :lazy_expm_discretize of type Bool has default value \'false\'; use a lazy matrix exponential in discretization?\noption :pade_expm of type Bool has default value \'false\'; use the Padé approximant method (instead of Julia\'s  built-in \'exp\') to compute the lazy matrix exponential in discretization?\noption :assume_sparse of type Bool has default value \'false\'; use an analysis for sparse discretized matrices?\noption :lazy_X0 of type Bool has default value \'false\'; keep the discretized and decomposed initial states a lazy set?\noption :lazy_inputs_interval of type Union{Int64, Function} has default value \'getfield(Reachability.ReachSets, Symbol(\"##23#24\"))()\'; length of interval in which the inputs are handled as a lazy set (``-1`` for \'never\'); may generally also be a predicate over indices; the default corresponds to ``-1``\noption :block_types of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; short hand to set \':block_types_init\' and \':block_types_iter\'\noption :block_types_init of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the initial states for each block\noption :block_types_iter of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the states ``X_k``, ``k>0``, for each block\noption :ε of type Float64 has default value \'Inf\'; short hand to set `:ε_init` and `:ε_iter`\noption :ε_init of type Float64 has default value \'Inf\'; error bound for the approximation of the initial states(during decomposition)\noption :ε_iter of type Float64 has default value \'Inf\'; error bound for the approximation of the states ``X_k``, ``k>0``\noption :set_type of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; short hand to set `:set_type_init` and `:set_type_iter`\noption :set_type_init of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the initial states(during decomposition)\noption :set_type_iter of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the states ``X_k``, ``k>0``\noption :template_directions of type Symbol has default value \'nothing\'; short hand to set `template_directions_init` and `template_directions_iter`\noption :template_directions_init of type Symbol has default value \'nothing\'; directions to use for the approximation of the initial states (during decomposition)\noption :template_directions_iter of type Symbol has default value \'nothing\'; directions to use for the approximation of the states ``X_k``, ``k>0``, for each block\noption :assume_homogeneous of type Bool has default value \'false\'; ignore dynamic inputs during the analysis?\noption :eager_checking of type Bool has default value \'true\'; terminate as soon as property violation was detected?\n\n\nAlgorithm\n\nWe refer to [1] for technical details.\n\n[1] Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry. HSCC \'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control (part of CPS Week).\n\n\n\n\n\n"
+    "text": "BFFPSV18 <: ContinuousPost\n\nImplementation of the reachability algorithm for purely continuous linear time-invariant systems using block decompositons by S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling and F. Viry [1].\n\nFields\n\noptions – an Options structure that holds the algorithm-specific options\n\nNotes\n\nThe following options are available:\n\noption :approx_model of type String has default value \'forward\'; model for bloating/continuous time analysis\noption :algorithm of type String has default value \'explicit\'; algorithm backend\noption :δ of type Float64 with alias :sampling_time has default value \'0.01\'; time step\noption :vars of type AbstractArray{Int64,1} has default value \'Int64[]\'; variables of interest; default: all variables\noption :partition of type AbstractArray{#s144,1} where #s144<:AbstractArray{Int64,1} has default value \'Array{Int64,1}[[]]\'; block partition; a block is represented by a vector containing its indices\noption :lazy_sih of type Bool has default value \'false\'; use a lazy symmetric interval hull in discretization?\noption :lazy_expm of type Bool has default value \'false\'; use a lazy matrix exponential all the time?\noption :lazy_expm_discretize of type Bool has default value \'false\'; use a lazy matrix exponential in discretization?\noption :pade_expm of type Bool has default value \'false\'; use the Padé approximant method (instead of Julia\'s  built-in \'exp\') to compute the lazy matrix exponential in discretization?\noption :assume_sparse of type Bool has default value \'false\'; use an analysis for sparse discretized matrices?\noption :lazy_X0 of type Bool has default value \'false\'; keep the discretized and decomposed initial states a lazy set?\noption :lazy_inputs_interval of type Union{Int64, Function} has default value \'getfield(Reachability.ReachSets, Symbol(\"##22#23\"))()\'; length of interval in which the inputs are handled as a lazy set (``-1`` for \'never\'); may generally also be a predicate over indices; the default corresponds to ``-1``\noption :block_types of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; short hand to set \':block_types_init\' and \':block_types_iter\'\noption :block_types_init of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the initial states for each block\noption :block_types_iter of type Union{Nothing, Dict{Type{#s45} where #s45<:LazySet,AbstractArray{#s44,1} where #s44<:AbstractArray{Int64,1}}} has default value \'nothing\'; set type for the approximation of the states ``X_k``, ``k>0``, for each block\noption :ε of type Float64 has default value \'Inf\'; short hand to set `:ε_init` and `:ε_iter`\noption :ε_init of type Float64 has default value \'Inf\'; error bound for the approximation of the initial states(during decomposition)\noption :ε_iter of type Float64 has default value \'Inf\'; error bound for the approximation of the states ``X_k``, ``k>0``\noption :set_type of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; short hand to set `:set_type_init` and `:set_type_iter`\noption :set_type_init of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the initial states(during decomposition)\noption :set_type_iter of type Union{Type{HPolygon}, Type{Hyperrectangle}, Type{Interval}} has default value \'LazySets.Hyperrectangle\'; set type for the approximation of the states ``X_k``, ``k>0``\noption :template_directions of type Symbol has default value \'nothing\'; short hand to set `template_directions_init` and `template_directions_iter`\noption :template_directions_init of type Symbol has default value \'nothing\'; directions to use for the approximation of the initial states (during decomposition)\noption :template_directions_iter of type Symbol has default value \'nothing\'; directions to use for the approximation of the states ``X_k``, ``k>0``, for each block\noption :assume_homogeneous of type Bool has default value \'false\'; ignore dynamic inputs during the analysis?\noption :eager_checking of type Bool has default value \'true\'; terminate as soon as property violation was detected?\n\n\nAlgorithm\n\nWe refer to [1] for technical details.\n\n[1] Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry. HSCC \'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control (part of CPS Week).\n\n\n\n\n\n"
 },
 
 {
@@ -190,6 +190,118 @@ var documenterSearchIndex = {"docs": [
     "title": "Decomposition-based approach",
     "category": "section",
     "text": "BFFPSV18"
+},
+
+{
+    "location": "lib/properties.html#",
+    "page": "Properties",
+    "title": "Properties",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "lib/properties.html#Properties-1",
+    "page": "Properties",
+    "title": "Properties",
+    "category": "section",
+    "text": "This module provides representations of (safety) properties.Pages = [\"properties.md\"]\nDepth = 3CurrentModule = Reachability.Properties"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.Property",
+    "page": "Properties",
+    "title": "Reachability.Properties.Property",
+    "category": "type",
+    "text": "Abstract supertype of properties that can be checked.\n\nEvery concrete subtype should provide the following function:\n\ncheck(𝑃::Property, X::LazySet; witness::Bool=false)\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#General-property-interface-1",
+    "page": "Properties",
+    "title": "General property interface",
+    "category": "section",
+    "text": "Property"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.Conjunction",
+    "page": "Properties",
+    "title": "Reachability.Properties.Conjunction",
+    "category": "type",
+    "text": "Conjunction <: Property\n\nType that represents a conjunction of properties.\n\nFields\n\nconjuncts – vector of properties\n\nNotes\n\nThe following formula characterizes whether a set X satisfies a disjunction 𝑃 = 𝑃_1  𝑃_2    𝑃_m:\n\n    X models 𝑃 iff X models 𝑃_j text for all  1  j  m\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.check-Union{Tuple{N}, Tuple{Conjunction,LazySet{N}}} where N<:Real",
+    "page": "Properties",
+    "title": "Reachability.Properties.check",
+    "category": "method",
+    "text": "check(𝑃::Conjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}\n\nCheck whether a convex set satisfies a conjunction of properties.\n\nInput\n\n𝑃       – conjunction of properties\nX       – convex set\nwitness – (optional, default: false) flag for returning a counterexample              if the property is violated\n\nOutput\n\nIf witness option is deactivated: true iff X satisfies the property 𝑃\nIf witness option is activated:\n(true, []) iff X satisfies the property 𝑃\n(false, v) iff X does not satisfy the property 𝑃 with witness v\n\nNotes\n\nBy convention, the empty conjunction is equivalent to true and hence is satisfied by any set.\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.Disjunction",
+    "page": "Properties",
+    "title": "Reachability.Properties.Disjunction",
+    "category": "type",
+    "text": "Disjunction <: Property\n\nType that represents a disjunction of properties.\n\nFields\n\ndisjuncts – vector of properties (elements are reordered by this type)\nreorder   – flag to indicate whether shuffling is allowed\n\nNotes\n\nThe following formula characterizes whether a set X satisfies a disjunction 𝑃 = 𝑃_1  𝑃_2    𝑃_m:\n\n    X models 𝑃 iff X models 𝑃_j text for some  1  j  m\n\nIf the reorder flag is set, the disjuncts may be reordered after each call to check as a heuristics to make subsequent checks faster.\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.check-Union{Tuple{N}, Tuple{Disjunction,LazySet{N}}} where N<:Real",
+    "page": "Properties",
+    "title": "Reachability.Properties.check",
+    "category": "method",
+    "text": "check(𝑃::Disjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}\n\nCheck whether a convex set satisfies a disjunction of properties.\n\nInput\n\n𝑃       – disjunction of properties\nX       – convex set\nwitness – (optional, default: false) flag for returning a counterexample              if the property is violated\n\nOutput\n\nIf witness option is deactivated: true iff X satisfies the property 𝑃\nIf witness option is activated:\n(true, []) iff X satisfies the property 𝑃\n(false, v) iff X does not satisfy the property 𝑃 with witness v; note that v == N[] if 𝑃 is the empty disjunction\n\nNotes\n\nBy convention, the empty disjunction is equivalent to false and hence is satisfied by no set.\n\nIf the 𝑃.reorder flag is set, the disjuncts may be reordered as a heuristics to make subsequent checks faster. Since we check satisfaction from left to right, we move the disjunct for which satisfaction was established to the front.\n\nTo be consistent with other propertes, the witness option only returns one counterexample, namely for the left-most disjunct in the disjuncts vector. We deactivate witness production for checking the remaining disjuncts.\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Boolean-combination-of-properties-1",
+    "page": "Properties",
+    "title": "Boolean combination of properties",
+    "category": "section",
+    "text": "Conjunction\ncheck(::Conjunction, ::LazySet{N}) where {N<:Real}\nDisjunction\ncheck(::Disjunction, ::LazySet{N}) where {N<:Real}"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.SafeStatesProperty",
+    "page": "Properties",
+    "title": "Reachability.Properties.SafeStatesProperty",
+    "category": "type",
+    "text": "SafeStatesProperty{N<:Real} <: Property\n\nType that represents a safety property characterized by a set of safe states. The property is satisfied by a given set of states X if X is fully contained in the set of safe states.\n\nFields\n\nsafe    – convex set representing the safe states\nwitness – witness point (empty vector if not set)\n\nNotes\n\nThe following formula characterizes whether a set X satisfies a safety property characterized by a set of safe states 𝑃:\n\n    X models 𝑃 iff X  𝑃textttsafe\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.check-Tuple{SafeStatesProperty,LazySet}",
+    "page": "Properties",
+    "title": "Reachability.Properties.check",
+    "category": "method",
+    "text": "check(𝑃::SafeStatesProperty, X::LazySet; witness::Bool=false)\n\nChecks whether a convex set is contained in the set of safe states.\n\nInput\n\n𝑃       – safety property with safe states\nX       – convex set\nwitness – (optional, default: false) flag for returning a counterexample              if the property is violated\n\nOutput\n\nLet Y be the safe states represented by 𝑃.\n\nIf witness option is deactivated: true iff X  Y\nIf witness option is activated:\n(true, []) iff X  Y\n(false, v) iff X  Y and v  X setminus Y\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.BadStatesProperty",
+    "page": "Properties",
+    "title": "Reachability.Properties.BadStatesProperty",
+    "category": "type",
+    "text": "BadStatesProperty{N<:Real} <: Property\n\nType that represents a safety property characterized by a set of bad states. The property is satisfied by a given set of states if the intersection with the set of bad states is empty.\n\nFields\n\nbad     – convex set representing the bad states\nwitness – witness point (empty vector if not set)\n\nNotes\n\nThe following formula characterizes whether a set X satisfies a safety property characterized by a set of bad states 𝑃:\n\n    X models 𝑃 iff X  𝑃textttbad = \n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Reachability.Properties.check-Tuple{BadStatesProperty,LazySet}",
+    "page": "Properties",
+    "title": "Reachability.Properties.check",
+    "category": "method",
+    "text": "check(𝑃::BadStatesProperty, X::LazySet; witness::Bool=false)\n\nChecks whether a convex set is disjoint from the set of bad states.\n\nInput\n\n𝑃       – safety property with bad states\nX       – convex set\nwitness – (optional, default: false) flag for returning a counterexample              if the property is violated\n\nOutput\n\nLet Y be the bad states represented by 𝑃.\n\nIf witness option is deactivated: true iff X  Y = \nIf witness option is activated:\n(true, []) iff X  Y = \n(false, v) iff X  Y   and v  X  Y\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#Specific-properties-1",
+    "page": "Properties",
+    "title": "Specific properties",
+    "category": "section",
+    "text": "SafeStatesProperty\ncheck(::SafeStatesProperty, ::LazySet)\nBadStatesProperty\ncheck(::BadStatesProperty, ::LazySet)"
 },
 
 {
