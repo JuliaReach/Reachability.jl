@@ -18,8 +18,8 @@ The following formula characterizes whether a set ``X`` satisfies a disjunction
 ```
 
 If the `reorder` flag is set, the disjuncts may be reordered after each call to
-[`check(𝑃::Disjunction, X::LazySet)`](@ref) as a heuristics to make subsequent
-checks faster.
+[`check`](@ref check(𝑃::Disjunction, X::LazySet{N}) where {N<:Real}) as a
+heuristics to make subsequent checks faster.
 """
 struct Disjunction <: Property
     disjuncts::Vector{Property}
@@ -30,34 +30,55 @@ end
 Disjunction(disjuncts::Vector{<:Property}) = Disjunction(disjuncts, true)
 
 """
-    check(𝑃::Disjunction, X::LazySet)::Bool
+    check(𝑃::Disjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}
 
 Check whether a convex set satisfies a disjunction of properties.
 
 ### Input
 
-- `𝑃` -- disjunction of properties
-- `X` -- convex set
+- `𝑃`       -- disjunction of properties
+- `X`       -- convex set
+- `witness` -- (optional, default: `false`) flag for returning a counterexample
+               if the property is violated
 
 ### Output
 
-`true` iff `X` satisfies the disjunction of properties `𝑃`.
+* If `witness` option is deactivated: `true` iff `X` satisfies the property `𝑃`
+* If `witness` option is activated:
+  * `(true, [])` iff `X` satisfies the property `𝑃`
+  * `(false, v)` iff `X` does not satisfy the property `𝑃` with witness `v`;
+    note that `v == N[]` if 𝑃 is the empty disjunction
 
 ### Notes
+
+By convention, the empty disjunction is equivalent to `false` and hence is
+satisfied by no set.
 
 If the `𝑃.reorder` flag is set, the disjuncts may be reordered as a heuristics
 to make subsequent checks faster.
 Since we check satisfaction from left to right, we move the disjunct for which
 satisfaction was established to the front.
+
+To be consistent with other propertes, the `witness` option only returns *one*
+counterexample, namely for the left-most disjunct in the `disjuncts` vector.
+We deactivate witness production for checking the remaining disjuncts.
 """
-function check(𝑃::Disjunction, X::LazySet)::Bool
+function check(𝑃::Disjunction, X::LazySet{N};
+               witness::Bool=false) where {N<:Real}
+    v = N[]
+    create_witness = witness
     for (i, conjunct) in enumerate(𝑃.disjuncts)
-        if check(conjunct, X)
+        result = check(conjunct, X; witness=create_witness)
+        if (create_witness && result[1]) || result
             _reorder!(𝑃, i)
-            return true
+            return witness ? (true, N[]) : true
+        elseif create_witness
+            v = result[2]
+            # deactivate witness production for remaining checks
+            create_witness = false
         end
     end
-    return false
+    return witness ? (false, v) : false
 end
 
 function _reorder!(𝑃::Disjunction, i::Int)
