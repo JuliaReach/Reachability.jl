@@ -9,6 +9,15 @@ contained in the set of safe states.
 
 - `safe`    -- convex set representing the safe states
 - `witness` -- witness point (empty vector if not set)
+
+### Notes
+
+The following formula characterizes whether a set ``X`` satisfies a safety
+property characterized by a set of safe states 𝑃:
+
+```math
+    X \\models 𝑃 \\iff X ⊆ 𝑃.\\texttt{safe}
+```
 """
 mutable struct SubsetProperty{N<:Real} <: Property
     safe::LazySet

@@ -9,6 +9,15 @@ set of bad states is empty.
 
 - `bad`     -- convex set representing the bad states
 - `witness` -- witness point (empty vector if not set)
+
+### Notes
+
+The following formula characterizes whether a set ``X`` satisfies a safety
+property characterized by a set of bad states 𝑃:
+
+```math
+    X \\models 𝑃 \\iff X ∩ 𝑃.\\texttt{bad} = ∅
+```
 """
 mutable struct IntersectionProperty{N<:Real} <: Property
     bad::LazySet
@@ -33,7 +42,8 @@ Checks whether a convex set is disjoint from the set of bad states.
 
 ### Output
 
-`true` iff the given set of states does not intersect with the bad states.
+`true` iff the given set of states does not intersect with the set of bad
+states.
 """
 @inline function check(𝑃::IntersectionProperty, X::LazySet)::Bool
     empty_intersection, witness = is_intersection_empty(X, 𝑃.bad, true)
