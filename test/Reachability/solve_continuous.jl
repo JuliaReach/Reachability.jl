@@ -1,9 +1,6 @@
 # ===============================
 # Test minimal (default) options
 # ===============================
-using Reachability, MathematicalSystems
-using Reachability.ReachSets: BFFPSV18
-using LinearAlgebra, SparseArrays
 
 # linear ODE: x' = Ax
 A = [ 0.0509836  0.168159  0.95246   0.33644
