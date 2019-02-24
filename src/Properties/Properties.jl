@@ -18,10 +18,6 @@ include("Disjunction.jl")
 export Conjunction,
        Disjunction
 
-include("LinearConstraintProperty.jl")
-export LinearConstraintProperty,
-       Clause
-
 include("IntersectionProperty.jl")
 export IntersectionProperty
 

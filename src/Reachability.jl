@@ -26,9 +26,6 @@ include("Transformations/Transformations.jl")
                 Reachability.Transformations
 
 export project,
-       LinearConstraintProperty, Clause,
-       IntersectionProperty,
-       SubsetProperty,
        Transformations
 
 include("solve.jl")
