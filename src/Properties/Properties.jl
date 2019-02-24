@@ -11,16 +11,17 @@ using LazySets
 # ==============================
 include("Property.jl")
 export Property,
-       check_property
+       check
 
-include("LinearConstraintProperty.jl")
-export LinearConstraintProperty,
-       Clause
+include("Conjunction.jl")
+include("Disjunction.jl")
+export Conjunction,
+       Disjunction
 
-include("IntersectionProperty.jl")
-export IntersectionProperty
+include("BadStatesProperty.jl")
+export BadStatesProperty
 
-include("SubsetProperty.jl")
-export SubsetProperty
+include("SafeStatesProperty.jl")
+export SafeStatesProperty
 
 end # module

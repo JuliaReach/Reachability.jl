@@ -47,14 +47,14 @@ A = [ 0.0509836  0.168159  0.95246   0.33644
 # check that x1 + x2 <= 2 doesn't hold
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1, :mode=>"check",
-          :property=>LinearConstraintProperty([1., 1., 0., 0.], 2.)),
+          :property=>SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 2.))),
           op=BFFPSV18(:vars=>[1,2,3], :partition=>[1:2, 3:4]))
 @test s.violation == 1
 
 # check that x1 - x2 <= 2 holds
 s = solve(ContinuousSystem(A, X0),
           Options(:T=>0.1, :mode=>"check",
-          :property=>LinearConstraintProperty([1., -1., 0., 0.], 2.)),
+          :property=>SafeStatesProperty(LinearConstraint([1., -1., 0., 0.], 2.))),
           op=BFFPSV18(:vars=>[1,2,3], :partition=>[1:2, 3:4]))
 @test s.violation == -1
 

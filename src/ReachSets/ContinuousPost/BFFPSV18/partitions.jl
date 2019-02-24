@@ -1,15 +1,15 @@
 """
-    inout_map_property(prop::IntersectionProperty,
+    inout_map_property(𝑃::PROPERTY,
                        partition::AbstractVector{<:AbstractVector{Int}},
                        blocks::AbstractVector{Int},
                        n::Int
-                      )::IntersectionProperty
+                      )::PROPERTY where {PROPERTY<:Property}
 
-Map an `IntersectionProperty` to the dimensions of analyzed blocks.
+Map a property to the dimensions of analyzed blocks.
 
 ### Input
 
-- `prop`      -- property
+- `𝑃`         -- property
 - `partition` -- block partition; elements are start and end indices of a block
 - `blocks`    -- list of all output block indices in the partition
 - `n`         -- total number of input dimensions
@@ -20,80 +20,50 @@ A new property of reduced dimension.
 
 ### Notes
 
-If the dimension is not reduced, we keep the original set.
-Otherwise, the dimension reduction is achieved with a `LinearMap`.
+If the dimension is not reduced, we return the original property.
+Otherwise, the dimension reduction is implemented via a (lazy) `LinearMap`.
 """
-function inout_map_property(prop::IntersectionProperty{N},
+function inout_map_property(𝑃::PROPERTY,
                             partition::AbstractVector{<:AbstractVector{Int}},
                             blocks::AbstractVector{Int},
                             n::Int
-                           )::IntersectionProperty{N} where {N<:Real}
-    @assert dim(prop.bad) == n "the property has dimension $(dim(prop.bad)) but should have dimension $n"
+                           )::PROPERTY where {PROPERTY<:Property}
     proj = projection_map(partition, blocks)
     if length(proj) == n
-        # no change in the dimension, copy the old property (keep the set)
-        return IntersectionProperty(prop.bad)
+        # no change in the dimension, return the original property
+        return 𝑃
     else
-        M = sparse(proj, proj, ones(N, length(proj)), n, n)
-        return IntersectionProperty(M * prop.bad)
+        M = sparse(proj, proj, ones(length(proj)), n, n)
+        return inout_map_property_helper(𝑃, M)
     end
 end
 
-"""
-    inout_map_property(prop::LinearConstraintProperty{N},
-                       partition::AbstractVector{<:AbstractVector{Int}},
-                       blocks::AbstractVector{Int},
-                       n::Int
-                      )::LinearConstraintProperty{N} where {N<:Real}
-
-Map a `LinearConstraintProperty` to the dimensions of analyzed blocks.
-
-### Input
-
-- `prop`      -- property
-- `partition` -- block partition; elements are start and end indices of a block
-- `blocks`    -- list of all output block indices in the partition
-- `n`         -- total number of input dimensions
-
-### Output
-
-A new property of reduced dimension.
-"""
-function inout_map_property(prop::LinearConstraintProperty{N},
-                            partition::AbstractVector{<:AbstractVector{Int}},
-                            blocks::AbstractVector{Int},
-                            n::Int
-                           )::LinearConstraintProperty{N} where {N<:Real}
-    # sanity check: do not project away non-zero dimensions
-    function check_projection(a, proj)
-        p = 1
-        for i in 1:length(a)
-            if p <= length(proj) && i == proj[p]
-                # dimension is not projected away
-                p += 1
-            elseif a[i] != 0
-                # dimension is projected away; entry is non-zero
-                return false
-            end
-        end
-        return true
+function inout_map_property_helper(𝑃::Conjunction, M::AbstractMatrix)
+    new_conjuncts = similar(𝑃.conjuncts)
+    for (i, conjunct) in enumerate(𝑃.conjuncts)
+        new_conjuncts[i] = inout_map_property_helper(conjunct, M)
     end
+    return Conjunction(new_conjuncts)
+end
 
-    @assert dim(prop.clauses[1].atoms[1]) == n "the property has dimension $(dim(prop.clauses[1].atoms[1])) but should have dimension $n"
-
-    proj = projection_map(partition, blocks)
-
-    # create modified property
-    clauses = Vector{Clause{N}}(undef, length(prop.clauses))
-    for (ic, c) in enumerate(prop.clauses)
-        atoms = Vector{LinearConstraint{N}}(undef, length(c.atoms))
-        for (ia, atom) in enumerate(c.atoms)
-            @assert check_projection(atom.a, proj) "blocks incompatible with property"
-            atoms[ia] = LinearConstraint{N}(atom.a[proj], atom.b)
-        end
-        clauses[ic] = Clause(atoms)
+function inout_map_property_helper(𝑃::Disjunction, M::AbstractMatrix)
+    new_disjuncts = similar(𝑃.disjuncts)
+    for (i, disjunct) in enumerate(𝑃.disjuncts)
+        new_disjuncts[i] = inout_map_property_helper(disjunct, M)
     end
-    return LinearConstraintProperty(clauses)
+    return Disjunction(new_disjuncts)
+end
+
+function inout_map_property_helper(𝑃::BadStatesProperty, M::AbstractMatrix)
+    @assert dim(𝑃.bad) == size(M, 2) "the property has dimension " *
+        "$(dim(𝑃.bad)) but should have dimension $(size(M, 2))"
+    return BadStatesProperty(M * 𝑃.bad)
+end
+
+function inout_map_property_helper(𝑃::SafeStatesProperty, M::AbstractMatrix)
+    @assert dim(𝑃.safe) == size(M, 2) "the property has dimension " *
+        "$(dim(𝑃.safe)) but should have dimension $(size(M, 2))"
+    return SafeStatesProperty(M * 𝑃.safe)
 end
 
 """
@@ -122,45 +92,4 @@ function projection_map(partition::AbstractVector{<:AbstractVector{Int}},
         end
     end
     return proj
-end
-
-"""
-    inout_map_property(prop::SubsetProperty,
-                       partition::AbstractVector{<:AbstractVector{Int}},
-                       blocks::AbstractVector{Int},
-                       n::Int
-                      )::SubsetProperty
-
-Map an `SubsetProperty` to the dimensions of analyzed blocks.
-
-### Input
-
-- `prop`      -- property
-- `partition` -- block partition; elements are start and end indices of a block
-- `blocks`    -- list of all output block indices in the partition
-- `n`         -- total number of input dimensions
-
-### Output
-
-A new property of reduced dimension.
-
-### Notes
-
-If the dimension is not reduced, we keep the original set.
-Otherwise, the dimension reduction is achieved with a `LinearMap`.
-"""
-function inout_map_property(prop::SubsetProperty{N},
-                            partition::AbstractVector{<:AbstractVector{Int}},
-                            blocks::AbstractVector{Int},
-                            n::Int
-                           )::SubsetProperty{N} where {N<:Real}
-    @assert dim(prop.safe) == n "the property has dimension $(dim(prop.safe)) but should have dimension $n"
-    proj = projection_map(partition, blocks)
-    if length(proj) == n
-        # no change in the dimension, copy the old property (keep the set)
-        return IntersectionProperty(prop.safe)
-    else
-        M = sparse(proj, proj, ones(N, length(proj)), n, n)
-        return IntersectionProperty(M * prop.safe)
-    end
 end
