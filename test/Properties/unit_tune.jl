@@ -1,4 +1,4 @@
-using Reachability.ReachSets: BFFPSV18
+using Reachability.ReachSets: tune_δ
 
 #===== Projectile model =====
 We test the line plot!(x->x, x->-24*x+375, 0., 50., line=2., color="red", linestyle=:solid, legend=:none)
@@ -17,4 +17,4 @@ algorithm(N, δ) =
           op=BFFPSV18(:δ => δ, :vars => [1, 3], :partition=>[1:2, 3:4])
          ).satisfied
 
-Reachability.tune_δ(algorithm, time_horizon, prec, initial_δ)
+tune_δ(algorithm, time_horizon, prec, initial_δ)

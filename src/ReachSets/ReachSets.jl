@@ -80,9 +80,9 @@ AUTHORS:
 """
 module ReachSets
 
-using ..Utils
-using LazySets, MathematicalSystems, HybridSystems
-using Expokit, Optim, ProgressMeter
+using ..Utils, ..Properties
+using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
+      ProgressMeter
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap
@@ -107,27 +107,10 @@ include("discretize.jl")
 
 export discretize
 
-# ==============================
-# Property struct and evaluation
-# ==============================
-include("Properties/Property.jl")
-export Property,
-       inout_map_property
-
-include("Properties/LinearConstraintProperty.jl")
-export LinearConstraintProperty,
-       Clause
-
-include("Properties/IntersectionProperty.jl")
-export IntersectionProperty
-
-include("Properties/SubsetProperty.jl")
-export SubsetProperty
-
 # ==========================
 # Property checking results
 # ==========================
-include("Properties/CheckSolution.jl")
+include("CheckSolution.jl")
 
 export CheckSolution
 
@@ -153,7 +136,7 @@ export available_algorithms_check,
 # ====================================================
 # Algorithms to find a threshold for property checking
 # ====================================================
-include("Properties/tune.jl")
+include("tune.jl")
 export tune_δ
 
 # =====================

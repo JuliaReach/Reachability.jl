@@ -1,5 +1,6 @@
 #!/usr/bin/env julia
-using LazySets, Reachability, MathematicalSystems
+using LazySets, Reachability, MathematicalSystems,
+      LinearAlgebra, SparseArrays
 
 # fix namespace conflicts with MathematicalSystems
 import LazySets.LinearMap

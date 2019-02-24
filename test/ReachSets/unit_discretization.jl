@@ -1,5 +1,3 @@
-import Reachability.ReachSets.discretize
-
 let # preventing global scope
     # ===================================================================
     # Discretization of a continuous-time system without input (ZeroSet)
