@@ -176,7 +176,7 @@ juoia> problem = InitialValueProblem(LinearContinuousSystem(A), X₀);
 
 julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04)));
 ```
-Let's check that the dimension of the first set computed is 2:
+Let's check that the dimension of the first set computed is 5:
 
 ```jldoctest BFFPSV18_example_1
 julia> dim(first(sol.Xk).X)
@@ -190,10 +190,8 @@ julia> sol.options[:partition]
  [4]
  [5]
 ```
-Here, `[1]` corresponds to a block of size one for variable `5`, etc until variable
+Here, `[1]` corresponds to a block of size one for variable `5`, etc., until variable
 `5`. Let's check the set type used is interval:
-
-# FIX: to use Interval for 1D partitions by default
 
 ```jldoctest BFFPSV18_example_1
 julia> sol.options[:set_type]
@@ -212,7 +210,7 @@ julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04, :va
 julia> dim(first(sol.Xk).X)
 2
 ```
-The set types used are still intevals:
+The sets used are intevals:
 
 ```jldoctest BFFPSV18_example_1
 julia> all([Xi isa Hyperrectangle for Xi in first(sol.Xk).X.array])
