@@ -111,6 +111,7 @@ function post(𝒫::ConcreteBlocksDiscretePost,
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
+        println(length(tube⋂inv))
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
             R⋂G = intersection(guard, reach_set.X)
@@ -121,11 +122,9 @@ function post(𝒫::ConcreteBlocksDiscretePost,
             # apply assignment
             # TODO converting to HPolytope ?? handle automatically ??
 
-            R⋂G = convert(HPolytope, overapproximate(R⋂G, dirs))
             #A⌜R⋂G⌟ = LinearMap(assignment, oR)
 
-
-            A⌜R⋂G⌟ = convert(HPolytope, linear_map(assignment, R⋂G))
+            A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant)

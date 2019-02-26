@@ -72,7 +72,7 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
         proj_inter = intersection(reach_tube[i].X,invariant, nonzero_vars)
         if !isempty(proj_inter)
             reach_set = reach_tube[i]
-            R⋂I = intersection(reach_set.X, invariant)
+            R⋂I = intersection(reach_set.X, invariant,true)
 
             if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
                 break
@@ -136,11 +136,10 @@ function post(𝒫::LazyLowDimDiscretePost,
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
-
+        println(length(tube⋂inv))
         #tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
         for i=1:length(low_temp_sets)
             low_reach_set = low_temp_sets[i].X
-            high_reach_set = tube⋂inv[length(tube⋂inv) - count_Rsets + i]
             # check intersection with guard
             if combine_constraints
                 islow_dim_inter_empty = isempty(intersection(invariant_guard, low_reach_set))
@@ -150,16 +149,17 @@ function post(𝒫::LazyLowDimDiscretePost,
             if islow_dim_inter_empty
                 continue
             end
+            high_reach_set = tube⋂inv[length(tube⋂inv) - count_Rsets + i]
             taken_intersection = false
             if combine_constraints
                 if !islow_dim_inter_empty
-                    R⋂G = intersection(high_reach_set.X, invariant_guard)
+                    R⋂G = intersection(high_reach_set.X, invariant_guard, true)
                     taken_intersection = true
                 end
             end
             if !taken_intersection
                 if !islow_dim_inter_empty
-                    R⋂G = intersection(high_reach_set.X, guard)
+                    R⋂G = intersection(high_reach_set.X, guard,true)
                 end
             end
             if isempty(R⋂G)
@@ -167,6 +167,7 @@ function post(𝒫::LazyLowDimDiscretePost,
             end
 
             # apply assignment
+
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
             if !𝒫.options[:lazy_R⋂G]
                A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
