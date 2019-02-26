@@ -189,9 +189,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                             op=opC,
                             invariant=source_invariant)
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
-        if property != nothing
-            # get the property for the current location
-            property_loc = property isa Dict ? property[loc] : property
+        # get the property for the current location
+        property_loc = property isa Dict ?
+                       get(property, loc_id, nothing) :
+                       property
+        if property_loc != nothing
             for (i, reach_set) in enumerate(reach_tube.Xk)
                 if !check_property(reach_set.X, property_loc)
                     return CheckSolution(false, i, options)
