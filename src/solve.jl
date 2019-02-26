@@ -195,7 +195,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                        property
         if property_loc != nothing
             for (i, reach_set) in enumerate(reach_tube.Xk)
-                if !check_property(reach_set.X, property_loc)
+                if !check(property_loc, reach_set.X)
                     return CheckSolution(false, i, options)
                 end
             end
