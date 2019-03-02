@@ -86,7 +86,6 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
     options = init(op, system, options_input)
 
     # coordinate transformation
-    options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         (system, transformation_matrix) =
@@ -136,10 +135,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    delete_N = !haskey(options_input, :N)
     options = init(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
+    inout_map = nothing
+    property = options[:mode] == "check" ? options[:property] : nothing
 
     # waiting_list entries:
     # - (discrete) location
@@ -180,21 +180,26 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
-        delete!(options_copy.dict, :inout_map)
-        if delete_N # TODO add more conditions or fix option clashes in general
-            delete!(options_copy.dict, :N)
-        end
-        if haskey(options_copy, :block_types) &&
-                options_copy.dict[:block_types] == nothing
-            delete!(options_copy.dict, :block_types)
-        end
-        if haskey(options_copy, :blocks)
-            delete!(options_copy.dict, :blocks)
+        if property != nothing
+            # TODO temporary hack, to be resolved in #447
+            options_copy[:mode] = "reach"
         end
         reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
+        inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
+        # get the property for the current location
+        property_loc = property isa Dict ?
+                       get(property, loc_id, nothing) :
+                       property
+        if property_loc != nothing
+            for (i, reach_set) in enumerate(reach_tube.Xk)
+                if !check(property_loc, reach_set.X)
+                    return CheckSolution(false, i, options)
+                end
+            end
+        end
 
         # add the very first initial approximation
         if passed_list != nothing &&
@@ -223,8 +228,12 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
              jumps, options)
     end
+    if options[:mode] == "check"
+        return CheckSolution(true, -1, options)
+    end
 
     # Projection
+    options[:inout_map] = inout_map
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(Rsets, options)

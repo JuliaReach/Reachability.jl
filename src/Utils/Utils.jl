@@ -522,7 +522,7 @@ function matrix_conversion_lazy_explicit(Δ, options)
     if !options[:lazy_expm] && options[:lazy_expm_discretize]
         info("Making lazy matrix exponential explicit...")
         @timing begin
-            n = options.dict[:n]
+            n = options[:n]
             if options[:assume_sparse]
                 B = sparse(Int[], Int[], eltype(A)[], n, n)
             else

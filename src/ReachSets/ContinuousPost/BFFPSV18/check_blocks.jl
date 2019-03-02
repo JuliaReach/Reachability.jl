@@ -36,7 +36,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        prop::Property
                        )::Int where {NUM}
     violation_index = 0
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
+    if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -74,7 +74,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
             Xhatk[i] = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
         end
 
-        if !check_property(CartesianProductArray(Xhatk), prop)
+        if !check(prop, CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -113,7 +113,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
                        prop::Property
                        )::Int where {NUM}
     violation_index = 0
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
+    if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -153,7 +153,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
             Xhatk[i] = MinkowskiSumArray(arr)
         end
 
-        if !check_property(CartesianProductArray(Xhatk), prop)
+        if !check(prop, CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -194,7 +194,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        prop::Property
                        )::Int where {NUM}
     violation_index = 0
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
+    if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -237,7 +237,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             end
         end
 
-        if !check_property(CartesianProductArray(Xhatk), prop)
+        if !check(prop, CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -269,7 +269,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        prop::Property
                        )::Int where {NUM}
     violation_index = 0
-    if !check_property(CartesianProductArray(Xhat0[blocks]), prop)
+    if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -313,7 +313,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             end
         end
 
-        if !check_property(CartesianProductArray(Xhatk), prop)
+        if !check(prop, CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0

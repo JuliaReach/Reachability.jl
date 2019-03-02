@@ -103,7 +103,7 @@ function use_precise_ρ(𝒫::DiscretePost,
 end
 
 function get_overapproximation_option(𝒫::DiscretePost, n::Int)
-    oa = 𝒫.options.dict[:overapproximation]
+    oa = 𝒫.options[:overapproximation]
     if oa isa Symbol
         dirs = Utils.interpret_template_direction_symbol(oa)
         return dirs(n)
@@ -116,9 +116,18 @@ end
 
 # --- default methods for handling assignments ---
 
+# default implementation: use 'apply' from MathematicalSystems
 function apply_assignment(𝒫::DiscretePost,
                           constrained_map::AbstractMap,
                           R⋂G::LazySet;
                           kwargs...)
     return apply(constrained_map, R⋂G)
+end
+
+# for reset maps: return a lazy ResetMap from LazySets
+function apply_assignment(𝒫::DiscretePost,
+                          constrained_map::ConstrainedResetMap,
+                          R⋂G::LazySet;
+                          kwargs...)
+    return LazySets.ResetMap(R⋂G, constrained_map.dict)
 end

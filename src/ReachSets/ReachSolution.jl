@@ -11,7 +11,7 @@ sets, and a dictionary of options.
 """
 struct ReachSolution{S<:LazySet} <: AbstractSolution
     Xk::Vector{<:ReachSet{S}}
-    options::Options
+    options::AbstractOptions
 end
 
 # constructor with no options

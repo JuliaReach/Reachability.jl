@@ -12,6 +12,8 @@ makedocs(
         "Library" => Any[
         "User interface" => "lib/interface.md",
         "Systems" => "lib/systems.md",
+        "Algorithms" => "lib/algorithms.md",
+        "Properties" => "lib/properties.md",
         "Transformations" => "lib/transformations.md",
         "Discretization" => "lib/discretize.md",
         "Distributed computations" => "lib/distributed.md"],
@@ -25,7 +27,7 @@ deploydocs(
     repo = "github.com/JuliaReach/Reachability.jl.git",
     target = "build",
     osname = "linux",
-    julia  = "0.6",
+    julia  = "1.0",
     deps = nothing,
     make = nothing
 )

@@ -1,23 +1,38 @@
-import LazySets.CacheMinkowskiSum
+import LazySets: CacheMinkowskiSum,
+                 isdisjoint
+
+import ..Utils: LDS, CLCDS
 
 """
-    check_property(S, options)
+    reach(S, invariant, options)
 
-Interface to property checking algorithms for an LTI system.
+Interface to reachability algorithms for an LTI system.
 
 ### Input
 
-- `S`                  -- LTI system, discrete or continuous
-- `options`            -- additional options
+- `S`         -- LTI system, discrete or continuous
+- `invariant` -- invariant
+- `options`   -- additional options
+
+### Output
+
+A sequence of [`ReachSet`](@ref)s.
 
 ### Notes
 
 A dictionary with available algorithms is available via
-`available_algorithms_check`.
+`Reachability.available_algorithms`.
+
+The numeric type of the system's coefficients and the set of initial states
+is inferred from the first parameter of the system (resp. lazy set), ie.
+`NUM = first(typeof(S.s).parameters)`.
 """
-function check_property(S::IVP{<:AbstractDiscreteSystem},
-                        options::Options
-                       )::Int
+function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
+                        IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
+               invariant::Union{LazySet, Nothing},
+               options::TwoLayerOptions
+              )::Vector{<:ReachSet} where {NUM <: Real}
+
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -36,15 +51,17 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     dir = interpret_template_direction_symbol(
         options[:template_directions_init])
     block_sizes = compute_block_sizes(partition)
-    N = options[:N]
+    N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
     set_type_init = options[:set_type_init]
+    ε_iter = options[:ε_iter]
     set_type_iter = options[:set_type_iter]
+
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
         info("- No decomposition of X0 needed")
-        Xhat0 = [S.x0]
+        Xhat0 = LazySet{NUM}[S.x0]
     else
         info("- Decomposing X0")
         @timing begin
@@ -53,26 +70,39 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
             elseif dir != nothing
                 Xhat0 = array(decompose(S.x0, directions=dir,
                                         blocks=block_sizes))
-            elseif !isempty(options[:block_types_init])
+            elseif options[:block_types_init] != nothing &&
+                    !isempty(options[:block_types_init])
                 Xhat0 = array(decompose(S.x0, ε=ε_init,
                                         block_types=options[:block_types_init]))
             elseif set_type_init == LazySets.Interval
                 Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
                                         blocks=ones(Int, n)))
             else
-                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init))
+                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
+                                        blocks=block_sizes))
             end
         end
     end
 
+    # determine output function: linear map with the given matrix
+    output_function = options[:output_function] != nothing ?
+        (x -> options[:output_function] * x) :
+        nothing
+
+    # preallocate output vector
+    if output_function == nothing
+        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}, NUM}
+    else
+        res_type = ReachSet{Hyperrectangle{NUM}, NUM}
+    end
+    res = Vector{res_type}(undef, N)
+
     # shortcut if only the initial set is required
     if N == 1
-        if length(blocks) == 1
-            Xhat0_mod = Xhat0[blocks[1]]
-        else
-            Xhat0_mod = CartesianProductArray(Xhat0)
-        end
-        return check_property(Xhat0_mod, options[:property]) ? 0 : 1
+        res[1] = res_type(
+            CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
+            zero(NUM), options[:δ])
+        return res
     end
     push!(args, Xhat0)
 
@@ -84,31 +114,29 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     end
     push!(args, U)
 
-    # raw overapproximation function
+    # overapproximation function for states
     dir = interpret_template_direction_symbol(
         options[:template_directions_iter])
     if dir != nothing
-        overapproximate_fun =
-            (i, x) -> overapproximate(x, dir(length(partition[i])))
-    elseif haskey(options.dict, :block_types_iter)
+        overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
+    elseif options[:block_types_iter] != nothing
         block_types_iter = block_to_set_map(options[:block_types_iter])
-        overapproximate_fun = (i, x) -> block_types_iter[i] == HPolygon ?
-                              overapproximate(x, HPolygon, set_type_init) :
-                              overapproximate(x, block_types_iter[i])
-    elseif set_type_init < Inf
+        overapproximate_fun = (i, x) -> (block_types_iter[i] == HPolygon) ?
+                                        overapproximate(x, HPolygon, ε_iter) :
+                                        overapproximate(x, block_types_iter[i])
+    elseif ε_iter < Inf
         overapproximate_fun =
-            (i, x) -> overapproximate(x, set_type_iter, set_type_init)
+            (i, x) -> overapproximate(x, set_type_iter, ε_iter)
     else
         overapproximate_fun = (i, x) -> overapproximate(x, set_type_iter)
     end
+    push!(args, overapproximate_fun)
 
     # overapproximate function for inputs
     lazy_inputs_interval = options[:lazy_inputs_interval]
-    if lazy_inputs_interval == nothing
+    if lazy_inputs_interval == lazy_inputs_interval_always
         overapproximate_inputs_fun = (k, i, x) -> overapproximate_fun(i, x)
     else
-        @assert lazy_inputs_interval isa Function "illegal internal value " *
-            "$lazy_inputs_interval for option :lazy_inputs_interval"
         # first set in a series
         function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
@@ -116,7 +144,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         end
         # further sets of the series
         function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
-            if set_type_init == Inf
+            if ε_iter == Inf
                 # forget sets if we do not use epsilon-close approximation
                 forget_sets!(x.X)
             end
@@ -146,41 +174,62 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     # number of computed sets
     push!(args, N)
 
+    # output function
+    push!(args, output_function)
+
     # add mode-specific block(s) argument
+    push!(args, blocks)
+    push!(args, partition)
+
+    # time step
+    push!(args, options[:δ])
+
+    # termination function
+    if invariant == nothing
+        termination = (k, set, t0) -> termination_N(N, k, set, t0)
+    else
+        termination =
+            (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+    end
+    push!(args, termination)
+
+    # choose algorithm backend
     algorithm = options[:algorithm]
     if algorithm == "explicit"
-        push!(args, blocks)
-        push!(args, partition)
         algorithm_backend = "explicit_blocks"
+    elseif algorithm == "wrap"
+        algorithm_backend = "wrap"
     else
         error("Unsupported algorithm: ", algorithm)
     end
-
-    # add eager/lazy checking option
-    push!(args, options[:eager_checking])
-
-    # add property
-    push!(args, options[:property])
+    push!(args, res)
 
     # call the adequate function with the given arguments list
     info("- Computing successors")
-    answer =
-        @timing available_algorithms_check[algorithm_backend]["func"](args...)
+    @timing begin
+        index, skip = available_algorithms[algorithm_backend]["func"](args...)
+        if index < N || skip
+            # shrink result array
+            info("terminated prematurely, only computed $index/$N steps")
+            deleteat!(res, (skip ? index : index + 1):N)
+        end
+    end
 
     # return the result
-    return answer
+    return res
 end
 
-function check_property(S::IVP{<:AbstractContinuousSystem},
-                        options::Options
-                       )::Int
+function reach(system::IVP{<:AbstractContinuousSystem},
+               invariant::Union{LazySet, Nothing},
+               options::TwoLayerOptions
+              )::Vector{<:ReachSet}
     # ===================
     # Time discretization
     # ===================
     info("Time discretization...")
     Δ = @timing begin
         discretize(
-            S,
+            system,
             options[:δ],
             approx_model=options[:approx_model],
             pade_expm=options[:pade_expm],
@@ -189,5 +238,19 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
         )
     end
     Δ = matrix_conversion_lazy_explicit(Δ, options)
-    return check_property(Δ, options)
+    return reach(Δ, invariant, options)
+end
+
+function termination_N(N, k, set, t0)
+    return (k >= N, false)
+end
+
+function termination_inv_N(N, inv, k, set, t0)
+    if k >= N
+        return (true, false)
+    elseif isdisjoint(set, inv)
+        return (true, true)
+    else
+        return (false, false)
+    end
 end

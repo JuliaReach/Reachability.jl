@@ -43,7 +43,7 @@ function bouncing_ball()
 
     system = InitialValueProblem(ℋ, initial_condition)
 
-    options = Options(:mode=>"reach", :vars=>[1, 2], :T=>5.0, :δ=>0.1,
+    options = Options(:mode=>"reach", :T=>5.0,
                       :plot_vars=>[1, 2], :max_jumps=>1, :verbosity=>1)
 
     return (system, options)

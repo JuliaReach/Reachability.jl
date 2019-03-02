@@ -42,6 +42,7 @@ exact but lazy (i.e. symbolic) representations of common sets.
 Pages = [
     "lib/interface.md",
     "lib/systems.md",
+    "lib/algorithms.md",
     "lib/transformations.md",
     "lib/discretize.md",
     "lib/distributed.md"
