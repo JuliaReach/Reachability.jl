@@ -3,7 +3,13 @@ using LazySets, Reachability, MathematicalSystems,
       LinearAlgebra, SparseArrays
 
 # fix namespace conflicts with MathematicalSystems
-import LazySets.LinearMap
+using LazySets: LinearMap
+
+# common aliases
+const CLCCS = ConstrainedLinearControlContinuousSystem
+const CLCDS = ConstrainedLinearControlDiscreteSystem
+const LCS = LinearContinuousSystem
+const LDS = LinearDiscreteSystem
 
 # compatibility between Julia versions
 include("../src/compat.jl")

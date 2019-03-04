@@ -5,8 +5,8 @@ We test the line plot!(x->x, x->-24*x+375, 0., 50., line=2., color="red", linest
 =#
 A = [0. 0.5 0. 0. ; 0. 0. 0. 0. ; 0. 0. 0. 0.7 ; 0. 0. 0. 0.]
 X0 = Singleton([0.,5.,100.,0])
-U = Singleton([0.,0.,0.,-9.81])
-S = ContinuousSystem(A, X0, U)
+U = ConstantInput(Singleton([0.,0.,0.,-9.81]))
+S = IVP(CLCDS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
 time_horizon = 20.0
 prec = 1e-4
 initial_δ = 0.5

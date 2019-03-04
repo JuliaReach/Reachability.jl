@@ -1,7 +1,7 @@
 const LDS = LinearDiscreteSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
 
-@inline I(T, n) = Matrix{eltype(A)}(I, n, n)
+@inline Id(n) = Matrix{Float64}(I, n, n)
 
 """
     discretize(𝑆, δ; [approximation], [exp_method], [sih_method])
@@ -399,7 +399,7 @@ function _discretize_firstorder(𝑆::InitialValueProblem,
     # compute exp(A*δ)
     ϕ = exp_Aδ(A, δ, exp_method=exp_method)
 
-    if islinear(𝑆) # inputdim(𝑆) == 0
+    if inputdim(𝑆) == 0
         α = κ * RX0
         □α = Ballp(p, zeros(n), α)
         Ω0 = ConvexHull(X0, ϕ * X0 ⊕ □α)
@@ -421,8 +421,8 @@ function _discretize_firstorder(𝑆::InitialValueProblem,
 
             # transformation of the inputs
             □β = Ballp(p, zeros(n), β)
-            Ud = map(u -> δ*u ⊕ □β, U)
-            return IVP(CLCDS(ϕ, I(typeof(A), n), nothing, Ud), Ω0)
+            Ud = map(u -> δ*u ⊕ □β, Uset)
+            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
 
         elseif Uset isa VaryingInput
             Ud = Vector{LazySet}(undef, length(Uset)) # TODO: use concrete type of Uset? how?
@@ -444,7 +444,7 @@ function _discretize_firstorder(𝑆::InitialValueProblem,
                 Ud[i] = δ*Ui ⊕ □β
             end
             Ud = VaryingInput(Ud)
-            return IVP(CLCDS(ϕ, I(typeof(ϕ), n), nothing, Ud), Ω0)
+            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
         end
     else
         throw(ArgumentError("this function only applies to linear or affine systems"))
@@ -520,16 +520,16 @@ function  _discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousS
     Ω0 = copy(X0)
 
     # early return for homogeneous systems
-    if islinear(𝑆)
+    if inputdim(𝑆) == 0
         return IVP(LDS(ϕ), Ω0)
     end
 
     # compute matrix to transform the inputs
-    Phi1Adelta = Φ₁_Aδ(A, δ, exp_method=exp_method)
+    Phi1Adelta = Φ₁(A, δ, exp_method=exp_method)
     U = inputset(𝑆)
     Ud = map(ui -> Phi1Adelta * ui, U)
 
-    return IVP(CLCDS(ϕ, I(typeof(A), n), nothing, Ud), Ω0)
+    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
 end
 
 """
@@ -622,7 +622,7 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
     ϕ = exp_Aδ(A, δ, exp_method=exp_method)
 
     # compute the transformation matrix to bloat the initial states
-    Phi2Aabs = Φ₂_Aδ(abs.(A), δ, exp_method=exp_method)
+    Phi2Aabs = Φ₂(abs.(A), δ, exp_method=exp_method)
 
     if approximation == "forward"
         Einit = sih(Phi2Aabs * sih((A * A) * X0))     # use Eplus
@@ -633,7 +633,7 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
     end
 
     # early return for homogeneous systems
-    if islinear(𝑆)
+    if inputdim(𝑆) == 0
         Ω0 = ConvexHull(X0, ϕ * X0 ⊕ Einit)
         return IVP(LDS(ϕ), Ω0)
     end
@@ -647,15 +647,15 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
     if U isa ConstantInput
         Ud = map(ui -> δ*ui ⊕ Eψ0, U)
     elseif U isa VaryingInput
-        Ud = Vector{LazySet}(undef, length(Uset)) # TODO: use concrete type for Uset? how?
+        Ud = Vector{LazySet}(undef, length(U)) # TODO: use concrete type for Uset? how?
         for (k, Uk) in enumerate(U)
             Eψk = sih(Phi2Aabs * sih(A * Uk))
-            Ud[k] = δ * Ui ⊕ Eψk
+            Ud[k] = δ * Uk ⊕ Eψk
         end
         Ud = VaryingInput(Ud)
     else
         throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
     end
 
-    return IVP(CLCDS(ϕ, I(typeof(A), n), nothing, Ud), Ω0)
+    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
 end

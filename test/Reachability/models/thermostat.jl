@@ -19,7 +19,7 @@ function thermostat()
     U = Singleton([c_a])
     inv = HalfSpace([1.0], 22.0)  # x ≤ 22
     m_on = ConstrainedLinearControlContinuousSystem(
-            A, Matrix{eltype(A)}(I, size(B, 1), size(B, 1)), inv, B*U)
+            A, Matrix(1.0I, size(B, 1), size(B, 1)), inv, B*U)
 
     # mode off
     A = hcat(-c_a)
@@ -27,7 +27,7 @@ function thermostat()
     U = Singleton([0.0])
     inv = HalfSpace([-1.0], -18.0)  # x ≥ 18
     m_off = ConstrainedLinearControlContinuousSystem(
-            A, Matrix{eltype(A)}(I, size(B, 1), size(B, 1)), inv, B*U)
+            A, Matrix(1.0I, size(B, 1), size(B, 1)), inv, B*U)
 
     # modes
     modes = [m_on, m_off]
