@@ -17,7 +17,8 @@ include("../compat.jl")
 using LazySets.Approximations: symmetric_interval_hull,
                                decompose,
                                overapproximate,
-                               box_approximation
+                               box_approximation,
+                               AbstractDirections
 using Reachability: @timing,
                     Options, OptionSpec, TwoLayerOptions, AbstractOptions,
                     validate_and_wrap_options, print_option_spec,

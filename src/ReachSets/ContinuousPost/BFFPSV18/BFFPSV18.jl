@@ -48,9 +48,6 @@ function options_BFFPSV18()
             info="use an analysis for sparse discretized matrices?"),
 
         # reachability options
-        OptionSpec(:lazy_X0, false, domain=Bool,
-            info="keep the discretized and decomposed initial states a lazy " *
-                 "set?"),
         OptionSpec(:lazy_inputs_interval, lazy_inputs_interval_always,
             domain=Union{Int, Function},
             domain_check=(v  ->  !(v isa Int) || v >= -1),
@@ -59,49 +56,14 @@ function options_BFFPSV18()
                  "predicate over indices; the default corresponds to ``-1``"),
 
         # approximation options
-        OptionSpec(:block_types, nothing, domain=Union{Nothing,
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
-            info="short hand to set ':block_types_init' and " *
-                 "':block_types_iter'"),
-        OptionSpec(:block_types_init, nothing, domain=Union{Nothing,
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
-            info="set type for the approximation of the initial states for " *
-                 "each block"),
-        OptionSpec(:block_types_iter, nothing, domain=Union{Nothing,
-            Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}},
-            info="set type for the approximation of the states ``X_k``, " *
-                 "``k>0``, for each block"),
-        OptionSpec(:ε, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
-            info="short hand to set `:ε_init` and `:ε_iter`"),
-        OptionSpec(:ε_init, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
-            info="error bound for the approximation of the initial states" *
+        OptionSpec(:block_options, nothing, domain=Any,
+            info="short hand to set ':block_options_init' and " *
+                 "':block_options_iter'"),
+        OptionSpec(:block_options_init, nothing, domain=Any,
+            info="option for the approximation of the initial states " *
                  "(during decomposition)"),
-        OptionSpec(:ε_iter, Inf, domain=Float64, domain_check=(v  ->  v > 0.),
-            info="error bound for the approximation of the states ``X_k``, " *
-                 "``k>0``"),
-        OptionSpec(:set_type, Hyperrectangle, domain=Union{Type{HPolygon},
-            Type{Hyperrectangle}, Type{LazySets.Interval}},
-            info="short hand to set `:set_type_init` and `:set_type_iter`"),
-        OptionSpec(:set_type_init, Hyperrectangle, domain=Union{Type{HPolygon},
-            Type{Hyperrectangle}, Type{LazySets.Interval}},
-            info="set type for the approximation of the initial states" *
-                 "(during decomposition)"),
-        OptionSpec(:set_type_iter, Hyperrectangle, domain=Union{Type{HPolygon},
-            Type{Hyperrectangle}, Type{LazySets.Interval}},
-            info="set type for the approximation of the states ``X_k``, " *
-                 "``k>0``"),
-        OptionSpec(:template_directions, :nothing, domain=Symbol,
-            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
-            info="short hand to set `template_directions_init` and " *
-                 "`template_directions_iter`"),
-        OptionSpec(:template_directions_init, :nothing, domain=Symbol,
-            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
-            info="directions to use for the approximation of the initial " *
-                 "states (during decomposition)"),
-        OptionSpec(:template_directions_iter, :nothing, domain=Symbol,
-            domain_check=(v::Symbol  ->  v in [:box, :oct, :boxdiag, :nothing]),
-            info="directions to use for the approximation of the states " *
-                 "``X_k``, ``k>0``, for each block"),
+        OptionSpec(:block_options_iter, nothing, domain=Any,
+            info="option for the approximation of the states ``X_k``, ``k>0``"),
 
         # convenience options
         OptionSpec(:assume_homogeneous, false, domain=Bool,
@@ -126,100 +88,48 @@ function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
         end
     end
 
-    # :block_types options
-    block_types = nothing
-    dict_type = Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}
-    if !haskey_specified(𝑂, :block_types) && haskey(𝑂, :set_type) &&
-            haskey_specified(𝑂, :partition)
-        𝑂.specified[:block_types] = dict_type(𝑂[:set_type] => copy(𝑂[:partition]))
+    # :block_options options: use convenience option for '_init' and '_iter'
+    if !haskey_specified(𝑂, :block_options_init) &&
+            haskey_specified(𝑂, :block_options)
+        𝑂.specified[:block_options_init] = 𝑂[:block_options]
     end
-    if !haskey_specified(𝑂, :block_types_init) && block_types != nothing
-        𝑂.specified[:block_types_init] = block_types
+    if !haskey_specified(𝑂, :block_options_iter) &&
+            haskey_specified(𝑂, :block_options)
+        𝑂.specified[:block_options_iter] = 𝑂[:block_options]
     end
-    if !haskey_specified(𝑂, :block_types_iter) && block_types != nothing
-        𝑂.specified[:block_types_iter] = block_types
-    end
-
-    # :ε, :set_type, and :template_directions options
-    ε = 𝑂[:ε]
-    if haskey_specified(𝑂, :set_type)
-        # use the provided set type
-        set_type = 𝑂[:set_type]
-    elseif ε < Inf
-        # use polygons
-        set_type = HPolygon
-        𝑂[:set_type] = HPolygon
-    else
-        # use hyperrectangles
-        set_type = 𝑂[:set_type]
-    end
-    #
-    if !haskey_specified(𝑂, :ε_init)
-        𝑂.specified[:ε_init] =
-            (haskey_specified(𝑂, :set_type_init) && 𝑂[:set_type_init] == HPolygon) ||
-            (!haskey_specified(𝑂, :set_type_init) && set_type == HPolygon) ?
-                ε :
-                Inf
-    end
-    #
-    if !haskey_specified(𝑂, :set_type_init)
-        𝑂.specified[:set_type_init] = 𝑂[:ε_init] < Inf ? HPolygon : set_type
-    end
-    #
-    if !haskey_specified(𝑂, :template_directions_init)
-        𝑂.specified[:template_directions_init] =
-            haskey_specified(𝑂, :template_directions_init) ?
-                𝑂[:template_directions_init] :
-                haskey_specified(𝑂, :template_directions) ?
-                    𝑂[:template_directions] :
-                    :nothing
-    end
-    #
-    if !haskey_specified(𝑂, :ε_iter)
-        𝑂.specified[:ε_iter] =
-            (haskey_specified(𝑂, :set_type_iter) && 𝑂[:set_type_iter] == HPolygon) ||
-            (!haskey_specified(𝑂, :set_type_iter) && set_type == HPolygon) ?
-                ε :
-                Inf
-    end
-    #
-    if !haskey_specified(𝑂, :set_type_iter)
-        𝑂.specified[:set_type_iter] = 𝑂[:ε_iter] < Inf ? HPolygon : set_type
-    end
-    #
-    if !haskey_specified(𝑂, :template_directions_iter)
-        𝑂.specified[:template_directions_iter] =
-            haskey_specified(𝑂, :template_directions_iter) ?
-                𝑂[:template_directions_iter] :
-                haskey_specified(𝑂, :template_directions) ?
-                    𝑂[:template_directions] :
-                    :nothing
-    end
-    #
 
     nothing
 end
 
 function validation_BFFPSV18(𝑂)
-    # block_types
-    if haskey_specified(𝑂, :block_types)
-        for (key, value) in 𝑂[:block_types]
-            if !(key <: LazySet)
-                 throw(DomainError(key, "the keys of the `:block_types` " *
-                                        "dictionary should be lazy sets"))
-            elseif !(typeof(value) <: AbstractVector{<:AbstractVector{Int}})
-                throw(DomainError(value, "the values of the `:block_types` " *
-                                         "dictionary should be vectors of " *
-                                         "vectors"))
+    # block_options
+    for b_options in [:block_options, :block_options_init, :block_options_iter]
+        if haskey_specified(𝑂, b_options)
+            bo = 𝑂[b_options]
+            if bo isa Type{<:LazySet} || bo isa Type{<:AbstractDirections}
+                # uniform options
+            elseif bo isa Symbol
+                # template directions
+                option = get(Utils.template_direction_symbols, bo, nothing)
+                if option == nothing
+                    throw(DomainError(key, "if the `$b_options` option is a " *
+                        "Symbol, it must be one of " *
+                        "$(keys(Utils.template_direction_symbols))"))
+                end
+                𝑂.specified[b_options] = option
+            elseif bo isa AbstractVector || bo isa Dict{Int, Any}
+                # mapping
+            elseif bo isa Real || bo isa Pair{<:UnionAll, <:Real}
+                ε = bo isa Real ? bo : bo[2]
+                if ε <= 0
+                    throw(DomainError(key, "the `$b_options` option must be " *
+                                           "positive"))
+                end
+            else
+                throw(DomainError(key, "the `$b_options` option does not " *
+                                       "accept $bo"))
             end
         end
-    end
-
-    # ε-close approximation
-    if (𝑂[:ε_init] < Inf && 𝑂[:set_type_init] != HPolygon) ||
-       (𝑂[:ε_iter] < Inf && 𝑂[:set_type_iter] != HPolygon)
-        throw(DomainError("ε-close approximation is only supported with the " *
-                          "set type 'HPolygon'"))
     end
 
     nothing
@@ -298,6 +208,17 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
     # :blocks option (internal only)
     # list of all interesting block indices in the partition
     𝑂validated[:blocks] = compute_blocks(𝑂validated[:vars], 𝑂validated[:partition])
+
+    # :block_options_init & :block_options_iter options:
+    # set default according to :partition
+    if !haskey_specified(𝒫.options, :block_options_init)
+        𝑂validated[:block_options_init] =
+            compute_default_block_options(𝑂validated[:partition])
+    end
+    if !haskey_specified(𝒫.options, :block_options_iter)
+        𝑂validated[:block_options_iter] =
+            compute_default_block_options(𝑂validated[:partition])
+    end
 
     # Input -> Output variable mapping
     𝑂validated[:inout_map] = inout_map_reach(𝑂validated[:partition], 𝑂validated[:blocks], 𝑂validated[:n])
@@ -395,4 +316,13 @@ function compute_blocks(vars, partition)
     @assert var_idx == length(vars) + 1
     sizehint!(blocks, length(blocks))
     return blocks
+end
+
+function compute_default_block_options(partition)
+    # use Interval for 1D blocks and Hyperrectangle otherwise
+    block_options = Vector{Type{<:LazySet}}(undef, length(partition))
+    for (i, block) in enumerate(partition)
+        block_options[i] = length(block) == 1 ? Interval : Hyperrectangle
+    end
+    return block_options
 end

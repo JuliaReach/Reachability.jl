@@ -1,7 +1,9 @@
-import LazySets: CacheMinkowskiSum,
+using ..Utils: LDS, CLCDS
+
+using LazySets: CacheMinkowskiSum,
                  isdisjoint
 
-import ..Utils: LDS, CLCDS
+import LazySets.Approximations: overapproximate
 
 """
     reach(S, invariant, options)
@@ -48,14 +50,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     n = statedim(S)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
-    dir = template_direction_symbols[options[:template_directions_init]]
-    block_sizes = compute_block_sizes(partition)
     N = ceil(Int, options[:T] / options[:δ])
-    ε_init = options[:ε_init]
-    set_type_init = options[:set_type_init]
-    ε_iter = options[:ε_iter]
-    set_type_iter = options[:set_type_iter]
-
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
@@ -64,22 +59,8 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     else
         info("- Decomposing X0")
         @timing begin
-            if options[:lazy_X0]
-                Xhat0 = array(decompose_helper(S.x0, block_sizes, n))
-            elseif dir != nothing
-                Xhat0 = array(decompose(S.x0, directions=dir,
-                                        blocks=block_sizes))
-            elseif options[:block_types_init] != nothing &&
-                    !isempty(options[:block_types_init])
-                Xhat0 = array(decompose(S.x0, ε=ε_init,
-                                        block_types=options[:block_types_init]))
-            elseif set_type_init == LazySets.Interval
-                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
-                                        blocks=ones(Int, n)))
-            else
-                Xhat0 = array(decompose(S.x0, set_type=set_type_init, ε=ε_init,
-                                        blocks=block_sizes))
-            end
+            Xhat0 = array(decompose(S.x0, options[:partition],
+                                    options[:block_options_init]))
         end
     end
 
@@ -114,19 +95,14 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     push!(args, U)
 
     # overapproximation function for states
-    dir = template_direction_symbols[options[:template_directions_iter]]
-    if dir != nothing
-        overapproximate_fun = (i, x) -> overapproximate(x, dir(length(partition[i])))
-    elseif options[:block_types_iter] != nothing
-        block_types_iter = block_to_set_map(options[:block_types_iter])
-        overapproximate_fun = (i, x) -> (block_types_iter[i] == HPolygon) ?
-                                        overapproximate(x, HPolygon, ε_iter) :
-                                        overapproximate(x, block_types_iter[i])
-    elseif ε_iter < Inf
-        overapproximate_fun =
-            (i, x) -> overapproximate(x, set_type_iter, ε_iter)
+    block_options_iter = options[:block_options_iter]
+    if block_options_iter isa AbstractVector ||
+            block_options_iter isa Dict{Int, Any}
+        # individual overapproximation options per block
+        overapproximate_fun = (i, X) -> overapproximate(X, block_options_iter[i])
     else
-        overapproximate_fun = (i, x) -> overapproximate(x, set_type_iter)
+        # uniform overapproximation options for each block
+        overapproximate_fun = (i, X) -> overapproximate(X, block_options_iter)
     end
     push!(args, overapproximate_fun)
 
@@ -142,7 +118,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         end
         # further sets of the series
         function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
-            if ε_iter == Inf
+            if has_constant_directions(block_options_iter, i)
                 # forget sets if we do not use epsilon-close approximation
                 forget_sets!(x.X)
             end
@@ -245,4 +221,30 @@ function termination_inv_N(N, inv, k, set, t0)
     else
         return (false, false)
     end
+end
+
+function overapproximate(X::LazySet, pair::Pair)
+    return overapproximate(X, pair[1], pair[2])
+end
+
+function has_constant_directions(block_options::AbstractVector, i::Int)
+    return has_constant_directions(block_options[i])
+end
+
+function has_constant_directions(block_options::Dict{<:UnionAll, <:Real},
+                                 i::Int)
+    return has_constant_directions(block_options[i])
+end
+
+function has_constant_directions(block_options::Pair{<:UnionAll, <:Real},
+                                 i::Int)
+    return has_constant_directions(block_options[2])
+end
+
+function has_constant_directions(block_options::Real, i::Int)
+    return ε == Inf
+end
+
+function has_constant_directions(block_options, i::Int)
+    return true
 end
