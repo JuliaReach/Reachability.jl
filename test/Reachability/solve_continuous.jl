@@ -70,28 +70,28 @@ s = solve(IVP(LCS(A), X0),
 
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_sih=>true))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :sih_method=>"lazy"))
 
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_sih=>false))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :sih_method=>"concrete"))
 
 s = solve(IVP(LCS(sparse(A)), X0),
           Options(:T=>0.1),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_expm=>true,
-                      :lazy_expm_discretize=>true, :assume_sparse=>false))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :exp_method=>"lazy",
+                      :assume_sparse=>false))
 
 s = solve(IVP(LCS(sparse(A)), X0),
           Options(:T=>0.1),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :lazy_expm=>true,
-                      :lazy_expm_discretize=>true, :assume_sparse=>true))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :exp_method=>"lazy",
+                      :assume_sparse=>true))
 
 # uses Interval for set_type_init and set_type_iter but Hyperrectangle for
 # set_type_proj
 s = solve(IVP(LCS(sparse(A)), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[[i] for i in 1:4],
-                      :lazy_expm=>true, :lazy_expm_discretize=>true,
+                      :exp_method=>"lazy",
                       :set_type=>Interval))
 
 # ===============================

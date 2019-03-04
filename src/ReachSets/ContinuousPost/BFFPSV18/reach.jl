@@ -230,6 +230,8 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     Δ = @timing discretize(system, options[:δ], approximation=options[:approximation],
                                                 exp_method=options[:exp_method],
                                                 sih_method=options[:sih_method])
+
+    # TODO: remove this conversion and the option assume_sparse ?
     Δ = matrix_conversion_lazy_explicit(Δ, options)
     return reach(Δ, invariant, options)
 end

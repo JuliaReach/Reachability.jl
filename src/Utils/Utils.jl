@@ -519,7 +519,10 @@ end
 # convert SparseMatrixExp to explicit matrix
 function matrix_conversion_lazy_explicit(Δ, options)
     A = Δ.s.A
-    if options[:exp_method] == "lazy" # TODO: check this line
+
+    #=
+    old, TODO: remove or review if we want to have this option again
+    if !options[:lazy_expm] && options[:lazy_expm_discretize]
         info("Making lazy matrix exponential explicit...")
         @timing begin
             n = options[:n]
@@ -535,6 +538,9 @@ function matrix_conversion_lazy_explicit(Δ, options)
     else
         B = nothing
     end
+    =#
+
+    B = nothing
     return matrix_conversion(Δ, options; A_passed=B)
 end
 
