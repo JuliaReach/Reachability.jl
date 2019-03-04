@@ -24,7 +24,7 @@ end
 function options_BFFPSV18()
     return OptionSpec[
         # general options
-        OptionSpec(:approx_model, "forward", domain=String, domain_check=(
+        OptionSpec(:approximation, "forward", domain=String, domain_check=(
             v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
             info="model for bloating/continuous time analysis"),
         OptionSpec(:algorithm, "explicit", domain=String, domain_check=(
@@ -41,16 +41,10 @@ function options_BFFPSV18()
                  "containing its indices"),
 
         # discretization options
-        OptionSpec(:lazy_sih, false, domain=Bool,
+        OptionSpec(:sih_method, "concrete", domain=String,
             info="use a lazy symmetric interval hull in discretization?"),
-        OptionSpec(:lazy_expm, false, domain=Bool,
-            info="use a lazy matrix exponential all the time?"),
-        OptionSpec(:lazy_expm_discretize, false, domain=Bool,
-            info="use a lazy matrix exponential in discretization?"),
-        OptionSpec(:pade_expm, false, domain=Bool,
-            info="use the Padé approximant method (instead of Julia's " *
-                 " built-in 'exp') to compute the lazy matrix exponential " *
-                 "in discretization?"),
+        OptionSpec(:exp_method, "base", domain=String,
+            info="method to compute the matrix exponential"),
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
 
@@ -208,12 +202,6 @@ function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
 end
 
 function validation_BFFPSV18(𝑂)
-    # lazy_expm_discretize & lazy_expm
-    if !𝑂[:lazy_expm_discretize] && 𝑂[:lazy_expm]
-        throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
-            "':lazy_expm' with deactivated option ':lazy_expm_discretize'"))
-    end
-
     # block_types
     if haskey_specified(𝑂, :block_types)
         for (key, value) in 𝑂[:block_types]

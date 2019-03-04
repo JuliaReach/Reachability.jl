@@ -1,7 +1,7 @@
 const LDS = LinearDiscreteSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
 
-@inline Id(n) = Matrix{Float64}(I, n, n)
+@inline Id(n) = Matrix(1.0I, n, n)
 
 """
     discretize(𝑆, δ; [approximation], [exp_method], [sih_method])
