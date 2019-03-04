@@ -72,7 +72,7 @@ function cluster(op::DiscretePost,
         chull_oa = overapproximate(chull,
                                    dirs)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
-                reach_sets[end].t_end)]
+                reach_sets[end].t_end, reach_sets[end].k)]
     end
 end
 

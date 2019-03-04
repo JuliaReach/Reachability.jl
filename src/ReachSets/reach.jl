@@ -44,7 +44,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     if A isa SparseMatrixExp
         push!(args, Val(options[:assume_sparse]))
     end
-
+    steps = haskey(options.dict, :steps) ? options[:steps] : Vector{Int}()
     n = statedim(S)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
@@ -56,7 +56,6 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     set_type_init = options[:set_type_init]
     ε_iter = options[:ε_iter]
     set_type_iter = options[:set_type_iter]
-
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n
@@ -93,13 +92,16 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     else
         res_type = ReachSet{Hyperrectangle{NUM}, NUM}
     end
-    res = Vector{res_type}(undef, N)
-
+    if isempty(steps)
+        res = Vector{res_type}(undef, N)
+    else
+        res = Vector{res_type}(undef, length(steps))
+    end
     # shortcut if only the initial set is required
     if N == 1
         res[1] = res_type(
             CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
-            zero(NUM), options[:δ])
+            zero(NUM), options[:δ], 0)
         return res
     end
     push!(args, Xhat0)
@@ -202,11 +204,12 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     end
     push!(args, res)
 
+    push!(args, steps)
     # call the adequate function with the given arguments list
     info("- Computing successors")
     @timing begin
         index, skip = available_algorithms[algorithm_backend]["func"](args...)
-        if index < N || skip
+        if isempty(steps) && (index < N || skip)
             # shrink result array
             info("terminated prematurely, only computed $index/$N steps")
             deleteat!(res, (skip ? index : index + 1):N)

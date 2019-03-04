@@ -9,9 +9,11 @@ the reachable states for a given time interval.
 - `X`       -- set
 - `t_start` -- time interval lower bound
 - `t_end`   -- time interval upper bound
+- `k`   -- time step
 """
 struct ReachSet{S<:LazySet, N<:Real}
     X::S
     t_start::N
     t_end::N
+    k::Int
 end

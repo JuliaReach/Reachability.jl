@@ -136,7 +136,7 @@ function post(𝒫::ConcreteBlocksDiscretePost,
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
-                                                     reach_set.t_end))
+                                                     reach_set.t_end, reach_set.k))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,

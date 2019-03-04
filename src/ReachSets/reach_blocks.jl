@@ -38,7 +38,7 @@ given block indices.
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
-@inline store!(res, k, X, t0, t1, N) = (res[k] = ReachSet(X, t0, t1))
+@inline store!(res, ind, k, X, t0, t1, N) = (res[ind] = ReachSet(X, t0, t1, k))
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -61,7 +61,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    store!(res, 1, 1, X_store, t0, t1, NUM)
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
@@ -104,7 +104,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
+        store!(res, k, k, X_store, t0, t1, NUM)
 
         terminate, skip = termination(k, X_store, t0)
         if terminate
@@ -139,7 +139,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
                        termination::Function,
-                       res::Vector{<:ReachSet}
+                       res::Vector{<:ReachSet},
+                       steps::Vector{Int}
                        )::Tuple{Int, Bool} where {NUM}
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
@@ -147,12 +148,14 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    if isempty(steps)
+        store!(res, 1, 1, X_store, t0, t1, NUM)
+    end
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
     end
-
+    
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = copy(ϕ)
@@ -170,35 +173,48 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
+
+    ind = isempty(steps) ? 2 : 1
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            for (j, bj) in enumerate(partition)
-                arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
+        if isempty(steps) || (k in steps)
+            for i in 1:b
+                bi = partition[blocks[i]]
+                for (j, bj) in enumerate(partition)
+                    arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
+                end
+                if U != nothing
+                    arr[arr_length] = Whatk[i]
+                end
+                Xhatk[i] = (output_function == nothing) ?
+                    overapproximate(blocks[i], MinkowskiSumArray(arr)) :
+                    MinkowskiSumArray(copy(arr))
             end
-            if U != nothing
-                arr[arr_length] = Whatk[i]
+
+            array = CartesianProductArray(copy(Xhatk))
+
+            X_store = (output_function == nothing) ?
+                array :
+                box_approximation(output_function(array))
+            t0 = t1
+            t1 += δ
+            store!(res, ind, k, X_store, t0, t1, NUM)
+
+            terminate, skip = termination(k, X_store, t0)
+            if terminate
+                break
             end
-            Xhatk[i] = (output_function == nothing) ?
-                overapproximate(blocks[i], MinkowskiSumArray(arr)) :
-                MinkowskiSumArray(copy(arr))
+
+            if k == steps[length(steps)]
+                break
+            end
+            ind += 1
+
+        else
+            t0 = t1
+            t1 += δ
         end
-        array = CartesianProductArray(copy(Xhatk))
-
-        X_store = (output_function == nothing) ?
-            array :
-            box_approximation(output_function(array))
-        t0 = t1
-        t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
-
-        terminate, skip = termination(k, X_store, t0)
-        if terminate
-            break
-        end
-
         if U != nothing
             for i in 1:b
                 bi = partition[blocks[i]]
@@ -206,7 +222,6 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                     Whatk[i] + row(ϕpowerk, bi) * inputs)
             end
         end
-
         _A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
         copyto!(ϕpowerk, ϕpowerk_cache)
 
@@ -215,6 +230,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
     return k, skip
 end
+
 
 # lazy_expm sparse
 function reach_blocks!(ϕ::SparseMatrixExp{NUM},
