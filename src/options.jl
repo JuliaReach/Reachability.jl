@@ -211,6 +211,7 @@ Supported options:
 - `:T`             -- time horizon; alias `:time_horizon`
 - `:algorithm`     -- algorithm backend
 - `:vars`          -- variables of interest
+- `:global_vars`          -- variables of interest for HS
 - `:partition`     -- block partition; elements are 2D vectors containing the
                       start and end of a block
 - `:block_types`   -- short hand to set `:block_types_init` and
@@ -295,6 +296,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:property], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:algorithm], "explicit")
     check_aliases_and_add_default_value!(dict, dict_copy, [:vars], 1:options.dict[:n])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:global_vars], Vector{Int}())
     check_aliases_and_add_default_value!(dict, dict_copy, [:lazy_expm], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:assume_sparse], false)
     check_aliases_and_add_default_value!(dict, dict_copy, [:pade_expm], false)
@@ -373,6 +375,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             expected_type = AbstractVector{Int}
             domain_constraints =
                 (v::AbstractVector{Int}  ->  length(v) > 0 && all(x -> x > 0, v))
+        elseif key == :global_vars
+            expected_type = AbstractVector{Int}
+            domain_constraints =
+                (v::AbstractVector{Int}  ->  length(v) >= 0 && all(x -> x > 0, v))
         elseif key == :partition
             expected_type = AbstractVector{<:AbstractVector{Int}}
         elseif key == :block_types

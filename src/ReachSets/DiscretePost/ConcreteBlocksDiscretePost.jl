@@ -72,15 +72,15 @@ function tube⋂inv!(𝒫::ConcreteBlocksDiscretePost,
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
-
-        R⋂I = intersection(invariant, reach_set.X)
+        R⋂I = intersection(invariant, reach_set.X, true)
         if isempty(R⋂I)
             break
         end
         #R⋂I = overapproximate(R⋂I, dirs)
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2]))
+            reach_set.t_end + start_interval[2],
+            reach_set.k))
         count = count + 1
     end
 
@@ -114,7 +114,7 @@ function post(𝒫::ConcreteBlocksDiscretePost,
         println(length(tube⋂inv))
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            R⋂G = intersection(guard, reach_set.X)
+            R⋂G = intersection(guard, reach_set.X, true)
             if isempty(R⋂G)
                 continue
             end
@@ -123,21 +123,22 @@ function post(𝒫::ConcreteBlocksDiscretePost,
             # TODO converting to HPolytope ?? handle automatically ??
 
             #A⌜R⋂G⌟ = LinearMap(assignment, oR)
-
             A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
             # intersect with target invariant
-            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant)
+            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant, true)
 
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
+            push!(post_jump, ReachSet{LazySet{N}, N}(overapproximate(A⌜R⋂G⌟⋂I),
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
         end
+
+        println(length(post_jump))
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)

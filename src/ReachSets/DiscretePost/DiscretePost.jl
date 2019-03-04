@@ -23,28 +23,35 @@ function postprocess(op,
                      waiting_list,
                      passed_list,
                      target_loc_id,
-                     jumps)
+                     jumps,
+                     fixpoint_list)
     fixpoint_strategy = options[:fixpoint_check]
 
     if fixpoint_strategy == :eager
         # eager fixpoint checking
-        post_jump_filtered =
+        post_jump_filtered_l =
             filter(x -> !isfixpoint(op, x, passed_list, target_loc_id),
-                   post_jump)
+                   fixpoint_list)
+        post_jump_filtered_h =
+           filter(x -> isfiltered(x, fixpoint_list),
+                  post_jump)
     else
-        post_jump_filtered = post_jump
+        post_jump_filtered_h = post_jump
     end
 
-    if (isempty(post_jump_filtered))
+    if (isempty(post_jump_filtered_l) || isempty(post_jump_filtered_h))
         # fixpoint found or transition can never be taken
         return
     end
 
     # apply clustering
-    clustered = cluster(op, post_jump_filtered, options)
+    clustered_h = cluster(op, post_jump_filtered_h, options)
+
+    clustered_l = cluster(op, post_jump_filtered_l, options)
 
     # push new sets after jump (unless a fixpoint is detected)
-    for reach_set in clustered
+    for rs_i in length(clustered_l)
+        reach_set = clustered_l[rs_i]
         if fixpoint_strategy != :none
             if fixpoint_strategy == :lazy &&
                     isfixpoint(op, reach_set, passed_list, target_loc_id)
@@ -52,7 +59,7 @@ function postprocess(op,
             end
             push!(passed_list[target_loc_id], reach_set)
         end
-        push!(waiting_list, (target_loc_id, reach_set, jumps))
+        push!(waiting_list, (target_loc_id, clustered_h[rs_i], jumps))
     end
 end
 
@@ -69,8 +76,12 @@ function cluster(op::DiscretePost,
         # oct directions
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
-        chull_oa = overapproximate(chull,
-                                   dirs)
+        if isempty(chull.array)
+            chull_oa = LazySets.EmptySet()
+        else
+            chull_oa = overapproximate(chull, dirs)
+        end
+        #println(chull)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
                 reach_sets[end].t_end, reach_sets[end].k)]
     end
@@ -100,6 +111,16 @@ end
 function use_precise_ρ(op::DiscretePost,
                              cap::Intersection{N})::Bool where N<:Real
     return true
+end
+
+function isfiltered(x::ReachSet{LazySet{N}, N},
+    reach_sets::Vector{ReachSet{LazySet{N}, N}},)::Bool where N<:Real
+    for reach_set in reach_sets
+        if reach_set.k == x.k
+            return true
+        end
+    end
+    return false
 end
 
 function get_overapproximation_option(op::DiscretePost, n::Int)
