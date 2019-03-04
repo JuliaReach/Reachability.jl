@@ -35,8 +35,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     n = statedim(S)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
-    dir = interpret_template_direction_symbol(
-        options[:template_directions_init])
+    dir = template_direction_symbols[options[:template_directions_init]]
     block_sizes = compute_block_sizes(partition)
     N = ceil(Int, options[:T] / options[:δ])
     ε_init = options[:ε_init]
@@ -90,8 +89,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     push!(args, U)
 
     # raw overapproximation function
-    dir = interpret_template_direction_symbol(
-        options[:template_directions_iter])
+    dir = template_direction_symbols[options[:template_directions_iter]]
     if dir != nothing
         overapproximate_fun =
             (i, x) -> overapproximate(x, dir(length(partition[i])))

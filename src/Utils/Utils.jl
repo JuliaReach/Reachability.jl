@@ -29,7 +29,7 @@ export @filename_to_png,
        @relpath
 
 # internal conversion
-export interpret_template_direction_symbol,
+export template_direction_symbols,
        matrix_conversion,
        matrix_conversion_lazy_explicit
 
@@ -407,34 +407,11 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     return partition_out
 end
 
-"""
-    interpret_template_direction_symbol(symbol::Symbol)
-
-Return a template direction type for a given symbol.
-
-### Input
-
-- `symbol` -- symbol
-
-### Output
-
-The template direction type if it is known, or `nothing` otherwise.
-"""
-function interpret_template_direction_symbol(symbol::Symbol)
-    if symbol == :box
-        dir = Approximations.BoxDirections
-    elseif symbol == :oct
-        dir = Approximations.OctDirections
-    elseif symbol == :boxdiag
-        dir = Approximations.BoxDiagDirections
-    else
-        if symbol != :nothing
-            warn("ignoring unknown template direction $symbol")
-        end
-        dir = nothing
-    end
-    return dir
-end
+template_direction_symbols = Dict(
+    :box     => Approximations.BoxDirections,
+    :oct     => Approximations.OctDirections,
+    :boxdiag => Approximations.BoxDiagDirections
+    )
 
 """
     compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
