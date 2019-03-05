@@ -182,9 +182,9 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
-    Δ = @timing discretize(S, options[:δ], approximation=options[:approximation],
-                                                exp_method=options[:exp_method],
-                                                sih_method=options[:sih_method])
+    Δ = @timing discretize(S, options[:δ], algorithm=options[:discretization],
+                                           exp_method=options[:exp_method],
+                                           sih_method=options[:sih_method])
     # TODO: remove this conversion and the option assume_sparse ?
     Δ = matrix_conversion(Δ, options)
     return check_property(Δ, property, options)

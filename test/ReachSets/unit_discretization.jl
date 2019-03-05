@@ -8,11 +8,11 @@ let # preventing global scope
     δ = 0.01
 
     # no bloating, use default options
-    discr_sys_homog = discretize(cont_sys_homog, δ, approximation="nobloating")
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="nobloating")
     @test inputdim(discr_sys_homog) == 0 # there is no input set!
 
     # no bloating, use Pade approximation
-    discr_sys_homog = discretize(cont_sys_homog, δ, approximation="nobloating", exp_method="pade")  
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="nobloating", exp_method="pade")  
     @test inputdim(discr_sys_homog) == 0
 
     # bloating, default options
@@ -20,15 +20,15 @@ let # preventing global scope
     @test inputdim(discr_sys_homog) == 0
 
     # bloating, first order
-    discr_sys_homog = discretize(cont_sys_homog, δ, approximation="firstorder")
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="firstorder")
     @test inputdim(discr_sys_homog) == 0
 
     # bloating, forward interpolation
-    discr_sys_homog = discretize(cont_sys_homog, δ, approximation="forward")
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="forward")
     @test inputdim(discr_sys_homog) == 0
 
     # bloating, backward interpolation
-    discr_sys_homog = discretize(cont_sys_homog, δ, approximation="backward")
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="backward")
     @test inputdim(discr_sys_homog) == 0
 
     # ===============================================================
@@ -39,7 +39,7 @@ let # preventing global scope
     cont_sys = IVP(CLCCS(A, B, nothing, U), X0)
 
     # no bloating
-    discr_sys = discretize(cont_sys, δ, approximation="nobloating")
+    discr_sys = discretize(cont_sys, δ, algorithm="nobloating")
     @test inputdim(discr_sys) == 4
 
     inputs = next_set(inputset(discr_sys))
@@ -48,7 +48,7 @@ let # preventing global scope
     @test isa(inputs.X, Ball2) && inputs.X.center == ones(4) && inputs.X.radius == 0.5
 
     # no bloating, use Pade approximation
-    discr_sys = discretize(cont_sys, δ, approximation="nobloating", exp_method="pade")
+    discr_sys = discretize(cont_sys, δ, algorithm="nobloating", exp_method="pade")
     @test inputdim(discr_sys) == 4
 
     # bloating, use scaling and squaring method
@@ -63,7 +63,7 @@ let # preventing global scope
     discr_sys = discretize(cont_sys, δ, exp_method="pade")
     @test inputdim(discr_sys) == 4
 
-    discr_sys = discretize(cont_sys, δ, approximation="firstorder")
+    discr_sys = discretize(cont_sys, δ, algorithm="firstorder")
     @test inputdim(discr_sys) == 4
 
     # ===================================================================
@@ -73,7 +73,7 @@ let # preventing global scope
     cont_sys = IVP(CLCCS(A, Matrix(1.0I, 4, 4), nothing, VaryingInput(Ui)), X0)
 
     # no bloating
-    discr_sys = discretize(cont_sys, δ, approximation="nobloating")
+    discr_sys = discretize(cont_sys, δ, algorithm="nobloating")
     Ui_d = inputset(discr_sys)
     @test length(Ui_d) == 3
     for (i, inputs) in enumerate(discr_sys.s.U)
@@ -93,7 +93,7 @@ let # preventing global scope
     end
 
     # no bloating, use Pade approximation
-    discr_sys = discretize(cont_sys, δ, approximation="nobloating", exp_method="pade")
+    discr_sys = discretize(cont_sys, δ, algorithm="nobloating", exp_method="pade")
 
     # bloating
     discr_sys = discretize(cont_sys, δ, exp_method="base")

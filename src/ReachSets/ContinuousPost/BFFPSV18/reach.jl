@@ -227,7 +227,7 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
-    Δ = @timing discretize(system, options[:δ], approximation=options[:approximation],
+    Δ = @timing discretize(system, options[:δ], algorithm=options[:discretization],
                                                 exp_method=options[:exp_method],
                                                 sih_method=options[:sih_method])
 
