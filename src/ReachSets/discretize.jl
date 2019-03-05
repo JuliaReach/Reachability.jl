@@ -13,8 +13,9 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
 - `𝑆`             -- initial value problem for a continuous affine ODE with
                      non-deterministic inputs
 - `δ`             -- step size
-- `algorithm`     -- the algorithm used to compute the approximation model for
-                     the discretization, choose among:
+- `algorithm`     -- (optional, default: `"forward"`) the algorithm used to
+                     compute the approximation model for the discretization,
+                     choose among:
 
     - `"forward"`    -- use forward-time interpolation
     - `"backward"`   -- use backward-time interpolation
@@ -134,6 +135,12 @@ function exp_Aδ(A::AbstractMatrix{Float64}, δ::Float64; exp_method="base")
     end
 end
 
+@inline function Pmatrix(A, δ, n)
+    return [A*δ     sparse(δ*I, n, n)  spzeros(n, n)    ;
+            spzeros(n, 2*n          )  sparse(δ*I, n, n);
+            spzeros(n, 3*n          )                   ]
+end
+
 """
     Φ₁(A, δ; [exp_method])
 
@@ -190,21 +197,15 @@ Heidelberg, 2011.
 function Φ₁(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix([A*δ     sparse(δ*I, n, n)  spzeros(n, n);
-                   spzeros(n, 2*n) sparse(δ*I, n, n);
-                   spzeros(n, 3*n)]))
+        P = expmat(Matrix(Pmatrix(A, δ, n)))
         Φ₁_Aδ = P[1:n, (n+1):2*n]
 
     elseif exp_method == "lazy"
-        P = SparseMatrixExp([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                             spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
+        P = SparseMatrixExp(Pmatrix(A, δ, n))
         Φ₁_Aδ = sparse(get_columns(P, (n+1):2*n)[1:n, :])
 
     elseif exp_method == "pade"
-        P = padm([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                  spzeros(n, 2*n) sparse(δ*I, n, n);
-                  spzeros(n, 3*n)])
+        P = padm(Pmatrix(A, δ, n))
         Φ₁_Aδ = P[1:n, (n+1):2*n]
 
     else
@@ -271,21 +272,15 @@ Heidelberg, 2011.
 function Φ₂(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                   spzeros(n, 2*n) sparse(δ*I, n, n);
-                   spzeros(n, 3*n)]))
+        P = expmat(Matrix(Pmatrix(A, δ, n)))
         Φ₂_Aδ = P[1:n, (2*n+1):3*n]
 
     elseif exp_method == "lazy"
-        P = SparseMatrixExp([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                             spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
+        P = SparseMatrixExp(Pmatrix(A, δ, n))
         Φ₂_Aδ = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
 
     elseif exp_method == "pade"
-        P = padm([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                  spzeros(n, 2*n) sparse(δ*I, n, n);
-                  spzeros(n, 3*n)])
+        P = padm(Pmatrix(A, δ, n))
         Φ₂_Aδ = P[1:n, (2*n+1):3*n]
 
     else
