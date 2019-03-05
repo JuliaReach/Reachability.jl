@@ -318,7 +318,7 @@ value problem.
 
 The initial value problem for a discrete system. In particular:
 
-- if the input  system is homogeneous, a linear discrete system, `LinearDiscreteSystem`
+- if the input system is homogeneous, a linear discrete system, `LinearDiscreteSystem`
   is returned,
 - otherwise a constrained linear discrete systen is returned,
   `ConstrainedLinearControlDiscreteSystem`.
