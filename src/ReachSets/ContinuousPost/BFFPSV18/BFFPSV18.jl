@@ -24,11 +24,9 @@ end
 function options_BFFPSV18()
     return OptionSpec[
         # general options
-        OptionSpec(:discretization, "forward", domain=String, domain_check=(
-            v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
+        OptionSpec(:discretization, "forward", domain=String,
             info="model for bloating/continuous time analysis"),
-        OptionSpec(:algorithm, "explicit", domain=String, domain_check=(
-            v  ->  v in ["explicit", "wrap"]), info="algorithm backend"),
+        OptionSpec(:algorithm, "explicit", domain=String,
         OptionSpec(:δ, 1e-2, domain=Float64, aliases=[:sampling_time],
             domain_check=(v  ->  v > 0.), info="time step"),
         OptionSpec(:vars, Int[], domain=AbstractVector{Int}, domain_check=(
