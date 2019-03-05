@@ -44,7 +44,7 @@ let # preventing global scope
 
     inputs = next_set(inputset(discr_sys))
     @test dim(inputs) == 4
-    @test isa(inputs, LazySets.LinearMap)
+    @test isa(inputs, LinearMap)
     @test isa(inputs.X, Ball2) && inputs.X.center == ones(4) && inputs.X.radius == 0.5
 
     # no bloating, use Pade approximation
@@ -79,15 +79,15 @@ let # preventing global scope
     for (i, inputs) in enumerate(discr_sys.s.U)
         if i == 1
             @test dim(inputs) == 4
-            @test isa(inputs, LazySets.LinearMap)
+            @test isa(inputs, LinearMap)
             @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*ones(4) && inputs.X.radius == 0.2
         elseif i == 2
             @test dim(inputs) == 4
-            @test isa(inputs, LazySets.LinearMap)
+            @test isa(inputs, LinearMap)
             @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*2*ones(4) && inputs.X.radius == 0.2*2
         else
             @test dim(inputs) == 4
-            @test isa(inputs, LazySets.LinearMap)
+            @test isa(inputs, LinearMap)
             @test isa(inputs.X, Ball2) && inputs.X.center == 0.01*3*ones(4) && inputs.X.radius == 0.2*3
         end
     end

@@ -33,7 +33,7 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
                   the evaluation of the action of the matrix exponential using the
                   `expmv` implementation from `Expokit`
 
-- `sih_method`  -- (optional, default: `"lazy"`) the method used to take the
+- `sih_method`  -- (optional, default: `"concrete"`) the method used to take the
                     symmetric interval hull operation, choose among:
 
     - `"concrete"` -- compute the full symmetric interval hull using the function
@@ -83,7 +83,7 @@ function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     δ::Float64;
                     algorithm::String="forward",
                     exp_method::String="base",
-                    sih_method::String="lazy")
+                    sih_method::String="concrete")
 
     if algorithm in ["forward", "backward"]
         return _discretize_interpolation(𝑆, δ, algorithm=algorithm,
@@ -425,7 +425,7 @@ function _discretize_firstorder(𝑆::InitialValueProblem,
             return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
 
         elseif Uset isa VaryingInput
-            Ud = Vector{LazySet}(undef, length(Uset)) # TODO: use concrete type of Uset? how?
+            Ud = Vector{LazySet}(undef, length(Uset))
             for (i, Ui) in enumerate(Uset)
                 RU = norm(Ui, p)
 
@@ -555,7 +555,7 @@ Compute bloating factors using forward or backward interpolation.
                   the evaluation of the action of the matrix exponential using the
                   `expmv` implementation from `Expokit`
 
-- `sih_method`    -- (optional, default: `"lazy"`) the method used to take the
+- `sih_method`    -- (optional, default: `"concrete"`) the method used to take the
                      symmetric interval hull operation, choose among:
 
     - `"concrete"` -- compute the full symmetric interval hull
@@ -605,12 +605,12 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
                                    δ::Float64;
                                    algorithm::String="forward",
                                    exp_method::String="base",
-                                   sih_method::String="lazy")
+                                   sih_method::String="concrete")
 
-    if sih_method == "lazy"
-        sih = SymmetricIntervalHull
-    elseif sih_method == "concrete"
+    if sih_method == "concrete"
         sih = symmetric_interval_hull
+    elseif sih_method == "lazy"
+        sih = SymmetricIntervalHull
     else
         throw(ArgumentError("the method $sih_method is unknown"))
     end
@@ -647,7 +647,7 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
     if U isa ConstantInput
         Ud = map(ui -> δ*ui ⊕ Eψ0, U)
     elseif U isa VaryingInput
-        Ud = Vector{LazySet}(undef, length(U)) # TODO: use concrete type for Uset? how?
+        Ud = Vector{LazySet}(undef, length(U))
         for (k, Uk) in enumerate(U)
             Eψk = sih(Phi2Aabs * sih(A * Uk))
             Ud[k] = δ * Uk ⊕ Eψk

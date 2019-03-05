@@ -185,7 +185,6 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
     Δ = @timing discretize(S, options[:δ], algorithm=options[:discretization],
                                            exp_method=options[:exp_method],
                                            sih_method=options[:sih_method])
-    # TODO: remove this conversion and the option assume_sparse ?
     Δ = matrix_conversion(Δ, options)
     return check_property(Δ, property, options)
 end

@@ -231,7 +231,6 @@ function reach(system::IVP{<:AbstractContinuousSystem},
                                                 exp_method=options[:exp_method],
                                                 sih_method=options[:sih_method])
 
-    # TODO: remove this conversion and the option assume_sparse ?
     Δ = matrix_conversion(Δ, options)
     return reach(Δ, invariant, options)
 end
