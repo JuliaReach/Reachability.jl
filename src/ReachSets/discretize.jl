@@ -4,7 +4,7 @@ const CLCDS = ConstrainedLinearControlDiscreteSystem
 @inline Id(n) = Matrix(1.0I, n, n)
 
 """
-    discretize(𝑆, δ; [approximation], [exp_method], [sih_method])
+    discretize(𝑆, δ; [algorithm], [exp_method], [sih_method])
 
 Apply an approximation model to `S` obtaining a discrete initial value problem.
 
@@ -13,8 +13,8 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
 - `𝑆`             -- initial value problem for a continuous affine ODE with
                      non-deterministic inputs
 - `δ`             -- step size
-- `approximation` -- the method to compute the approximation model for the
-                     discretization, choose among:
+- `algorithm`     -- the algorithm used to compute the approximation model for
+                     the discretization, choose among:
 
     - `"forward"`    -- use forward-time interpolation
     - `"backward"`   -- use backward-time interpolation
@@ -61,7 +61,7 @@ together with the coefficient matrix ``ϕ = e^{Aδ}`` and a transformed
 set of inputs if `U` is non-empty.
 
 In the literature, the method to obtain `Ω₀` is called the *approximation model*
-and different alternatives have been proposed. See the argument `approximation`
+and different alternatives have been proposed. See the argument `algorithm`
 for available options. For the reference to the original papers, see the docstring
 of each method.
 
@@ -71,7 +71,7 @@ discretized system.
 
 In the discrete-time case, there is no bloating of the initial states and the
 input is assumed to remain constant between sampled times. Use the option
-`approximation="nobloating"` for this setting.
+`algorithm="nobloating"` for this setting.
 
 Several methods to compute the matrix exponential are availabe. Use `exp_method`
 to select one. For very large systems, computing the full matrix exponential is
@@ -81,19 +81,19 @@ over vectors when needed, `e^{δA} v` for each `v`. Use the option
 """
 function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     δ::Float64;
-                    approximation::String="forward",
+                    algorithm::String="forward",
                     exp_method::String="base",
                     sih_method::String="lazy")
 
-    if approximation in ["forward", "backward"]
-        return _discretize_interpolation(𝑆, δ, approximation=approximation,
+    if algorithm in ["forward", "backward"]
+        return _discretize_interpolation(𝑆, δ, algorithm=algorithm,
                     exp_method=exp_method, sih_method=sih_method)
-    elseif approximation == "firstorder"
+    elseif algorithm == "firstorder"
         return _discretize_firstorder(𝑆, δ, exp_method=exp_method)
-    elseif approximation == "nobloating"
+    elseif algorithm == "nobloating"
         return _discretize_nobloating(𝑆, δ, exp_method=exp_method)
     else
-        throw(ArgumentError("the approximation model $approximation is unknown"))
+        throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
 end
 
@@ -533,7 +533,7 @@ function  _discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousS
 end
 
 """
-    _discretize_interpolation(𝑆, δ; [approximation], [exp_method], [sih_method])
+    _discretize_interpolation(𝑆, δ; [algorithm], [exp_method], [sih_method])
 
 Compute bloating factors using forward or backward interpolation.
 
@@ -541,8 +541,8 @@ Compute bloating factors using forward or backward interpolation.
 
 - `𝑆`             -- a continuous system
 - `δ`             -- step size
-- `approximation` -- choose the approximation model among `"forward"` and
-                     `"backward"`
+- `algorithm`     -- choose the algorithm to compute the approximation model
+                     among `"forward"` and `"backward"`
 - `exp_method`    -- (optional, default: `"base"`) the method used to take the matrix
                      exponential of the coefficient matrix, choose among:
 
@@ -603,7 +603,7 @@ Heidelberg, 2011.
 """
 function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                                    δ::Float64;
-                                   approximation::String="forward",
+                                   algorithm::String="forward",
                                    exp_method::String="base",
                                    sih_method::String="lazy")
 
@@ -624,12 +624,12 @@ function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuou
     # compute the transformation matrix to bloat the initial states
     Phi2Aabs = Φ₂(abs.(A), δ, exp_method=exp_method)
 
-    if approximation == "forward"
+    if algorithm == "forward"
         Einit = sih(Phi2Aabs * sih((A * A) * X0))     # use Eplus
-    elseif approximation == "backward"
+    elseif algorithm == "backward"
         Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use Eminus
     else
-        throw(ArgumentError("the method $approximation is unknown"))
+        throw(ArgumentError("the algorithm $approximation is unknown"))
     end
 
     # early return for homogeneous systems
