@@ -84,10 +84,13 @@ function schur_transform(S::InitialValueProblem)
     T_inverse = F[:vectors]
 
     if S.s isa DiscreteSystem
-        return (DiscreteSystem(A_new, X0_new, U_new), T_inverse)
+        s = ConstrainedLinearControlDiscreteSystem(A_new, Matrix(1.0I, size(A_new)), nothing, U_new)
+        p = InitialValueProblem(s, X0_new)
     elseif S.s isa ContinuousSystem
-        return (ContinuousSystem(A_new, X0_new, U_new), T_inverse)
+        s = ConstrainedLinearControlContinuousSystem(A_new, Matrix(1.0I, size(A_new)), nothing, U_new)
+        p = InitialValueProblem(s, X0_new)
     end
+    return (p, T_inverse)
 end
 
 end # module

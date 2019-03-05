@@ -15,6 +15,7 @@ import LazySets.constrained_dimensions
 
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
 
+# TODO: kept for backwards-compatibility. To be removed.
 # no input: x' = Ax, x(0) = X0
 ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LCS(A), X0)
 DiscreteSystem(A::AbstractMatrix, X0::LazySet) = IVP(LDS(A), X0)
@@ -145,7 +146,7 @@ Adds an extra dimension to a continuous system.
 julia> using MathematicalSystems
 julia> A = sprandn(3, 3, 0.5);
 julia> X0 = BallInf(zeros(3), 1.0);
-julia> s = ContinuousSystem(A, X0);
+julia> s = InitialValueProblem(LinearContinuousSystem(A), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -154,8 +155,8 @@ julia> statedim(sext)
 If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
-julia> U = Ball2(ones(3), 0.1);
-julia> s = ContinuousSystem(A, X0, U);
+julia> U = ConstantInput(Ball2(ones(3), 0.1));
+julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -168,8 +169,8 @@ Extending a system with a varying input set:
 If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
-julia> U = [Ball2(ones(3), 0.1 * i) for i in 1:3];
-julia> s = ContinuousSystem(A, X0, U);
+julia> U = VaryingInput([Ball2(ones(3), 0.1 * i) for i in 1:3]);
+julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -192,10 +193,11 @@ function add_dimension(cs, m=1)
     X0ext = add_dimension(cs.x0, m)
     if hasmethod(inputset, Tuple{typeof(cs.s)})
         Uext = map(x -> add_dimension(x, m), inputset(cs))
-        return ContinuousSystem(Aext, X0ext, Uext)
+        s = ConstrainedLinearControlContinuousSystem(Aext, Matrix(1.0I, size(Aext)), nothing, Uext)
     else
-        return ContinuousSystem(Aext, X0ext)
+        s = LinearContinuousSystem(Aext)
     end
+    return InitialValueProblem(s, X0ext)
 end
 
 """
