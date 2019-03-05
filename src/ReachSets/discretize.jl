@@ -634,7 +634,8 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     Ω0 = ConvexHull(X0, ϕ * X0 ⊕ δ*U0 ⊕ Eψ0 ⊕ Einit)
 
     if U isa ConstantInput
-        Ud = map(ui -> δ*ui ⊕ Eψ0, U)
+        Ud = ConstantInput(δ*U0 ⊕ Eψ0)
+
     elseif U isa VaryingInput
         Ud = Vector{LazySet}(undef, length(U))
         for (k, Uk) in enumerate(U)
@@ -642,6 +643,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
             Ud[k] = δ * Uk ⊕ Eψk
         end
         Ud = VaryingInput(Ud)
+
     else
         throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
