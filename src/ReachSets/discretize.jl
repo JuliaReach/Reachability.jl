@@ -416,7 +416,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
 
             # transformation of the inputs
             □β = Ballp(p, zeros(n), β)
-            Ud = map(u -> δ*u ⊕ □β, Uset)
+            Ud = ConstantInput(δ*U ⊕ □β)
             return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
 
         elseif Uset isa VaryingInput
