@@ -15,6 +15,7 @@ import LazySets.constrained_dimensions
 
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
 
+#=
 # TODO: kept for backwards-compatibility. To be removed.
 # no input: x' = Ax, x(0) = X0
 ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LCS(A), X0)
@@ -33,6 +34,7 @@ ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = Continu
 
 DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, convert(typeof(A), convert(typeof(A), Matrix{eltype(A)}(I, size(A)))), nothing, U), X0)
 DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
+=#
 
 # convenience functions
 next_set(inputs::ConstantInput) = collect(nextinput(inputs, 1))[1]
