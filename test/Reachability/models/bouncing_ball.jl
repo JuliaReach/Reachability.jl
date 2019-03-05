@@ -16,7 +16,7 @@ function bouncing_ball()
     U = Singleton([1.0])
     inv = HalfSpace([-1.0, 0.0], 0.0) # x >= 0
     m1 = ConstrainedLinearControlContinuousSystem(
-            A, Matrix(1.0I, size(B, 1), size(B, 1)), inv, B*U)
+            A, Matrix(1.0I, size(B, 1), size(B, 1)), inv, ConstantInput(B*U))
 
     # modes
     modes = [m1]

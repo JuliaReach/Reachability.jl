@@ -42,7 +42,7 @@ function options_BFFPSV18()
 
         # discretization options
         OptionSpec(:sih_method, "concrete", domain=String,
-            info="use a lazy symmetric interval hull in discretization?"),
+            info="method to compute the symmetric interval hull in discretization"),
         OptionSpec(:exp_method, "base", domain=String,
             info="method to compute the matrix exponential"),
         OptionSpec(:assume_sparse, false, domain=Bool,

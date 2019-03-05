@@ -518,30 +518,7 @@ end
 
 # convert SparseMatrixExp to explicit matrix
 function matrix_conversion_lazy_explicit(Δ, options)
-    A = Δ.s.A
-
-    #=
-    old, TODO: remove or review if we want to have this option again
-    if !options[:lazy_expm] && options[:lazy_expm_discretize]
-        info("Making lazy matrix exponential explicit...")
-        @timing begin
-            n = options[:n]
-            if options[:assume_sparse]
-                B = sparse(Int[], Int[], eltype(A)[], n, n)
-            else
-                B = Matrix{eltype(A)}(n, n)
-            end
-            for i in 1:n
-                B[i, :] = get_row(A, i)
-            end
-        end
-    else
-        B = nothing
-    end
-    =#
-
-    B = nothing
-    return matrix_conversion(Δ, options; A_passed=B)
+    return matrix_conversion(Δ, options; A_passed=Δ.s.A)
 end
 
 end # module

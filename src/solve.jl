@@ -184,7 +184,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
         end
-        reach_tube = solve!(IVP(CLCCS(loc.A, Matrix(1.0I, size(loc.A)), nothing, ConstantInput(loc.U)), X0.X),
+        reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
