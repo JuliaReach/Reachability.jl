@@ -232,7 +232,7 @@ function reach(system::IVP{<:AbstractContinuousSystem},
                                                 sih_method=options[:sih_method])
 
     # TODO: remove this conversion and the option assume_sparse ?
-    Δ = matrix_conversion_lazy_explicit(Δ, options)
+    Δ = matrix_conversion(Δ, options)
     return reach(Δ, invariant, options)
 end
 

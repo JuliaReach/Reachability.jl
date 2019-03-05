@@ -186,6 +186,6 @@ function check_property(S::IVP{<:AbstractContinuousSystem},
                                                 exp_method=options[:exp_method],
                                                 sih_method=options[:sih_method])
     # TODO: remove this conversion and the option assume_sparse ?
-    Δ = matrix_conversion_lazy_explicit(Δ, options)
+    Δ = matrix_conversion(Δ, options)
     return check_property(Δ, property, options)
 end

@@ -508,17 +508,12 @@ function matrix_conversion(Δ, options; A_passed=nothing)
     if create_new_system
         # set new matrix
         if hasmethod(inputset, Tuple{typeof(Δ.s)})
-            Δ = DiscreteSystem(A_new, Δ.x0, inputset(Δ))
+            Δ = IVP(CLCDS(A_new, Matrix(1.0I, size(A_new)), nothing, inputset(Δ)), Δ.x0)
         else
-            Δ = DiscreteSystem(A_new, Δ.x0)
+            Δ = IVP(LDS(A_new), Δ.x0)
         end
     end
     return Δ
-end
-
-# convert SparseMatrixExp to explicit matrix
-function matrix_conversion_lazy_explicit(Δ, options)
-    return matrix_conversion(Δ, options; A_passed=Δ.s.A)
 end
 
 end # module
