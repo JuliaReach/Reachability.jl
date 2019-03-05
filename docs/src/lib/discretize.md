@@ -11,4 +11,7 @@ CurrentModule = Reachability.ReachSets
 
 ```@docs
 discretize
+discretize_interpolation
+discretize_firstorder
+discretize_nobloating
 ```

@@ -86,12 +86,12 @@ function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     sih_method::String="concrete")
 
     if algorithm in ["forward", "backward"]
-        return _discretize_interpolation(𝑆, δ, algorithm=algorithm,
+        return discretize_interpolation(𝑆, δ, algorithm=algorithm,
                     exp_method=exp_method, sih_method=sih_method)
     elseif algorithm == "firstorder"
-        return _discretize_firstorder(𝑆, δ, exp_method=exp_method)
+        return discretize_firstorder(𝑆, δ, exp_method=exp_method)
     elseif algorithm == "nobloating"
-        return _discretize_nobloating(𝑆, δ, exp_method=exp_method)
+        return discretize_nobloating(𝑆, δ, exp_method=exp_method)
     else
         throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
@@ -296,7 +296,7 @@ function Φ₂(A, δ; exp_method="base")
 end
 
 """
-    _discretize_firstorder(𝑆, δ; [p], [exp_method])
+    discretize_firstorder(𝑆, δ; [p], [exp_method])
 
 Apply a first-order approximation model to `S` obtaining a discrete initial
 value problem.
@@ -375,13 +375,13 @@ In this implementation, the infinity norm is used by default. Other usual norms
 are ``p=1`` and ``p=2``. However, note that not all norms are supported; see the
 documentation of `?norm` in `LazySets` for the supported norms.
 
-See also [`_discretize_interpolation`](@ref) for an alternative algorithm that
+See also [`discretize_interpolation`](@ref) for an alternative algorithm that
 uses less conservative bounds.
 
 [1] Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
-function _discretize_firstorder(𝑆::InitialValueProblem,
+function discretize_firstorder(𝑆::InitialValueProblem,
                                 δ::Float64;
                                 p::Float64=Inf,
                                 exp_method::String="base")
@@ -452,7 +452,7 @@ function _discretize_firstorder(𝑆::InitialValueProblem,
 end
 
 """
-    _discretize_nobloating(𝑆, δ; [exp_method])
+    discretize_nobloating(𝑆, δ; [exp_method])
 
 Discretize a continuous system without bloating of the initial states, suitable
 for discrete-time reachability.
@@ -506,7 +506,7 @@ The transformations are:
 
 Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
 """
-function  _discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                                  δ::Float64;
                                  exp_method::String="base")
 
@@ -533,7 +533,7 @@ function  _discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousS
 end
 
 """
-    _discretize_interpolation(𝑆, δ; [algorithm], [exp_method], [sih_method])
+    discretize_interpolation(𝑆, δ; [algorithm], [exp_method], [sih_method])
 
 Compute bloating factors using forward or backward interpolation.
 
@@ -601,7 +601,7 @@ uses ``E^-``.
 International Conference on Computer Aided Verification. Springer, Berlin,
 Heidelberg, 2011.
 """
-function _discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                                    δ::Float64;
                                    algorithm::String="forward",
                                    exp_method::String="base",
