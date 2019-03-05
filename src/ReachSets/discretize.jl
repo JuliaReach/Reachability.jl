@@ -63,8 +63,8 @@ set of inputs if `U` is non-empty.
 
 In the literature, the method to obtain `Ω₀` is called the *approximation model*
 and different alternatives have been proposed. See the argument `algorithm`
-for available options. For the reference to the original papers, see the docstring
-of each method.
+for available options. For the reference to the original papers, see the
+docstring of each method `discretize_...`.
 
 In the dense-time case, the transformation is such that the trajectories
 of the given continuous system are included in the computed flowpipe of the
