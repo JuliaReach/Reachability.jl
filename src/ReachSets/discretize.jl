@@ -318,7 +318,7 @@ value problem.
 
 The initial value problem for a discrete system. In particular:
 
-- if the input  system is homogeneous, a `LinearDiscreteSystem` is returned,
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
 - otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
 
 ### Algorithm
@@ -334,8 +334,8 @@ is the set of initial states.
 
 Define ``R_{\\mathcal{X}_0} = \\max_{x ∈ \\mathcal{X}_0} ‖x‖``,
 `D_{\\mathcal{X}_0} = \\max_{x, y ∈ \\mathcal{X}_0} ‖x-y‖`` and
-``R_{V} = \\max_{u ∈ U} ‖u‖``. If only the support functions of ``\\mathcal{X}_0``
-and ``V`` are known, these values might be hard to compute for some norms. See
+``R_{U} = \\max_{u ∈ U} ‖u‖``. If only the support functions of ``\\mathcal{X}_0``
+and ``U`` are known, these values might be hard to compute for some norms. See
 `Notes` below for details.
 
 Let ``Ω₀`` be the set defined as:
@@ -346,7 +346,7 @@ where ``α = (e^{δ ‖A‖} - 1 - δ‖A‖)*(R_{\\mathcal{X}_0} + R_{U} / ‖A
 ``B_p`` denotes the unit ball for the considered ``p``-norm.
 
 It is proved in [Lemma 1, 1] that the set of states reachable by ``S`` in the time
-interval ``[0, δ]``, that we denote ``R_{[0,δ]}(\\mathcal{X}_0)`` here,
+interval ``[0, δ]``, which we denote ``R_{[0,δ]}(\\mathcal{X}_0)`` here,
 is included in ``Ω₀``:
 
 ```math
@@ -362,6 +362,8 @@ d_H(Ω₀, R_{[0,δ]}(\\mathcal{X}_0)) ≤ \\frac{1}{4}(e^{δ ‖A‖} - 1) D_{\
 Hence, the approximation error can be made arbitrarily small by choosing ``δ``
 small enough.
 
+Here we allow ``U`` to be a sequence of time varying non-deterministic inputs.
+
 ### Notes
 
 In this implementation, the infinity norm is used by default. Other usual norms
@@ -375,9 +377,9 @@ uses less conservative bounds.
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
 function discretize_firstorder(𝑆::InitialValueProblem,
-                                δ::Float64;
-                                p::Float64=Inf,
-                                exp_method::String="base")
+                               δ::Float64;
+                               p::Float64=Inf,
+                               exp_method::String="base")
 
     # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0 
@@ -438,6 +440,8 @@ function discretize_firstorder(𝑆::InitialValueProblem,
             end
             Ud = VaryingInput(Ud)
             return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
+        else
+            throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
         end
     else
         throw(ArgumentError("this function only applies to linear or affine systems"))
@@ -470,7 +474,7 @@ for discrete-time reachability.
 
 The initial value problem for a discrete system. In particular:
 
-- if the input  system is homogeneous, a `LinearDiscreteSystem` is returned,
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
 - otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
 
 ### Algorithm
@@ -498,10 +502,10 @@ The transformations are:
 Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
 """
 function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
-                                 δ::Float64;
-                                 exp_method::String="base")
+                                δ::Float64;
+                                exp_method::String="base")
 
-    # unrwap coefficient matrix and initial states
+    # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0
 
     # compute matrix ϕ = exp(Aδ)
@@ -557,7 +561,7 @@ Compute bloating factors using forward or backward interpolation.
 
 The initial value problem for a discrete system. In particular:
 
-- if the input  system is homogeneous, a `LinearDiscreteSystem` is returned,
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
 - otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
 
 ## Algorithm
@@ -570,10 +574,6 @@ Let us define some notation. Let
 with ``x(0) ∈ \\mathcal{X}_0``, ``u(t) ∈ U`` be the given continuous affine ODE
 `𝑆`, where `U` is the set of non-deterministic inputs and ``\\mathcal{X}_0``
 is the set of initial states.
-
-The approximation model implemented in this function is such that there is no bloating,
-i.e. we don't bloat the initial states and don't multiply the input by the step
-size δ, as required for the dense time case.
 
 The transformations are:
 
@@ -604,7 +604,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
         throw(ArgumentError("the method $sih_method is unknown"))
     end
 
-    # unrwap coefficient matrix and initial states
+    # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0
 
     # compute matrix ϕ = exp(Aδ)
@@ -614,9 +614,9 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     Phi2Aabs = Φ₂(abs.(A), δ, exp_method=exp_method)
 
     if algorithm == "forward"
-        Einit = sih(Phi2Aabs * sih((A * A) * X0))     # use Eplus
+        Einit = sih(Phi2Aabs * sih((A * A) * X0))     # use E⁺
     elseif algorithm == "backward"
-        Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use Eminus
+        Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use E⁻
     else
         throw(ArgumentError("the algorithm $approximation is unknown"))
     end
@@ -643,7 +643,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
         end
         Ud = VaryingInput(Ud)
     else
-        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
 
     return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
