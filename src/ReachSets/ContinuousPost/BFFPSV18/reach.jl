@@ -228,17 +228,17 @@ function overapproximate(X::LazySet, pair::Pair)
 end
 
 function has_constant_directions(block_options::AbstractVector, i::Int)
-    return has_constant_directions(block_options[i])
+    return has_constant_directions(block_options[i], i)
 end
 
 function has_constant_directions(block_options::Dict{<:UnionAll, <:Real},
                                  i::Int)
-    return has_constant_directions(block_options[i])
+    return has_constant_directions(block_options[i], i)
 end
 
 function has_constant_directions(block_options::Pair{<:UnionAll, <:Real},
                                  i::Int)
-    return has_constant_directions(block_options[2])
+    return has_constant_directions(block_options[2], i)
 end
 
 function has_constant_directions(block_options::Real, i::Int)
