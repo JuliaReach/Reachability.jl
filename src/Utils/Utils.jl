@@ -20,21 +20,16 @@ export print_sparsity,
 # Block Structure
 export @block_id,
        add_dimension,
-       block_to_set_map,
-       convert_partition,
-       compute_block_sizes
+       convert_partition
 
 # Usability
 export @filename_to_png,
        @relpath
 
 # internal conversion
-export interpret_template_direction_symbol,
+export template_direction_symbols,
        matrix_conversion,
        matrix_conversion_lazy_explicit
-
-# temporary helper function
-export decompose_helper
 
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
@@ -328,35 +323,6 @@ macro relpath(name::String)
 end
 
 """
-    block_to_set_map(dict::Dict{Type{<:LazySet},
-                                AbstractVector{<:AbstractVector{Int}}})
-
-Invert a map (set type -> block structure) to a map (block index -> set type).
-
-### Input
-
-- `dict` -- map (set type -> block structure)
-
-### Ouput
-
-Vector mapping a block index to the respective set type.
-"""
-function block_to_set_map(dict::Dict{Type{<:LazySet},
-                                     AbstractVector{<:AbstractVector{Int}}})
-    # we assume that blocks do not overlap
-    set_type = Vector{Type{<:LazySet}}()
-    initial_block_indices = Vector{Int}()
-    @inbounds for (key, val) in dict
-        for bi in val
-            push!(set_type, key)
-            push!(initial_block_indices, bi[1])
-        end
-    end
-    s = sortperm(initial_block_indices)
-    return set_type[s]
-end
-
-"""
     convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Union{
         Vector{Int}, Vector{UnitRange{Int}}, Vector{Union{UnitRange{Int}, Int}}}
 
@@ -407,74 +373,11 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     return partition_out
 end
 
-"""
-    interpret_template_direction_symbol(symbol::Symbol)
-
-Return a template direction type for a given symbol.
-
-### Input
-
-- `symbol` -- symbol
-
-### Output
-
-The template direction type if it is known, or `nothing` otherwise.
-"""
-function interpret_template_direction_symbol(symbol::Symbol)
-    if symbol == :box
-        dir = Approximations.BoxDirections
-    elseif symbol == :oct
-        dir = Approximations.OctDirections
-    elseif symbol == :boxdiag
-        dir = Approximations.BoxDiagDirections
-    else
-        if symbol != :nothing
-            warn("ignoring unknown template direction $symbol")
-        end
-        dir = nothing
-    end
-    return dir
-end
-
-"""
-    compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
-                       )::Vector{Int}
-
-Conversion of the blocks representation from partition to block sizes.
-
-### Input
-
-- `partition` -- partition, a vector of block index ranges
-
-### Output
-
-A vector where the ``i``th entry contains the size of the ``i``th block.
-"""
-function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
-                            )::Vector{Int}
-    res = Vector{Int}(undef, length(partition))
-    for (i, block) in enumerate(partition)
-        res[i] = length(block)
-    end
-    return res
-end
-
-"""
-This is a temporary decomposition function that only applies a projection and
-keeps the sets lazy.
-Eventually this should be handled in LazySets.
-"""
-function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
-                          n::Int=dim(S)) where {N}
-    result = Vector{LazySet{N}}(undef, length(blocks))
-    block_start = 1
-    @inbounds for (i, bi) in enumerate(blocks)
-        M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
-        result[i] = M * S
-        block_start += bi
-    end
-    return CartesianProductArray(result)
-end
+template_direction_symbols = Dict(
+    :box     => Approximations.BoxDirections,
+    :oct     => Approximations.OctDirections,
+    :boxdiag => Approximations.BoxDiagDirections
+    )
 
 # sparse/dense matrix conversion
 function matrix_conversion(Δ, options; A_passed=nothing)

@@ -65,8 +65,7 @@ s = solve(IVP(LCS(A), X0),
 # template directions (eg. :box, :oct, :octbox)
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :ε_proj=>1e-5, :set_type_proj=>HPolygon),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4],
-                      :template_directions => :oct))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4], :block_options => :oct))
 
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
@@ -92,16 +91,15 @@ s = solve(IVP(LCS(sparse(A)), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[[i] for i in 1:4],
                       :exp_method=>"lazy",
-                      :set_type=>Interval))
+                      :block_options=>Interval))
 
 # ===============================
 # System with an odd dimension
 # ===============================
 A = randn(5, 5); X0 = BallInf(ones(5), 0.1)
 s = solve(IVP(LCS(sparse(A)), X0), Options(:T=>0.1),
-    op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4, [5]], :block_types=>
-                Dict{Type{<:LazySet}, AbstractVector{<:AbstractVector{Int}}}(
-                    HPolygon=>[1:2, 3:4], Interval=>[[5]])))
+    op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4, [5]], :block_options=>
+                [HPolygon, HPolygon, Interval]))
 
 # ===============================
 # System with an odd dimension
