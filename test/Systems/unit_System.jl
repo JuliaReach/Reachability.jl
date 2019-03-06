@@ -4,7 +4,7 @@ let # preventing global scope
     # ======================================================
     A = sparse([1, 1, 2, 3, 4], [1, 2, 2, 4, 3], [1., 2., 3., 4., 5.], 4, 4)
     X0 = BallInf(zeros(4), 0.1)
-    cont_sys_homog = ContinuousSystem(A, X0)
+    cont_sys_homog = IVP(LCS(A), X0)
 
     # Check if the input is constant
     @test inputdim(cont_sys_homog) == 0
@@ -17,8 +17,8 @@ let # preventing global scope
     # ===================================================
     # Testing continuous-time system with constant input
     # ===================================================
-    U = Ball2(ones(4), 0.5)
-    cont_sys = ContinuousSystem(A, X0, U)
+    U = ConstantInput(Ball2(ones(4), 0.5))
+    cont_sys = IVP(CLCCS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
 
     # check initial state
     @test cont_sys.x0.center ≈ zeros(4) && cont_sys.x0.radius ≈ 0.1
@@ -31,8 +31,8 @@ let # preventing global scope
     # ========================================================
     # Testing continuous-time system with time-varying input
     # ========================================================
-    Ui = [Ball2(0.01*i*ones(4), i*0.2) for i in 1:3]
-    cont_sys = ContinuousSystem(A, X0, Ui)
+    U = VaryingInput([Ball2(0.01*i*ones(4), i*0.2) for i in 1:3])
+    cont_sys = cont_sys = IVP(CLCCS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
     for (i, inputs) in enumerate(cont_sys.s.U)
         if i == 1
             @test inputs.center ≈ 0.01*ones(4)
@@ -50,7 +50,7 @@ let # preventing global scope
     # Testing discrete-time homogeneous system
     # =========================================
     δ = 0.01
-    discr_sys_homog = DiscreteSystem(A, X0)
+    discr_sys_homog = IVP(LDS(A), X0)
 
     # Check if the input is constant
     #@test isa(discr_sys_homog.s.U, ConstantInput) # no field U
@@ -63,8 +63,8 @@ let # preventing global scope
     # =================================================
     # Testing discrete-time system with constant input
     # =================================================
-    U = Ball2(ones(4), 0.5)
-    discr_sys = DiscreteSystem(A, X0, U)
+    U = ConstantInput(Ball2(ones(4), 0.5))
+    discr_sys = IVP(CLCDS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
 
     # check initial state
     @test discr_sys.x0.center ≈ zeros(4) && discr_sys.x0.radius ≈ 0.1
@@ -77,8 +77,8 @@ let # preventing global scope
     # =====================================================
     # Testing discrete-time system with time-varying input
     # =====================================================
-    Ui = [Ball2(0.01*i*ones(4), i*0.2) for i in 1:3]
-    discr_sys = DiscreteSystem(A, X0, Ui)
+    U = [Ball2(0.01*i*ones(4), i*0.2) for i in 1:3]
+    discr_sys = IVP(CLCDS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
     Uset = inputset(discr_sys.s)
     for (i, inputs) in enumerate(cont_sys.s.U)
         if i == 1

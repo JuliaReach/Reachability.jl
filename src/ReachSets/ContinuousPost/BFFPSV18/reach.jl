@@ -227,17 +227,11 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
-    Δ = @timing begin
-        discretize(
-            system,
-            options[:δ],
-            approx_model=options[:approx_model],
-            pade_expm=options[:pade_expm],
-            lazy_expm=options[:lazy_expm_discretize],
-            lazy_sih=options[:lazy_sih]
-        )
-    end
-    Δ = matrix_conversion_lazy_explicit(Δ, options)
+    Δ = @timing discretize(system, options[:δ], algorithm=options[:discretization],
+                                                exp_method=options[:exp_method],
+                                                sih_method=options[:sih_method])
+
+    Δ = matrix_conversion(Δ, options)
     return reach(Δ, invariant, options)
 end
 

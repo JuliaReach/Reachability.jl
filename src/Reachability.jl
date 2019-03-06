@@ -11,6 +11,12 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 import LazySets.use_precise_ρ
 import LazySets.LinearMap
  
+ # common aliases for MathematicalSystems types
+ const CLCCS = ConstrainedLinearControlContinuousSystem
+ const CLCDS = ConstrainedLinearControlDiscreteSystem
+ const LCS = LinearContinuousSystem
+ const LDS = LinearDiscreteSystem
+ 
 include("logging.jl")
 include("Utils/Utils.jl")
 include("Options/dictionary.jl")

@@ -24,8 +24,7 @@ end
 function options_BFFPSV18()
     return OptionSpec[
         # general options
-        OptionSpec(:approx_model, "forward", domain=String, domain_check=(
-            v  ->  v in ["forward", "backward", "firstorder", "nobloating"]),
+        OptionSpec(:discretization, "forward", domain=String,
             info="model for bloating/continuous time analysis"),
         OptionSpec(:algorithm, "explicit", domain=String, domain_check=(
             v  ->  v in ["explicit", "wrap"]), info="algorithm backend"),
@@ -41,16 +40,10 @@ function options_BFFPSV18()
                  "containing its indices"),
 
         # discretization options
-        OptionSpec(:lazy_sih, false, domain=Bool,
-            info="use a lazy symmetric interval hull in discretization?"),
-        OptionSpec(:lazy_expm, false, domain=Bool,
-            info="use a lazy matrix exponential all the time?"),
-        OptionSpec(:lazy_expm_discretize, false, domain=Bool,
-            info="use a lazy matrix exponential in discretization?"),
-        OptionSpec(:pade_expm, false, domain=Bool,
-            info="use the Padé approximant method (instead of Julia's " *
-                 " built-in 'exp') to compute the lazy matrix exponential " *
-                 "in discretization?"),
+        OptionSpec(:sih_method, "concrete", domain=String,
+            info="method to compute the symmetric interval hull in discretization"),
+        OptionSpec(:exp_method, "base", domain=String,
+            info="method to compute the matrix exponential"),
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
 
@@ -208,12 +201,6 @@ function normalization_BFFPSV18!(𝑂::TwoLayerOptions)
 end
 
 function validation_BFFPSV18(𝑂)
-    # lazy_expm_discretize & lazy_expm
-    if !𝑂[:lazy_expm_discretize] && 𝑂[:lazy_expm]
-        throw(DomainError(𝑂[:lazy_expm_discretize], "cannot use option " *
-            "':lazy_expm' with deactivated option ':lazy_expm_discretize'"))
-    end
-
     # block_types
     if haskey_specified(𝑂, :block_types)
         for (key, value) in 𝑂[:block_types]
@@ -337,7 +324,6 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 - `𝑂` -- algorithm-specific options
 """
 function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
-    # TODO temporary hack for refactoring
     𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
 
     # convert matrix

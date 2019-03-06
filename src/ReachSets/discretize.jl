@@ -1,310 +1,652 @@
+const LDS = LinearDiscreteSystem
+const CLCDS = ConstrainedLinearControlDiscreteSystem
+
+@inline Id(n) = Matrix(1.0I, n, n)
+
 """
-    discretize(cont_sys, δ; [approx_model], [pade_expm], [lazy_expm], [lazy_sih])
+    discretize(𝑆, δ; [algorithm], [exp_method], [sih_method])
 
-Discretize a continuous system of ODEs with nondeterministic inputs.
+Apply an approximation model to `S` obtaining a discrete initial value problem.
 
-## Input
+### Input
 
-- `cont_sys`     -- continuous system
-- `δ`            -- step size
-- `approx_model` -- the method to compute the approximation model for the
-                    discretization, among:
+- `𝑆`             -- initial value problem for a continuous affine ODE with
+                     non-deterministic inputs
+- `δ`             -- step size
+- `algorithm`     -- (optional, default: `"forward"`) the algorithm used to
+                     compute the approximation model for the discretization,
+                     choose among:
 
-    - `forward`    -- use forward-time interpolation
-    - `backward`   -- use backward-time interpolation
-    - `firstorder` -- use first order approximation of the ODE
-    - `nobloating` -- do not bloat the initial states
-                      (use for discrete-time reachability)
+    - `"forward"`    -- use forward-time interpolation
+    - `"backward"`   -- use backward-time interpolation
+    - `"firstorder"` -- use first-order approximation of the ODE
+    - `"nobloating"` -- do not bloat the initial states
 
-- `pade_expm`    -- (optional, default = `false`) if true, use Pade approximant
-                    method to compute matrix exponentials of sparse matrices;
-                    otherwise use Julia's buil-in `expm`
-- `lazy_expm`    -- (optional, default = `false`) if true, compute the matrix
-                    exponential in a lazy way (suitable for very large systems)
-- `lazy_sih`     -- (optional, default = `true`) if true, compute the
-                    symmetric interval hull in a lazy way (suitable if only a
-                    few dimensions are of interest)
+- `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
+                    exponential of the coefficient matrix, choose among:
 
-## Output
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
 
-A discrete system.
+- `sih_method`  -- (optional, default: `"concrete"`) the method used to take the
+                    symmetric interval hull operation, choose among:
 
-## Notes
+    - `"concrete"` -- compute the full symmetric interval hull using the function
+                      `symmetric_interval_hull` from `LazySets.Approximations`
+    - `"lazy"`     -- compute a wrapper set type around symmetric interval hull
+                      in a lazy way using `SymmetricIntervalHull`
 
-This function applies an approximation model to transform a continuous affine
-system into a discrete affine system.
-This transformation allows to do dense time reachability, i.e. such that the
-trajectories of the given continuous system are included in the computed
-flowpipe of the discretized system.
-For discrete-time reachability, use `approx_model="nobloating"`.
+### Output
+
+The initial value problem of a discrete system.
+
+### Algorithm
+
+Let ``𝑆 : x' = Ax(t) + u(t)``, ``x(0) ∈ \\mathcal{X}_0``, ``u(t) ∈ U`` be the
+given continuous affine ODE `𝑆`, where `U` is the set of non-deterministic inputs
+and ``\\mathcal{X}_0`` is the set of initial states. Recall that the system
+`𝑆` is called homogeneous whenever `U` is the empty set.
+
+Given a step size ``δ``, this function computes a set, `Ω₀`, that guarantees to
+contain all the trajectories of ``𝑆`` starting at any ``x(0) ∈ \\mathcal{X}_0``
+and for any input function that satisfies ``u(t) ∈ U``, for any ``t ∈ [0, δ]``.
+
+The initial value problem returned by this function consists of the set `Ω₀`
+together with the coefficient matrix ``ϕ = e^{Aδ}`` and a transformed
+set of inputs if `U` is non-empty.
+
+In the literature, the method to obtain `Ω₀` is called the *approximation model*
+and different alternatives have been proposed. See the argument `algorithm`
+for available options. For the reference to the original papers, see the
+docstring of each method `discretize_...`.
+
+In the dense-time case, the transformation is such that the trajectories
+of the given continuous system are included in the computed flowpipe of the
+discretized system.
+
+In the discrete-time case, there is no bloating of the initial states and the
+input is assumed to remain constant between sampled times. Use the option
+`algorithm="nobloating"` for this setting.
+
+Several methods to compute the matrix exponential are availabe. Use `exp_method`
+to select one. For very large systems, computing the full matrix exponential is
+expensive hence it is preferable to compute the action of the matrix exponential
+over vectors when needed, `e^{δA} v` for each `v`. Use the option
+`exp_method="lazy"` for this purpose.
 """
-function discretize(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
+function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     δ::Float64;
-                    approx_model::String="forward",
-                    pade_expm::Bool=false,
-                    lazy_expm::Bool=false,
-                    lazy_sih::Bool=true)::InitialValueProblem{<:AbstractDiscreteSystem}
+                    algorithm::String="forward",
+                    exp_method::String="base",
+                    sih_method::String="concrete")
 
-    if approx_model in ["forward", "backward"]
-        return discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm,
-                                         lazy_expm, lazy_sih)
-    elseif approx_model == "firstorder"
-        return discr_bloat_firstorder(cont_sys, δ)
-    elseif approx_model == "nobloating"
-        return discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
+    if algorithm in ["forward", "backward"]
+        return discretize_interpolation(𝑆, δ, algorithm=algorithm,
+                    exp_method=exp_method, sih_method=sih_method)
+    elseif algorithm == "firstorder"
+        return discretize_firstorder(𝑆, δ, exp_method=exp_method)
+    elseif algorithm == "nobloating"
+        return discretize_nobloating(𝑆, δ, exp_method=exp_method)
     else
-        error("The approximation model is invalid")
+        throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
 end
 
 """
-    bloat_firstorder(cont_sys, δ)
+    exp_Aδ(A::AbstractMatrix, δ::Float64; [exp_method])
 
-Compute bloating factors using first order approximation.
+Compute the matrix exponential ``e^{Aδ}``.
 
-## Input
+### Input
 
-- `cont_sys` -- a continuous affine system
-- `δ`        -- step size
+- `A`           -- coefficient matrix
+- `δ`           -- step size
+- `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
+                    exponential of the coefficient matrix, choose among:
 
-## Notes
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
 
-In this algorithm, the infinity norm is used.
-See also: `discr_bloat_interpolation` for more accurate (less conservative)
-bounds.
+### Output
 
-## Algorithm
+A matrix.
+"""
+function exp_Aδ(A::AbstractMatrix{Float64}, δ::Float64; exp_method="base")
+    if exp_method == "base"
+        return expmat(Matrix(A*δ))
+    elseif exp_method == "lazy"
+        return SparseMatrixExp(A*δ)
+    elseif exp_method == "pade"
+        return padm(A*δ)
+    else
+       throw(ArgumentError("the exponentiation method $exp_method is unknown"))
+    end
+end
 
-This uses a first order approximation of the ODE, and matrix norm upper bounds,
-see Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
+@inline function Pmatrix(A, δ, n)
+    return [A*δ     sparse(δ*I, n, n)  spzeros(n, n)    ;
+            spzeros(n, 2*n          )  sparse(δ*I, n, n);
+            spzeros(n, 3*n          )                   ]
+end
+
+"""
+    Φ₁(A, δ; [exp_method])
+
+Compute the series
+
+```math
+Φ₁(A, δ) = ∑_{i=0}^∞ \\dfrac{δ^{i+1}}{(i+1)!}A^i,
+```
+where ``A`` is a square matrix of order ``n`` and ``δ ∈ \\mathbb{R}_{≥0}``.
+
+### Input
+
+- `A`           -- coefficient matrix
+- `δ`           -- step size
+- `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
+                    exponential of the coefficient matrix, choose among:
+
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
+### Output
+
+A matrix.
+
+### Algorithm
+
+We use the method from [1]. If ``A`` is invertible, ``Φ₁`` can be computed as
+
+```math
+Φ₁(A, δ) = A^{-1}(e^{δA} - I_n).
+```
+
+In the general case, implemented in this function, it can be computed as
+submatrices of the block matrix
+
+```math
+P = \\exp \\begin{pmatrix}
+Aδ && δI_n && 0 \\
+0 && 0 && δI_n \\
+0 && 0 && 0
+\\end{array}.
+```
+It can be shown that `Φ₁(A, δ) = P[1:n, (n+1):2*n]`.
+
+[1] Frehse, Goran, et al. "SpaceEx: Scalable verification of hybrid systems."
+International Conference on Computer Aided Verification. Springer, Berlin,
+Heidelberg, 2011.
+"""
+function Φ₁(A, δ; exp_method="base")
+    n = size(A, 1)
+    if exp_method == "base"
+        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        Φ₁_Aδ = P[1:n, (n+1):2*n]
+
+    elseif exp_method == "lazy"
+        P = SparseMatrixExp(Pmatrix(A, δ, n))
+        Φ₁_Aδ = sparse(get_columns(P, (n+1):2*n)[1:n, :])
+
+    elseif exp_method == "pade"
+        P = padm(Pmatrix(A, δ, n))
+        Φ₁_Aδ = P[1:n, (n+1):2*n]
+
+    else
+        throw(ArgumentError("the exponentiation method $exp_method is unknown"))
+    end
+
+    return Φ₁_Aδ
+end
+
+"""
+    Φ₂(A, δ; [exp_method])
+
+Compute the series
+
+```math
+Φ₂(A, δ) = ∑_{i=0}^∞ \\dfrac{δ^{i+2}}{(i+2)!}A^i,
+```
+where ``A`` is a square matrix of order ``n`` and ``δ ∈ \\mathbb{R}_{≥0}``.
+
+### Input
+
+- `A`           -- coefficient matrix
+- `δ`           -- step size
+- `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
+                    exponential of the coefficient matrix, choose among:
+
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
+
+### Output
+
+A matrix.
+
+### Algorithm
+
+We use the method from [1]. If ``A`` is invertible, ``Φ₂`` can be computed as
+
+```math
+Φ₂(A, δ) = A^{-2}(e^{δA} - I_n - δA).
+```
+
+In the general case, implemented in this function, it can be computed as
+submatrices of the block matrix
+
+```math
+P = \\exp \\begin{pmatrix}
+Aδ && δI_n && 0 \\
+0 && 0 && δI_n \\
+0 && 0 && 0
+\\end{array}.
+```
+It can be shown that `Φ₂(A, δ) = P[1:n, (2*n+1):3*n]`.
+
+[1] Frehse, Goran, et al. "SpaceEx: Scalable verification of hybrid systems."
+International Conference on Computer Aided Verification. Springer, Berlin,
+Heidelberg, 2011.
+"""
+function Φ₂(A, δ; exp_method="base")
+    n = size(A, 1)
+    if exp_method == "base"
+        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        Φ₂_Aδ = P[1:n, (2*n+1):3*n]
+
+    elseif exp_method == "lazy"
+        P = SparseMatrixExp(Pmatrix(A, δ, n))
+        Φ₂_Aδ = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
+
+    elseif exp_method == "pade"
+        P = padm(Pmatrix(A, δ, n))
+        Φ₂_Aδ = P[1:n, (2*n+1):3*n]
+
+    else
+       throw(ArgumentError("the exponentiation method $exp_method is unknown"))
+    end
+
+    return Φ₂_Aδ
+end
+
+"""
+    discretize_firstorder(𝑆, δ; [p], [exp_method])
+
+Apply a first-order approximation model to `S` obtaining a discrete initial
+value problem.
+
+### Input
+
+- `𝑆`           -- initial value problem for a continuous affine ODE with
+                   non-deterministic inputs
+- `δ`           -- step size
+- `p`           -- (optional, default: `Inf`) parameter in the considered norm
+- `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
+                    exponential of the coefficient matrix, choose among:
+
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
+
+### Output
+
+The initial value problem for a discrete system. In particular:
+
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
+- otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
+
+### Algorithm
+
+Let us define some notation. Let
+
+```math
+𝑆 : x' = Ax(t) + u(t)
+```
+with ``x(0) ∈ \\mathcal{X}_0``, ``u(t) ∈ U`` be the given continuous affine ODE
+`𝑆`, where `U` is the set of non-deterministic inputs and ``\\mathcal{X}_0``
+is the set of initial states.
+
+Define ``R_{\\mathcal{X}_0} = \\max_{x ∈ \\mathcal{X}_0} ‖x‖``,
+`D_{\\mathcal{X}_0} = \\max_{x, y ∈ \\mathcal{X}_0} ‖x-y‖`` and
+``R_{U} = \\max_{u ∈ U} ‖u‖``. If only the support functions of ``\\mathcal{X}_0``
+and ``U`` are known, these values might be hard to compute for some norms. See
+`Notes` below for details.
+
+Let ``Ω₀`` be the set defined as:
+```math
+Ω₀ = ConvexHull(\\mathcal{X}_0, e^{δA}\\mathcal{X}_0 ⊕ δU ⊕ αB_p)
+```
+where ``α = (e^{δ ‖A‖} - 1 - δ‖A‖)*(R_{\\mathcal{X}_0} + R_{U} / ‖A‖)`` and
+``B_p`` denotes the unit ball for the considered ``p``-norm.
+
+It is proved in [Lemma 1, 1] that the set of states reachable by ``S`` in the time
+interval ``[0, δ]``, which we denote ``R_{[0,δ]}(\\mathcal{X}_0)`` here,
+is included in ``Ω₀``:
+
+```math
+R_{[0,δ]}(\\mathcal{X}_0) ⊆ Ω₀.
+```
+
+Moreover, if ``d_H(A, B)`` denotes the Hausdorff distance between the sets ``A``
+and ``B`` in ``\\mathbb{R}^n``, then
+
+```math
+d_H(Ω₀, R_{[0,δ]}(\\mathcal{X}_0)) ≤ \\frac{1}{4}(e^{δ ‖A‖} - 1) D_{\\mathcal{X}_0} + 2α.
+```
+Hence, the approximation error can be made arbitrarily small by choosing ``δ``
+small enough.
+
+Here we allow ``U`` to be a sequence of time varying non-deterministic inputs.
+
+### Notes
+
+In this implementation, the infinity norm is used by default. Other usual norms
+are ``p=1`` and ``p=2``. However, note that not all norms are supported; see the
+documentation of `?norm` in `LazySets` for the supported norms.
+
+See also [`discretize_interpolation`](@ref) for an alternative algorithm that
+uses less conservative bounds.
+
+[1] Le Guernic, C., & Girard, A., 2010, *Reachability analysis of linear systems
 using support functions. Nonlinear Analysis: Hybrid Systems, 4(2), 250-262.*
 """
-function discr_bloat_firstorder(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
-                                δ::Float64)
+function discretize_firstorder(𝑆::InitialValueProblem,
+                               δ::Float64;
+                               p::Float64=Inf,
+                               exp_method::String="base")
 
-    A, X0 = cont_sys.s.A, cont_sys.x0
-    Anorm = norm(Matrix(A), Inf)
-    ϕ = expmat(Matrix(A))
-    RX0 = norm(X0, Inf)
+    # unwrap coefficient matrix and initial states
+    A, X0 = 𝑆.s.A, 𝑆.x0 
 
-    if inputdim(cont_sys) == 0
-        # linear case
-        α = (exp(δ*Anorm) - 1. - δ*Anorm) * RX0
-        Ω0 = CH(X0, ϕ * X0 + Ball2(zeros(size(ϕ, 1)), α))
-        return DiscreteSystem(ϕ, Ω0)
-    else
-        # affine case; TODO: unify Constant and Varying input branches?
-        Uset = inputset(cont_sys)
+    # system size; A is assumed square
+    n = size(A, 1)
+
+    Anorm = norm(Matrix(A), p)
+    κ = exp(δ*Anorm) - 1.0 - δ*Anorm
+    RX0 = norm(X0, p)
+
+    # compute exp(A*δ)
+    ϕ = exp_Aδ(A, δ, exp_method=exp_method)
+
+    if inputdim(𝑆) == 0
+        α = κ * RX0
+        □α = Ballp(p, zeros(n), α)
+        Ω0 = ConvexHull(X0, ϕ * X0 ⊕ □α)
+        return IVP(LDS(ϕ), Ω0)
+
+    elseif isaffine(𝑆)
+        Uset = inputset(𝑆)
         if Uset isa ConstantInput
             U = next_set(Uset)
-            RU = norm(U, Inf)
-            α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
-            β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
-            Ω0 = CH(X0, ϕ * X0 + δ * U + Ball2(zeros(size(ϕ, 1)), α))
-            discr_U =  δ * U + Ball2(zeros(size(ϕ, 1)), β)
-            return DiscreteSystem(ϕ, Ω0, discr_U)
+            RU = norm(U, p)
+
+            # bloating coefficients
+            α = κ*(RX0 + RU/Anorm)
+            β = κ*RU/Anorm
+
+            # transformation of the initial states
+            □α = Ballp(p, zeros(n), α)
+            Ω0 = ConvexHull(X0, ϕ*X0 ⊕ δ*U ⊕ □α)
+
+            # transformation of the inputs
+            □β = Ballp(p, zeros(n), β)
+            Ud = ConstantInput(δ*U ⊕ □β)
+            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
+
         elseif Uset isa VaryingInput
-            discr_U = Vector{LazySet}(undef, length(Uset))
+            Ud = Vector{LazySet}(undef, length(Uset))
             for (i, Ui) in enumerate(Uset)
-                RU = norm(Ui, Inf)
-                α = (exp(δ*Anorm) - 1. - δ*Anorm)*(RX0 + RU/Anorm)
-                β = (exp(δ*Anorm) - 1. - δ*Anorm)*RU/Anorm
-                Ω0 = CH(X0, ϕ * X0 + δ * Ui + Ball2(zeros(size(ϕ, 1)), α))
-                discr_U[i] =  δ * Ui + Ball2(zeros(size(ϕ, 1)), β)
+                RU = norm(Ui, p)
+
+                # bloating factors
+                α = κ*(RX0 + RU/Anorm)
+                β = κ*RU/Anorm
+
+                if i == 1
+                    # transform initial states
+                    □α = Ballp(p, zeros(n), α)
+                    Ω0 = ConvexHull(X0, ϕ * X0 ⊕ δ * Ui ⊕ □α)
+                end
+
+                # transform inputs
+                □β = Ballp(p, zeros(n), β)
+                Ud[i] = δ*Ui ⊕ □β
             end
-            return DiscreteSystem(ϕ, Ω0, discr_U)
+            Ud = VaryingInput(Ud)
+            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
+        else
+            throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
         end
+    else
+        throw(ArgumentError("this function only applies to linear or affine systems"))
     end
-
-
 end
 
 """
-    discr_no_bloat(cont_sys, δ, pade_expm, lazy_expm)
+    discretize_nobloating(𝑆, δ; [exp_method])
 
 Discretize a continuous system without bloating of the initial states, suitable
 for discrete-time reachability.
 
-## Input
+### Input
 
-- `cont_sys`     -- a continuous system
-- `δ`            -- step size
-- `pade_expm`    -- if `true`, use Pade approximant method to compute the
-                    matrix exponential
-- `lazy_expm`    -- if `true`, compute the matrix exponential in a lazy way
-                    (suitable for very large systems)
+- `𝑆`          -- a continuous system
+- `δ`          -- step size
+- `exp_method` -- (optional, default: `"base"`) the method used to take the matrix
+                  exponential of the coefficient matrix, choose among:
 
-## Output
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
 
-A discrete system.
+### Output
 
-## Algorithm
+The initial value problem for a discrete system. In particular:
 
-The transformation implemented here is the following:
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
+- otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
 
-- `A -> Phi := exp(A*delta)`
-- `U -> V := M*U`
-- `X0 -> X0hat := X0`
+### Algorithm
 
-where `M` corresponds to `Phi1(A, delta)` in Eq. (8) of *SpaceEx: Scalable
-Verification of Hybrid Systems.*
+Let us define some notation. Let
 
-In particular, there is no bloating, i.e. we don't bloat the initial states and
-dont multiply the input by the step size δ, as required for the dense time case.
+```math
+𝑆 : x' = Ax(t) + u(t)
+```
+with ``x(0) ∈ \\mathcal{X}_0``, ``u(t) ∈ U`` be the given continuous affine ODE
+`𝑆`, where `U` is the set of non-deterministic inputs and ``\\mathcal{X}_0``
+is the set of initial states.
+
+The approximation model implemented in this function is such that there is no bloating,
+i.e. we don't bloat the initial states and don't multiply the input by the step
+size δ, as required for the dense time case.
+
+The transformations are:
+
+- ``Φ ← \\exp^{Aδ}``
+- ``Ω₀ ← \\mathcal{X}_0``
+- ``V ← Φ₁(A, δ)U(k)``, where ``Φ₁(A, δ)`` is defined in
+  [`Φ₁(A, δ; [exp_method])`](@ref).
+
+Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
 """
-function discr_no_bloat(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
-                        δ::Float64,
-                        pade_expm::Bool,
-                        lazy_expm::Bool)
+function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+                                δ::Float64;
+                                exp_method::String="base")
 
-    A, X0 = cont_sys.s.A, cont_sys.x0
-    n = size(A, 1)
-    if lazy_expm
-        ϕ = SparseMatrixExp(A * δ)
-    else
-        if pade_expm
-            ϕ = padm(A * δ)
-        else
-            ϕ = expmat(Matrix(A * δ))
-        end
-    end
+    # unwrap coefficient matrix and initial states
+    A, X0 = 𝑆.s.A, 𝑆.x0
+
+    # compute matrix ϕ = exp(Aδ)
+    ϕ = exp_Aδ(A, δ, exp_method=exp_method)
+
+    # initial states remain unchanged
+    Ω0 = copy(X0)
 
     # early return for homogeneous systems
-    if cont_sys isa IVP{<:LinearContinuousSystem}
-        Ω0 = X0
-        return DiscreteSystem(ϕ, Ω0)
+    if inputdim(𝑆) == 0
+        return IVP(LDS(ϕ), Ω0)
     end
-    U = inputset(cont_sys)
-    inputs = next_set(U, 1)
 
     # compute matrix to transform the inputs
-    if lazy_expm
-        P = SparseMatrixExp([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                             spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
-        Phi1Adelta = sparse(get_columns(P, (n+1):2*n)[1:n, :])
-    else
-        if pade_expm
-            P = padm([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                      spzeros(n, 2*n) sparse(δ*I, n, n);
-                      spzeros(n, 3*n)])
-        else
-            P = expmat(Matrix([A*δ sparse(δ*I, n, n) spzeros(n, n);
-                           spzeros(n, 2*n) sparse(δ*I, n, n);
-                           spzeros(n, 3*n)]))
-        end
-        Phi1Adelta = P[1:n, (n+1):2*n]
-    end
+    Phi1Adelta = Φ₁(A, δ, exp_method=exp_method)
+    U = inputset(𝑆)
+    Ud = map(ui -> Phi1Adelta * ui, U)
 
-    discretized_U = Phi1Adelta * inputs
-
-    Ω0 = X0
-
-    if U isa ConstantInput
-        return DiscreteSystem(ϕ, Ω0, discretized_U)
-    else
-        discretized_U = VaryingInput([Phi1Adelta * Ui for Ui in U])
-        return DiscreteSystem(ϕ, Ω0, discretized_U)
-    end
+    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
 end
 
 """
-    discr_bloat_interpolation(cont_sys, δ, approx_model, pade_expm, lazy_expm)
+    discretize_interpolation(𝑆, δ; [algorithm], [exp_method], [sih_method])
 
 Compute bloating factors using forward or backward interpolation.
 
-## Input
+### Input
 
-- `cs`           -- a continuous system
-- `δ`            -- step size
-- `approx_model` -- choose the approximation model among `"forward"` and
-                    `"backward"`
-- `pade_expm`    -- if true, use Pade approximant method to compute the
-                    matrix exponential
-- `lazy_expm`   --  if true, compute the matrix exponential in a lazy way
-                    suitable for very large systems)
+- `𝑆`             -- a continuous system
+- `δ`             -- step size
+- `algorithm`     -- choose the algorithm to compute the approximation model
+                     among `"forward"` and `"backward"`
+- `exp_method`    -- (optional, default: `"base"`) the method used to take the matrix
+                     exponential of the coefficient matrix, choose among:
+
+    - `"base"` -- the scaling and squaring method implemented in Julia base,
+                  see `?exp` for details
+    - `"pade"` -- use Pade approximant method to compute matrix exponentials of
+                  sparse matrices, implemented in `Expokit`
+    - `"lazy"` -- compute a wrapper type around the matrix exponential, i.e. using
+                  the lazy implementation `SparseMatrixExp` from `LazySets` and
+                  the evaluation of the action of the matrix exponential using the
+                  `expmv` implementation from `Expokit`
+
+- `sih_method`    -- (optional, default: `"concrete"`) the method used to take the
+                     symmetric interval hull operation, choose among:
+
+    - `"concrete"` -- compute the full symmetric interval hull
+    - `"lazy"`     -- compute a wrapper set type around symmetric interval hull in a
+                      lazy way
+
+### Output
+
+The initial value problem for a discrete system. In particular:
+
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
+- otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
 
 ## Algorithm
 
-See Frehse et al., CAV'11, *SpaceEx: Scalable Verification of Hybrid Systems*,
-Lemma 3.
+Let us define some notation. Let
 
-Note that in the unlikely case that A is invertible, the result can also
-be obtained directly, as a function of the inverse of A and `e^{At} - I`.
+```math
+𝑆 : x' = Ax(t) + u(t)
+```
+with ``x(0) ∈ \\mathcal{X}_0``, ``u(t) ∈ U`` be the given continuous affine ODE
+`𝑆`, where `U` is the set of non-deterministic inputs and ``\\mathcal{X}_0``
+is the set of initial states.
 
-The matrix `P` is such that: `ϕAabs = P[1:n, 1:n]`,
-`Phi1Aabsdelta = P[1:n, (n+1):2*n]`, and `Phi2Aabs = P[1:n, (2*n+1):3*n]`.
+The transformations are:
+
+- ``Φ ← \\exp^{Aδ}``,
+- ``Ω₀ ← ConvexHull(\\mathcal{X}_0, Φ\\mathcal{X}_0 ⊕ δU(0) ⊕ Eψ(U(0), δ) ⊕ E^+(\\mathcal{X}_0, δ))``,
+- ``V ← δU(k) ⊕ Eψ(U(k), δ)``.
+
+Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
+
+For the definition of the sets ``Eψ`` and ``E^+`` see [1]. The  "backward" method
+uses ``E^-``.
+
+[1] Frehse, Goran, et al. "SpaceEx: Scalable verification of hybrid systems."
+International Conference on Computer Aided Verification. Springer, Berlin,
+Heidelberg, 2011.
 """
-function discr_bloat_interpolation(cont_sys::InitialValueProblem{<:AbstractContinuousSystem},
-                                   δ::Float64,
-                                   approx_model::String,
-                                   pade_expm::Bool,
-                                   lazy_expm::Bool,
-                                   lazy_sih::Bool)
+function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+                                   δ::Float64;
+                                   algorithm::String="forward",
+                                   exp_method::String="base",
+                                   sih_method::String="concrete")
 
-    sih = lazy_sih ? SymmetricIntervalHull : symmetric_interval_hull
+    if sih_method == "concrete"
+        sih = symmetric_interval_hull
+    elseif sih_method == "lazy"
+        sih = SymmetricIntervalHull
+    else
+        throw(ArgumentError("the method $sih_method is unknown"))
+    end
 
-    A, X0 = cont_sys.s.A, cont_sys.x0
-    n = size(A, 1)
+    # unwrap coefficient matrix and initial states
+    A, X0 = 𝑆.s.A, 𝑆.x0
 
     # compute matrix ϕ = exp(Aδ)
-    if lazy_expm
-        ϕ = SparseMatrixExp(A*δ)
+    ϕ = exp_Aδ(A, δ, exp_method=exp_method)
+
+    # compute the transformation matrix to bloat the initial states
+    Phi2Aabs = Φ₂(abs.(A), δ, exp_method=exp_method)
+
+    if algorithm == "forward"
+        Einit = sih(Phi2Aabs * sih((A * A) * X0))     # use E⁺
+    elseif algorithm == "backward"
+        Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use E⁻
     else
-        if pade_expm
-            ϕ = padm(A*δ)
-        else
-            ϕ = expmat(Matrix(A*δ))
-        end
+        throw(ArgumentError("the algorithm $approximation is unknown"))
     end
 
     # early return for homogeneous systems
-    if cont_sys isa IVP{<:LinearContinuousSystem}
-         Ω0 = CH(X0, ϕ * X0)
-        return DiscreteSystem(ϕ, Ω0)
-    end
-    U = inputset(cont_sys)
-    inputs = next_set(U, 1)
-
-    # compute the transformation matrix to bloat the initial states
-    if lazy_expm
-        P = SparseMatrixExp([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
-                             spzeros(n, 2*n) sparse(δ*I, n, n);
-                             spzeros(n, 3*n)])
-        Phi2Aabs = sparse(get_columns(P, (2*n+1):3*n)[1:n, :])
-    else
-        if pade_expm
-            P = padm([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
-                      spzeros(n, 2*n) sparse(δ*I, n, n);
-                      spzeros(n, 3*n)])
-        else
-            P = expmat(Matrix([abs.(A*δ) sparse(δ*I, n, n) spzeros(n, n);
-                           spzeros(n, 2*n) sparse(δ*I, n, n);
-                           spzeros(n, 3*n)]))
-        end
-        Phi2Aabs = P[1:n, (2*n+1):3*n]
+    if inputdim(𝑆) == 0
+        Ω0 = ConvexHull(X0, ϕ * X0 ⊕ Einit)
+        return IVP(LDS(ϕ), Ω0)
     end
 
-    if isa(inputs, ZeroSet)
-        if approx_model == "forward" || approx_model == "backward"
-            Ω0 = CH(X0, ϕ * X0 + δ * inputs)
-        end
-    else
-        EPsi = sih(Phi2Aabs * sih(A * inputs))
-        discretized_U = δ * inputs + EPsi
-        if approx_model == "forward"
-            EOmegaPlus = sih(Phi2Aabs * sih((A * A) * X0))
-            Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaPlus)
-        elseif approx_model == "backward"
-            EOmegaMinus = sih(Phi2Aabs * sih((A * A * ϕ) * X0))
-            Ω0 = CH(X0, ϕ * X0 + discretized_U + EOmegaMinus)
-        end
-    end
+    U = inputset(𝑆)
+    U0 = next_set(U, 1)
+
+    Eψ0 = sih(Phi2Aabs * sih(A * U0))
+    Ω0 = ConvexHull(X0, ϕ * X0 ⊕ δ*U0 ⊕ Eψ0 ⊕ Einit)
 
     if U isa ConstantInput
-        return DiscreteSystem(ϕ, Ω0, discretized_U)
+        Ud = ConstantInput(δ*U0 ⊕ Eψ0)
+
+    elseif U isa VaryingInput
+        Ud = Vector{LazySet}(undef, length(U))
+        for (k, Uk) in enumerate(U)
+            Eψk = sih(Phi2Aabs * sih(A * Uk))
+            Ud[k] = δ * Uk ⊕ Eψk
+        end
+        Ud = VaryingInput(Ud)
+
     else
-        discretized_U = [δ * Ui + sih(Phi2Aabs * sih(A * Ui)) for Ui in U]
-        return DiscreteSystem(ϕ, Ω0, discretized_U)
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
+
+    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
 end
