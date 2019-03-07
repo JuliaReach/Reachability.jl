@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Algorithms",
     "title": "Reachability.ReachSets.BFFPSV18",
     "category": "type",
-    "text": "BFFPSV18 <: ContinuousPost\n\nImplementation of the reachability algorithm for purely continuous linear time-invariant systems using block decompositons by S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling and F. Viry [1].\n\nFields\n\noptions – an Options structure that holds the algorithm-specific options\n\nNotes\n\nThe following options are available:\n\noption :discretization of type String has default value \'forward\'; model for bloating/continuous time analysis\noption :algorithm of type String has default value \'explicit\'; algorithm backend\noption :δ of type Float64 with alias :sampling_time has default value \'0.01\'; time step\noption :vars of type AbstractArray{Int64,1} has default value \'Int64[]\'; variables of interest; default: all variables\noption :partition of type AbstractArray{#s110,1} where #s110<:AbstractArray{Int64,1} has default value \'Array{Int64,1}[[]]\'; block partition; a block is represented by a vector containing its indices\noption :sih_method of type String has default value \'concrete\'; method to compute the symmetric interval hull in discretization\noption :exp_method of type String has default value \'base\'; method to compute the matrix exponential\noption :assume_sparse of type Bool has default value \'false\'; use an analysis for sparse discretized matrices?\noption :lazy_inputs_interval of type Union{Int64, Function} has default value \'getfield(Reachability.ReachSets, Symbol(\"##22#23\"))()\'; length of interval in which the inputs are handled as a lazy set (``-1`` for \'never\'); may generally also be a predicate over indices; the default corresponds to ``-1``\noption :block_options of type Any has default value \'nothing\'; short hand to set \':block_options_init\' and \':block_options_iter\'\noption :block_options_init of type Any has default value \'nothing\'; option for the approximation of the initial states (during decomposition)\noption :block_options_iter of type Any has default value \'nothing\'; option for the approximation of the states ``X_k``, ``k>0``\noption :assume_homogeneous of type Bool has default value \'false\'; ignore dynamic inputs during the analysis?\noption :eager_checking of type Bool has default value \'true\'; terminate as soon as property violation was detected?\n\n\nAlgorithm\n\nWe refer to [1] for technical details.\n\n[1] Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry. HSCC \'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control (part of CPS Week).\n\n\n\n\n\n"
+    "text": "BFFPSV18 <: ContinuousPost\n\nImplementation of the reachability algorithm for purely continuous linear time-invariant systems using block decompositons by S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling and F. Viry [1].\n\nFields\n\noptions – an Options structure that holds the algorithm-specific options\n\nNotes\n\nThe following options are available:\n\noption :discretization of type String has default value \'forward\'; model for bloating/continuous time analysis\noption :algorithm of type String has default value \'explicit\'; algorithm backend\noption :δ of type Float64 with alias :sampling_time has default value \'0.01\'; time step\noption :vars of type AbstractArray{Int64,1} has default value \'Int64[]\'; variables of interest; default: all variables\noption :partition of type AbstractArray{#s112,1} where #s112<:AbstractArray{Int64,1} has default value \'Array{Int64,1}[[]]\'; block partition; a block is represented by a vector containing its indices\noption :sih_method of type String has default value \'concrete\'; method to compute the symmetric interval hull in discretization\noption :exp_method of type String has default value \'base\'; method to compute the matrix exponential\noption :assume_sparse of type Bool has default value \'false\'; use an analysis for sparse discretized matrices?\noption :lazy_inputs_interval of type Union{Int64, Function} has default value \'getfield(Reachability.ReachSets, Symbol(\"##22#23\"))()\'; length of interval in which the inputs are handled as a lazy set (``-1`` for \'never\'); may generally also be a predicate over indices; the default corresponds to ``-1``\noption :block_options of type Any has default value \'nothing\'; short hand to set \':block_options_init\' and \':block_options_iter\'\noption :block_options_init of type Any has default value \'nothing\'; option for the approximation of the initial states (during decomposition)\noption :block_options_iter of type Any has default value \'nothing\'; option for the approximation of the states ``X_k``, ``k>0``\noption :assume_homogeneous of type Bool has default value \'false\'; ignore dynamic inputs during the analysis?\noption :eager_checking of type Bool has default value \'true\'; terminate as soon as property violation was detected?\n\n\nAlgorithm\n\nWe refer to [1] for technical details.\n\n[1] Reach Set Approximation through Decomposition with Low-dimensional Sets and High-dimensional Matrices. S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry. HSCC \'18 Proceedings of the 21st International Conference on Hybrid Systems: Computation and Control (part of CPS Week).\n\n\n\n\n\n"
 },
 
 {
@@ -213,7 +213,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Properties",
     "title": "Reachability.Properties.Property",
     "category": "type",
-    "text": "Abstract supertype of properties that can be checked.\n\nEvery concrete subtype should provide the following function:\n\ncheck(𝑃::Property, X::LazySet; witness::Bool=false)\n\n\n\n\n\n"
+    "text": "Abstract supertype of properties that can be checked.\n\nEvery concrete subtype should provide the following functions:\n\ndim(𝑃::Property)::Int\ncheck(𝑃::Property, X::LazySet; witness::Bool=false)\n\n\n\n\n\n"
 },
 
 {
@@ -233,6 +233,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "lib/properties.html#LazySets.dim-Tuple{Conjunction}",
+    "page": "Properties",
+    "title": "LazySets.dim",
+    "category": "method",
+    "text": "dim(𝑃::Conjunction)::Int\n\nReturn the dimension of a conjunction of properties.\n\nInput\n\n𝑃 – conjunction of properties\n\nOutput\n\nThe dimension of the conjunction of properties.\n\n\n\n\n\n"
+},
+
+{
     "location": "lib/properties.html#Reachability.Properties.check-Union{Tuple{N}, Tuple{Conjunction,LazySet{N}}} where N<:Real",
     "page": "Properties",
     "title": "Reachability.Properties.check",
@@ -249,6 +257,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "lib/properties.html#LazySets.dim-Tuple{Disjunction}",
+    "page": "Properties",
+    "title": "LazySets.dim",
+    "category": "method",
+    "text": "dim(𝑃::Disjunction)::Int\n\nReturn the dimension of a disjunction of properties.\n\nInput\n\n𝑃 – disjunction of properties\n\nOutput\n\nThe dimension of the disjunction of properties.\n\n\n\n\n\n"
+},
+
+{
     "location": "lib/properties.html#Reachability.Properties.check-Union{Tuple{N}, Tuple{Disjunction,LazySet{N}}} where N<:Real",
     "page": "Properties",
     "title": "Reachability.Properties.check",
@@ -261,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Properties",
     "title": "Boolean combination of properties",
     "category": "section",
-    "text": "Conjunction\ncheck(::Conjunction, ::LazySet{N}) where {N<:Real}\nDisjunction\ncheck(::Disjunction, ::LazySet{N}) where {N<:Real}"
+    "text": "Conjunction\ndim(::Conjunction)\ncheck(::Conjunction, ::LazySet{N}) where {N<:Real}\nDisjunction\ndim(::Disjunction)\ncheck(::Disjunction, ::LazySet{N}) where {N<:Real}"
 },
 
 {
@@ -270,6 +286,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Reachability.Properties.SafeStatesProperty",
     "category": "type",
     "text": "SafeStatesProperty{N<:Real} <: Property\n\nType that represents a safety property characterized by a set of safe states. The property is satisfied by a given set of states X if X is fully contained in the set of safe states.\n\nFields\n\nsafe    – convex set representing the safe states\nwitness – witness point (empty vector if not set)\n\nNotes\n\nThe following formula characterizes whether a set X satisfies a safety property characterized by a set of safe states 𝑃:\n\n    X models 𝑃 iff X  𝑃textttsafe\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/properties.html#LazySets.dim-Tuple{SafeStatesProperty}",
+    "page": "Properties",
+    "title": "LazySets.dim",
+    "category": "method",
+    "text": "dim(𝑃::SafeStatesProperty)::Int\n\nReturn the dimension of a property with safe states.\n\nInput\n\n𝑃 – safety property with safe states\n\nOutput\n\nThe dimension of the safe states.\n\n\n\n\n\n"
 },
 
 {
@@ -289,6 +313,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "lib/properties.html#LazySets.dim-Tuple{BadStatesProperty}",
+    "page": "Properties",
+    "title": "LazySets.dim",
+    "category": "method",
+    "text": "dim(𝑃::BadStatesProperty)::Int\n\nReturn the dimension of a property with bad states.\n\nInput\n\n𝑃 – safety property with bad states\n\nOutput\n\nThe dimension of the bad states.\n\n\n\n\n\n"
+},
+
+{
     "location": "lib/properties.html#Reachability.Properties.check-Tuple{BadStatesProperty,LazySet}",
     "page": "Properties",
     "title": "Reachability.Properties.check",
@@ -301,7 +333,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Properties",
     "title": "Specific properties",
     "category": "section",
-    "text": "SafeStatesProperty\ncheck(::SafeStatesProperty, ::LazySet)\nBadStatesProperty\ncheck(::BadStatesProperty, ::LazySet)"
+    "text": "SafeStatesProperty\ndim(::SafeStatesProperty)\ncheck(::SafeStatesProperty, ::LazySet)\nBadStatesProperty\ndim(::BadStatesProperty)\ncheck(::BadStatesProperty, ::LazySet)"
 },
 
 {
