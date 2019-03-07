@@ -62,3 +62,24 @@ end
 function wrap_inputs(system::CACDS, U::LazySet)
     return CACDS(system.A, system.B, system.c, system.X, ConstantInput(U))
 end
+
+"""
+    distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet)
+
+Distribute the set of initial states to each mode of a hybrid system.
+
+### Input
+
+- `system` -- an initial value problem wrapping a mathematical system (hybrid)
+              and a set of initial states
+
+### Output
+
+A new initial value problem with the same hybrid system but where the set of initial
+states is the list of tuples `(state, X0)`, for each state in the hybrid system.
+"""
+function distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet})
+    HS, X0 = system.s, system.x0
+    initial_states = [(loc, X0) for loc in states(HS)]
+    return InitialValueProblem(HS, initial_states)
+end
