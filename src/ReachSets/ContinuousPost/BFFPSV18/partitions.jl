@@ -23,7 +23,7 @@ A new property of reduced dimension, if necessary.
 The return type depends on the ambient dimension (`n`), the block indices in the
 partition and on the type of property:
 
-- The property `𝑃` is returned unchanged whenever the `n`, matches the dimensions
+- The property `𝑃` is returned unchanged whenever `n` matches the dimensions
   in `blocks`.
 - If the property is a `HalfSpace` (resp. `HPolyhedron`), the function `project`
   from `LazySets` returns a new property with a `HalfSpace` (resp. `HPolyhedron`)
