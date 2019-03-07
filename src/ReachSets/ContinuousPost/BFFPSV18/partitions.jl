@@ -32,6 +32,9 @@ function inout_map_property(𝑃::PROPERTY,
     if length(proj) == n
         # no change in the dimension, return the original property
         return 𝑃
+    elseif length(proj) == dim(𝑃)
+        # temporary workaround, should be fixed properly by #521
+        return 𝑃
     else
         M = sparse(proj, proj, ones(length(proj)), n, n)
         return inout_map_property_helper(𝑃, M)
