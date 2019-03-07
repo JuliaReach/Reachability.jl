@@ -45,6 +45,15 @@ A = [ 0.0509836  0.168159  0.95246   0.33644
       0.38318    0.616014  0.518412  0.778765]
 
 # check that x1 + x2 <= 2 doesn't hold
+# (this computes only block 1, needed for the property)
+s = solve(IVP(LCS(A), X0),
+          Options(:T=>0.1, :mode=>"check",
+          :property=>SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 2.))),
+          op=BFFPSV18(:vars=>[1,2], :partition=>[1:2, 3:4]))
+@test s.violation == 1
+
+# same but computing the two blocks, even if the second block is not needed
+# for the property
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :mode=>"check",
           :property=>SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 2.))),

@@ -19,6 +19,9 @@ using LazySets.Approximations: symmetric_interval_hull,
                                overapproximate,
                                box_approximation,
                                AbstractDirections
+
+import LazySets.Approximations: project
+
 using Reachability: @timing,
                     Options, OptionSpec, TwoLayerOptions, AbstractOptions,
                     validate_and_wrap_options, print_option_spec,
