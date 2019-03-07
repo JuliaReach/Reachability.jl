@@ -51,6 +51,15 @@ s = solve(IVP(LCS(A), X0),
           op=BFFPSV18(:vars=>[1,2,3], :partition=>[1:2, 3:4]))
 @test s.violation == 1
 
+# check that we can analyze a property in low dimensions
+# (this ability will be removed with #521; instead, we should replace this test
+#  by one that has ':vars=>[1,2]' and a high-dimensional property)
+s = solve(IVP(LCS(A), X0),
+          Options(:T=>0.1, :mode=>"check",
+          :property=>SafeStatesProperty(LinearConstraint([1., 1.], 2.))),
+          op=BFFPSV18(:vars=>[1,2], :partition=>[1:2, 3:4]))
+@test s.violation == 1
+
 # check that x1 - x2 <= 2 holds
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :mode=>"check",
