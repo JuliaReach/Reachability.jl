@@ -21,8 +21,10 @@ Property
 
 ```@docs
 Conjunction
+dim(::Conjunction)
 check(::Conjunction, ::LazySet{N}) where {N<:Real}
 Disjunction
+dim(::Disjunction)
 check(::Disjunction, ::LazySet{N}) where {N<:Real}
 ```
 
@@ -31,7 +33,9 @@ check(::Disjunction, ::LazySet{N}) where {N<:Real}
 
 ```@docs
 SafeStatesProperty
+dim(::SafeStatesProperty)
 check(::SafeStatesProperty, ::LazySet)
 BadStatesProperty
+dim(::BadStatesProperty)
 check(::BadStatesProperty, ::LazySet)
 ```

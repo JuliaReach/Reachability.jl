@@ -31,6 +31,23 @@ BadStatesProperty(bad::LazySet{N}) where {N<:Real} =
     BadStatesProperty{N}(bad)
 
 """
+    dim(𝑃::BadStatesProperty)::Int
+
+Return the dimension of a property with bad states.
+
+### Input
+
+- `𝑃` -- safety property with bad states
+
+### Output
+
+The dimension of the bad states.
+"""
+function dim(𝑃::BadStatesProperty)::Int
+    return dim(𝑃.bad)
+end
+
+"""
     check(𝑃::BadStatesProperty, X::LazySet; witness::Bool=false)
 
 Checks whether a convex set is disjoint from the set of bad states.
