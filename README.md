@@ -20,7 +20,7 @@ Currently this package implements algorithms that can handle:
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
 - [Contributing](https://juliareach.github.io/Reachability.jl/latest/about.html#Contributing-1)
 - [Release notes of tagged versions](https://github.com/JuliaReach/Reachability.jl/releases)
-- [Release notes of the development version](https://github.com/Reachability/Reachability.jl/wiki/Release-log-tracker)
+- [Release log of the development version](https://github.com/JuliaReach/Reachability.jl/wiki/Release-log-tracker)
 - [Publications](https://juliareach.github.io/Reachability.jl/latest/publications.html)
 
 
