@@ -8,6 +8,8 @@ const LCS = LinearContinuousSystem
 const LDS = LinearDiscreteSystem
 const CLCCS = ConstrainedLinearControlContinuousSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
+const CACCS = ConstrainedAffineControlContinuousSystem
+const CACDS = ConstrainedAffineControlDiscreteSystem
 
 import Base: *
 

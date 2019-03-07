@@ -83,6 +83,7 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
                 op::ContinuousPost=default_operator(system),
                 invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
+    system = normalize(system)
     options = init(op, system, options_input)
 
     # coordinate transformation
