@@ -1,3 +1,5 @@
+using LazySets.Approximations: project
+
 """
     inout_map_property(𝑃::PROPERTY,
                        partition::AbstractVector{<:AbstractVector{Int}},
@@ -16,80 +18,55 @@ Map a property to the dimensions of analyzed blocks.
 
 ### Output
 
-A new property of reduced dimension.
+A new property of reduced dimension, if necessary.
 
 ### Notes
 
-If the dimension is not reduced, we return the original property.
-Otherwise, the dimension reduction is implemented via a (lazy) `LinearMap`.
+The return type depends on the ambient dimension (`n`), the block indices in the
+partition and in the type of property:
+
+- The property `𝑃` is returned unchanged whenever the `n`, matches the dimensions
+  in `blocks`.
+- If the property is a `HalfSpace` (resp. `HPolyhedron`), the function `project`
+  from `LazySets` returns a new property with a `HalfSpace` (resp. `HPolyhedron`)
+  in the reduced dimensions, according to `blocks`.
+- Otherwise, the dimensional reduction is implemented via a (lazy) `LinearMap`.
 """
 function inout_map_property(𝑃::PROPERTY,
                             partition::AbstractVector{<:AbstractVector{Int}},
                             blocks::AbstractVector{Int},
                             n::Int
                            )::PROPERTY where {PROPERTY<:Property}
-    proj = projection_map(partition, blocks)
-    if length(proj) == n
-        # no change in the dimension, return the original property
-        return 𝑃
-    else
-        M = sparse(proj, proj, ones(length(proj)), n, n)
-        return inout_map_property_helper(𝑃, M)
-    end
+
+    # create a sorted list of all dimensions in `blocks` => available variables for projection
+    proj = vcat(partition[blocks]...)
+
+    # no change in the dimension => return the original property
+    length(proj) == n && return 𝑃
+
+    return inout_map_property_helper(𝑃, proj)
 end
 
-function inout_map_property_helper(𝑃::Conjunction, M::AbstractMatrix)
+function inout_map_property_helper(𝑃::Conjunction, proj::Vector{Int})
     new_conjuncts = similar(𝑃.conjuncts)
     for (i, conjunct) in enumerate(𝑃.conjuncts)
-        new_conjuncts[i] = inout_map_property_helper(conjunct, M)
+        new_conjuncts[i] = inout_map_property_helper(conjunct, proj)
     end
     return Conjunction(new_conjuncts)
 end
 
-function inout_map_property_helper(𝑃::Disjunction, M::AbstractMatrix)
+function inout_map_property_helper(𝑃::Disjunction, proj::Vector{Int})
     new_disjuncts = similar(𝑃.disjuncts)
     for (i, disjunct) in enumerate(𝑃.disjuncts)
-        new_disjuncts[i] = inout_map_property_helper(disjunct, M)
+        new_disjuncts[i] = inout_map_property_helper(disjunct, proj)
     end
     return Disjunction(new_disjuncts)
 end
 
-function inout_map_property_helper(𝑃::BadStatesProperty, M::AbstractMatrix)
-    @assert dim(𝑃.bad) == size(M, 2) "the property has dimension " *
-        "$(dim(𝑃.bad)) but should have dimension $(size(M, 2))"
-    return BadStatesProperty(M * 𝑃.bad)
+function inout_map_property_helper(𝑃::BadStatesProperty, proj::Vector{Int})
+    return BadStatesProperty(project(𝑃.bad, proj))
 end
 
-function inout_map_property_helper(𝑃::SafeStatesProperty, M::AbstractMatrix)
-    @assert dim(𝑃.safe) == size(M, 2) "the property has dimension " *
-        "$(dim(𝑃.safe)) but should have dimension $(size(M, 2))"
-    return SafeStatesProperty(M * 𝑃.safe)
-end
-
-"""
-    projection_map(partition::AbstractVector{<:AbstractVector{Int}},
-                   blocks::AbstractVector{Int}
-                  )::Vector{Int}
-
-Create a sorted list of all dimensions in `blocks`.
-
-### Input
-
-- `partition` -- block partition; elements are start and end indices of a block
-- `blocks`    -- list of all output block indices in the partition
-
-### Output
-
-A sorted list containing all output dimensions.
-"""
-function projection_map(partition::AbstractVector{<:AbstractVector{Int}},
-                        blocks::AbstractVector{Int}
-                       )::Vector{Int}
-    proj = Vector{Int}()
-    for bi in blocks
-        for i in partition[bi]
-            push!(proj, i)
-        end
-    end
-    return proj
+function inout_map_property_helper(𝑃::SafeStatesProperty, proj::Vector{Int})
+    @return SafeStatesProperty(project(𝑃.safe, proj))
 end
