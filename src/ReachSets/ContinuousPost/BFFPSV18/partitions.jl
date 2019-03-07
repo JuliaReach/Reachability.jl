@@ -68,5 +68,5 @@ function inout_map_property_helper(𝑃::BadStatesProperty, proj::Vector{Int})
 end
 
 function inout_map_property_helper(𝑃::SafeStatesProperty, proj::Vector{Int})
-    @return SafeStatesProperty(project(𝑃.safe, proj))
+    return SafeStatesProperty(project(𝑃.safe, proj))
 end
