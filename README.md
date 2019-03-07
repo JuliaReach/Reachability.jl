@@ -18,8 +18,10 @@ Currently this package implements algorithms that can handle:
 ## Resources
 
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
-- [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
-- [Publications](http://juliareach.github.io/Reachability.jl/latest/publications.html)
+- [Contributing](https://juliareach.github.io/Reachability.jl/latest/about.html#Contributing-1)
+- [Release notes of tagged versions](https://github.com/JuliaReach/Reachability.jl/releases)
+- [Release notes of the development version](https://github.com/Reachability/Reachability.jl/wiki/Release-log-tracker)
+- [Publications](https://juliareach.github.io/Reachability.jl/latest/publications.html)
 
 
 ## Installing
