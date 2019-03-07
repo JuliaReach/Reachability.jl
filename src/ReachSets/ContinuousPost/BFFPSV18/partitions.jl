@@ -1,5 +1,3 @@
-using LazySets.Approximations: project
-
 """
     inout_map_property(𝑃::PROPERTY,
                        partition::AbstractVector{<:AbstractVector{Int}},
