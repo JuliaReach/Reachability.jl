@@ -21,7 +21,7 @@ A new property of reduced dimension, if necessary.
 ### Notes
 
 The return type depends on the ambient dimension (`n`), the block indices in the
-partition and in the type of property:
+partition and on the type of property:
 
 - The property `𝑃` is returned unchanged whenever the `n`, matches the dimensions
   in `blocks`.
