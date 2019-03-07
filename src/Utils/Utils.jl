@@ -31,8 +31,15 @@ export template_direction_symbols,
        matrix_conversion,
        matrix_conversion_lazy_explicit
 
+# internal normalization
+export normalize,
+       distribute_initial_set
+
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
+
+# normalization
+include("normalization.jl")
 
 # abstract solution type
 include("AbstractSolution.jl")

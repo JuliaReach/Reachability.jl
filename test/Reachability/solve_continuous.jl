@@ -110,9 +110,6 @@ s = solve(IVP(LCS(sparse(A)), X0), Options(:T=>0.1),
     op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4, [5]], :block_options=>
                 [HPolygon, HPolygon, Interval]))
 
-# ===============================
-# System with an odd dimension
-# ===============================
 A = [1 2 1.; 0 0. 1; -2 1 4]
 X0 = BallInf(ones(3), 0.1)
 system = IVP(LCS(sparse(A)), X0)
@@ -142,9 +139,15 @@ X0 = BallInf(ones(4), 0.1)
 # dense identity matrix
 E = Matrix(1.0I, size(A))
 
-# instantiate system
-Δ = ConstrainedLinearControlContinuousSystem(A, E, nothing, ConstantInput(B*U))
-𝒮 = InitialValueProblem(Δ, X0)
+# inputs
+U1 = ConstantInput(B*U)
+U2 = B*U  # use internal conversion
 
-# default options (computes all variables)
-s = solve(𝒮, :T=>0.1)
+for inputs in [U1, U2]
+    # instantiate system
+    Δ = CLCCS(A, E, nothing, inputs)
+    𝒮 = InitialValueProblem(Δ, X0)
+
+    # default options (computes all variables)
+    s = solve(𝒮, :T=>0.1)
+end
