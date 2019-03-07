@@ -21,6 +21,27 @@ struct Conjunction <: Property
 end
 
 """
+    dim(𝑃::Conjunction)::Int
+
+Return the dimension of a conjunction of properties.
+
+### Input
+
+- `𝑃` -- conjunction of properties
+
+### Output
+
+The dimension of the conjunction of properties.
+"""
+function dim(𝑃::Conjunction)::Int
+    if isempty(𝑃.conjuncts)
+        throw(ArgumentError("the dimension of an empty conjunction of " *
+                            "properties is undefined"))
+    end
+    @inbounds return dim(𝑃.conjuncts[1])
+end
+
+"""
     check(𝑃::Conjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}
 
 Check whether a convex set satisfies a conjunction of properties.

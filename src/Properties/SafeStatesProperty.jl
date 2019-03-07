@@ -27,7 +27,25 @@ mutable struct SafeStatesProperty{N<:Real} <: Property
 end
 
 # type-less convenience constructor
-SafeStatesProperty(safe::LazySet{N}) where {N<:Real} = SafeStatesProperty{N}(safe)
+SafeStatesProperty(safe::LazySet{N}) where {N<:Real} =
+    SafeStatesProperty{N}(safe)
+
+"""
+    dim(𝑃::SafeStatesProperty)::Int
+
+Return the dimension of a property with safe states.
+
+### Input
+
+- `𝑃` -- safety property with safe states
+
+### Output
+
+The dimension of the safe states.
+"""
+function dim(𝑃::SafeStatesProperty)::Int
+    return dim(𝑃.safe)
+end
 
 """
     check(𝑃::SafeStatesProperty, X::LazySet; witness::Bool=false)

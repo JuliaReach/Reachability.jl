@@ -30,6 +30,27 @@ end
 Disjunction(disjuncts::Vector{<:Property}) = Disjunction(disjuncts, true)
 
 """
+    dim(𝑃::Disjunction)::Int
+
+Return the dimension of a disjunction of properties.
+
+### Input
+
+- `𝑃` -- disjunction of properties
+
+### Output
+
+The dimension of the disjunction of properties.
+"""
+function dim(𝑃::Disjunction)::Int
+    if isempty(𝑃.disjuncts)
+        throw(ArgumentError("the dimension of an empty disjunction of " *
+                            "properties is undefined"))
+    end
+    @inbounds return dim(𝑃.disjuncts[1])
+end
+
+"""
     check(𝑃::Disjunction, X::LazySet{N}; witness::Bool=false) where {N<:Real}
 
 Check whether a convex set satisfies a disjunction of properties.

@@ -6,11 +6,14 @@ module Properties
 
 using LazySets
 
+import LazySets.dim
+
 # ==============================
 # Property struct and evaluation
 # ==============================
 include("Property.jl")
 export Property,
+       dim,
        check
 
 include("Conjunction.jl")
