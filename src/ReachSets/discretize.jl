@@ -689,19 +689,20 @@ end
 function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:zonotope})
     Einit = convert(Zonotope, Einit)
     Z1 = convert(Zonotope, X0)
-    Z2 = linear_map(ϕ, minkowski_sum(X0, Einit))
+    Z2 = linear_map(ϕ, minkowski_sum(Z1, Einit))
     Ω0 = overapproximate(ConvexHull(Z1, Z2), Zonotope)
     return Ω0
 end
 
 # version using concrete operations with zonotopes
 function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:zonotope})
+    n = size(A, 1)
     Einit = convert(Zonotope, Einit)
     Eψ0 = convert(Zonotope, Eψ0)
-    Z1 = X0
-    ϕX0 = linear_map(ϕ, X0)
+    Z1 = convert(Zonotope, X0)
+    ϕX0 = linear_map(ϕ, Z1)
     U0 = convert(Zonotope, U0)
-    δI = Matrix(δ*I, size(U0))
+    δI = Matrix(δ*I, n, n)
     δU0 = linear_map(δI, U0)
     Z2 = reduce(minkowski_sum, [ϕX0, δU0, Eψ0, Einit])
     Ω0 = overapproximate(ConvexHull(Z1, Z2), Zonotope)

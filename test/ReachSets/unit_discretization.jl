@@ -31,6 +31,16 @@ let # preventing global scope
     discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="backward")
     @test inputdim(discr_sys_homog) == 0
 
+    # bloating, forward interpolation using lazy operations (default)
+    discr_sys_homog = discretize(cont_sys_homog, δ, algorithm="forward", set_operations="lazy")
+    @test discr_sys_homog.x0 isa ConvexHull
+    @test inputdim(discr_sys_homog) == 0
+
+    # using concrete zonotopes
+    discr_sys_homog = discretize(cont_sys_homog, δ, set_operations="zonotope")
+    @test discr_sys_homog.x0 isa Zonotope
+    @test inputdim(discr_sys_homog) == 0
+
     # ===============================================================
     # Discretization of a continuous-time system with constant input
     # ===============================================================
@@ -64,6 +74,14 @@ let # preventing global scope
     @test inputdim(discr_sys) == 4
 
     discr_sys = discretize(cont_sys, δ, algorithm="firstorder")
+    @test inputdim(discr_sys) == 4
+
+    # using concrete zonotopes
+    # since a Ball2 cannot be converted to a Zonotope, we use a box instead
+    U = ConstantInput(BallInf(ones(4), 0.5))
+    cont_sys = IVP(CLCCS(A, B, nothing, U), X0)
+    discr_sys = discretize(cont_sys, δ, set_operations="zonotope")
+    @test discr_sys.x0 isa Zonotope
     @test inputdim(discr_sys) == 4
 
     # ===================================================================
