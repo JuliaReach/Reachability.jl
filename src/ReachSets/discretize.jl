@@ -4,7 +4,7 @@ const CLCDS = ConstrainedLinearControlDiscreteSystem
 @inline Id(n) = Matrix(1.0I, n, n)
 
 """
-    discretize(𝑆, δ; [algorithm], [exp_method], [sih_method])
+    discretize(𝑆, δ; [algorithm], [exp_method], [sih_method], [set_operations])
 
 Apply an approximation model to `S` obtaining a discrete initial value problem.
 
@@ -41,6 +41,15 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
                       `symmetric_interval_hull` from `LazySets.Approximations`
     - `"lazy"`     -- compute a wrapper set type around symmetric interval hull
                       in a lazy way using `SymmetricIntervalHull`
+
+- `set_operations`  -- (optional, default: `"lazy"`) set operations used for the
+                       discretized initial states and transformed inputs, choose among:
+
+    - `"lazy"`     -- use lazy convex hull for the initial states and lazy linear
+                      map for the inputs
+    - `"zonotope"` -- use concrete zonotope operations (linear map and Minkowski sum)
+                      and return zonotopes for both the initial states and the
+                      inputs of the discretized system
 
 ### Output
 
@@ -84,14 +93,23 @@ function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     δ::Float64;
                     algorithm::String="forward",
                     exp_method::String="base",
-                    sih_method::String="concrete")
+                    sih_method::String="concrete",
+                    set_operations::String="lazy")
 
     if algorithm in ["forward", "backward"]
         return discretize_interpolation(𝑆, δ, algorithm=algorithm,
-                    exp_method=exp_method, sih_method=sih_method)
+                    exp_method=exp_method, sih_method=sih_method, set_operations=set_operations)
+
     elseif algorithm == "firstorder"
+        if set_operations != "lazy"
+            throw(ArgumentError("the algorithm $algorithm with set operations=$set_operations is not implemented"))
+        end
         return discretize_firstorder(𝑆, δ, exp_method=exp_method)
+
     elseif algorithm == "nobloating"
+        if set_operations != "lazy"
+            throw(ArgumentError("the algorithm $algorithm with set operations=$set_operations is not implemented"))
+        end
         return discretize_nobloating(𝑆, δ, exp_method=exp_method)
     else
         throw(ArgumentError("the algorithm $algorithm is unknown"))
@@ -594,7 +612,11 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
                                    δ::Float64;
                                    algorithm::String="forward",
                                    exp_method::String="base",
-                                   sih_method::String="concrete")
+                                   sih_method::String="concrete",
+                                   set_operations::String="lazy")
+
+    # used to dispatch on the value of the set operation
+    set_operations = Symbol(set_operations)
 
     if sih_method == "concrete"
         sih = symmetric_interval_hull
@@ -623,7 +645,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
 
     # early return for homogeneous systems
     if inputdim(𝑆) == 0
-        Ω0 = ConvexHull(X0, ϕ * X0 ⊕ Einit)
+        Ω0 = _discretize_interpolation_homog(X0, ϕ, Einit, Val(set_operations))
         return IVP(LDS(ϕ), Ω0)
     end
 
@@ -631,6 +653,19 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     U0 = next_set(U, 1)
 
     Eψ0 = sih(Phi2Aabs * sih(A * U0))
+    Ω0, Ud = _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, Val(set_operations))
+
+    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
+end
+
+# version using lazy sets and operations
+function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:lazy})
+    Ω0 = ConvexHull(X0, ϕ * X0 ⊕ Einit)
+    return Ω0
+end
+
+# version using lazy sets and operations
+function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:lazy})
     Ω0 = ConvexHull(X0, ϕ * X0 ⊕ δ*U0 ⊕ Eψ0 ⊕ Einit)
 
     if U isa ConstantInput
@@ -647,6 +682,46 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     else
         throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
+    return Ω0, Ud
+end
 
-    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
+# version using concrete operations with zonotopes
+function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:zonotope})
+    Einit = convert(Zonotope, Einit)
+    Z1 = convert(Zonotope, X0)
+    Z2 = linear_map(ϕ, minkowski_sum(Z1, Einit))
+    Ω0 = overapproximate(ConvexHull(Z1, Z2), Zonotope)
+    return Ω0
+end
+
+# version using concrete operations with zonotopes
+function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:zonotope})
+    n = size(A, 1)
+    Einit = convert(Zonotope, Einit)
+    Eψ0 = convert(Zonotope, Eψ0)
+    Z1 = convert(Zonotope, X0)
+    ϕX0 = linear_map(ϕ, Z1)
+    U0 = convert(Zonotope, U0)
+    δI = Matrix(δ*I, n, n)
+    δU0 = linear_map(δI, U0)
+    Z2 = reduce(minkowski_sum, [ϕX0, δU0, Eψ0, Einit])
+    Ω0 = overapproximate(ConvexHull(Z1, Z2), Zonotope)
+
+    if U isa ConstantInput
+        Ud = ConstantInput(minkowski_sum(δU0, Eψ0))
+
+    elseif U isa VaryingInput
+        Ud = Vector{LazySet}(undef, length(U))
+        for (k, Uk) in enumerate(U)
+            Eψk = convert(Zonotope, sih(Phi2Aabs * sih(A * Uk)))
+            Uk = convert(Zonotope, Uk)
+            δUk = linear_map(δI, Uk)
+            Ud[k] = minkowski_sum(δUk, Eψk)
+        end
+        Ud = VaryingInput(Ud)
+
+    else
+        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+    end
+    return Ω0, Ud
 end
