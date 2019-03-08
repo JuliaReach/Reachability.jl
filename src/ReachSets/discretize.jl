@@ -653,7 +653,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     U0 = next_set(U, 1)
 
     Eψ0 = sih(Phi2Aabs * sih(A * U0))
-    Ω0, Ud = _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, Phi2Aabs, Val(set_operations))
+    Ω0, Ud = _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, Val(set_operations))
 
     return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
 end
@@ -665,7 +665,7 @@ function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:laz
 end
 
 # version using lazy sets and operations
-function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, Phi2Aabs, set_operations::Val{:lazy})
+function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:lazy})
     Ω0 = ConvexHull(X0, ϕ * X0 ⊕ δ*U0 ⊕ Eψ0 ⊕ Einit)
 
     if U isa ConstantInput
@@ -695,7 +695,7 @@ function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:zon
 end
 
 # version using concrete operations with zonotopes
-function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, Phi2Aabs, set_operations::Val{:zonotope})
+function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:zonotope})
     Einit = convert(Zonotope, Einit)
     Eψ0 = convert(Zonotope, Eψ0)
     Z1 = X0
