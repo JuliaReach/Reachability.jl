@@ -55,7 +55,10 @@ function init!(𝒫::GLGM06, 𝑆::AbstractSystem, 𝑂::Options)
     return 𝑂init
 end
 
-function post(𝒫::GLGM06, 𝑆::AbstractSystem, invariant::Union{LazySet, Nothing}, 𝑂::Options)
+function post(𝒫::GLGM06,
+              𝑆::AbstractSystem,
+              invariant::Union{LazySet, Nothing},
+              𝑂::Options)::ReachSolution{Zonotope}
 
     # ==================================
     # Initialization and discretization
