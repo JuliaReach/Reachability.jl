@@ -115,7 +115,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    options = init(opD, HS, options_input)
+    options = init!(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
     inout_map = nothing
