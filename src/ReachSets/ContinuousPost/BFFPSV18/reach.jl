@@ -53,8 +53,9 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     N = ceil(Int, options[:T] / options[:δ])
 
     # Cartesian decomposition of the initial set
-    if length(partition) == 1 && length(partition[1]) == n
-        info("- No decomposition of X0 needed")
+    if length(partition) == 1 && length(partition[1]) == n &&
+            options[:block_options_init] == LinearMap
+        info("- Skipping decomposition of X0")
         Xhat0 = LazySet{NUM}[S.x0]
     else
         info("- Decomposing X0")
