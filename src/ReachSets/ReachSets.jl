@@ -86,7 +86,7 @@ include("DiscretePost/DiscretePost.jl")
 export PostOperator,
        ContinuousPost,
        DiscretePost,
-       init,
+       init, init!,
        post,
        tube⋂inv!
 
