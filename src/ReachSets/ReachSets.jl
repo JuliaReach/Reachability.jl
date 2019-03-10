@@ -98,6 +98,8 @@ include("ContinuousPost/BFFPSV18/reach.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 
+include("ContinuousPost/GLGM06/GLGM06.jl")
+
 # ========================
 # Reachability Algorithms
 # ========================
