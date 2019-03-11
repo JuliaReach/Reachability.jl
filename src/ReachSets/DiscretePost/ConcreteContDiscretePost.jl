@@ -137,6 +137,7 @@ function post(𝒫::ConcreteContDiscretePost,
                 continue
             end
             # store result
+
             push!(post_jump, ReachSet{LazySet{N}, N}(Approximations.project(A⌜R⋂G⌟⋂I, global_vars, dirs),
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
@@ -148,15 +149,14 @@ function post(𝒫::ConcreteContDiscretePost,
 
     unique!(steps)
 
-
-
+    println("Start_high")
+    println(length(steps))
     loc = HS.modes[source_loc_id]
     options_copy.dict[:vars] = 1:statedim(loc)
     options_copy.dict[:steps] = steps
     h_reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
                         options_copy,
-                        op=BFFPSV18(),
-                        invariant=loc.X)
+                        op=BFFPSV18())
 
     h_Rsets = Vector{ReachSet{LazySet{N}, N}}()
     count = 1
@@ -164,7 +164,7 @@ function post(𝒫::ConcreteContDiscretePost,
     sizehint!(h_Rsets, length(steps))
     @inbounds for i = 1:length(h_reach_tube.Xk)
         reach_set = h_reach_tube.Xk[i]
-        R⋂I = intersection(loc.X, reach_set.X)
+        R⋂I = intersection(loc.X, reach_set.X, true)
         if isempty(R⋂I)
             break
         end
@@ -200,14 +200,14 @@ function post(𝒫::ConcreteContDiscretePost,
             A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
             # intersect with target invariant
-            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant)
+            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant, true)
 
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(overapproximate(A⌜R⋂G⌟⋂I),
+            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
         end

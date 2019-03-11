@@ -87,7 +87,7 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
                    Rsets,
                    start_interval
                   ) where {N}
-
+    println(reach_tube)
     # TODO dirs = get_overapproximation_option(op, dim(invariant)) ?
     dirs = 𝒫.options[:overapproximation]
 
@@ -103,7 +103,7 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
         end
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2]))
+            reach_set.t_end + start_interval[2], reach_set.k))
         count = count + 1
     end
 
@@ -179,7 +179,7 @@ function post(𝒫::LazyDiscretePost,
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
-                                                     reach_set.t_end))
+                                                     reach_set.t_end, reach_set.k))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,

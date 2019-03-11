@@ -24,7 +24,7 @@ function postprocess(𝒫,
                      passed_list,
                      target_loc_id,
                      jumps,
-                     fixpoint_list)
+                     fixpoint_list=post_jump)
     fixpoint_strategy = options[:fixpoint_check]
 
     if fixpoint_strategy == :eager

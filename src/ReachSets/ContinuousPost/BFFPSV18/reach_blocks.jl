@@ -148,14 +148,16 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    if isempty(steps)
+    #println(1 in steps)
+    if isempty(steps) || (1 in steps)
+    #    println("I'm inside!!!")
         store!(res, 1, 1, X_store, t0, t1, NUM)
     end
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
     end
-    
+
     b = length(blocks)
     Xhatk = Vector{LazySet{NUM}}(undef, b)
     ϕpowerk = copy(ϕ)
@@ -174,7 +176,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
 
-    ind = isempty(steps) ? 2 : 1
+    ind = isempty(steps) || (1 in steps) ? 2 : 1
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
         update!(p, k)
@@ -210,7 +212,6 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                 break
             end
             ind += 1
-
         else
             t0 = t1
             t1 += δ
@@ -222,6 +223,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                     Whatk[i] + row(ϕpowerk, bi) * inputs)
             end
         end
+
         _A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
         copyto!(ϕpowerk, ϕpowerk_cache)
 

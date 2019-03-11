@@ -58,6 +58,7 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
                    Rsets,
                    low_temp_sets,
                    start_interval,
+                   options,
                    nonzero_vars
                   ) where {N}
 
@@ -83,10 +84,12 @@ function tube⋂inv!(𝒫::LazyLowDimDiscretePost,
 
             push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
                 reach_set.t_start + start_interval[1],
-                reach_set.t_end + start_interval[2]))
+                reach_set.t_end + start_interval[2],
+                reach_set.k))
             push!(low_temp_sets, ReachSet{LazySet{N}, N}(proj_inter,
                 reach_set.t_start + start_interval[1],
-                reach_set.t_end + start_interval[2]))
+                reach_set.t_end + start_interval[2],
+                reach_set.k))
             count = count + 1
         end
     end
@@ -103,7 +106,6 @@ function post(𝒫::LazyLowDimDiscretePost,
               low_temp_sets,
               count_Rsets,
               jumps,
-              nonzero_vars,
               options
              ) where {N}
     jumps += 1
@@ -167,7 +169,9 @@ function post(𝒫::LazyLowDimDiscretePost,
             end
 
             # apply assignment
-
+            # R⋂G = overapproximate(R⋂G, dirs)
+            #     linear_map(assignment, R⋂G)
+            #A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
             A⌜R⋂G⌟ = LinearMap(assignment, R⋂G)
             if !𝒫.options[:lazy_R⋂G]
                A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, dirs)
@@ -191,7 +195,8 @@ function post(𝒫::LazyLowDimDiscretePost,
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(res,
                                                      high_reach_set.t_start,
-                                                     high_reach_set.t_end))
+                                                     high_reach_set.t_end,
+                                                     high_reach_set.k))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
