@@ -6,37 +6,30 @@
 [![Code coverage](http://codecov.io/github/JuliaReach/Reachability.jl/coverage.svg?branch=master)](https://codecov.io/github/JuliaReach/Reachability.jl?branch=master)
 [![Join the chat at https://gitter.im/JuliaReach/Lobby](https://badges.gitter.im/JuliaReach/Lobby.svg)](https://gitter.im/JuliaReach/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`Reachability` is a software for reachability analysis and safety property checking that performs flowpipe computation of dynamical systems given by ordinary differential equations models (ODEs) in continuous or discrete time. Currently this package implements algorithms that can handle:
+`Reachability` is a software for reachability analysis and safety property checking that performs flowpipe computation of dynamical systems given by ordinary differential equations models (ODEs) in continuous or discrete time. 
+It is written in [Julia](http://julialang.org), a modern high-performance language
+for scientific computing.
+
+Currently this package implements algorithms that can handle:
 
 - flowpipe computation of affine ODEs with nondeterministic inputs
 - hybrid dynamical systems (hybrid automata) with nondeterministic affine ODEs in each mode
 
-`Reachability` is written in [Julia](http://julialang.org), a modern high-performance language
-for scientific computing.
-
 ## Resources
 
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
-- [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
-- [Publications using JuliaReach](http://juliareach.github.io/Reachability.jl/latest/publications.html)
+- [Contributing](https://juliareach.github.io/Reachability.jl/latest/about.html#Contributing-1)
+- [Release notes of tagged versions](https://github.com/JuliaReach/Reachability.jl/releases)
+- [Release log of the development version](https://github.com/JuliaReach/Reachability.jl/wiki/Release-log-tracker)
+- [Publications](https://juliareach.github.io/Reachability.jl/latest/publications.html)
 
-`Reachability` is a software for reach set approximation and safety properties
-of affine ordinary differential equations (ODEs) with nondeterministic inputs.
-
-It is written in [Julia](http://julialang.org), a modern high-performance language
-for scientific computing.
-
-## Resources
-
-- [Manual](http://juliareach.github.io/Reachability.jl/latest/)
-- [Contributing](http://juliareach.github.io/Reachability.jl/latest/about.html)
 
 ## Installing
 
-### Dependencies
-
-This package requires Julia v0.6 or later. Refer to the [official documentation](https://julialang.org/downloads)
+This package requires Julia v1.0 or later. Refer to the [official documentation](https://julialang.org/downloads)
 on how to install and run Julia in your system.
+
+### Dependencies
 
 The set computations depend on the core library [LazySets.jl](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
 
@@ -46,6 +39,7 @@ The latest stable release of [LazySets.jl](https://github.com/JuliaReach/LazySet
 
 To install this package, use the following command inside Julia's REPL:
 ```julia
+using Pkg
 Pkg.clone("https://github.com/JuliaReach/Reachability.jl")
 ```
 

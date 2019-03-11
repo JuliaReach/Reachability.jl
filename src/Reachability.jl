@@ -11,20 +11,27 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 import LazySets.use_precise_ρ
 import LazySets.LinearMap
  
+ # common aliases for MathematicalSystems types
+ const CLCCS = ConstrainedLinearControlContinuousSystem
+ const CLCDS = ConstrainedLinearControlDiscreteSystem
+ const LCS = LinearContinuousSystem
+ const LDS = LinearDiscreteSystem
+ 
 include("logging.jl")
 include("Utils/Utils.jl")
-include("options.jl")
+include("Options/dictionary.jl")
+include("Options/validation.jl")
+include("Options/default_options.jl")
+include("Properties/Properties.jl")
 include("ReachSets/ReachSets.jl")
 include("Transformations/Transformations.jl")
 
 @reexport using Reachability.Utils,
                 Reachability.ReachSets,
+                Reachability.Properties,
                 Reachability.Transformations
 
 export project,
-       LinearConstraintProperty, Clause,
-       IntersectionProperty,
-       SubsetProperty,
        Transformations
 
 include("solve.jl")

@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, MathematicalSystems
+using LazySets, MathematicalSystems, HybridSystems
 
 include("../compat.jl")
 
@@ -20,24 +20,26 @@ export print_sparsity,
 # Block Structure
 export @block_id,
        add_dimension,
-       block_to_set_map,
-       convert_partition,
-       compute_block_sizes
+       convert_partition
 
 # Usability
 export @filename_to_png,
        @relpath
 
 # internal conversion
-export interpret_template_direction_symbol,
+export template_direction_symbols,
        matrix_conversion,
        matrix_conversion_lazy_explicit
 
-# temporary helper function
-export decompose_helper
+# internal normalization
+export normalize,
+       distribute_initial_set
 
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
+
+# normalization
+include("normalization.jl")
 
 # abstract solution type
 include("AbstractSolution.jl")
@@ -265,21 +267,19 @@ function add_plot_labels(plot_vars::Vector{Int64};
     return labels
 end
 
-@static if VERSION >= v"0.7"
-    # Taken from an older Julia version, see Reachability #414 or
-    # https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
-    function source_path(default::Union{AbstractString, Nothing}="")
-        t = current_task()
-        while true
-            s = t.storage
-            if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
-                return s[:SOURCE_PATH]
-            end
-            if isa(t, t.parent)
-                return default
-            end
-            t = t.parent
+# Taken from an older Julia version, see Reachability #414 or
+# https://github.com/JuliaLang/julia/blob/788ce677f6043b52caf97323f9de4d6975882561/base/loading.jl#L485
+function source_path(default::Union{AbstractString, Nothing}="")
+    t = current_task()
+    while true
+        s = t.storage
+        if !isa(s, Nothing) && haskey(s, :SOURCE_PATH)
+            return s[:SOURCE_PATH]
         end
+        if isa(t, t.parent)
+            return default
+        end
+        t = t.parent
     end
 end
 
@@ -316,12 +316,7 @@ then one can do `julia -e 'include("P1/s.jl")'` without having to change `s.jl`.
 """
 macro relpath(name::String)
     return quote
-        @static if VERSION < v"0.7"
-            f = @__FILE__
-        else
-            f = source_path()
-        end
-
+        f = source_path()
         if f == nothing
             pathdir = ""
         else
@@ -332,35 +327,6 @@ macro relpath(name::String)
         end
         pathdir * $name
     end
-end
-
-"""
-    block_to_set_map(dict::Dict{Type{<:LazySet},
-                                AbstractVector{<:AbstractVector{Int}}})
-
-Invert a map (set type -> block structure) to a map (block index -> set type).
-
-### Input
-
-- `dict` -- map (set type -> block structure)
-
-### Ouput
-
-Vector mapping a block index to the respective set type.
-"""
-function block_to_set_map(dict::Dict{Type{<:LazySet},
-                                     AbstractVector{<:AbstractVector{Int}}})
-    # we assume that blocks do not overlap
-    set_type = Vector{Type{<:LazySet}}()
-    initial_block_indices = Vector{Int}()
-    @inbounds for (key, val) in dict
-        for bi in val
-            push!(set_type, key)
-            push!(initial_block_indices, bi[1])
-        end
-    end
-    s = sortperm(initial_block_indices)
-    return set_type[s]
 end
 
 """
@@ -414,74 +380,11 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     return partition_out
 end
 
-"""
-    interpret_template_direction_symbol(symbol::Symbol)
-
-Return a template direction type for a given symbol.
-
-### Input
-
-- `symbol` -- symbol
-
-### Output
-
-The template direction type if it is known, or `nothing` otherwise.
-"""
-function interpret_template_direction_symbol(symbol::Symbol)
-    if symbol == :box
-        dir = Approximations.BoxDirections
-    elseif symbol == :oct
-        dir = Approximations.OctDirections
-    elseif symbol == :boxdiag
-        dir = Approximations.BoxDiagDirections
-    else
-        if symbol != :nothing
-            warn("ignoring unknown template direction $symbol")
-        end
-        dir = nothing
-    end
-    return dir
-end
-
-"""
-    compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
-                       )::Vector{Int}
-
-Conversion of the blocks representation from partition to block sizes.
-
-### Input
-
-- `partition` -- partition, a vector of block index ranges
-
-### Output
-
-A vector where the ``i``th entry contains the size of the ``i``th block.
-"""
-function compute_block_sizes(partition::Union{Vector{Int}, Vector{UnitRange{Int}}}
-                            )::Vector{Int}
-    res = Vector{Int}(undef, length(partition))
-    for (i, block) in enumerate(partition)
-        res[i] = length(block)
-    end
-    return res
-end
-
-"""
-This is a temporary decomposition function that only applies a projection and
-keeps the sets lazy.
-Eventually this should be handled in LazySets.
-"""
-function decompose_helper(S::LazySet{N}, blocks::AbstractVector{Int},
-                          n::Int=dim(S)) where {N}
-    result = Vector{LazySet{N}}(undef, length(blocks))
-    block_start = 1
-    @inbounds for (i, bi) in enumerate(blocks)
-        M = sparse(1:bi, block_start:(block_start + bi - 1), ones(N, bi), bi, n)
-        result[i] = M * S
-        block_start += bi
-    end
-    return CartesianProductArray(result)
-end
+template_direction_symbols = Dict(
+    :box     => Approximations.BoxDirections,
+    :oct     => Approximations.OctDirections,
+    :boxdiag => Approximations.BoxDiagDirections
+    )
 
 # sparse/dense matrix conversion
 function matrix_conversion(Δ, options; A_passed=nothing)
@@ -515,34 +418,12 @@ function matrix_conversion(Δ, options; A_passed=nothing)
     if create_new_system
         # set new matrix
         if hasmethod(inputset, Tuple{typeof(Δ.s)})
-            Δ = DiscreteSystem(A_new, Δ.x0, inputset(Δ))
+            Δ = IVP(CLCDS(A_new, Matrix(1.0I, size(A_new)), nothing, inputset(Δ)), Δ.x0)
         else
-            Δ = DiscreteSystem(A_new, Δ.x0)
+            Δ = IVP(LDS(A_new), Δ.x0)
         end
     end
     return Δ
-end
-
-# convert SparseMatrixExp to eplicit matrix
-function matrix_conversion_lazy_explicit(Δ, options)
-    A = Δ.s.A
-    if !options[:lazy_expm] && options[:lazy_expm_discretize]
-        info("Making lazy matrix exponential explicit...")
-        @timing begin
-            n = options.dict[:n]
-            if options[:assume_sparse]
-                B = sparse(Int[], Int[], eltype(A)[], n, n)
-            else
-                B = Matrix{eltype(A)}(n, n)
-            end
-            for i in 1:n
-                B[i, :] = get_row(A, i)
-            end
-        end
-    else
-        B = nothing
-    end
-    return matrix_conversion(Δ, options; A_passed=B)
 end
 
 end # module

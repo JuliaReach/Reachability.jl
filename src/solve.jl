@@ -1,43 +1,29 @@
 import LazySets.Approximations:decompose, overapproximate
 export solve
-import LazySets.constrained_dimensions
 
-function default_operator(system::InitialValueProblem{S}) where
-        {S<:Union{AbstractContinuousSystem, AbstractDiscreteSystem}}
-    if S <: LinearContinuousSystem ||
-            S <: LinearControlContinuousSystem ||
-            S <: ConstrainedLinearContinuousSystem ||
-            S <: ConstrainedLinearControlContinuousSystem ||
-            S <: LinearDiscreteSystem ||
-            S <: LinearControlDiscreteSystem ||
-            S <: ConstrainedLinearDiscreteSystem ||
-            S <: ConstrainedLinearControlDiscreteSystem
+"""
+    default_operator(system::InitialValueProblem)
+
+Return the default continous post operator for the initial value problem of a
+discrete or continuous system.
+
+### Input
+
+- `system` -- an initial value problem wrapping a mathematical system (continuous or
+              discrete) and a set of initial states
+
+### Output
+
+A continuous post operator with default options.
+"""
+function default_operator(system::InitialValueProblem)
+    if islinear(system)
         op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *
               "type $(typeof(system))")
     end
     return op
-end
-
-"""
-    default_operator(𝒮::InitialValueProblem{<:HybridSystem})
-
-Return the default post operators for a given hybrid system.
-
-### Input
-
-- `𝒮` -- initial value problem of a hybrid system
-
-### Output
-
-The pair `opC, opD` where `opC` is a continuous post-operator and `opD` is a
-discrete post-operator.
-"""
-function default_operator(𝒮::InitialValueProblem{<:HybridSystem})
-    opC = BFFPSV18()
-    opD = LazyDiscretePost()
-    return opC, opD
 end
 
 """
@@ -77,10 +63,10 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
                 op::ContinuousPost=default_operator(system),
                 invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
-    options = init(op, system, options_input)
+    system = normalize(system)
+    options = init!(op, system, options_input)
 
     # coordinate transformation
-    options[:transformation_matrix] = nothing
     if options[:coordinate_transformation] != ""
         info("Transformation...")
         (system, transformation_matrix) =
@@ -103,22 +89,14 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 - `system`  -- hybrid system
 - `options` -- options for solving the problem
 """
-function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
-               options::Options)::AbstractSolution where N<:Real
-    sys_new = init_states_sys_from_init_set_sys(system)
-    opC, opD = default_operator(sys_new)
-    return solve!(sys_new, copy(options), opC, opD)
-end
-
-function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet{N}},
+function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet},
                options::Options,
-               opC::ContinuousPost,
-               opD::DiscretePost
-              )::AbstractSolution where N<:Real
-    sys_new = init_states_sys_from_init_set_sys(system)
-    return solve!(sys_new, copy(options), opC, opD)
+               opC::ContinuousPost=BFFPSV18(),
+               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
+    return solve!(distribute_initial_set(system), copy(options), opC, opD)
 end
 
+# if the initial states are distributed, no need to call distribute_initial_set(system)
 
 """
     constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
@@ -178,23 +156,15 @@ function init_states_sys_from_init_set_sys(
 end
 
 function solve(system::InitialValueProblem{<:HybridSystem,
-               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+                                           <:Vector{<:Tuple{Int64,<:LazySet}}},
                options::Options,
-               opC::ContinuousPost,
-               opD::DiscretePost
-              )::AbstractSolution where N<:Real
-    return solve!(system, copy(options), opC, opD)
-end
-
-function solve(system::InitialValueProblem{<:HybridSystem,
-               <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
-               options::Options)::AbstractSolution where N<:Real
-    opC, opD = default_operator(system)
+               opC::ContinuousPost=BFFPSV18(),
+               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
     return solve!(system, copy(options), opC, opD)
 end
 
 function solve!(system::InitialValueProblem{<:HybridSystem,
-                                <:Vector{<:Tuple{Int64,<:LazySets.LazySet{N}}}},
+                                            <:Vector{<:Tuple{Int64,<:LazySet{N}}}},
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost
@@ -204,10 +174,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
     HS = system.s
     init_sets = system.x0
-    delete_N = !haskey(options_input, :N)
-    options = init(opD, HS, options_input)
+    options = init!(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
+    inout_map = nothing
+    property = options[:mode] == "check" ? options[:property] : nothing
     nonzero_vars = constrained_dimensions(HS)
 
     # waiting_list entries:
@@ -256,9 +227,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         options_copy_low = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
-        delete!(options_copy.dict, :inout_map)
-        if delete_N # TODO add more conditions or fix option clashes in general
-            delete!(options_copy.dict, :N)
+        if property != nothing
+            # TODO temporary hack, to be resolved in #447
+            options_copy[:mode] = "reach"
         end
         if haskey(options_copy, :block_types) &&
                 options_copy.dict[:block_types] == nothing
@@ -270,10 +241,23 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #TODO check low-dim option
         options_copy_low = copy(options_copy)
         options_copy_low.dict[:vars] = nonzero_vars[loc_id]
-        reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
+        reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
+        inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
+        # get the property for the current location
+        property_loc = property isa Dict ?
+                       get(property, loc_id, nothing) :
+                       property
+        if property_loc != nothing
+            for (i, reach_set) in enumerate(reach_tube.Xk)
+                if !check(property_loc, reach_set.X)
+                    return CheckSolution(false, i, options)
+                end
+            end
+        end
+
         # add the very first initial approximation
         if passed_list != nothing &&
                 (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
@@ -323,8 +307,12 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #println("Discrete post ends")
 
     end
+    if options[:mode] == "check"
+        return CheckSolution(true, -1, options)
+    end
 
     # Projection
+    options[:inout_map] = inout_map
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(Rsets, options)

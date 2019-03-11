@@ -8,11 +8,17 @@ const LCS = LinearContinuousSystem
 const LDS = LinearDiscreteSystem
 const CLCCS = ConstrainedLinearControlContinuousSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
+const CACCS = ConstrainedAffineControlContinuousSystem
+const CACDS = ConstrainedAffineControlDiscreteSystem
 
 import Base: *
 
+import LazySets.constrained_dimensions
+
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
 
+#=
+# TODO: kept for backwards-compatibility. To be removed.
 # no input: x' = Ax, x(0) = X0
 ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LCS(A), X0)
 DiscreteSystem(A::AbstractMatrix, X0::LazySet) = IVP(LDS(A), X0)
@@ -30,6 +36,7 @@ ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = Continu
 
 DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, convert(typeof(A), convert(typeof(A), Matrix{eltype(A)}(I, size(A)))), nothing, U), X0)
 DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
+=#
 
 # convenience functions
 next_set(inputs::ConstantInput) = collect(nextinput(inputs, 1))[1]
@@ -143,7 +150,7 @@ Adds an extra dimension to a continuous system.
 julia> using MathematicalSystems
 julia> A = sprandn(3, 3, 0.5);
 julia> X0 = BallInf(zeros(3), 1.0);
-julia> s = ContinuousSystem(A, X0);
+julia> s = InitialValueProblem(LinearContinuousSystem(A), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -152,8 +159,8 @@ julia> statedim(sext)
 If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
-julia> U = Ball2(ones(3), 0.1);
-julia> s = ContinuousSystem(A, X0, U);
+julia> U = ConstantInput(Ball2(ones(3), 0.1));
+julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -166,8 +173,8 @@ Extending a system with a varying input set:
 If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
-julia> U = [Ball2(ones(3), 0.1 * i) for i in 1:3];
-julia> s = ContinuousSystem(A, X0, U);
+julia> U = VaryingInput([Ball2(ones(3), 0.1 * i) for i in 1:3]);
+julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
 julia> sext = add_dimension(s);
 julia> statedim(sext)
 4
@@ -190,8 +197,39 @@ function add_dimension(cs, m=1)
     X0ext = add_dimension(cs.x0, m)
     if hasmethod(inputset, Tuple{typeof(cs.s)})
         Uext = map(x -> add_dimension(x, m), inputset(cs))
-        return ContinuousSystem(Aext, X0ext, Uext)
+        s = ConstrainedLinearControlContinuousSystem(Aext, Matrix(1.0I, size(Aext)), nothing, Uext)
     else
-        return ContinuousSystem(Aext, X0ext)
+        s = LinearContinuousSystem(Aext)
     end
+    return InitialValueProblem(s, X0ext)
+end
+
+"""
+    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+
+For each location, compute all dimensions that are constrained in the invariant
+or the guard of any outgoing transition.
+
+### Input
+
+- `HS`  -- hybrid system
+
+### Output
+
+A dictionary mapping the index of each location ``ℓ`` to the dimension indices
+that are constrained in ``ℓ``.
+"""
+function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
 end
