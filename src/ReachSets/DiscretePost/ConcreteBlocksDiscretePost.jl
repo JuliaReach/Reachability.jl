@@ -1,7 +1,7 @@
-export ConcreteDiscretePost
+export ConcreteBlocksDiscretePost
 
 """
-    ConcreteDiscretePost <: DiscretePost
+    ConcreteBlocksDiscretePost <: DiscretePost
 
 Textbook implementation of a discrete post operator, using concrete polyhedra
 intersections.
@@ -23,10 +23,10 @@ polytopes in constraint representation resp. half-spaces.
 The algorithm is based on [Flowpipe-Guard Intersection for Reachability
 Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-struct ConcreteDiscretePost <: DiscretePost
+struct ConcreteBlocksDiscretePost <: DiscretePost
     options::Options
 
-    function ConcreteDiscretePost(𝑂::Options)
+    function ConcreteBlocksDiscretePost(𝑂::Options)
         𝑂copy = copy(𝑂)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:check_invariant_intersection], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
@@ -35,14 +35,14 @@ struct ConcreteDiscretePost <: DiscretePost
 end
 
 # convenience constructor from pairs of symbols
-ConcreteDiscretePost(𝑂::Pair{Symbol,<:Any}...) = ConcreteDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
+ConcreteBlocksDiscretePost(𝑂::Pair{Symbol,<:Any}...) = ConcreteBlocksDiscretePost(Options(Dict{Symbol,Any}(𝑂)))
 
 # default options for the LazyDiscretePost discrete post operator
-ConcreteDiscretePost() = ConcreteDiscretePost(Options())
+ConcreteBlocksDiscretePost() = ConcreteBlocksDiscretePost(Options())
 
-init(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
+init(𝒫::ConcreteBlocksDiscretePost, 𝒮::AbstractSystem, 𝑂::Options) = init!(𝒫, 𝒮, copy(𝑂))
 
-function init!(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
+function init!(𝒫::ConcreteBlocksDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     @assert isdefined(Main, :Polyhedra) "this algorithm needs the package " *
             "'Polyhedra' to be loaded"
 
@@ -54,14 +54,14 @@ function init!(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     return 𝑂out
 end
 
-function tube⋂inv!(𝒫::ConcreteDiscretePost,
+function tube⋂inv!(𝒫::ConcreteBlocksDiscretePost,
                    reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
                   ) where {N}
     # take intersection with source invariant
-
+    dirs = 𝒫.options[:overapproximation]
     # TODO First check for empty intersection, which can be more efficient.
     #      However, we need to make sure that the emptiness check does not just
     #      compute the concrete intersection; otherwise, we would do the work
@@ -70,29 +70,22 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
-        rs = reach_set.X
-        @assert rs isa CartesianProductArray
-        if length(array(rs)) == 1
-            # TODO workaround for lazy X0
-            rs_converted = Approximations.overapproximate(rs,
-                Approximations.BoxDirections(dim(rs)))
-        else
-            rs_converted = HPolytope(constraints_list(rs))
-        end
-        R⋂I = intersection(invariant, rs_converted)
-        if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
+        R⋂I = intersection(invariant, reach_set.X, true)
+        if isempty(R⋂I)
             break
         end
+        #R⋂I = overapproximate(R⋂I, dirs)
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2], reach_set.k))
+            reach_set.t_end + start_interval[2],
+            reach_set.k))
         count = count + 1
     end
 
     return count
 end
 
-function post(𝒫::ConcreteDiscretePost,
+function post(𝒫::ConcreteBlocksDiscretePost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
@@ -103,29 +96,34 @@ function post(𝒫::ConcreteDiscretePost,
               options
              ) where {N}
     jumps += 1
+    dirs = get_overapproximation_option(𝒫, options[:n])
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
         target_invariant = target_loc.X
-        constrained_map = resetmap(HS, trans)
-        guard = stateset(constrained_map)
+        trans_annot = HS.resetmaps[symbol(HS, trans)]
+        guard = trans_annot.X
+        assignment = trans_annot.A
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
+        println(length(tube⋂inv))
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            R⋂G = intersection(guard, HPolytope(constraints_list(reach_set.X)))
+            R⋂G = intersection(guard, reach_set.X, true)
             if isempty(R⋂G)
                 continue
             end
 
             # apply assignment
-            A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
+
+            A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
             # intersect with target invariant
-            A⌜R⋂G⌟⋂I = intersection(target_invariant, A⌜R⋂G⌟)
+            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant, true)
+
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
@@ -133,20 +131,12 @@ function post(𝒫::ConcreteDiscretePost,
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
-                                                     reach_set.t_end,
-                                                     reach_set.k))
+                                                     reach_set.t_end, reach_set.k))
         end
+
+        println(length(post_jump))
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
-end
-
-# --- handling assignments ---
-
-function apply_assignment(𝒫::ConcreteDiscretePost,
-                          constrained_map::ConstrainedLinearMap,
-                          R⋂G::LazySet;
-                          kwargs...)
-    return linear_map(constrained_map.A, R⋂G)
 end

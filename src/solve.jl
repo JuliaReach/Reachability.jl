@@ -1,4 +1,6 @@
-export solve
+import LazySets.Approximations:decompose, overapproximate
+export solve,solve!
+import LazySets.constrained_dimensions
 
 """
     default_operator(system::InitialValueProblem)
@@ -73,7 +75,6 @@ function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
         options[:transformation_matrix] = transformation_matrix
         invariant = options[:coordinate_transformation] * invariant
     end
-
     post(op, system, invariant, options)
 end
 
@@ -96,6 +97,64 @@ function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet},
 end
 
 # if the initial states are distributed, no need to call distribute_initial_set(system)
+
+"""
+    constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+
+Return all coordinates which appear in any guard or invariant constraint for each location.
+
+### Input
+
+- `HS`  -- hybrid system
+"""
+function constrained_dimensions(HS::HybridSystem)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
+end
+
+"""
+    constrained_blocks(blocks, nonzero_vars)::Dict{Int,Vector{Int}}
+
+Return all blocks which contain nonzero coordinates.
+
+### Input
+
+- `blocks`  -- blocks structure
+"""
+function constrained_blocks(blocks, nonzero_vars)::Dict{Int,Vector{Int}}
+    result = Dict{Int,Vector{Int}}()
+    sizehint!(result, nstates(HS))
+    for mode in states(HS)
+        vars = Vector{Int}()
+        append!(vars, constrained_dimensions(stateset(HS, mode)))
+        for transition in out_transitions(HS, mode)
+            append!(vars, constrained_dimensions(stateset(HS, transition)))
+        end
+        result[mode] = unique(vars)
+    end
+
+    return result
+end
+
+
+function init_states_sys_from_init_set_sys(
+        system::InitialValueProblem{<:HybridSystem, <:LazySet{N}}) where N<:Real
+    HS = system.s
+    X0 = system.x0
+    inits = [(n, X0) for n in states(HS)]
+    return InitialValueProblem(HS, inits)
+end
+
 function solve(system::InitialValueProblem{<:HybridSystem,
                                            <:Vector{<:Tuple{Int64,<:LazySet}}},
                options::Options,
@@ -120,7 +179,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     max_jumps = options[:max_jumps]
     inout_map = nothing
     property = options[:mode] == "check" ? options[:property] : nothing
-
+    nonzero_vars = constrained_dimensions(HS)
+    global_vars = options[:global_vars]
+    println("global_vars")
+    println(global_vars)
     # waiting_list entries:
     # - (discrete) location
     # - (set of) continuous-time reach sets
@@ -136,11 +198,18 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             source_invariant = HPolyhedron([source_invariant])
         end
 
-        loc_x0set = intersection(source_invariant, x0)
-
-        if !isempty(loc_x0set)
-            push!(waiting_list, (loc_id,
-                ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
+        #project source invariant and x0
+        #TODO add an option for low-dim
+        nz = unique([global_vars; nonzero_vars[loc_id]])
+        source_invariant_proj = LazySets.Approximations.project(source_invariant, nz, LinearMap)# EmptySet()#
+        x0_proj = LazySets.Approximations.project(x0, nz, LinearMap)
+        low_dim_x0_inter = overapproximate(source_invariant_proj ∩ x0_proj, Hyperrectangle)
+        if !isempty(low_dim_x0_inter)
+            loc_x0set = intersection(source_invariant, x0)
+            if !isempty(loc_x0set)
+                push!(waiting_list, (loc_id,
+                    ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N), 0), 0))
+            end
         end
     end
 
@@ -158,12 +227,60 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
         # compute reach tube
         options_copy = copy(options)
+        options_copy_low = copy(options)
         options_copy.dict[:T] = time_horizon - X0.t_start
         options_copy.dict[:project_reachset] = false
         if property != nothing
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
         end
+        if haskey(options_copy, :block_types) &&
+                options_copy.dict[:block_types] == nothing
+            delete!(options_copy.dict, :block_types)
+        end
+        if haskey(options_copy, :blocks)
+            delete!(options_copy.dict, :blocks)
+        end
+        #TODO check low-dim option
+        if (opD isa ConcreteContDiscretePost)
+            temp_vars = unique([global_vars; nonzero_vars[loc_id]])
+            # comp_blocks = Vector{Int}()
+            # partition = options_copy.dict[:partition]
+            # for b_i in 1:length(partition)
+            #     for c_var in temp_vars
+            #         if c_var in partition[b_i]
+            #             push!(comp_blocks, b_i)
+            #         end
+            #     end
+            # end
+            # unique!(comp_blocks)
+            # start_ind = 1
+            # temp_vars = Vector{Int}()
+            # l_global_indices = Vector{Int}()
+            # for b_i in 1:length(partition)
+            #     if b_i in comp_blocks
+            #         for v in global_vars
+            #             for p in 1:length(partition[b_i])
+            #                 if partition[b_i][p] == v
+            #                     push!(l_global_indices, length(temp_vars) + p)
+            #                 end
+            #             end
+            #         end
+            #         temp_vars = vcat(temp_vars, collect(start_ind:(start_ind + length(partition[b_i]) - 1)))
+            #
+            #     end
+            #     start_ind += length(partition[b_i])
+            # end
+            # println(temp_vars)
+
+            opc_options_copy = copy(opC.options.specified)
+            opc_options_copy.dict[:vars] = temp_vars
+            opC = BFFPSV18(opc_options_copy)
+            println("vars")
+            println(opC.options[:vars])
+            source_invariant = Approximations.project(source_invariant,temp_vars,LinearMap)
+        end
+        #
         reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
                             op=opC,
@@ -193,20 +310,42 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             if !(X0hat isa ConvexHull)
                 Xoa = LazySets.Approximations.overapproximate(reach_set.X)
                 ti, tf = reach_set.t_start, reach_set.t_end
-                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
+                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf, reach_set.k)]
             end
         end
+        low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
+        #TODO Add option for lowdim
+        if (opD isa ConcreteContDiscretePost)
 
-        # count_Rsets counts the number of new reach sets added to Rsets
-        count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+            low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
+            println("Start_low")
+
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
+                                [X0.t_start, X0.t_end], global_vars,temp_vars)
+            println("count_Rsets")
+            println(count_Rsets)
+            if jumps == max_jumps
+                continue
+            end
+
+            post(opD, opC, HS, waiting_list, passed_list, loc_id, Rsets,low_dim_sets, count_Rsets,
+                 jumps, options,options_copy,X0,temp_vars, global_vars)
+
+        else
+        #    println("!LazyLowDimDiscretePost")
+
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                                 [X0.t_start, X0.t_end])
+            if jumps == max_jumps
+                continue
+            end
 
-        if jumps == max_jumps
-            continue
+            post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
+                 jumps, options)
+
         end
+        #println("Discrete post ends")
 
-        post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
-             jumps, options)
     end
     if options[:mode] == "check"
         return CheckSolution(true, -1, options)

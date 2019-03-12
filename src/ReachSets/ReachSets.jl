@@ -121,6 +121,10 @@ export available_algorithms
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ConcreteDiscretePost.jl")
+include("DiscretePost/ConcreteBlocksDiscretePost.jl")
+include("DiscretePost/LazyLowDimDiscretePost.jl")
+include("DiscretePost/LazyLowBlockInterDiscretePost.jl")
+include("DiscretePost/ConcreteContDiscretePost.jl")
 
 # ==============================================
 # Projection of the reach set in two dimensions

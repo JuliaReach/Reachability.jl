@@ -65,8 +65,10 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     check_aliases_and_add_default_value!(dict, dict_copy, [:n], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:transformation_matrix], nothing)
     check_aliases_and_add_default_value!(dict, dict_copy, [:plot_vars, :output_variables], [0, 1])
+    check_aliases_and_add_default_value!(dict, dict_copy, [:global_vars], Vector{Int}())
     check_aliases_and_add_default_value!(dict, dict_copy, [:ε_proj], Inf)
     check_aliases_and_add_default_value!(dict, dict_copy, [:set_type_proj], Hyperrectangle)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:steps], Vector{Int}())
 
     # special option: T
     check_aliases!(dict, dict_copy, [:T, :time_horizon])
@@ -121,6 +123,15 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
+        elseif key == :global_vars
+            expected_type = Vector{Int}
+            domain_constraints = (v::Vector{Int}  ->  length(v) >= 0)
+        elseif key == :vars
+            expected_type = Vector{Int}
+            domain_constraints = (v::Vector{Int}  ->  length(v) >= 0)
+        elseif key == :steps
+            expected_type = Vector{Int}
+            domain_constraints = (v::Vector{Int}  ->  length(v) >= 0 && all(x -> x > 0, v))
         elseif key == :n
             expected_type = Int
             domain_constraints = (v::Int  ->  v > 0)

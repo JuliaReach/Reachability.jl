@@ -9,18 +9,14 @@ export Options
 
 """
     AbstractOptions
-
 Abstract supertype of options wrappers.
 """
 abstract type AbstractOptions end
 
 """
     Options <: AbstractOptions
-
 Type that wraps a dictionary used for options.
-
 ### Fields
-
 - `dict` -- the wrapped dictionary
 """
 struct Options <: AbstractOptions
@@ -31,21 +27,14 @@ end
 
 """
     keys(op::Options)
-
 Return the keys of the given options object.
-
 ### Input
-
 - `op`    -- options object
-
 ### Examples
-
 Obtain the keys of some options with one element:
-
 ```jldoctest options_setindex
 julia> op = Options(:T=>1.0)
 Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
-
 julia> collect(keys(op))
 1-element Array{Symbol,1}:
  :T
@@ -55,21 +44,14 @@ keys(op::Options) = keys(op.dict)
 
 """
     values(op::Options)
-
 Return the values of the given options object.
-
 ### Input
-
 - `op`    -- options object
-
 ### Examples
-
 Obtain the values of some options with one element:
-
 ```jldoctest options_setindex
 julia> op = Options(:T=>1.0)
 Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
-
 julia> collect(values(op))
 1-element Array{Any,1}:
  1.0
@@ -79,22 +61,15 @@ values(op::Options) = values(op.dict)
 
 """
     merge(op1, opn)
-
 Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
 Values are inserted in the order in which the function arguments occur, i.e.,
 for conflicting keys a later object overrides a previous value.
-
 ### Input
-
 - `op1` -- first options object
 - `opn` -- list of options objects
-
 ### Output
-
 An `Options` object.
-
 ### Notes
-
 This function makes a copy of the dictionary and does not modify its first
 argument.
 """
@@ -104,20 +79,13 @@ end
 
 """
     merge!(op1, opn)
-
 Updates the first argument options `op1` with options from `opn`.
-
 ### Input
-
 - `op1` -- first options object
 - `opn` -- list of options objects
-
 ### Output
-
 An `Options` object.
-
-### Algorithm 
-
+### Algorithm
 Merges two `Options` objects by just falling back to the wrapped `Dict` fields.
 Values are inserted in the order in which the function arguments occur, i.e.,
 for conflicting keys a later object overrides a previous value.
@@ -132,11 +100,8 @@ end
 
 """
     getindex(op::Options, sym::Symbol)
-
 Returns the value stored for key `sym`.
-
 ### Input
-
 - `op`  -- options object
 - `sym` -- key
 """
@@ -146,23 +111,16 @@ end
 
 """
     setindex!(op, value, key)
-
 Store the given value at the given key in the options.
-
 ### Input
-
 - `op`    -- options object
 - `value` -- value
 - `key`   -- key
-
 ### Examples
-
 Create an empty options object and add an input:
-
 ```jldoctest options_setindex
 julia> Options()
 Reachability.Options(Dict{Symbol,Any}())
-
 julia> op[:T] = 1.0
 1.0
 ```
@@ -171,41 +129,28 @@ setindex!(op::Options, value, key) = setindex!(op.dict, value, key)
 
 """
     copy(op)
-
 Create a shallow copy of the given options.
-
 ### Input
-
 - `op`    -- options object
-
 ### Output
-
 A new `Options` instance whose dictionary is a copy of `op`'s dictionary.
 """
 copy(op::Options) = Options(copy(op.dict))
 
 """
     haskey(op::Options, key)
-
 Determine whether the given options has a mapping for a given key.
-
 ### Input
-
 - `op` -- options object
-
 ### Output
-
 `true` if `op` contains the option `key` and `false` otherwise.
 """
 haskey(op::Options, key) = haskey(op.dict, key)
 
 """
     iterate(op::Options)
-
 Iterate over options.
-
 ### Input
-
 - `op` -- options object
 """
 iterate(op::Options) = iterate(op.dict)
@@ -218,34 +163,24 @@ Struct for two-layered options with default values
 
 """
     TwoLayerOptions <: AbstractOptions
-
 Type that wraps two `Options` structs, one for specified options and one for
 fallback defaults.
-
 ### Fields
-
 - `specified` -- specified options
 - `defaults`  -- default options
-
 ### Notes
-
 It is possible to define `specified` options that are not contained in the
 `defaults` options.
-
 ### Examples
-
 ```julia
 julia> def = Options(:o1 => "v1", :o2 => "v2");
-
 julia> spec = Options(:o2 => "v2", :o3 => "v3");
-
 julia> o = TwoLayerOptions(spec, def)
 specified options:
  o2 => v2
  o3 => v3
 unspecified (default) options:
  o1 => v1
-
 ```
 """
 struct TwoLayerOptions <: AbstractOptions
@@ -313,27 +248,20 @@ Struct for specifying a single option
 
 """
     OptionSpec{T}
-
 Type that wraps the specification of an option.
-
 ### Fields
-
 - `name`         -- name of the option as a symbol
 - `default`      -- default value
 - `aliases`      -- list of aliases (symbols)
 - `domain_check` -- function for domain checks
 - `info`         -- additional info text
-
 ### Examples
-
 ```julia
 julia> os1 = OptionSpec(:option1, nothing)
 option :option1 of type Any has default value 'nothing'
-
 julia> os2 = OptionSpec(:option2, 0; aliases=[:othername, :yetanothername],
        domain=Number, domain_check=x->x>=0, info="the value is nonnegative")
 option :option2 of type Number with aliases :othername and :yetanothername has default value '0' such that the value is nonnegative
-
 ```
 """
 struct OptionSpec{T}
@@ -389,24 +317,16 @@ end
 """
     optionsspeclist_2_optionsspecmap(specs::AbstractVector{<:OptionSpec}
                                     )::Dict{Symbol, <:OptionSpec}
-
 Crate a map from option names (including aliases) to the corresponding
 specification.
-
 ### Input
-
 - `specs` -- list of option specifications
-
 ### Output
-
 A map from option names to option specification.
-
 ### Examples
-
 ```julia
 julia> specs_list = [OptionSpec(:option1, nothing),
                      OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2])];
-
 julia> Reachability.optionsspeclist_2_optionsspecmap(specs_list)
 Dict{Symbol,OptionSpec} with 4 entries:
   :option2 => option :option2 of type Any with aliases :op2 and :op2_v2 has default value 'nothing'
@@ -436,31 +356,20 @@ end
 
 """
     unify_aliases(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})::Options
-
 Crate a new options wrapper that uses the internal name for each option.
-
 ### Input
-
 - `𝑂`     -- options wrapper
 - `specs` -- list of option specifications
-
 ### Output
-
 A new options wrapper.
-
 ### Examples
-
 ```jldoctest
 julia> 𝑂 = Options(:option1 => 1.0, :op2 => "value");
-
 julia> specs_list = [OptionSpec(:option1, nothing),
                      OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2])];
-
 julia> specs_map = Reachability.optionsspeclist_2_optionsspecmap(specs_list);
-
 julia> Reachability.unify_aliases(𝑂, specs_map)
 Options(Dict{Symbol,Any}(:option2=>"value",:option1=>1.0))
-
 ```
 """
 function unify_aliases(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})::Options
@@ -478,16 +387,11 @@ end
 
 """
     validate_options(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})
-
 Validate the given options with respect to the given specifications.
-
 ### Input
-
 - `𝑂`     -- options
 - `specs` -- map from option names to option specifications
-
 ### Output
-
 Nothing if the validation succeeds, and an error otherwise.
 """
 function validate_options(𝑂::Options, specs::Dict{Symbol, <:OptionSpec})
@@ -509,38 +413,28 @@ end
     validate_and_wrap_options(𝑂::Options,
                               specs_list::AbstractVector{<:OptionSpec}
                              )::TwoLayerOptions
-
 Normalize, validate, and merge given options with respect to default options.
-
 ### Input
-
 - `𝑂`             -- options
 - `specs`         -- list of option specifications
 - `validation`    -- (optional, default: no-op) function for algorithm-specific
                      validation of the options
 - `normalization` -- (optional, default: no-op) function for algorithm-specific
                      normalization of the options
-
 ### Output
-
 A normalized options wrapper.
-
 ### Examples
-
 ```julia
 julia> 𝑂 = Options(:option1 => 1.0, :op2 => "value");
-
 julia> specs_list = [OptionSpec(:option1, nothing),
                      OptionSpec(:option2, nothing, aliases=[:op2, :op2_v2]),
                      OptionSpec(:option3, 2.0),];
-
 julia> Reachability.validate_and_wrap_options(𝑂, specs_list)
 specified options:
  option2 => value
  option1 => 1.0
 unspecified (default) options:
  option3 => 2.0
-
 ```
 """
 function validate_and_wrap_options(𝑂::Options,
@@ -561,15 +455,10 @@ end
 
 """
     print_option_spec(specs::AbstractVector{<:OptionSpec})
-
 Pretty printing of a list of option specifications.
-
 ### Input
-
 - `specs` -- list of option specifications
-
 ### Output
-
 A string representation of the option specifications.
 """
 function print_option_spec(specs::AbstractVector{<:OptionSpec})

@@ -95,7 +95,7 @@ function project_reach(
         @inbounds for i in 1:N
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix * Rsets[i].X),
-                Rsets[i].t_start, Rsets[i].t_end)
+                Rsets[i].t_start, Rsets[i].t_end, Rsets[i].k)
         end
     end
 
@@ -195,7 +195,7 @@ function project_2d_reach(
     else
         @inbounds for i in 1:N
             RsetsProj[i] = ReachSet(oa(projection_matrix * Rsets[i].X),
-                Rsets[i].t_start, Rsets[i].t_end)
+                Rsets[i].t_start, Rsets[i].t_end, Rsets[i].k)
         end
     end
 
