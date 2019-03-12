@@ -33,6 +33,9 @@ function options_BFFPSV18()
         OptionSpec(:vars, Int[], domain=AbstractVector{Int}, domain_check=(
             v  ->  length(v) > 0 && all(e -> e > 0, v)),
             info="variables of interest; default: all variables"),
+        OptionSpec(:steps, Int[], domain=AbstractVector{Int}, domain_check=(
+            v  ->  length(v) >= 0 && all(x -> x > 0, v)),
+            info="steps of interest; default: no steps"),
         OptionSpec(:partition, [Int[]],
             domain=AbstractVector{<:AbstractVector{Int}}, domain_check=
             ispartition,

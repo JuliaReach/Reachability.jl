@@ -51,8 +51,6 @@ function init!(𝒫::ConcreteContDiscretePost, 𝒮::AbstractSystem, 𝑂::Optio
     # solver-specific options (adds default values for unspecified options)
     𝑂out = validate_solver_options_and_add_default_values!(𝑂)
 
-    # Input -> Output variable mapping
-    𝑂out.dict[:inout_map] = inout_map_reach(𝑂out[:partition], 𝑂out[:blocks], 𝑂out[:n])
     return 𝑂out
 end
 
@@ -90,6 +88,7 @@ function tube⋂inv!(𝒫::ConcreteContDiscretePost,
 end
 
 function post(𝒫::ConcreteContDiscretePost,
+              opC::ContinuousPost,
               HS::HybridSystem,
               waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
               passed_list,
@@ -137,7 +136,10 @@ function post(𝒫::ConcreteContDiscretePost,
                 continue
             end
             # store result
-
+            # println(A⌜R⋂G⌟⋂I)
+            # println(global_vars)
+            # println(dirs)
+            # println(Approximations.project(A⌜R⋂G⌟⋂I, global_vars, dirs))
             push!(post_jump, ReachSet{LazySet{N}, N}(Approximations.project(A⌜R⋂G⌟⋂I, global_vars, dirs),
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
@@ -152,19 +154,24 @@ function post(𝒫::ConcreteContDiscretePost,
     println("Start_high")
     println(length(steps))
     loc = HS.modes[source_loc_id]
-    options_copy.dict[:vars] = 1:statedim(loc)
-    options_copy.dict[:steps] = steps
-    h_reach_tube = solve!(ContinuousSystem(loc.A, X0.X, loc.U),
+    opc_options_copy = copy(opC.options.specified)
+    opc_options_copy.dict[:vars] = 1:statedim(loc)
+    opc_options_copy.dict[:steps] = steps
+    opC = BFFPSV18(opc_options_copy)
+
+    h_reach_tube = solve!(IVP(loc, X0.X),
                         options_copy,
-                        op=BFFPSV18())
+                        op=opC)
 
     h_Rsets = Vector{ReachSet{LazySet{N}, N}}()
     count = 1
 
     sizehint!(h_Rsets, length(steps))
+    println(length(steps))
+    println(length(h_reach_tube.Xk))
     @inbounds for i = 1:length(h_reach_tube.Xk)
         reach_set = h_reach_tube.Xk[i]
-        R⋂I = intersection(loc.X, reach_set.X, true)
+        R⋂I = intersection(reach_set.X, loc.X, true)
         if isempty(R⋂I)
             break
         end

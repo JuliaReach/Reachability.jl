@@ -31,9 +31,9 @@ function postprocess(𝒫,
         # eager fixpoint checking
         post_jump_filtered_l =
             filter(x -> !isfixpoint(𝒫, x, passed_list, target_loc_id),
-                   post_jump)
+                   fixpoint_list)
         post_jump_filtered_h =
-           filter(x -> isfiltered(x, fixpoint_list),
+           filter(x -> isfiltered(x, post_jump_filtered_l),
                   post_jump)
     else
         post_jump_filtered_h = post_jump
@@ -46,7 +46,6 @@ function postprocess(𝒫,
 
     # apply clustering
     clustered_h = cluster(𝒫, post_jump_filtered_h, options)
-
     clustered_l = cluster(𝒫, post_jump_filtered_l, options)
 
     # push new sets after jump (unless a fixpoint is detected)

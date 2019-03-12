@@ -51,8 +51,6 @@ function init!(𝒫::ConcreteBlocksDiscretePost, 𝒮::AbstractSystem, 𝑂::Opt
     # solver-specific options (adds default values for unspecified options)
     𝑂out = validate_solver_options_and_add_default_values!(𝑂)
 
-    # Input -> Output variable mapping
-    𝑂out.dict[:inout_map] = inout_map_reach(𝑂out[:partition], 𝑂out[:blocks], 𝑂out[:n])
     return 𝑂out
 end
 
@@ -120,7 +118,7 @@ function post(𝒫::ConcreteBlocksDiscretePost,
             end
 
             # apply assignment
-            
+
             A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
             # intersect with target invariant
@@ -131,7 +129,7 @@ function post(𝒫::ConcreteBlocksDiscretePost,
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(overapproximate(A⌜R⋂G⌟⋂I),
+            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
         end

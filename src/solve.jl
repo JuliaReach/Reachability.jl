@@ -181,7 +181,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     property = options[:mode] == "check" ? options[:property] : nothing
     nonzero_vars = constrained_dimensions(HS)
     global_vars = options[:global_vars]
-
+    println("global_vars")
+    println(global_vars)
     # waiting_list entries:
     # - (discrete) location
     # - (set of) continuous-time reach sets
@@ -271,13 +272,15 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             #     start_ind += length(partition[b_i])
             # end
             # println(temp_vars)
-            # println(l_global_indices)
-            options_copy.dict[:vars] = temp_vars
+
+            opc_options_copy = copy(opC.options.specified)
+            opc_options_copy.dict[:vars] = temp_vars
+            opC = BFFPSV18(opc_options_copy)
+            println("vars")
+            println(opC.options[:vars])
             source_invariant = Approximations.project(source_invariant,temp_vars,LinearMap)
         end
         #
-        options_copy_low = copy(options_copy)
-        options_copy_low.dict[:vars] = nonzero_vars[loc_id]
         reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
                             op=opC,
@@ -312,22 +315,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         #TODO Add option for lowdim
-        if (opD isa LazyLowDimDiscretePost)
-            #println("LazyLowDimDiscretePost")
-
-            low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
-        # count_Rsets counts the number of new reach sets added to Rsets
-
-            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
-                                [X0.t_start, X0.t_end], options, nonzero_vars[loc_id])
-
-            if jumps == max_jumps
-                continue
-            end
-
-            post(opD, HS, waiting_list, passed_list, loc_id, Rsets, low_dim_sets, count_Rsets,
-                 jumps, options)
-        elseif (opD isa ConcreteContDiscretePost)
+        if (opD isa ConcreteContDiscretePost)
 
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
             println("Start_low")
@@ -340,7 +328,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                 continue
             end
 
-            post(opD, HS, waiting_list, passed_list, loc_id, Rsets,low_dim_sets, count_Rsets,
+            post(opD, opC, HS, waiting_list, passed_list, loc_id, Rsets,low_dim_sets, count_Rsets,
                  jumps, options,options_copy,X0,temp_vars, global_vars)
 
         else

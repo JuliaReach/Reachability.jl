@@ -148,7 +148,6 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    #println(1 in steps)
     if isempty(steps) || (1 in steps)
     #    println("I'm inside!!!")
         store!(res, 1, 1, X_store, t0, t1, NUM)

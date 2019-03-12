@@ -87,7 +87,7 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
                    Rsets,
                    start_interval
                   ) where {N}
-    println(reach_tube)
+    #println(reach_tube)
     # TODO dirs = get_overapproximation_option(op, dim(invariant)) ?
     dirs = 𝒫.options[:overapproximation]
 
