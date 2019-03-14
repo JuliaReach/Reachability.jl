@@ -14,6 +14,7 @@ X0 = BallInf(ones(4), 0.1)
 # default options (computes all variables)
 s = solve(IVP(LCS(A), X0), :T=>0.1)
 @test dim(s.Xk[1].X) == 4
+@test s.options isa Options
 
 # two variables and custom partition
 s = solve(IVP(LCS(A), X0),

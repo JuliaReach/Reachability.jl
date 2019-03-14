@@ -244,8 +244,8 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 - `invariant` -- constraint invariant on the mode
 - `𝑂` -- algorithm-specific options
 """
-function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
-    𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
+function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂_input::Options)
+    𝑂 = TwoLayerOptions(merge(𝑂_input, 𝒫.options.specified), 𝒫.options.defaults)
 
     # convert matrix
     system = matrix_conversion(𝑆, 𝑂)
@@ -265,7 +265,7 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
             RsetsProj = Rsets
         end
 
-        return ReachSolution(RsetsProj, 𝑂)
+        return ReachSolution(RsetsProj, 𝑂_input)
 
     elseif 𝑂[:mode] == "check"
         info("invariants are currently not supported in 'check' mode")
@@ -284,11 +284,11 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
 
         if answer == 0
             info("The property is satisfied!")
-            return CheckSolution(true, -1, 𝑂)
+            return CheckSolution(true, -1, 𝑂_input)
         else
             info("The property may be violated at index $answer," *
                 " (time point $(answer * 𝑂[:δ]))!")
-            return CheckSolution(false, answer, 𝑂)
+            return CheckSolution(false, answer, 𝑂_input)
         end
     else
         error("unsupported mode $(𝑂[:mode])")
