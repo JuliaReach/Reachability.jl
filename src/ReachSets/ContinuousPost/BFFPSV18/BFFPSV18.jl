@@ -125,6 +125,8 @@ function validation_BFFPSV18(𝑂)
                     throw(DomainError(ε, "the `$b_options` option must be " *
                                          "positive"))
                 end
+            elseif b_options == :block_options_iter && bo == nothing
+                # no overapproximation
             else
                 throw(DomainError(bo == nothing ? "nothing" : bo,
                     "the `$b_options` option does not accept the given input"))
