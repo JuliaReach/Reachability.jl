@@ -14,13 +14,13 @@ const UNCF = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N
 const XNCF = Union{<:LazySet{N}, Nothing} where {N}
 
 """
-    normalize(system::AbstractContinuousSystem)
+    normalize(system::AbstractSystem)
 
-Transform a continuous system to a normalized or canonical form.
+Transform a mathematical system to a normalized (or canonical) form.
 
 ### Input
 
-- `system` -- continuous system
+- `system` -- system; it can be discrete or continuous
 
 ### Output
 
@@ -58,43 +58,42 @@ If the system does not conform to a canonical form, the implementation tries
 to make the transformation; otherwise an error is thrown. In particular, ODEs
 of the form ``x' = Ax + Bu`` are mapped into ``x' = Ax + u, u ∈ B\\mathcal{U}``,
 where now ``u`` has the same dimensions as ``x``.
+
+The transformations described above are analogous in the discrete case, i.e.
+``x_{k+1} = A x_k`` and ``x_{k+1} = Ax_{k} + u_k, u_k ∈ \\mathcal{U}, x_k ∈ \\mathcal{X}``
+for the linear and affine cases respectively.
 """
 function normalize(system::AbstractSystem)
     throw(ArgumentError("the system type $(typeof(system)) is currently not supported"))
 end
 
-# initial value problems in canonical form, i.e. which don't need normalization
+# systems already in canonical form, i.e. which don't need normalization
 normalize(system::CF) = system
 
-# x' = Ax + Bu, x ∈ X, u ∈ U
-function normalize(system::CLCCS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
-    n = statedim(system)
-    X = _wrap_invariant(system.X, n)
-    U = _wrap_inputs(system.U, system.B)
-    CLCCS(system.A, I(n, N), X, U)
+# x' = Ax + Bu, x ∈ X, u ∈ U in the continuous case
+# x+ = Ax + Bu, x ∈ X, u ∈ U in the discrete case
+for CLCS in (:CLCCS, :CLCDS)
+    @eval begin
+        function normalize(system::$CLCS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
+            n = statedim(system)
+            X = _wrap_invariant(system.X, n)
+            U = _wrap_inputs(system.U, system.B)
+            $CLCS(system.A, I(n, N), X, U)
+        end
+    end
 end
 
-# x' = Ax + Bu, x ∈ X, u ∈ U
-function normalize(system::CLCDS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
-    n = statedim(system)
-    X = _wrap_invariant(system.X, n)
-    U = _wrap_inputs(system.U, system.B)
-    CLCDS(system.A, I(n, N), X, U)
-end
-
-# x' = Ax + Bu + c, x ∈ X, u ∈ U
-function normalize(system::CACCS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
-    n = statedim(system)
-    X = _wrap_invariant(system.X, n)
-    U = _wrap_inputs(system.U, system.B, system.c)
-    CACCS(system.A, I(n, N), X, U)
-end
-
-function normalize(system::CACDS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
-    n = statedim(system)
-    X = _wrap_invariant(system.X, n)
-    U = _wrap_inputs(system.U, system.B, system.c)
-    CACDS(system.A, I(n, N), X, U)
+# x' = Ax + Bu + c, x ∈ X, u ∈ U in the continuous case
+# x+ = Ax + Bu + c, x ∈ X, u ∈ U in the discrete case
+for CACS in (:CACCS, :CACDS)
+    @eval begin
+        function normalize(system::$CACS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
+            n = statedim(system)
+            X = _wrap_invariant(system.X, n)
+            U = _wrap_inputs(system.U, system.B, system.c)
+            $CACS(system.A, I(n, N), X, U)
+        end
+    end
 end
 
 _wrap_invariant(X::LazySet, n::Int) = X
