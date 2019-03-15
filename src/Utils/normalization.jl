@@ -30,17 +30,19 @@ system otherwise.
 ### Notes
 
 The normalization procedure consists of transforming a given system type into a
-"canonical" format that is used internally. The implementation of `normalize`
-exploits `MathematicalSystems`'s' types, which carry information about the problem
-as a type parameter.
+"canonical" format that is used internally. The type union `CF` defines the
+systems which are considered canonical, i.e. which do not require normalization.
+More details are given below.
 
-The type union `CF` defines the initial value problems considered canonical,
-i.e. which do not require normalization. More details are given below.
+### Algorithm
+
+The implementation of `normalize` exploits `MathematicalSystems`'s' types, which
+carry information about the problem as a type parameter.
 
 Homogeneous ODEs of the form ``x' = Ax`` are canonical if the associated
 problem is a `LinearContinuousSystem` and `A` is a matrix.
-Note that it does not consider constraints on the state-space (such as an
-invariant); in this case you may have to use a
+Note that a `LinearContinuousSystem` does not consider constraints on the
+state-space (such as an invariant); to specify state constraints, use a
 `ConstrainedLinearControlContinuousSystem`. Moreover, this type does not handle
 non-deterministic inputs.
 
@@ -51,7 +53,7 @@ non-deterministic inputs is considered next. These systems are of the form
 and `U` is an input, that is, any concrete subtype of `AbstractInput`.
 
 If `U` is not given as an input, normalization accepts either as `LazySet`, or
-a vector of `LazySet`'s. In these cases, the sets are wrapped around an appropriate
+a vector of `LazySet`s. In these cases, the sets are wrapped around an appropriate
 concrete input type.
 
 If the system does not conform to a canonical form, the implementation tries
