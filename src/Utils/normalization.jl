@@ -52,7 +52,7 @@ non-deterministic inputs is considered next. These systems are of the form
 `ConstrainedLinearControlContinuousSystem`, where `A` is a matrix, `X` is a set
 and `U` is an input, that is, any concrete subtype of `AbstractInput`.
 
-If `U` is not given as an input, normalization accepts either as `LazySet`, or
+If `U` is not given as an input, normalization accepts either a `LazySet`, or
 a vector of `LazySet`s. In these cases, the sets are wrapped around an appropriate
 concrete input type.
 
