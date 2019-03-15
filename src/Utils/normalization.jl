@@ -1,26 +1,26 @@
 # linear ivp in canonical form x' = Ax
-const LCF = IVP{ST, <:LazySet{N}} where {N, ST<:LCS{N, <:AbstractMatrix{N}}}
+const LCF = LCS{N, AN} where {N, AN<:AbstractMatrix{N}}
 
 # affine ivp with constraints in canonical form x' = Ax + u, u ∈ U, x ∈ X
-const ACF = IVP{ST, <:LazySet{N}} where {N, ST<:CLCCS{N, <:AbstractMatrix{N}, IdentityMultiple{N}, <:LazySet{N}, <:AbstractInput}}
+const ACF = CLCCS{N, AN, IdentityMultiple{N}, XT, UT} where {N, AN<:AbstractMatrix{N}, XT<:LazySet{N}, UT<:AbstractInput}
 
 # type union of canonical forms
-const IVPCF = Union{<:LCF, <:ACF}
+const CF = Union{<:LCF, <:ACF}
 
-# accepted types of non-deterministic inputs (before normalization)
-const UT = Union{<:LazySet, Vector{<:LazySet}, <:AbstractInput}
+# accepted types of non-deterministic inputs (non-canonical form)
+const UNCF = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N}
 
-# accepted types for the state constraints
-const XT = Union{<:LazySet, Nothing}
+# accepted types for the state constraints (non-canonical form)
+const XNCF = Union{<:LazySet{N}, Nothing} where {N}
 
 """
-    normalize(system::InitialValueProblem)
+    normalize(system::AbstractContinuousSystem)
 
-Normalize the initial value problem of a continuous system.
+Transform a continuous system to a normalized or canonical form.
 
 ### Input
 
-- `system` -- continuous system describing an initial value problem
+- `system` -- continuous system
 
 ### Output
 
@@ -34,11 +34,11 @@ The normalization procedure consists of transforming a given system type into a
 exploits `MathematicalSystems`'s' types, which carry information about the problem
 as a type parameter.
 
-The type union `IVPCF` defines the initial value problems considered canonical,
+The type union `CF` defines the initial value problems considered canonical,
 i.e. which do not require normalization. More details are given below.
 
 Homogeneous ODEs of the form ``x' = Ax`` are canonical if the associated
-initial-value problem is a `LinearContinuousSystem` and `A` is a matrix.
+problem is a `LinearContinuousSystem` and `A` is a matrix.
 Note that it does not consider constraints on the state-space (such as an
 invariant); in this case you may have to use a
 `ConstrainedLinearControlContinuousSystem`. Moreover, this type does not handle
@@ -59,27 +59,42 @@ to make the transformation; otherwise an error is thrown. In particular, ODEs
 of the form ``x' = Ax + Bu`` are mapped into ``x' = Ax + u, u ∈ B\\mathcal{U}``,
 where now ``u`` has the same dimensions as ``x``.
 """
-function normalize(system::InitialValueProblem)
+function normalize(system::AbstractSystem)
     throw(ArgumentError("the system type $(typeof(system)) is currently not supported"))
 end
 
 # initial value problems in canonical form, i.e. which don't need normalization
-normalize(system::IVPCF) = system
+normalize(system::CF) = system
 
 # x' = Ax + Bu, x ∈ X, u ∈ U
-function normalize(system::IVP{CLCCS{N, AbstractMatrix{N}, AbstractMatrix{N}, Nothing, UNF}, <:LazySet} where {N, UNF<:UT}
+function normalize(system::CLCCS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
     n = statedim(system)
-    X = _wrap_invariant(system.s.X, n)
-    U = _wrap_inputs(system.s.U, system.s.B)
-    CLCCS(system.A, IdentityMultiple(1.0I, n), X, U)
+    X = _wrap_invariant(system.X, n)
+    U = _wrap_inputs(system.U, system.B)
+    CLCCS(system.A, I(n, N), X, U)
+end
+
+# x' = Ax + Bu, x ∈ X, u ∈ U
+function normalize(system::CLCDS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
+    n = statedim(system)
+    X = _wrap_invariant(system.X, n)
+    U = _wrap_inputs(system.U, system.B)
+    CLCDS(system.A, I(n, N), X, U)
 end
 
 # x' = Ax + Bu + c, x ∈ X, u ∈ U
-function normalize(system::IVP{CACCS{Float64, <:AbstractMatrix{Float64}, <:AbstractMatrix{Float64}, <:AbstractVector{Float64}, XT, UT}, <:LazySet})
+function normalize(system::CACCS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
     n = statedim(system)
-    X = _wrap_invariant(system.s.X, n)
-    U = _wrap_inputs(system.s.U, system.s.B, system.s.c)
-    CACCS(system.A, IdentityMultiple(1.0I, n), X, U)
+    X = _wrap_invariant(system.X, n)
+    U = _wrap_inputs(system.U, system.B, system.c)
+    CACCS(system.A, I(n, N), X, U)
+end
+
+function normalize(system::CACDS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
+    n = statedim(system)
+    X = _wrap_invariant(system.X, n)
+    U = _wrap_inputs(system.U, system.B, system.c)
+    CACDS(system.A, I(n, N), X, U)
 end
 
 _wrap_invariant(X::LazySet, n::Int) = X

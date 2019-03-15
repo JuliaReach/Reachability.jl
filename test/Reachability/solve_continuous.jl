@@ -120,7 +120,7 @@ s = solve(system, Options(:T=>0.1),
 # =======================================================
 # Affine ODE with a nondeterministic input, x' = Ax + Bu
 # =======================================================
-# linear ODE: x' = Ax + Bu
+# linear ODE: x' = Ax + Bu, u ∈ U
 A = [ 0.0509836  0.168159  0.95246   0.33644
       0.42377    0.67972   0.129232  0.126662
       0.518654   0.981313  0.489854  0.588326
@@ -137,16 +137,13 @@ U = Interval(0.99, 1.01) × Interval(0.99, 1.01)
 # initial set
 X0 = BallInf(ones(4), 0.1)
 
-# dense identity matrix
-E = Matrix(1.0I, size(A))
-
 # inputs
-U1 = ConstantInput(B*U)
-U2 = B*U  # use internal conversion
+U1 = ConstantInput(U)
+U2 = U  # use internal wrapping
 
 for inputs in [U1, U2]
     # instantiate system
-    Δ = CLCCS(A, E, nothing, inputs)
+    Δ = CLCCS(A, B, nothing, U)
     𝒮 = InitialValueProblem(Δ, X0)
 
     # default options (computes all variables)
