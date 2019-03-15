@@ -232,6 +232,10 @@ function overapproximate(X::LazySet, ::Nothing)
     return X
 end
 
+function overapproximate(msa::MinkowskiSumArray, ::Nothing)
+    return MinkowskiSumArray(copy(array(msa)))
+end
+
 function has_constant_directions(block_options::AbstractVector, i::Int)
     return has_constant_directions(block_options[i], i)
 end
