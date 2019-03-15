@@ -56,25 +56,26 @@ end
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
-function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
-                                                     AbstractDiscreteSystem}},
+function solve!(problem::InitialValueProblem,
                 options_input::Options;
                 op::ContinuousPost=default_operator(system),
                 invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
-    system = normalize(system)
-    options = init!(op, system, options_input)
+
+    system = normalize(problem.s)
+    problem = IVP(system, problem.x0)
+    options = init!(op, problem, options_input)
 
     # coordinate transformation
     if options[:coordinate_transformation] != ""
         info("Transformation...")
-        (system, transformation_matrix) =
-            @timing transform(system, options[:coordinate_transformation])
+        (problem, transformation_matrix) =
+            @timing transform(problem, options[:coordinate_transformation])
         options[:transformation_matrix] = transformation_matrix
         invariant = options[:coordinate_transformation] * invariant
     end
 
-    post(op, system, invariant, options)
+    post(op, problem, invariant, options)
 end
 
 """
