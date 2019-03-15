@@ -228,6 +228,10 @@ function overapproximate(X::LazySet, pair::Pair)
     return overapproximate(X, pair[1], pair[2])
 end
 
+function overapproximate(X::LazySet, ::Nothing)
+    return X
+end
+
 function has_constant_directions(block_options::AbstractVector, i::Int)
     return has_constant_directions(block_options[i], i)
 end

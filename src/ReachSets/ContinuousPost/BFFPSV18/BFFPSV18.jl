@@ -112,8 +112,8 @@ function validation_BFFPSV18(𝑂)
                 # template directions
                 option = get(Utils.template_direction_symbols, bo, nothing)
                 if option == nothing
-                    throw(DomainError(key, "if the `$b_options` option is a " *
-                        "Symbol, it must be one of " *
+                    throw(DomainError(bo, "if the `$b_options` option " *
+                        "is a Symbol, it must be one of " *
                         "$(keys(Utils.template_direction_symbols))"))
                 end
                 𝑂.specified[b_options] = option
@@ -122,12 +122,14 @@ function validation_BFFPSV18(𝑂)
             elseif bo isa Real || bo isa Pair{<:UnionAll, <:Real}
                 ε = bo isa Real ? bo : bo[2]
                 if ε <= 0
-                    throw(DomainError(key, "the `$b_options` option must be " *
-                                           "positive"))
+                    throw(DomainError(ε, "the `$b_options` option must be " *
+                                         "positive"))
                 end
+            elseif b_options == :block_options_iter && bo == nothing
+                # no overapproximation
             else
-                throw(DomainError(key, "the `$b_options` option does not " *
-                                       "accept $bo"))
+                throw(DomainError(bo == nothing ? "nothing" : bo,
+                    "the `$b_options` option does not accept the given input"))
             end
         end
     end
