@@ -153,6 +153,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "lib/systems.html#Reachability.Utils.normalize",
+    "page": "Systems",
+    "title": "Reachability.Utils.normalize",
+    "category": "function",
+    "text": "normalize(system::AbstractSystem)\n\nTransform a mathematical system to a normalized (or canonical) form.\n\nInput\n\nsystem – system; it can be discrete or continuous\n\nOutput\n\nEither the same system if it already conforms to a canonical form, or a new system otherwise.\n\nNotes\n\nThe normalization procedure consists of transforming a given system type into a \"canonical\" format that is used internally. The type union CF defines the systems which are considered canonical, i.e. which do not require normalization. More details are given below.\n\nAlgorithm\n\nThe implementation of normalize exploits MathematicalSystems\'s\' types, which carry information about the problem as a type parameter.\n\nHomogeneous ODEs of the form x = Ax are canonical if the associated problem is a LinearContinuousSystem and A is a matrix. Note that a LinearContinuousSystem does not consider constraints on the state-space (such as an invariant); to specify state constraints, use a ConstrainedLinearControlContinuousSystem. Moreover, this type does not handle non-deterministic inputs.\n\nThe generalization to canonical systems with constraints and possibly time-varying non-deterministic inputs is considered next. These systems are of the form x = Ax + u u  mathcalU x  mathcalX. The system type is ConstrainedLinearControlContinuousSystem, where A is a matrix, X is a set and U is an input, that is, any concrete subtype of AbstractInput.\n\nIf U is not given as an input, normalization accepts either a LazySet, or a vector of LazySets. In these cases, the sets are wrapped around an appropriate concrete input type.\n\nIf the system does not conform to a canonical form, the implementation tries to make the transformation; otherwise an error is thrown. In particular, ODEs of the form x = Ax + Bu are mapped into x = Ax + u u  BmathcalU, where now u has the same dimensions as x.\n\nThe transformations described above are analogous in the discrete case, i.e. x_k+1 = A x_k and x_k+1 = Ax_k + u_k u_k  mathcalU x_k  mathcalX for the linear and affine cases respectively.\n\n\n\n\n\n"
+},
+
+{
+    "location": "lib/systems.html#Normalization-1",
+    "page": "Systems",
+    "title": "Normalization",
+    "category": "section",
+    "text": "normalize"
+},
+
+{
     "location": "lib/algorithms.html#",
     "page": "Algorithms",
     "title": "Algorithms",
