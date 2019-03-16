@@ -10,7 +10,7 @@ using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap
-using Reachability: info
+using Reachability: info, warn
 
 include("../compat.jl")
 

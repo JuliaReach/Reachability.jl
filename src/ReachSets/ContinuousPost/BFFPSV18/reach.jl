@@ -4,6 +4,7 @@ using LazySets: CacheMinkowskiSum,
                  isdisjoint
 
 import LazySets.Approximations: overapproximate
+import ProgressMeter: update!
 
 """
     reach(S, invariant, options)
@@ -50,7 +51,8 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     n = statedim(S)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
-    N = ceil(Int, options[:T] / options[:δ])
+    T = options[:T]
+    N = (T == Inf) ? nothing : ceil(Int, T / options[:δ])
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n &&
@@ -76,7 +78,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     else
         res_type = ReachSet{Hyperrectangle{NUM}, NUM}
     end
-    res = Vector{res_type}(undef, N)
+    res = (N == nothing) ? Vector{res_type}() : Vector{res_type}(undef, N)
 
     # shortcut if only the initial set is required
     if N == 1
@@ -160,13 +162,16 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     push!(args, options[:δ])
 
     # termination function
-    if invariant == nothing
-        termination = (k, set, t0) -> termination_N(N, k, set, t0)
-    else
-        termination =
-            (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
-    end
+    termination = get_termination_function(N, invariant)
     push!(args, termination)
+
+    info("- Computing successors")
+
+    # progress meter
+    progress_meter = (N != nothing) ?
+        Progress(N, 1, "Computing successors ") :
+        nothing
+    push!(args, progress_meter)
 
     # choose algorithm backend
     algorithm = options[:algorithm]
@@ -180,14 +185,16 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     push!(args, res)
 
     # call the adequate function with the given arguments list
-    info("- Computing successors")
     @timing begin
         index, skip = available_algorithms[algorithm_backend]["func"](args...)
-        if index < N || skip
-            # shrink result array
-            info("terminated prematurely, only computed $index/$N steps")
-            deleteat!(res, (skip ? index : index + 1):N)
+    end
+
+    # shrink result array
+    if skip || index < N
+        if N != nothing
+            info("termination after only $index of $N steps")
         end
+        deleteat!(res, (skip ? index : index + 1):length(res))
     end
 
     # return the result
@@ -210,8 +217,39 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     return reach(Δ, invariant, options)
 end
 
-function termination_N(N, k, set, t0)
+function get_termination_function(N::Nothing, invariant::Nothing)
+    termination_function = (k, set, t0) -> termination_unconditioned()
+    warn("no termination condition specified; the reachability analysis will " *
+         "not terminate")
+    return termination_function
+end
+
+function get_termination_function(N::Int, invariant::Nothing)
+    return (k, set, t0) -> termination_N(N, k, t0)
+end
+
+function get_termination_function(N::Nothing, invariant::LazySet)
+    return (k, set, t0) -> termination_inv(invariant, set, t0)
+end
+
+function get_termination_function(N::Int, invariant::LazySet)
+    return (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+end
+
+function termination_unconditioned()
+    return (false, false)
+end
+
+function termination_N(N, k, t0)
     return (k >= N, false)
+end
+
+function termination_inv(inv, set, t0)
+    if isdisjoint(set, inv)
+        return (true, true)
+    else
+        return (false, false)
+    end
 end
 
 function termination_inv_N(N, inv, k, set, t0)
@@ -257,3 +295,6 @@ end
 function has_constant_directions(block_options, i::Int)
     return true
 end
+
+# no-op progress meter for unbounded time
+function update!(::Nothing, ::Int) end

@@ -38,7 +38,8 @@ given block indices.
 @inline row(ϕpowerk::SparseMatrixExp, bi::Int) = Matrix(get_row(ϕpowerk, bi))
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::UnitRange{Int}) = ϕpowerk_πbi[:, bj]
 @inline block(ϕpowerk_πbi::AbstractMatrix, bj::Int) = ϕpowerk_πbi[:, [bj]]
-@inline store!(res, k, X, t0, t1, N) = (res[k] = ReachSet(X, t0, t1))
+@inline store!(res, k, X, t0, t1, N::Int) = (res[k] = ReachSet(X, t0, t1))
+@inline store!(res, k, X, t0, t1, N::Nothing) = (push!(res, ReachSet(X, t0, t1)))
 
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
@@ -47,21 +48,23 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
-                       N::Int,
+                       N::Union{Int, Nothing},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
                        termination::Function,
+                       progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
+    update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    store!(res, 1, X_store, t0, t1, N)
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
@@ -81,9 +84,8 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     end
 
     k = 2
-    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
-        update!(p, k)
+        update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -104,7 +106,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
+        store!(res, k, X_store, t0, t1, N)
 
         terminate, skip = termination(k, X_store, t0)
         if terminate
@@ -133,21 +135,23 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
-                       N::Int,
+                       N::Union{Int, Nothing},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
                        termination::Function,
+                       progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
+    update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    store!(res, 1, X_store, t0, t1, N)
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
@@ -170,9 +174,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
-    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
-        update!(p, k)
+        update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)
@@ -192,7 +195,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
+        store!(res, k, X_store, t0, t1, N)
 
         terminate, skip = termination(k, X_store, t0)
         if terminate
@@ -224,21 +227,23 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
-                       N::Int,
+                       N::Union{Int, Nothing},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
                        termination::Function,
+                       progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
+    update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    store!(res, 1, X_store, t0, t1, N)
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
@@ -258,9 +263,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     end
 
     k = 2
-    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
-        update!(p, k)
+        update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = row(ϕpowerk, bi)
@@ -286,7 +290,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
+        store!(res, k, X_store, t0, t1, N)
 
         terminate, skip = termination(k, X_store, t0)
         if terminate
@@ -309,21 +313,23 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
                        overapproximate::Function,
                        overapproximate_inputs::Function,
                        n::Int,
-                       N::Int,
+                       N::Union{Int, Nothing},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        δ::NUM,
                        termination::Function,
+                       progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
+    update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
         box_approximation(output_function(array))
     t0 = zero(δ)
     t1 = δ
-    store!(res, 1, X_store, t0, t1, NUM)
+    store!(res, 1, X_store, t0, t1, N)
     terminate, skip = termination(1, X_store, t0)
     if terminate
         return 1, skip
@@ -345,9 +351,8 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
-    p = Progress(N, 1, "Computing successors ")
     @inbounds while true
-        update!(p, k)
+        update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = row(ϕpowerk, bi)
@@ -371,7 +376,7 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
             box_approximation(output_function(array))
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, NUM)
+        store!(res, k, X_store, t0, t1, N)
 
         terminate, skip = termination(k, X_store, t0)
         if terminate
