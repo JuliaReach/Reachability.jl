@@ -36,7 +36,7 @@ function project_reach(
     else
         got_time = false
         if (xaxis <= 0 || xaxis > n)
-            throw(DomainError())
+            throw(DomainError("value $xaxis for X variable not allowed"))
         end
     end
 
@@ -48,7 +48,7 @@ function project_reach(
         # projection to a state variable
         yaxis = vars[2]
         if (yaxis <= 0 || yaxis > n)
-            throw(DomainError())
+            throw(DomainError("value $yaxis for Y variable not allowed"))
         end
         projection_matrix = sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, m)
     else
