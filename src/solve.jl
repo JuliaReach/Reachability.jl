@@ -58,7 +58,7 @@ solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
 
 function solve!(problem::InitialValueProblem,
                 options_input::Options;
-                op::ContinuousPost=default_operator(system),
+                op::ContinuousPost=default_operator(problem),
                 invariant::Union{LazySet, Nothing}=nothing
                )::AbstractSolution
 
