@@ -260,7 +260,7 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂_input::Optio
         end
 
         # Projection
-        if 𝑂[:project_reachset] || 𝑂[:projection_matrix] != nothing
+        if 𝑂[:project_reachset]
             info("Projection...")
             RsetsProj = @timing project(Rsets, 𝑂)
         else
