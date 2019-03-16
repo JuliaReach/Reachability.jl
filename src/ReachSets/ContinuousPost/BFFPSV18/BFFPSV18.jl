@@ -235,7 +235,7 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
 end
 
 """
-    post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
+    post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
 
 Calculate the reachable states of the given initial value problem using `BFFPSV18`.
 
@@ -243,14 +243,20 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 
 - `𝒫` -- post operator of type `BFFPSV18`
 - `𝑆` -- sytem, initial value problem for a continuous ODE
-- `invariant` -- constraint invariant on the mode
 - `𝑂` -- algorithm-specific options
 """
-function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂_input::Options)
+function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂_input::Options)
     𝑂 = TwoLayerOptions(merge(𝑂_input, 𝒫.options.specified), 𝒫.options.defaults)
 
     # convert matrix
     system = matrix_conversion(𝑆, 𝑂)
+
+    # apply transformation to the invariant
+    if hasmethod(stateset, Tuple{typeof(𝑆.s)})
+        invariant = 𝑆.s.X
+    else
+        invariant = Universe(𝑂_input[:n])
+    end
 
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")

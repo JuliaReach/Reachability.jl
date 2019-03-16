@@ -8,7 +8,7 @@ using LazySets, MathematicalSystems, HybridSystems
 
 include("../compat.jl")
 
-import Reachability.@timing
+using Reachability: Options
 
 # Visualization
 export print_sparsity,
@@ -40,6 +40,9 @@ include("systems.jl")
 
 # normalization
 include("normalization.jl")
+
+# coordinate transformations
+include("transformations.jl")
 
 # abstract solution type
 include("AbstractSolution.jl")
