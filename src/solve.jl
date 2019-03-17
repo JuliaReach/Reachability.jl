@@ -70,7 +70,7 @@ function solve!(problem::InitialValueProblem,
     # compute a coordinate transformation if needed
     problem, options = transform(problem, options)
 
-    # run the continuous post-operator
+    # run the continuous-post operator
     post(op, problem, options)
 end
 
