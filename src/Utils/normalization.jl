@@ -63,23 +63,21 @@ end
 
 # x' = Ax, in the continuous case
 # x+ = Ax, in the discrete case
-function normalize(system::LCS{N, AN}) where {N, AN<:AbstractMatrix{N}}
-    n = statedim(system)
-    X = Universe(n)
-    return CLCS(system.A, X)
-end
-
-function normalize(system::LDS{N, AN}) where {N, AN<:AbstractMatrix{N}}
-    n = statedim(system)
-    X = Universe(n)
-    return CLDS(system.A, X)
+for (L_X, CL_S) in ((:LCS, :CLCS), (:LDS, :CLDS))
+    @eval begin
+        function normalize(system::$L_X{N, AN}) where {N, AN<:AbstractMatrix{N}}
+            n = statedim(system)
+            X = Universe(n)
+            return $CL_S(system.A, X)
+        end
+    end
 end
 
 # x' = Ax, x ∈ X in the continuous case
 # x+ = Ax, x ∈ X in the discrete case
 for CL_S in (:CLCS, :CLDS)
     @eval begin
-        function normalize(system::$CL_S{N, AN, ST}) where {N, AN<:AbstractMatrix{N}, ST<:LazySet{N}}
+        function normalize(system::$CL_S{N, AN, XT}) where {N, AN<:AbstractMatrix{N}, XT<:XNCF}
             n = statedim(system)
             X = _wrap_invariant(stateset(system), n)
             return $CL_S(system.A, X)
@@ -91,13 +89,14 @@ end
 # x+ = Ax + u, x ∈ X, u ∈ U in the discrete case
 for CLC_X in (:CLCCS, :CLCDS)
     @eval begin
-        function normalize(system::$CLC_X{N, IdentityMultiple{N}, ST}) where {N, ST<:LazySet{N}}
+        function normalize(system::$CLC_X{N, IdentityMultiple{N}, XT, UT}) where {N, XT<:XNCF, UT<:UNCF}
+            n = statedim(system)
+            X = _wrap_invariant(stateset(system), n)
             λ = system.B.M.λ
             if λ == oneunit(λ)
-                return system
+                U = _wrap_inputs(system.U, system.B)
+                return $CLC_X(system.A, system.B, X, U)
             else
-                n = statedim(system)
-                X = _wrap_invariant(stateset(system), n)
                 U = _wrap_inputs(system.U, Diagonal(fill(λ, n)))
                 return $CLC_X(system.A, I(n, N), X, U)
             end
