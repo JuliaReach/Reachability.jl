@@ -117,7 +117,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
             domain_constraints = (v::Symbol  ->  v in [:none, :eager, :lazy])
         elseif key == :clustering
             expected_type = Symbol
-            domain_constraints = (v::Symbol  ->  v in [:chull, :none])
+            domain_constraints = (v::Symbol  ->  v in [:chull, :none, :none_oa])
         elseif key == :plot_vars
             expected_type = Vector{Int}
             domain_constraints = (v::Vector{Int}  ->  length(v) == 2)
