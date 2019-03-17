@@ -1,8 +1,3 @@
-const LDS = LinearDiscreteSystem
-const CLCDS = ConstrainedLinearControlDiscreteSystem
-
-@inline Id(n) = Matrix(1.0I, n, n)
-
 """
     discretize(𝑆, δ; [algorithm], [exp_method], [sih_method], [set_operations])
 
@@ -416,7 +411,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
         α = κ * RX0
         □α = Ballp(p, zeros(n), α)
         Ω0 = ConvexHull(X0, ϕ * X0 ⊕ □α)
-        return IVP(LDS(ϕ), Ω0)
+        return IVP(CLDS(ϕ, stateset(𝑆.s)), Ω0)
 
     elseif isaffine(𝑆)
         Uset = inputset(𝑆)
@@ -435,7 +430,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
             # transformation of the inputs
             □β = Ballp(p, zeros(n), β)
             Ud = ConstantInput(δ*U ⊕ □β)
-            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
+            return IVP(CLCDS(ϕ, I(n), stateset(𝑆.s), Ud), Ω0)
 
         elseif Uset isa VaryingInput
             Ud = Vector{LazySet}(undef, length(Uset))
@@ -457,7 +452,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
                 Ud[i] = δ*Ui ⊕ □β
             end
             Ud = VaryingInput(Ud)
-            return IVP(CLCDS(ϕ, Id(n), nothing, Ud), Ω0)
+            return IVP(CLCDS(ϕ, I(n), stateset(𝑆.s), Ud), Ω0)
         else
             throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
         end
@@ -525,6 +520,7 @@ function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSy
 
     # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0
+    n = size(A, 1)
 
     # compute matrix ϕ = exp(Aδ)
     ϕ = exp_Aδ(A, δ, exp_method=exp_method)
@@ -534,7 +530,7 @@ function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSy
 
     # early return for homogeneous systems
     if inputdim(𝑆) == 0
-        return IVP(LDS(ϕ), Ω0)
+        return IVP(CLDS(ϕ, stateset(𝑆.s)), Ω0)
     end
 
     # compute matrix to transform the inputs
@@ -542,7 +538,7 @@ function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSy
     U = inputset(𝑆)
     Ud = map(ui -> Phi1Adelta * ui, U)
 
-    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
+    return IVP(CLCDS(ϕ, I(n), stateset(𝑆.s), Ud), Ω0)
 end
 
 """
@@ -646,7 +642,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     # early return for homogeneous systems
     if inputdim(𝑆) == 0
         Ω0 = _discretize_interpolation_homog(X0, ϕ, Einit, Val(set_operations))
-        return IVP(LDS(ϕ), Ω0)
+        return IVP(CLDS(ϕ, stateset(𝑆.s)), Ω0)
     end
 
     U = inputset(𝑆)
@@ -655,7 +651,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     Eψ0 = sih(Phi2Aabs * sih(A * U0))
     Ω0, Ud = _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, Val(set_operations))
 
-    return IVP(CLCDS(ϕ, Id(size(A, 1)), nothing, Ud), Ω0)
+    return IVP(CLCDS(ϕ, I(size(A, 1)), stateset(𝑆.s), Ud), Ω0)
 end
 
 # version using lazy sets and operations

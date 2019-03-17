@@ -251,17 +251,10 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂_input::Options)
     # convert matrix
     system = matrix_conversion(𝑆, 𝑂)
 
-    # apply transformation to the invariant
-    if hasmethod(stateset, Tuple{typeof(𝑆.s)})
-        invariant = 𝑆.s.X
-    else
-        invariant = Universe(𝑂_input[:n])
-    end
-
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
         @timing begin
-            Rsets = reach(𝑆, invariant, 𝑂)
+            Rsets = reach(𝑆, 𝑂)
             info("- Total")
         end
 
