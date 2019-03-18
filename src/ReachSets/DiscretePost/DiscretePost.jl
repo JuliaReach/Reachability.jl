@@ -62,15 +62,17 @@ function cluster(𝒫::DiscretePost,
     clustering_strategy = options[:clustering]
     dirs = 𝒫.options[:overapproximation]
     if clustering_strategy == :none
-        # no clustering
+        # no clustering, keeping original set
         return reach_sets
+    elseif clustering_strategy == :none_oa
+        # no clustering but overapproximation
+        return [ReachSet{LazySet{N}, N}(overapproximate(reach_set.X, dirs),
+                reach_set.t_start, reach_set.t_end) for reach_set in reach_sets]
     elseif clustering_strategy == :chull
-        # cluster all sets in a convex hull and overapproximate that set with
-        # oct directions
+        # cluster all sets in a convex hull and overapproximate that set
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
-        chull_oa = overapproximate(chull,
-                                   dirs)
+        chull_oa = overapproximate(chull, dirs)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
                 reach_sets[end].t_end)]
     end
