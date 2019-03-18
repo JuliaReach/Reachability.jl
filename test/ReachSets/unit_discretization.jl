@@ -4,7 +4,7 @@ let # preventing global scope
     # ===================================================================
     A = sparse([1, 1, 2, 3, 4], [1, 2, 2, 4, 3], [1., 2., 3., 4., 5.], 4, 4)
     X0 = BallInf(zeros(4), 0.1)
-    cont_sys_homog = IVP(LCS(A), X0)
+    cont_sys_homog = IVP(CLCS(A, Universe(4)), X0)
     δ = 0.01
 
     # no bloating, use default options
@@ -46,7 +46,7 @@ let # preventing global scope
     # ===============================================================
     U = ConstantInput(Ball2(ones(4), 0.5))
     B = Matrix{Float64}(1.0I, 4, 4)
-    cont_sys = IVP(CLCCS(A, B, nothing, U), X0)
+    cont_sys = IVP(CLCCS(A, B, Universe(4), U), X0)
 
     # no bloating
     discr_sys = discretize(cont_sys, δ, algorithm="nobloating")
@@ -79,7 +79,7 @@ let # preventing global scope
     # using concrete zonotopes
     # since a Ball2 cannot be converted to a Zonotope, we use a box instead
     U = ConstantInput(BallInf(ones(4), 0.5))
-    cont_sys = IVP(CLCCS(A, B, nothing, U), X0)
+    cont_sys = IVP(CLCCS(A, B, Universe(4), U), X0)
     discr_sys = discretize(cont_sys, δ, set_operations="zonotope")
     @test discr_sys.x0 isa Zonotope
     @test inputdim(discr_sys) == 4
@@ -88,7 +88,7 @@ let # preventing global scope
     # Discretization of a continuous-time system with time-varying input
     # ===================================================================
     Ui = [Ball2(0.01*i*ones(4), i*0.2) for i in 1:3]
-    cont_sys = IVP(CLCCS(A, Matrix(1.0I, 4, 4), nothing, VaryingInput(Ui)), X0)
+    cont_sys = IVP(CLCCS(A, I(4), Universe(4), VaryingInput(Ui)), X0)
 
     # no bloating
     discr_sys = discretize(cont_sys, δ, algorithm="nobloating")

@@ -153,7 +153,7 @@ X = LinearConstraint([1., 1., 0., 0.], 9.5)
 property = SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 10.))
 
 # default options (computes all variables)
-s = Reachability.solve!(IVP(CLCCS(A, B, X, U), X0), Options(:T=>Inf); invariant=X)  # temporary workaround for invariant (#507)
+s = Reachability.solve(IVP(CLCCS(A, B, X, U), X0), Options(:T=>Inf))
 s = solve(IVP(LCS(A), X0), :T=>Inf, :mode=>"check", :property=>property)
 s = solve(IVP(CLCCS(A, B, X, U), X0),
           :T=>Inf, :mode=>"check", :property=>property)

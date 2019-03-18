@@ -57,25 +57,21 @@ solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
 function solve!(problem::InitialValueProblem,
-                options_input::Options;
-                op::ContinuousPost=default_operator(problem),
-                invariant::Union{LazySet, Nothing}=nothing
+                options::Options;
+                op::ContinuousPost=default_operator(problem)
                )::AbstractSolution
 
-    system = normalize(problem.s)
-    problem = IVP(system, problem.x0)
-    options = init!(op, problem, options_input)
+    # normalize system to a canonical form if needed
+    problem = IVP(normalize(problem.s), problem.x0)
 
-    # coordinate transformation
-    if options[:coordinate_transformation] != ""
-        info("Transformation...")
-        (problem, transformation_matrix) =
-            @timing transform(problem, options[:coordinate_transformation])
-        options[:transformation_matrix] = transformation_matrix
-        invariant = options[:coordinate_transformation] * invariant
-    end
+    # initialize the algorithm-specific options
+    options = init!(op, problem, options)
 
-    post(op, problem, invariant, options)
+    # compute a coordinate transformation if needed
+    problem, options = transform(problem, options)
+
+    # run the continuous-post operator
+    post(op, problem, options)
 end
 
 """
@@ -167,8 +163,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
-                            op=opC,
-                            invariant=source_invariant)
+                            op=opC)
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
         # get the property for the current location
         property_loc = property isa Dict ?

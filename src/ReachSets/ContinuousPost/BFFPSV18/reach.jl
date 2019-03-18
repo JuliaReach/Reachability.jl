@@ -7,14 +7,13 @@ import LazySets.Approximations: overapproximate
 import ProgressMeter: update!
 
 """
-    reach(S, invariant, options)
+    reach(problem, options)
 
 Interface to reachability algorithms for an LTI system.
 
 ### Input
 
-- `S`         -- LTI system, discrete or continuous
-- `invariant` -- invariant
+- `problem`   -- initial value problem
 - `options`   -- additional options
 
 ### Output
@@ -28,11 +27,10 @@ A dictionary with available algorithms is available via
 
 The numeric type of the system's coefficients and the set of initial states
 is inferred from the first parameter of the system (resp. lazy set), ie.
-`NUM = first(typeof(S.s).parameters)`.
+`NUM = first(typeof(problem.s).parameters)`.
 """
-function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
-                        IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
-               invariant::Union{LazySet, Nothing},
+function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
+                              IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
 
@@ -40,7 +38,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     args = []
 
     # coefficients matrix
-    A = S.s.A
+    A = problem.s.A
     push!(args, A)
 
     # determine analysis mode (sparse/dense) for lazy_expm mode
@@ -48,7 +46,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         push!(args, Val(options[:assume_sparse]))
     end
 
-    n = statedim(S)
+    n = statedim(problem)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
     T = options[:T]
@@ -58,11 +56,11 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     if length(partition) == 1 && length(partition[1]) == n &&
             options[:block_options_init] == LinearMap
         info("- Skipping decomposition of X0")
-        Xhat0 = LazySet{NUM}[S.x0]
+        Xhat0 = LazySet{NUM}[problem.x0]
     else
         info("- Decomposing X0")
         @timing begin
-            Xhat0 = array(decompose(S.x0, options[:partition],
+            Xhat0 = array(decompose(problem.x0, options[:partition],
                                     options[:block_options_init]))
         end
     end
@@ -90,8 +88,8 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     push!(args, Xhat0)
 
     # inputs
-    if !options[:assume_homogeneous] && inputdim(S) > 0
-        U = inputset(S)
+    if !options[:assume_homogeneous] && inputdim(problem) > 0
+        U = inputset(problem)
     else
         U = nothing
     end
@@ -162,6 +160,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     push!(args, options[:δ])
 
     # termination function
+    invariant = stateset(problem.s)
     termination = get_termination_function(N, invariant)
     push!(args, termination)
 
@@ -201,30 +200,28 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     return res
 end
 
-function reach(system::IVP{<:AbstractContinuousSystem},
-               invariant::Union{LazySet, Nothing},
+function reach(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
+                              IVP{<:CLCCS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
-              )::Vector{<:ReachSet}
-    # ===================
-    # Time discretization
-    # ===================
+              )::Vector{<:ReachSet} where {NUM <: Real}
+
     info("Time discretization...")
-    Δ = @timing discretize(system, options[:δ], algorithm=options[:discretization],
-                                                exp_method=options[:exp_method],
-                                                sih_method=options[:sih_method])
+    Δ = @timing discretize(problem, options[:δ], algorithm=options[:discretization],
+                                                 exp_method=options[:exp_method],
+                                                 sih_method=options[:sih_method])
 
     Δ = matrix_conversion(Δ, options)
-    return reach(Δ, invariant, options)
+    return reach(Δ, options)
 end
 
-function get_termination_function(N::Nothing, invariant::Nothing)
+function get_termination_function(N::Nothing, invariant::Universe)
     termination_function = (k, set, t0) -> termination_unconditioned()
     warn("no termination condition specified; the reachability analysis will " *
          "not terminate")
     return termination_function
 end
 
-function get_termination_function(N::Int, invariant::Nothing)
+function get_termination_function(N::Int, invariant::Universe)
     return (k, set, t0) -> termination_N(N, k, t0)
 end
 

@@ -1,17 +1,8 @@
-# linear ivp in canonical form x' = Ax
-const LCF = LCS{N, AN} where {N, AN<:AbstractMatrix{N}}
-
-# affine ivp with constraints in canonical form x' = Ax + u, u ∈ U, x ∈ X
-const ACF = CLCCS{N, AN, IdentityMultiple{N}, XT, UT} where {N, AN<:AbstractMatrix{N}, XT<:LazySet{N}, UT<:AbstractInput}
-
-# type union of canonical forms
-const CF = Union{<:LCF, <:ACF}
-
 # accepted types of non-deterministic inputs (non-canonical form)
-const UNCF = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N}
+const UNCF{N} = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N}
 
 # accepted types for the state constraints (non-canonical form)
-const XNCF = Union{<:LazySet{N}, Nothing} where {N}
+const XNCF{N} = Union{<:LazySet{N}, Nothing} where {N}
 
 """
     normalize(system::AbstractSystem)
@@ -30,21 +21,22 @@ system otherwise.
 ### Notes
 
 The normalization procedure consists of transforming a given system type into a
-"canonical" format that is used internally. The type union `CF` defines the
-systems which are considered canonical, i.e. which do not require normalization.
-More details are given below.
+"canonical" format that is used internally. More details are given below.
 
 ### Algorithm
 
 The implementation of `normalize` exploits `MathematicalSystems`'s' types, which
 carry information about the problem as a type parameter.
 
-Homogeneous ODEs of the form ``x' = Ax`` are canonical if the associated
-problem is a `LinearContinuousSystem` and `A` is a matrix.
+Homogeneous ODEs of the form ``x' = Ax, x ∈ \\mathcal{X}`` are canonical if the
+associated problem is a `ConstrainedLinearContinuousSystem` and `A` is a matrix.
+This type does not handle non-deterministic inputs.
+
 Note that a `LinearContinuousSystem` does not consider constraints on the
 state-space (such as an invariant); to specify state constraints, use a
-`ConstrainedLinearControlContinuousSystem`. Moreover, this type does not handle
-non-deterministic inputs.
+`ConstrainedLinearContinuousSystem`. If the passed system is a `LinearContinuousSystem`
+(i.e. no constraints) then the normalization fixes a universal set (`Universe`)
+as the constraint set.
 
 The generalization to canonical systems with constraints and possibly time-varying
 non-deterministic inputs is considered next. These systems are of the form
@@ -69,50 +61,77 @@ function normalize(system::AbstractSystem)
     throw(ArgumentError("the system type $(typeof(system)) is currently not supported"))
 end
 
-# systems already in canonical form, i.e. which don't need normalization
-normalize(system::CF) = system
+# x' = Ax, in the continuous case
+# x+ = Ax, in the discrete case
+for (L_S, CL_S) in ((:LCS, :CLCS), (:LDS, :CLDS))
+    @eval begin
+        function normalize(system::$L_S{N, AN}) where {N, AN<:AbstractMatrix{N}}
+            n = statedim(system)
+            X = Universe(n)
+            return $CL_S(system.A, X)
+        end
+    end
+end
+
+# x' = Ax, x ∈ X in the continuous case
+# x+ = Ax, x ∈ X in the discrete case
+for CL_S in (:CLCS, :CLDS)
+    @eval begin
+        function normalize(system::$CL_S{N, AN, XT}) where {N, AN<:AbstractMatrix{N}, XT<:XNCF{N}}
+            n = statedim(system)
+            X = _wrap_invariant(stateset(system), n)
+            return $CL_S(system.A, X)
+        end
+    end
+end
 
 # x' = Ax + Bu, x ∈ X, u ∈ U in the continuous case
 # x+ = Ax + Bu, x ∈ X, u ∈ U in the discrete case
-for CLCS in (:CLCCS, :CLCDS)
+for CLC_S in (:CLCCS, :CLCDS)
     @eval begin
-        function normalize(system::$CLCS{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
+        function normalize(system::$CLC_S{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF{N}, UT<:UNCF{N}}
             n = statedim(system)
-            X = _wrap_invariant(system.X, n)
+            X = _wrap_invariant(stateset(system), n)
             U = _wrap_inputs(system.U, system.B)
-            $CLCS(system.A, I(n, N), X, U)
+            $CLC_S(system.A, I(n, N), X, U)
         end
     end
 end
 
 # x' = Ax + Bu + c, x ∈ X, u ∈ U in the continuous case
 # x+ = Ax + Bu + c, x ∈ X, u ∈ U in the discrete case
-for CACS in (:CACCS, :CACDS)
+for CAC_S in (:CACCS, :CACDS)
     @eval begin
-        function normalize(system::$CACS{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
+        function normalize(system::$CAC_S{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}, UT<:UNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(system.X, n)
             U = _wrap_inputs(system.U, system.B, system.c)
-            $CACS(system.A, I(n, N), X, U)
+            $CAC_S(system.A, I(n, N), X, U)
         end
     end
 end
 
+@inline isidentity(B::IdentityMultiple) = B.M.λ == oneunit(B.M.λ)
+
 _wrap_invariant(X::LazySet, n::Int) = X
 _wrap_invariant(X::Nothing, n::Int) = Universe(n)
 
-_wrap_inputs(U::AbstractInput, B::IdentityMultiple) = U
+_wrap_inputs(U::AbstractInput, B::IdentityMultiple) = isidentity(B) ? U : map(u -> B*u, U)
 _wrap_inputs(U::AbstractInput, B::AbstractMatrix) = map(u -> B*u, U)
-_wrap_inputs(U::LazySet, B::IdentityMultiple) = ConstantInput(U)
+
+_wrap_inputs(U::LazySet, B::IdentityMultiple) = isidentity(B) ? ConstantInput(U) : ConstantInput(B*U)
 _wrap_inputs(U::LazySet, B::AbstractMatrix) = ConstantInput(B*U)
-_wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple) = VaryingInput(U)
+
+_wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple) = isidentity(B) ? VaryingInput(U) : VaryingInput(map(u -> B*u, U))
 _wrap_inputs(U::Vector{<:LazySet}, B::AbstractMatrix) = VaryingInput(map(u -> B*u, U))
 
-_wrap_inputs(U::AbstractInput, B::IdentityMultiple, c::AbstractVector) = U ⊕ c
+_wrap_inputs(U::AbstractInput, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? map(u -> u ⊕ c, U) : map(u -> B*u ⊕ c, U) 
 _wrap_inputs(U::AbstractInput, B::AbstractMatrix, c::AbstractVector) = map(u -> B*u ⊕ c, U)
-_wrap_inputs(U::LazySet, B::IdentityMultiple, c::AbstractVector) = ConstantInput(U ⊕ c)
+
+_wrap_inputs(U::LazySet, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? ConstantInput(U ⊕ c) : ConstantInput(B*U ⊕ c)  
 _wrap_inputs(U::LazySet, B::AbstractMatrix, c::AbstractVector) = ConstantInput(B*U ⊕ c)
-_wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple, c::AbstractVector) = VaryingInput(map(u -> u ⊕ c, U))
+
+_wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? VaryingInput(map(u -> u ⊕ c, U)) : VaryingInput(map(u -> B*u ⊕ c, U))
 _wrap_inputs(U::Vector{<:LazySet}, B::AbstractMatrix, c::AbstractVector) = VaryingInput(map(u -> B*u ⊕ c, U))
 
 """
