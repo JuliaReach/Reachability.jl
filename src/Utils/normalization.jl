@@ -111,7 +111,7 @@ for CAC_S in (:CACCS, :CACDS)
     end
 end
 
-@inline isidentity(B::IdentityMultiple) = B.M.λ == one(B.M.λ)
+@inline isidentity(B::IdentityMultiple) = B.M.λ == oneunit(B.M.λ)
 
 _wrap_invariant(X::LazySet, n::Int) = X
 _wrap_invariant(X::Nothing, n::Int) = Universe(n)
