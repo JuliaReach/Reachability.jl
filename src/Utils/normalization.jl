@@ -1,8 +1,8 @@
 # accepted types of non-deterministic inputs (non-canonical form)
-const UNCF = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N}
+const UNCF{N} = Union{<:LazySet{N}, Vector{<:LazySet{N}}, <:AbstractInput} where {N}
 
 # accepted types for the state constraints (non-canonical form)
-const XNCF = Union{<:LazySet{N}, Nothing} where {N}
+const XNCF{N} = Union{<:LazySet{N}, Nothing} where {N}
 
 """
     normalize(system::AbstractSystem)
@@ -77,7 +77,7 @@ end
 # x+ = Ax, x ∈ X in the discrete case
 for CL_S in (:CLCS, :CLDS)
     @eval begin
-        function normalize(system::$CL_S{N, AN, XT}) where {N, AN<:AbstractMatrix{N}, XT<:XNCF}
+        function normalize(system::$CL_S{N, AN, XT}) where {N, AN<:AbstractMatrix{N}, XT<:XNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(stateset(system), n)
             return $CL_S(system.A, X)
@@ -89,7 +89,7 @@ end
 # x+ = Ax + Bu, x ∈ X, u ∈ U in the discrete case
 for CLC_S in (:CLCCS, :CLCDS)
     @eval begin
-        function normalize(system::$CLC_S{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF, UT<:UNCF}
+        function normalize(system::$CLC_S{N, AN, BN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, XT<:XNCF{N}, UT<:UNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(stateset(system), n)
             U = _wrap_inputs(system.U, system.B)
@@ -102,7 +102,7 @@ end
 # x+ = Ax + Bu + c, x ∈ X, u ∈ U in the discrete case
 for CAC_S in (:CACCS, :CACDS)
     @eval begin
-        function normalize(system::$CAC_S{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF, UT<:UNCF}
+        function normalize(system::$CAC_S{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}, UT<:UNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(system.X, n)
             U = _wrap_inputs(system.U, system.B, system.c)
@@ -111,7 +111,7 @@ for CAC_S in (:CACCS, :CACDS)
     end
 end
 
-@inline isidentity(B::IdentityMultiple) = B.M.λ == oneunit(B.M.λ)
+@inline isidentity(B::IdentityMultiple) = B.M.λ == one(B.M.λ)
 
 _wrap_invariant(X::LazySet, n::Int) = X
 _wrap_invariant(X::Nothing, n::Int) = Universe(n)
