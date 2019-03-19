@@ -6,37 +6,19 @@ export ContinuousSystem,
 # name alises
 const LCS = LinearContinuousSystem
 const LDS = LinearDiscreteSystem
+const CLCS = ConstrainedLinearContinuousSystem
+const CLDS = ConstrainedLinearDiscreteSystem
 const CLCCS = ConstrainedLinearControlContinuousSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
 const CACCS = ConstrainedAffineControlContinuousSystem
 const CACDS = ConstrainedAffineControlDiscreteSystem
 
-import Base: *
+export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, IVP
 
+import Base: *
 import LazySets.constrained_dimensions
 
 *(M::AbstractMatrix, input::ConstantInput) =  ConstantInput(M * input.U)
-
-#=
-# TODO: kept for backwards-compatibility. To be removed.
-# no input: x' = Ax, x(0) = X0
-ContinuousSystem(A::AbstractMatrix, X0::LazySet) = IVP(LCS(A), X0)
-DiscreteSystem(A::AbstractMatrix, X0::LazySet) = IVP(LDS(A), X0)
-
-# with constant input: x' = Ax + u, x(0) = X0, u(t) = U
-ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::ConstantInput) = IVP(CLCCS(A, convert(typeof(A), Matrix{eltype(A)}(I, size(A))), nothing, U), X0)
-ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::LazySet) = ContinuousSystem(A, X0, ConstantInput(U))
-
-DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::ConstantInput) = IVP(CLCDS(A, convert(typeof(A), convert(typeof(A), Matrix{eltype(A)}(I, size(A)))), nothing, U), X0)
-DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::LazySet) = DiscreteSystem(A, X0, ConstantInput(U))
-
-# with time-varying input: x' = Ax + u, x(0) = X0, u(t) = U(t)
-ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCCS(A, convert(typeof(A), convert(typeof(A), Matrix{eltype(A)}(I, size(A)))), nothing, U), X0)
-ContinuousSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = ContinuousSystem(A, X0, VaryingInput(U))
-
-DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::VaryingInput) = IVP(CLCDS(A, convert(typeof(A), convert(typeof(A), Matrix{eltype(A)}(I, size(A)))), nothing, U), X0)
-DiscreteSystem(A::AbstractMatrix, X0::LazySet, U::Vector{<:LazySet}) = DiscreteSystem(A, X0, VaryingInput(U))
-=#
 
 # convenience functions
 next_set(inputs::ConstantInput) = collect(nextinput(inputs, 1))[1]

@@ -121,15 +121,15 @@ s = solve(system, Options(:T=>0.1),
 # Affine ODE with a nondeterministic input, x' = Ax + Bu
 # =======================================================
 # linear ODE: x' = Ax + Bu, u ∈ U
-A = [ 0.0509836  0.168159  0.95246   0.33644
-      0.42377    0.67972   0.129232  0.126662
-      0.518654   0.981313  0.489854  0.588326
-      0.38318    0.616014  0.518412  0.778765]
+A = [0.0509836  0.168159  0.95246   0.33644
+     0.42377    0.67972   0.129232  0.126662
+     0.518654   0.981313  0.489854  0.588326
+     0.38318    0.616014  0.518412  0.778765]
 
 B = [0.866688  0.771231
-    0.065935  0.349839
-    0.109643  0.904222
-    0.292474  0.227857]
+     0.065935  0.349839
+     0.109643  0.904222
+     0.292474  0.227857]
 
 # non-deterministic inputs
 U = Interval(0.99, 1.01) × Interval(0.99, 1.01)
@@ -142,12 +142,8 @@ U1 = ConstantInput(U)
 U2 = U  # use internal wrapping
 
 for inputs in [U1, U2]
-    # instantiate system
-    Δ = CLCCS(A, B, nothing, U)
-    𝒮 = InitialValueProblem(Δ, X0)
-
     # default options (computes all variables)
-    s = solve(𝒮, :T=>0.1)
+    s = solve(IVP(CLCCS(A, B, nothing, U), X0), :T=>0.1)
 end
 
 # ===============================
@@ -168,3 +164,15 @@ s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06())
 
 # specify maximum order of zonotopes
 s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06(:max_order=>15))
+
+# ======================
+# Unbounded-time setting
+# ======================
+X = LinearConstraint([1., 1., 0., 0.], 9.5)
+property = SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 10.))
+
+# default options (computes all variables)
+s = Reachability.solve(IVP(CLCCS(A, B, X, U), X0), Options(:T=>Inf))
+s = solve(IVP(LCS(A), X0), :T=>Inf, :mode=>"check", :property=>property)
+s = solve(IVP(CLCCS(A, B, X, U), X0),
+          :T=>Inf, :mode=>"check", :property=>property)

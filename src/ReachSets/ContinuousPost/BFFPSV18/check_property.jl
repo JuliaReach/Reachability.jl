@@ -35,7 +35,8 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     n = statedim(S)
     blocks = options[:blocks]
     partition = convert_partition(options[:partition])
-    N = ceil(Int, options[:T] / options[:δ])
+    T = options[:T]
+    N = (T == Inf) ? nothing : ceil(Int, T / options[:δ])
 
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n &&
@@ -138,8 +139,15 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     # add property
     push!(args, property)
 
-    # call the adequate function with the given arguments list
     info("- Computing successors")
+
+    # progress meter
+    progress_meter = (N != nothing) ?
+        Progress(N, 1, "Computing successors ") :
+        nothing
+    push!(args, progress_meter)
+
+    # call the adequate function with the given arguments list
     answer =
         @timing available_algorithms_check[algorithm_backend]["func"](args...)
 
