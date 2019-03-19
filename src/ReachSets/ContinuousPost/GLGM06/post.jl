@@ -1,12 +1,11 @@
 function post(𝒫::GLGM06,
               𝑆::AbstractSystem,
-              invariant::Union{LazySet, Nothing},
               𝑂::Options)::ReachSolution{Zonotope}
 
     # ==================================
     # Initialization and discretization
     # ==================================
-   
+
     𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
     max_order = 𝑂[:max_order]
     δ = 𝑂[:δ]
@@ -30,6 +29,8 @@ function post(𝒫::GLGM06,
     else
         error("not implemented")
         #=
+        reach_inhog!(RSets, Ω0, Φ, N, δ, max_order)
+
         # inputs contain the origin
         if zeros(𝑂[:n]) ∈ next_set(𝑈)
             Rsets = reach_inhomog_case1(𝑆, invariant, 𝑂)
@@ -43,6 +44,7 @@ function post(𝒫::GLGM06,
     # ===========
     # Projection
     # ===========
+
     if 𝑂[:project_reachset] || 𝑂[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(RSets, 𝑂)
