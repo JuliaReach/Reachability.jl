@@ -98,15 +98,28 @@ for CLC_S in (:CLCCS, :CLCDS)
     end
 end
 
+# x' = Ax + c, x ∈ X, u ∈ U in the continuous case
+# x+ = Ax + c, x ∈ X, u ∈ U in the discrete case
+for (CA_S, CLC_S) in ((:CACS, :CLCCS), (:CADS, :CLCDS))
+    @eval begin
+        function normalize(system::$CA_S{N, AN, VN, XT}) where {N, AN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}}
+            n = statedim(system)
+            X = _wrap_invariant(system.X, n)
+            U = _wrap_inputs(system.b)
+            $CLC_S(system.A, I(n, N), X, U)
+        end
+    end
+end
+
 # x' = Ax + Bu + c, x ∈ X, u ∈ U in the continuous case
 # x+ = Ax + Bu + c, x ∈ X, u ∈ U in the discrete case
-for CAC_S in (:CACCS, :CACDS)
+for (CAC_S, CLC_S) in ((:CACCS, :CLCCS), (:CACDS, :CLCDS))
     @eval begin
         function normalize(system::$CAC_S{N, AN, BN, VN, XT, UT}) where {N, AN<:AbstractMatrix{N}, BN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}, UT<:UNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(system.X, n)
             U = _wrap_inputs(system.U, system.B, system.c)
-            $CAC_S(system.A, I(n, N), X, U)
+            $CLC_S(system.A, I(n, N), X, U)
         end
     end
 end
@@ -133,6 +146,8 @@ _wrap_inputs(U::LazySet, B::AbstractMatrix, c::AbstractVector) = ConstantInput(B
 
 _wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? VaryingInput(map(u -> u ⊕ c, U)) : VaryingInput(map(u -> B*u ⊕ c, U))
 _wrap_inputs(U::Vector{<:LazySet}, B::AbstractMatrix, c::AbstractVector) = VaryingInput(map(u -> B*u ⊕ c, U))
+
+_wrap_inputs(c::AbstractVector) = ConstantInput(Singleton(c))
 
 """
     distribute_initial_set(system::InitialValueProblem{<:HybridSystem, <:LazySet)

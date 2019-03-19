@@ -176,3 +176,16 @@ s = Reachability.solve(IVP(CLCCS(A, B, X, U), X0), Options(:T=>Inf))
 s = solve(IVP(LCS(A), X0), :T=>Inf, :mode=>"check", :property=>property)
 s = solve(IVP(CLCCS(A, B, X, U), X0),
           :T=>Inf, :mode=>"check", :property=>property)
+
+# =================================================================
+# Affine ODE with a nondeterministic input, x' = Ax + b, no inputs
+# =================================================================
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+b =  [1.0, -1, 0, 1.]
+X = HalfSpace([-1.0, 0.0, 0.0, 0.0], 0.0)
+X0 = BallInf(zeros(4), 0.5)
+p = IVP(ConstrainedAffineContinuousSystem(A, b, X), X0)
+sol = solve(p, :T=>0.1)
