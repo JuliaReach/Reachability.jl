@@ -16,7 +16,7 @@ discrete or continuous system.
 A continuous post operator with default options.
 """
 function default_operator(system::InitialValueProblem)
-    if islinear(system)
+    if isaffine(system)
         op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *

@@ -12,6 +12,8 @@ const CLCCS = ConstrainedLinearControlContinuousSystem
 const CLCDS = ConstrainedLinearControlDiscreteSystem
 const CACCS = ConstrainedAffineControlContinuousSystem
 const CACDS = ConstrainedAffineControlDiscreteSystem
+const CACS = ConstrainedAffineContinuousSystem
+const CADS = ConstrainedAffineDiscreteSystem
 
 export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, IVP
 
