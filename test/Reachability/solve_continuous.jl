@@ -165,6 +165,9 @@ s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06())
 # specify maximum order of zonotopes
 s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06(:max_order=>15))
 
+# affine system, x' = Ax + Bu
+s = solve(IVP(CLCCS(A, B, nothing, U), X0), Options(:T=>0.1), op=GLGM06())
+
 # ======================
 # Unbounded-time setting
 # ======================

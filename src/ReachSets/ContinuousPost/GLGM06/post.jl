@@ -1,19 +1,19 @@
-function post(𝒫::GLGM06,
-              𝑆::AbstractSystem,
+function post(𝒜::GLGM06,
+              𝑃::InitialValueProblem{<:AbstractContinuousSystem},
               𝑂::Options)::ReachSolution{Zonotope}
 
     # ==================================
     # Initialization and discretization
     # ==================================
 
-    𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
+    𝑂 = TwoLayerOptions(merge(𝑂, 𝒜.options.specified), 𝒜.options.defaults)
     max_order = 𝑂[:max_order]
-    δ = 𝑂[:δ]
-    N = round(Int, 𝑂[:T] / δ)
+    δ, T = 𝑂[:δ], 𝑂[:T]
+    N = round(Int, T / δ)
 
     # compute and unrwap discretized system
-    𝑆d = discretize(𝑆, δ, algorithm=𝑂[:discretization], set_operations="zonotope")
-    Ω0, Φ = 𝑆d.x0, 𝑆d.s.A
+    𝑃_discrete = discretize(𝑃, δ, algorithm=𝑂[:discretization], set_operations="zonotope")
+    Ω0, Φ = 𝑃_discrete.x0, 𝑃_discrete.s.A
 
     # =====================
     # Flowpipe computation
@@ -24,20 +24,11 @@ function post(𝒫::GLGM06,
 
     info("Reachable States Computation...")
     @timing begin
-    if inputdim(𝑆d) == 0
+    if inputdim(𝑃_discrete) == 0
         reach_homog!(RSets, Ω0, Φ, N, δ, max_order)
     else
-        error("not implemented")
-        #=
-        reach_inhog!(RSets, Ω0, Φ, N, δ, max_order)
-
-        # inputs contain the origin
-        if zeros(𝑂[:n]) ∈ next_set(𝑈)
-            Rsets = reach_inhomog_case1(𝑆, invariant, 𝑂)
-        else
-            Rsets = reach_inhomog_case2(𝑆, invariant, 𝑂)
-        end
-        =#
+        U = inputset(𝑃_discrete)
+        reach_inhomog!(RSets, Ω0, U, Φ, N, δ, max_order)
     end
     end # timing
 
