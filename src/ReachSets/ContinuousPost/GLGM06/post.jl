@@ -1,6 +1,6 @@
 function post(𝒜::GLGM06,
               𝑃::InitialValueProblem{<:AbstractContinuousSystem},
-              𝑂::Options)::ReachSolution{Zonotope}
+              𝑂::Options)
 
     # ==================================
     # Initialization and discretization
