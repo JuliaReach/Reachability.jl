@@ -13,21 +13,19 @@ function thermostat()
     # automaton structure
     automaton = LightAutomaton(2)
 
-    I1 = Matrix(1.0I, 1, 1)
-
     # mode on
     A = hcat(-c_a)
     B = hcat(30.)
     U = Singleton([c_a])
     inv = HalfSpace([1.0], 22.0)  # x ≤ 22
-    m_on = ConstrainedLinearControlContinuousSystem(A, I1, inv, ConstantInput(B*U))
+    m_on = ConstrainedLinearControlContinuousSystem(A, B, inv, ConstantInput(U))
 
     # mode off
     A = hcat(-c_a)
     B = hcat(0.0)
     U = Singleton([0.0])
     inv = HalfSpace([-1.0], -18.0)  # x ≥ 18
-    m_off = ConstrainedLinearControlContinuousSystem(A, I1, inv, ConstantInput(B*U))
+    m_off = ConstrainedLinearControlContinuousSystem(A, B, inv, ConstantInput(U))
 
     # modes
     modes = [m_on, m_off]

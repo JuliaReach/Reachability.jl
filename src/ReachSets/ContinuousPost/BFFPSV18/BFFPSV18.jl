@@ -112,8 +112,8 @@ function validation_BFFPSV18(𝑂)
                 # template directions
                 option = get(Utils.template_direction_symbols, bo, nothing)
                 if option == nothing
-                    throw(DomainError(key, "if the `$b_options` option is a " *
-                        "Symbol, it must be one of " *
+                    throw(DomainError(bo, "if the `$b_options` option " *
+                        "is a Symbol, it must be one of " *
                         "$(keys(Utils.template_direction_symbols))"))
                 end
                 𝑂.specified[b_options] = option
@@ -122,12 +122,14 @@ function validation_BFFPSV18(𝑂)
             elseif bo isa Real || bo isa Pair{<:UnionAll, <:Real}
                 ε = bo isa Real ? bo : bo[2]
                 if ε <= 0
-                    throw(DomainError(key, "the `$b_options` option must be " *
-                                           "positive"))
+                    throw(DomainError(ε, "the `$b_options` option must be " *
+                                         "positive"))
                 end
+            elseif b_options == :block_options_iter && bo == nothing
+                # no overapproximation
             else
-                throw(DomainError(key, "the `$b_options` option does not " *
-                                       "accept $bo"))
+                throw(DomainError(bo == nothing ? "nothing" : bo,
+                    "the `$b_options` option does not accept the given input"))
             end
         end
     end
@@ -233,7 +235,7 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
 end
 
 """
-    post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
+    post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
 
 Calculate the reachable states of the given initial value problem using `BFFPSV18`.
 
@@ -241,11 +243,10 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 
 - `𝒫` -- post operator of type `BFFPSV18`
 - `𝑆` -- sytem, initial value problem for a continuous ODE
-- `invariant` -- constraint invariant on the mode
 - `𝑂` -- algorithm-specific options
 """
-function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
-    𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
+function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂_input::Options)
+    𝑂 = TwoLayerOptions(merge(𝑂_input, 𝒫.options.specified), 𝒫.options.defaults)
 
     # convert matrix
     system = matrix_conversion(𝑆, 𝑂)
@@ -253,19 +254,19 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
         @timing begin
-            Rsets = reach(𝑆, invariant, 𝑂)
+            Rsets = reach(𝑆, 𝑂)
             info("- Total")
         end
 
         # Projection
-        if 𝑂[:project_reachset] || 𝑂[:projection_matrix] != nothing
+        if 𝑂[:project_reachset]
             info("Projection...")
             RsetsProj = @timing project(Rsets, 𝑂)
         else
             RsetsProj = Rsets
         end
 
-        return ReachSolution(RsetsProj, 𝑂)
+        return ReachSolution(RsetsProj, 𝑂_input)
 
     elseif 𝑂[:mode] == "check"
         info("invariants are currently not supported in 'check' mode")
@@ -284,11 +285,11 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, invariant, 𝑂::Options)
 
         if answer == 0
             info("The property is satisfied!")
-            return CheckSolution(true, -1, 𝑂)
+            return CheckSolution(true, -1, 𝑂_input)
         else
             info("The property may be violated at index $answer," *
                 " (time point $(answer * 𝑂[:δ]))!")
-            return CheckSolution(false, answer, 𝑂)
+            return CheckSolution(false, answer, 𝑂_input)
         end
     else
         error("unsupported mode $(𝑂[:mode])")

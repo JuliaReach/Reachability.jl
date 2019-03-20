@@ -16,7 +16,7 @@ discrete or continuous system.
 A continuous post operator with default options.
 """
 function default_operator(system::InitialValueProblem)
-    if islinear(system)
+    if isaffine(system)
         op = BFFPSV18()
     else
         error("no default reachability algorithm available for system of " *
@@ -56,25 +56,22 @@ end
 solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
     solve(system, Options(Dict{Symbol,Any}(options)))
 
-function solve!(system::InitialValueProblem{<:Union{AbstractContinuousSystem,
-                                                     AbstractDiscreteSystem}},
-                options_input::Options;
-                op::ContinuousPost=default_operator(system),
-                invariant::Union{LazySet, Nothing}=nothing
+function solve!(problem::InitialValueProblem,
+                options::Options;
+                op::ContinuousPost=default_operator(problem)
                )::AbstractSolution
-    system = normalize(system)
-    options = init!(op, system, options_input)
 
-    # coordinate transformation
-    if options[:coordinate_transformation] != ""
-        info("Transformation...")
-        (system, transformation_matrix) =
-            @timing transform(system, options[:coordinate_transformation])
-        options[:transformation_matrix] = transformation_matrix
-        invariant = options[:coordinate_transformation] * invariant
-    end
+    # normalize system to a canonical form if needed
+    problem = IVP(normalize(problem.s), problem.x0)
 
-    post(op, system, invariant, options)
+    # initialize the algorithm-specific options
+    options = init!(op, problem, options)
+
+    # compute a coordinate transformation if needed
+    problem, options = transform(problem, options)
+
+    # run the continuous-post operator
+    post(op, problem, options)
 end
 
 """
@@ -166,8 +163,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         reach_tube = solve!(IVP(loc, X0.X),
                             options_copy,
-                            op=opC,
-                            invariant=source_invariant)
+                            op=opC)
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
         # get the property for the current location
         property_loc = property isa Dict ?

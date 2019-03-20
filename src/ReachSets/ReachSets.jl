@@ -10,7 +10,7 @@ using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap
-using Reachability: info
+using Reachability: info, warn
 
 include("../compat.jl")
 
@@ -97,6 +97,8 @@ include("ContinuousPost/BFFPSV18/BFFPSV18.jl")
 include("ContinuousPost/BFFPSV18/reach.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks.jl")
 include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
+
+include("ContinuousPost/GLGM06/GLGM06.jl")
 
 # ========================
 # Reachability Algorithms

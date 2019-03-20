@@ -48,3 +48,9 @@ vary over time.
 
 Time-varying nondeterministic inputs are chosen from a set of values that
 changes over time (with each time step).
+
+## Normalization
+
+```@docs
+normalize
+```

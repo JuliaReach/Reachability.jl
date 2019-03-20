@@ -14,6 +14,7 @@ X0 = BallInf(ones(4), 0.1)
 # default options (computes all variables)
 s = solve(IVP(LCS(A), X0), :T=>0.1)
 @test dim(s.Xk[1].X) == 4
+@test s.options isa Options
 
 # two variables and custom partition
 s = solve(IVP(LCS(A), X0),
@@ -119,16 +120,16 @@ s = solve(system, Options(:T=>0.1),
 # =======================================================
 # Affine ODE with a nondeterministic input, x' = Ax + Bu
 # =======================================================
-# linear ODE: x' = Ax + Bu
-A = [ 0.0509836  0.168159  0.95246   0.33644
-      0.42377    0.67972   0.129232  0.126662
-      0.518654   0.981313  0.489854  0.588326
-      0.38318    0.616014  0.518412  0.778765]
+# linear ODE: x' = Ax + Bu, u ∈ U
+A = [0.0509836  0.168159  0.95246   0.33644
+     0.42377    0.67972   0.129232  0.126662
+     0.518654   0.981313  0.489854  0.588326
+     0.38318    0.616014  0.518412  0.778765]
 
 B = [0.866688  0.771231
-    0.065935  0.349839
-    0.109643  0.904222
-    0.292474  0.227857]
+     0.065935  0.349839
+     0.109643  0.904222
+     0.292474  0.227857]
 
 # non-deterministic inputs
 U = Interval(0.99, 1.01) × Interval(0.99, 1.01)
@@ -136,18 +137,58 @@ U = Interval(0.99, 1.01) × Interval(0.99, 1.01)
 # initial set
 X0 = BallInf(ones(4), 0.1)
 
-# dense identity matrix
-E = Matrix(1.0I, size(A))
-
 # inputs
-U1 = ConstantInput(B*U)
-U2 = B*U  # use internal conversion
+U1 = ConstantInput(U)
+U2 = U  # use internal wrapping
 
 for inputs in [U1, U2]
-    # instantiate system
-    Δ = CLCCS(A, E, nothing, inputs)
-    𝒮 = InitialValueProblem(Δ, X0)
-
     # default options (computes all variables)
-    s = solve(𝒮, :T=>0.1)
+    s = solve(IVP(CLCCS(A, B, nothing, U), X0), :T=>0.1)
 end
+
+# ===============================
+# Test GLGM06
+# ===============================
+
+# linear ODE: x' = Ax
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+
+# initial set
+X0 = BallInf(ones(4), 0.1)
+
+# default options
+s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06())
+
+# specify maximum order of zonotopes
+s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06(:max_order=>15))
+
+# affine system, x' = Ax + Bu
+s = solve(IVP(CLCCS(A, B, nothing, U), X0), Options(:T=>0.1), op=GLGM06())
+
+# ======================
+# Unbounded-time setting
+# ======================
+X = LinearConstraint([1., 1., 0., 0.], 9.5)
+property = SafeStatesProperty(LinearConstraint([1., 1., 0., 0.], 10.))
+
+# default options (computes all variables)
+s = Reachability.solve(IVP(CLCCS(A, B, X, U), X0), Options(:T=>Inf))
+s = solve(IVP(LCS(A), X0), :T=>Inf, :mode=>"check", :property=>property)
+s = solve(IVP(CLCCS(A, B, X, U), X0),
+          :T=>Inf, :mode=>"check", :property=>property)
+
+# =================================================================
+# Affine ODE with a nondeterministic input, x' = Ax + b, no inputs
+# =================================================================
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+b =  [1.0, -1, 0, 1.]
+X = HalfSpace([-1.0, 0.0, 0.0, 0.0], 0.0)
+X0 = BallInf(zeros(4), 0.5)
+p = IVP(ConstrainedAffineContinuousSystem(A, b, X), X0)
+sol = solve(p, :T=>0.1)
