@@ -146,6 +146,28 @@ for inputs in [U1, U2]
     s = solve(IVP(CLCCS(A, B, nothing, U), X0), :T=>0.1)
 end
 
+# ===============================
+# Test GLGM06
+# ===============================
+
+# linear ODE: x' = Ax
+A = [ 0.0509836  0.168159  0.95246   0.33644
+      0.42377    0.67972   0.129232  0.126662
+      0.518654   0.981313  0.489854  0.588326
+      0.38318    0.616014  0.518412  0.778765]
+
+# initial set
+X0 = BallInf(ones(4), 0.1)
+
+# default options
+s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06())
+
+# specify maximum order of zonotopes
+s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06(:max_order=>15))
+
+# affine system, x' = Ax + Bu
+s = solve(IVP(CLCCS(A, B, nothing, U), X0), Options(:T=>0.1), op=GLGM06())
+
 # ======================
 # Unbounded-time setting
 # ======================
