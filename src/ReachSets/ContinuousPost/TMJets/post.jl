@@ -2,7 +2,6 @@ using TaylorModels: validated_integ
 
 function post(𝒫::TMJets,
               𝑆::AbstractSystem, # {<:ImplicitContinuousSystem}
-              invariant::Union{LazySet, Nothing},
               𝑂::Options)::ReachSolution{Zonotope}
 
     # ==================================
