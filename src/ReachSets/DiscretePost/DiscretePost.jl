@@ -109,7 +109,7 @@ function get_overapproximation_option(𝒫::DiscretePost, n::Int)
     if oa isa Symbol
         dirs = Utils.template_direction_symbols[oa]
         return dirs(n)
-    elseif oa <: LazySets.LazySet
+    elseif oa isa Type{<:LazySets.LazySet}
         return oa
     else
         error("received unknown :overapproximation option $oa")
