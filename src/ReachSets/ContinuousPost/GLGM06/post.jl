@@ -6,7 +6,7 @@ function post(𝒜::GLGM06,
     # Initialization and discretization
     # ==================================
 
-    𝑂 = merge(𝒜.options.defaults, merge(𝑂, 𝒜.options.specified))
+    𝑂 = merge(𝒜.options.defaults, 𝑂, 𝒜.options.specified)
     max_order = 𝑂[:max_order]
     δ, T = 𝑂[:δ], 𝑂[:T]
     N = round(Int, T / δ)

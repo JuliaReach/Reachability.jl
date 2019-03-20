@@ -26,13 +26,12 @@ include("check.jl")
 import LazySets.Approximations: project
 
 function delete_zero_cols(A::AbstractMatrix)
-    zero_cols = Vector{Int}()
+    nonzero_cols = Vector{Int}()
     for (i, ci) in enumerate(eachcol(A))
-        if iszero(ci)
-            push!(zero_cols, i)
+        if !iszero(ci)
+            push!(nonzero_cols, i)
         end
     end
-    nonzero_cols = setdiff(Vector(1:size(A, 2)), zero_cols)
     #return @view(A[:, nonzero_cols])
     return A[:, nonzero_cols]
 end
@@ -56,7 +55,8 @@ end
 
 function project(sol::ReachSolution{Zonotope})
     N = length(sol.Xk)  # number of reach sets
-    πsol = Vector{Zonotope}(undef, N) # preallocated projected reachsets
+    n = dim(first(sol.Xk).X) # state space dimension
+    πsol = ReachSolution{Zonotope}(undef, N) # preallocated projected reachsets
     πvars = sol.options[:plot_vars] # variables for plotting
     @assert length(πvars) == 2
 
@@ -64,15 +64,17 @@ function project(sol::ReachSolution{Zonotope})
         # add the time variable to the model (it is assumed it is not already
         # a variable in the model)
         sol = add_time(sol)
-        πvars[first(indexin(0, πvars))] = sol.options[:n]  # time index is added in the end
+        n += 1
+        πvars[first(indexin(0, πvars))] = n# time index is added in the end
     end
-    n = sol.options[:n] # state space dimension (possibly enlarged in add_time)
 
+    M = sparse([1, 2], πvars, [1.0, 1.0], 2, n)
     for i in eachindex(sol.Xk)
-        M = sparse([1, 2], πvars, [1.0, 1.0], 2, n)
+        t0, t1 = sol.Xk[i].t0, sol.Xk[i].t1
         πsol_i = linear_map(M, sol.Xk[i].X)
         πsol_i = Zonotope(πsol_i.center, delete_zero_cols(πsol_i.generators))
-        πsol[i] = reduce_order(πsol_i, sol.options[:max_order])
+        πsol_i = reduce_order(πsol_i, sol.options[:max_order])
+        πsol[i] = ReachSet{Zonotope{Float64}, Float64}(πsol_i, t0, t1)
     end
     return πsol
 end
