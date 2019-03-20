@@ -25,6 +25,18 @@ include("check.jl")
 # =======================================
 import LazySets.Approximations: project
 
+function delete_zero_cols(A::AbstractMatrix)
+    zero_cols = Vector{Int}()
+    for (i, ci) in enumerate(eachcol(A))
+        if iszero(ci)
+            push!(zero_cols, i)
+        end
+    end
+    nonzero_cols = setdiff(Vector(1:size(A, 2)), zero_cols)
+    #return @view(A[:, nonzero_cols])
+    return A[:, nonzero_cols]
+end
+
 # add a "time" variable by taking the cartesian product of a flowpipe with
 # each time lapse
 function add_time(sol::ReachSolution{Zonotope})
@@ -58,7 +70,9 @@ function project(sol::ReachSolution{Zonotope})
 
     for i in eachindex(sol.Xk)
         M = sparse([1, 2], πvars, [1.0, 1.0], 2, n)
-        πsol[i] = linear_map(M, sol.Xk[i].X)
+        πsol_i = linear_map(M, sol.Xk[i].X)
+        πsol_i = Zonotope(πsol_i.center, delete_zero_cols(πsol_i.generators))
+        πsol[i] = reduce_order(πsol_i, sol.options[:max_order])
     end
     return πsol
 end
