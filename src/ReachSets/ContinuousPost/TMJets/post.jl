@@ -56,7 +56,7 @@ function post(𝒫::TMJets,
     # ===========
     # Projection
     # ===========
-    if 𝑂[:project_reachset] || 𝑂[:projection_matrix] != nothing
+    if 𝑂[:project_reachset]
         info("Projection...")
         RsetsProj = @timing project(RSets, 𝑂)
     else
