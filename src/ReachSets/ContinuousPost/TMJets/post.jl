@@ -51,7 +51,7 @@ function post(𝒫::TMJets,
     N = length(xTM)
     RSets = Vector{Hyperrectangle}(undef, N)
     @inbounds for i in eachindex(xTM)
-        RSets[i] = convert(Hyperrectangle, xTM)
+        RSets[i] = convert(Hyperrectangle, xTM[i])
     end
 
     # ===========
