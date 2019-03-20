@@ -14,15 +14,13 @@ function reach_homog!(HR::Vector{ReachSet{Zonotope, Float64}},
     # initial reach set
     HR[1] = ReachSet{Zonotope, Float64}(Ω0, t0, t1)
 
-    k = 1
-    while k < N
-        HR_next = linear_map(Φ, HR[k].X)
-        if order(HR_next) > max_order
-            HR_next = reduce_order(HR_next, max_order)
-        end
+    k = 2
+    while k <= N
+        HR_next = linear_map(Φ, HR[k-1].X)
+        HR_next_red = reduce_order(HR_next, max_order)
         t0 = t1; t1 += δ
-        HR[k+1] = ReachSet{Zonotope, Float64}(HR_next, t0, t1)
-        k = k + 1
+        HR[k] = ReachSet{Zonotope, Float64}(HR_next_red, t0, t1)
+        k += 1
     end
     return HR
 end
@@ -38,37 +36,29 @@ function reach_inhomog!(X::Vector{ReachSet{Zonotope, Float64}},
                         δ::Float64,
                         max_order::Int)
 
-    # preallocation
-    W = Vector{Zonotope}(undef, N+1)
-
     # initialization
-    k = 1
-    n = size(Φ, 1)
     t0, t1 = zero(δ), δ
-    X[k] = ReachSet{Zonotope, Float64}(Ω0, t0, t1)
-    W[k] = ZeroSet(n)
     V = next_set(U)
-    W[k+1] = V
+
+    X[1] = ReachSet{Zonotope, Float64}(Ω0, t0, t1)
+    Wk₊ = V
     Φ_power_k = copy(Φ)
+    Φ_power_k_cache = similar(Φ)
 
     # update
-    k += 1
+    k = 2
     while k <= N
-        Xk = minkowski_sum(linear_map(Φ_power_k, Ω0), W[k])
-        Wk₊ = minkowski_sum(W[k], linear_map(Φ_power_k, V))
+        Xk = minkowski_sum(linear_map(Φ_power_k, Ω0), Wk₊)
+        Wk₊ = minkowski_sum(Wk₊, linear_map(Φ_power_k, V))
 
         t0 = t1; t1 += δ
-        if order(Xk) > max_order
-            Xk = reduce_order(Xk, max_order)
-        end
-        X[k] = ReachSet{Zonotope, Float64}(Xk, t0, t1)
+        Xk_red = reduce_order(Xk, max_order)
+        X[k] = ReachSet{Zonotope, Float64}(Xk_red, t0, t1) #  ReachSet{Zonotope{Float64}, Float64}}  ??
 
-        if order(Wk₊) > max_order
-            Wk₊ = reduce_order(Wk₊, max_order)
-        end
-        W[k+1] = Wk₊
+        Wk₊ = reduce_order(Wk₊, max_order)
 
-        Φ_power_k = Φ_power_k * Φ
+        _A_mul_B!(Φ_power_k_cache, Φ_power_k, Φ)
+        copyto!(Φ_power_k, Φ_power_k_cache)
         k += 1
     end
 
