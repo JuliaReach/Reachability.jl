@@ -13,4 +13,4 @@ Reexport
 Suppressor
 IntervalArithmetic
 TaylorModels
-TaylorSeries
+TaylorSeries 0.9.1
