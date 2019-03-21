@@ -4,14 +4,14 @@ using LazySets.Approximations: box_approximation
 using IntervalArithmetic: mid, sup
 
 function post(𝒜::TMJets,
-              𝑃::InitialValueProblem{<:AbstractContinuousSystem},
-              𝑂::Options)
+              𝑃::InitialValueProblem{<:Union{BBCS, CBBCS, CBBCCS}, <:LazySet},
+              𝑂_global::Options)
 
     # ==================================
     # Initialization
     # ==================================
 
-    𝑂 = merge(𝒜.options.defaults, 𝑂, 𝒜.options.specified)
+    𝑂 = merge(𝒜.options.defaults, 𝑂_global, 𝒜.options.specified)
 
     # system of ODEs
     f! = 𝑃.s.f

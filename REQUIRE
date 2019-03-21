@@ -3,7 +3,7 @@ Compat
 Expokit
 HybridSystems
 LazySets
-MathematicalSystems 0.6.3
+MathematicalSystems 0.6.4
 Memento
 Optim
 Plots
@@ -11,7 +11,6 @@ ProgressMeter
 RecipesBase
 Reexport
 Suppressor
-Requires
 IntervalArithmetic
 TaylorModels
 TaylorSeries

@@ -101,9 +101,6 @@ include("ContinuousPost/BFFPSV18/reach_blocks_wrapping_effect.jl")
 include("ContinuousPost/GLGM06/GLGM06.jl")
 
 include("ContinuousPost/TMJets/TMJets.jl")
-#function __init__()
-#     @require TaylorModels = "314ce334-5f6e-57ae-acf6-00b6e903104a" include("TMJets.jl")
-#end # function
 
 # ========================
 # Reachability Algorithms
