@@ -1,67 +1,78 @@
 using TaylorModels: validated_integ
+using TaylorSeries: set_variables
+using LazySets.Approximations: box_approximation
+using IntervalArithmetic: mid, sup
 
-function post(𝒫::TMJets,
-              𝑆::AbstractSystem, # {<:ImplicitContinuousSystem}
-              𝑂::Options)::ReachSolution{Zonotope}
+function post(𝒜::TMJets,
+              𝑃::InitialValueProblem{<:AbstractContinuousSystem},
+              𝑂::Options)
 
     # ==================================
     # Initialization
     # ==================================
 
-    𝑂 = TwoLayerOptions(merge(𝑂, 𝒫.options.specified), 𝒫.options.defaults)
+    𝑂 = merge(𝒜.options.defaults, 𝑂, 𝒜.options.specified)
 
     # system of ODEs
-    f! = 𝑆.s
-    n = 𝑂[:n]
+    f! = 𝑃.s.f
+    n = statedim(𝑃)
 
-    # initial and final times, and maximum allowed number of steps
+    # initial time and time horizon
     t0 = 0.0
     T = 𝑂[:T]
+
+    # maximum allowed number of steps
     max_steps = 𝑂[:max_steps]
 
     # unrap algorithm-specific options
-    abs_tol, orderQ, orderT = 𝑂[:abs_tol], 𝑂[:orderQ] 𝑂[:orderT]
+    abs_tol, orderQ, orderT = 𝑂[:abs_tol], 𝑂[:orderQ], 𝑂[:orderT]
 
     # initial sets
-    X0 = convert(IntervalBox, 𝑆.x0)
+    box_x0 = box_approximation(𝑃.x0)
+    X0 = convert(IntervalBox, box_x0)
     q0 = mid(X0)
-    δq0 = sup.(X0) - mid(X0)
+    δq0 = IntervalBox(sup.(X0) - mid(X0))
 
-    # returns a TaylorN vector, each entry corresponding to an indep variable
+    # fix the working variables and maximum order in the global
+    # parameters struct (_params_TaylorN_)
     set_variables("x", numvars=length(q0), order=2*orderQ)
 
     # define the property
-    property = haskey(𝑂, :property) ? 𝑂[:property] : (t, x) -> true
+    if 𝑂[:mode] == "check"
+        property = 𝑂[:property]
+    elseif 𝑂[:mode] == "reach"
+        property = (t, x) -> true
+    end
 
     # =====================
     # Flowpipe computation
     # =====================
 
-    # preallocate output
-    RSets = Vector{ReachSet{Hyperrectangle, Float64}}(undef, N)
-
     info("Reachable States Computation...")
     @timing begin
         tTM, xTM = validated_integ(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
-                     maxsteps=max_steps, check_property=property)
+                                   maxsteps=max_steps, check_property=property)
     end
 
-    # convert to hyperrectangle to wrap around the reach solution
+    # convert to hyperrectangle and wrap around the reach solution
     N = length(xTM)
-    RSets = Vector{Hyperrectangle}(undef, N)
-    @inbounds for i in eachindex(xTM)
-        RSets[i] = convert(Hyperrectangle, xTM[i])
+    Rsets = Vector{ReachSet{Hyperrectangle, Float64}}(undef, N-1)
+    @inbounds for i in 1:N-1
+        Hi = convert(Hyperrectangle, xTM[i])
+        t0 = tTM[i]; t1 = tTM[i+1]
+        Rsets[i] = ReachSet{Hyperrectangle, Float64}(Hi, t0, t1)
     end
+
+    Rsol = ReachSolution(Rsets, 𝑂)
 
     # ===========
     # Projection
     # ===========
+
     if 𝑂[:project_reachset]
         info("Projection...")
-        RsetsProj = @timing project(RSets, 𝑂)
-    else
-        RsetsProj = RSets
+        Rsol = @timing project(Rsol)
     end
 
-    return ReachSolution(RsetsProj, 𝑂)
+    return Rsol
 end

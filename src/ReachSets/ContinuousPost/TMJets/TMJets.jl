@@ -12,7 +12,7 @@ struct TMJets <: ContinuousPost
 end
 
 # convenience constructor from pairs of symbols
-TMJets(𝑂::Pair{Symbol,<:Any}...) = TMJets(Options(Dict{Symbol,Any}(𝑂)))
+TMJets(𝑂::Pair{Symbol, <:Any}...) = TMJets(Options(Dict{Symbol, Any}(𝑂)))
 
 # default options (they are added in the function validate_and_wrap_options)
 TMJets() = TMJets(Options())

@@ -11,3 +11,6 @@ ProgressMeter
 RecipesBase
 Reexport
 Suppressor
+Requires
+IntervalArithmetic
+TaylorModels

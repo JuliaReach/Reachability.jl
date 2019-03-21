@@ -12,7 +12,7 @@ function options_TMJets()
     # approximation options
     push!(𝑂spec, OptionSpec(:orderT, 10, domain=Int, info="order of the Taylor model in t"))
     push!(𝑂spec, OptionSpec(:orderQ, 2, domain=Int, info="order of the Taylor model for Jet transport variables"))
-    
+
     return 𝑂spec
 end
 
