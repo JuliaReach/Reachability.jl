@@ -18,7 +18,8 @@ const BBCS = BlackBoxContinuousSystem
 const CBBCS = ConstrainedBlackBoxContinuousSystem
 const CBBCCS = ConstrainedBlackBoxContinuousSystem
 
-export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, IVP, BBCS, CBBCS, CBBCCS
+export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, CACS, CADS, IVP, BBCS,
+       CBBCS, CBBCCS
 
 import Base: *
 import LazySets.constrained_dimensions
