@@ -192,3 +192,30 @@ X = HalfSpace([-1.0, 0.0, 0.0, 0.0], 0.0)
 X0 = BallInf(zeros(4), 0.5)
 p = IVP(ConstrainedAffineContinuousSystem(A, b, X), X0)
 sol = solve(p, :T=>0.1)
+
+# ==================================
+# Test TMJets with Van der Pol model
+# ==================================
+using TaylorIntegration
+using TaylorModels: @taylorize
+using Reachability: solve
+
+@taylorize function vanderPol!(t, x, dx)
+    local μ = 1.0
+    dx[1] = x[2]
+    dx[2] = (μ * x[2]) * (1 - x[1]^2) - x[1]
+    return dx
+end
+
+𝑆 = BlackBoxContinuousSystem(vanderPol!, 2)
+X0 = Hyperrectangle(low=[1.25, 2.35], high=[1.55, 2.45])
+𝑃 = InitialValueProblem(𝑆, X0)
+
+# reach mode
+𝑂 = Options(:T=>7.0, :mode=>"reach")
+solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2));
+
+# check mode
+𝑂 = Options(:T=>7.0, :mode=>"check")
+property=(t,x)->x[2] <= 2.75
+solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
