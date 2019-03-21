@@ -216,6 +216,6 @@ X0 = Hyperrectangle(low=[1.25, 2.35], high=[1.55, 2.45])
 solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2));
 
 # check mode
-𝑂 = Options(:T=>7.0, :mode=>"check")
 property=(t,x)->x[2] <= 2.75
+𝑂 = Options(:T=>7.0, :mode=>"check", :property=>property)
 solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
