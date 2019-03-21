@@ -29,9 +29,8 @@ function post(𝒜::TMJets,
 
     # initial sets
     box_x0 = box_approximation(𝑃.x0)
-    X0 = convert(IntervalBox, box_x0)
-    q0 = mid(X0)
-    δq0 = IntervalBox(sup.(X0) - mid(X0))
+    q0 = center(box_x0)
+    δq0 = IntervalBox(low(box_x0)-q0, high(box_x0)-q0)
 
     # fix the working variables and maximum order in the global
     # parameters struct (_params_TaylorN_)

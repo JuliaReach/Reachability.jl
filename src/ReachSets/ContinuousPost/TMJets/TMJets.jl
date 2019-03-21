@@ -19,5 +19,3 @@ TMJets() = TMJets(Options())
 
 include("init.jl")
 include("post.jl")
-include("reach.jl")
-include("check.jl")
