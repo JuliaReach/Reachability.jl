@@ -1,7 +1,7 @@
 # out-of-place initialization
-init(𝒜::GLGM06, 𝑃::InitialValueProblem, 𝑂::Options) = init!(𝒜, 𝑃, copy(𝑂))
+init(𝒜::ASB08, 𝑃::InitialValueProblem, 𝑂::Options) = init!(𝒜, 𝑃, copy(𝑂))
 
-function options_GLGM06()
+function options_ASB08()
 
     𝑂spec = Vector{OptionSpec}()
 

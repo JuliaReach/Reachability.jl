@@ -102,6 +102,8 @@ include("ContinuousPost/GLGM06/GLGM06.jl")
 
 include("ContinuousPost/TMJets/TMJets.jl")
 
+include("ContinuousPost/ASB08/ASB08.jl")
+
 # ========================
 # Reachability Algorithms
 # ========================
