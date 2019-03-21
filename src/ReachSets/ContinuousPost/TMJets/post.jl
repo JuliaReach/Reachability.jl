@@ -1,7 +1,6 @@
 using TaylorModels: validated_integ
 using TaylorSeries: set_variables
 using LazySets.Approximations: box_approximation
-using IntervalArithmetic: mid, sup
 
 function post(𝒜::TMJets,
               𝑃::InitialValueProblem{<:Union{BBCS, CBBCS, CBBCCS}, <:LazySet},
