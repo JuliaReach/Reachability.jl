@@ -14,8 +14,11 @@ const CACCS = ConstrainedAffineControlContinuousSystem
 const CACDS = ConstrainedAffineControlDiscreteSystem
 const CACS = ConstrainedAffineContinuousSystem
 const CADS = ConstrainedAffineDiscreteSystem
+const BBCS = BlackBoxContinuousSystem
+const CBBCS = ConstrainedBlackBoxContinuousSystem
+const CBBCCS = ConstrainedBlackBoxContinuousSystem
 
-export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, IVP
+export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, IVP, BBCS, CBBCS, CBBCCS
 
 import Base: *
 import LazySets.constrained_dimensions

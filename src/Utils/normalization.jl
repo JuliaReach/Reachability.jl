@@ -61,6 +61,9 @@ function normalize(system::AbstractSystem)
     throw(ArgumentError("the system type $(typeof(system)) is currently not supported"))
 end
 
+# "black-box" like systems are not normalized; algorithms should handle this
+normalize(S::BBCS) = S
+
 # x' = Ax, in the continuous case
 # x+ = Ax, in the discrete case
 for (L_S, CL_S) in ((:LCS, :CLCS), (:LDS, :CLDS))
