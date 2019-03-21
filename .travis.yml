@@ -22,6 +22,7 @@ script:
              Pkg.develop("MathematicalSystems");
              Pkg.develop("HybridSystems");
              Pkg.add(PackageSpec(name="TaylorModels", rev="validatedODEs"));
+             Pkg.develop("TaylorSeries");
              Pkg.clone(pwd());
              Pkg.build("Reachability");
              Pkg.test("Reachability"; coverage=true)'
