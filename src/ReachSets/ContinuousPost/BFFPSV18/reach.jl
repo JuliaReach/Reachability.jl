@@ -33,6 +33,8 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
+    # optional matrix conversion
+    problem = matrix_conversion(problem, options)
 
     # list containing the arguments passed to any reachability function
     args = []
@@ -204,13 +206,10 @@ function reach(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCCS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
-
     info("Time discretization...")
-    Δ = @timing discretize(problem, options[:δ], algorithm=options[:discretization],
-                                                 exp_method=options[:exp_method],
-                                                 sih_method=options[:sih_method])
-
-    Δ = matrix_conversion(Δ, options)
+    Δ = @timing discretize(problem, options[:δ],
+        algorithm=options[:discretization], exp_method=options[:exp_method],
+        sih_method=options[:sih_method])
     return reach(Δ, options)
 end
 
