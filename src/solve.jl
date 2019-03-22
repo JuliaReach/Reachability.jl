@@ -133,7 +133,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             source_invariant = HPolyhedron([source_invariant])
         end
 
-        loc_x0set = intersection(source_invariant, x0)
+        if x0 ⊆ source_invariant
+            loc_x0set = x0
+        else
+            loc_x0set = intersection(source_invariant, x0)
+        end
 
         if !isempty(loc_x0set)
             push!(waiting_list, (loc_id,
