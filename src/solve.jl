@@ -128,11 +128,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         loc = HS.modes[loc_id]
         source_invariant = loc.X
 
-        # TODO temporary conversion
-        if source_invariant isa HalfSpace
-            source_invariant = HPolyhedron([source_invariant])
-        end
-
         if x0 ⊆ source_invariant
             loc_x0set = x0
         else
@@ -165,9 +160,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
         end
-        reach_tube = solve!(IVP(loc, X0.X),
-                            options_copy,
-                            op=opC)
+        reach_tube = solve!(IVP(loc, X0.X), options_copy, op=opC)
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
         # get the property for the current location
         property_loc = property isa Dict ?
