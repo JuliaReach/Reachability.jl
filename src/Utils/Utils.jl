@@ -419,11 +419,10 @@ function matrix_conversion(Δ, options; A_passed=nothing)
         A_new = A
     end
     if create_new_system
-        # set new matrix
-        if hasmethod(inputset, Tuple{typeof(Δ.s)})
-            Δ = IVP(CLCDS(A_new, Matrix(1.0I, size(A_new)), nothing, inputset(Δ)), Δ.x0)
+        if inputdim(Δ.s) > 0
+            Δ = IVP(CLCDS(A_new, Δ.s.B, stateset(Δ.s), inputset(Δ)), Δ.x0)
         else
-            Δ = IVP(LDS(A_new), Δ.x0)
+            Δ = IVP(CLDS(A_new), stateset(Δ.s), Δ.x0)
         end
     end
     return Δ
