@@ -422,7 +422,7 @@ function matrix_conversion(Δ, options; A_passed=nothing)
         if inputdim(Δ.s) > 0
             Δ = IVP(CLCDS(A_new, Δ.s.B, stateset(Δ.s), inputset(Δ)), Δ.x0)
         else
-            Δ = IVP(CLDS(A_new), stateset(Δ.s), Δ.x0)
+            Δ = IVP(CLDS(A_new, stateset(Δ.s)), Δ.x0)
         end
     end
     return Δ
