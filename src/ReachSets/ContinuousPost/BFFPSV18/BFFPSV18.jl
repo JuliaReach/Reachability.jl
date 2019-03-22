@@ -248,9 +248,6 @@ Calculate the reachable states of the given initial value problem using `BFFPSV1
 function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂_input::Options)
     𝑂 = TwoLayerOptions(merge(𝑂_input, 𝒫.options.specified), 𝒫.options.defaults)
 
-    # convert matrix
-    system = matrix_conversion(𝑆, 𝑂)
-
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
         @timing begin

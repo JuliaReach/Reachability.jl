@@ -20,6 +20,9 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
                         property::Property,
                         options::TwoLayerOptions
                        )::Int
+    # optional matrix conversion
+    S = matrix_conversion(S, options)
+
     # list containing the arguments passed to any reachability function
     args = []
 
@@ -155,17 +158,13 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
     return answer
 end
 
-function check_property(S::IVP{<:AbstractContinuousSystem},
+function check_property(problem::IVP{<:AbstractContinuousSystem},
                         property::Property,
                         options::TwoLayerOptions
                        )::Int
-    # ===================
-    # Time discretization
-    # ===================
     info("Time discretization...")
-    Δ = @timing discretize(S, options[:δ], algorithm=options[:discretization],
-                                           exp_method=options[:exp_method],
-                                           sih_method=options[:sih_method])
-    Δ = matrix_conversion(Δ, options)
+    Δ = @timing discretize(problem, options[:δ],
+        algorithm=options[:discretization], exp_method=options[:exp_method],
+        sih_method=options[:sih_method])
     return check_property(Δ, property, options)
 end
