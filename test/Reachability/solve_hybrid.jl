@@ -1,4 +1,4 @@
-using Polyhedra # needed for some algorithms
+import Polyhedra # needed for some algorithms
 using Reachability: constrained_dimensions
 
 include("models/bouncing_ball.jl")
