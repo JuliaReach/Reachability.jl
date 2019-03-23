@@ -1,4 +1,4 @@
-using Polyhedra # needed for some algorithms
+import Polyhedra # needed for some algorithms
 using Reachability: constrained_dimensions
 
 include("models/bouncing_ball.jl")
@@ -11,10 +11,12 @@ for model in models
 
     # --- reachability algorithms ---
 
-    opC = BFFPSV18(:δ=>0.1)
-
     # default algorithm
     sol = solve(system, options)
+
+    # --- BFFPSV18
+
+    opC = BFFPSV18(:δ=>0.1)
 
     # concrete discrete-post operator
     sol = solve(system, options, opC, ConcreteDiscretePost())
@@ -24,6 +26,20 @@ for model in models
 
     # overapproximating discrete-post operator
     sol = solve(system, options, opC, ApproximatingDiscretePost())
+
+    # --- GLGM06
+
+    opC = GLGM06(:δ=>0.1)
+
+    # concrete discrete-post operator
+    if model == bouncing_ball  # currently this crashes for the thermostat
+        opD = ConcreteDiscretePost(:check_invariant_intersection => true)
+        sol = solve(system, options, opC, opD);
+    end
+
+    # lazy discrete-post operator
+    opD = LazyDiscretePost(:check_invariant_intersection => true)
+    sol = solve(system, options, opC, opD);
 
     # --- model analysis ---
 
