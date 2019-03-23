@@ -10,8 +10,8 @@ Abstract supertype of all discrete post operators.
 All discrete post operators should provide the following method, in addition
 to those provided for general post operators:
 ```julia
-tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
-          invariant, Rsets, start_interval)::Vector{ReachSet{LazySet{N}, N}}
+tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet, N}},
+          invariant, Rsets, start_interval) where {N}
 ```
 """
 abstract type DiscretePost <: PostOperator end
