@@ -71,8 +71,7 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
     count = 0
     for reach_set in reach_tube
         rs = reach_set.X
-        @assert rs isa CartesianProductArray
-        if length(array(rs)) == 1
+        if rs isa CartesianProductArray && length(array(rs)) == 1
             # TODO workaround for lazy X0
             rs_converted = Approximations.overapproximate(rs,
                 Approximations.BoxDirections(dim(rs)))
