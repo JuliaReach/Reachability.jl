@@ -3,16 +3,6 @@
 # =======================================
 import LazySets.Approximations: project
 
-function delete_zero_cols(A::AbstractMatrix)
-    nonzero_cols = Vector{Int}()
-    for i in 1:size(A, 2)
-        if !iszero(A[:, i])
-            push!(nonzero_cols, i)
-        end
-    end
-    return A[:, nonzero_cols]
-end
-
 # add a "time" variable by taking the cartesian product of the flowpipe ℱ with each time lapse
 function add_time(ℱ)
     ℱ_with_time = Vector{ReachSet{Zonotope{Float64}, Float64}}(undef, length(ℱ))
@@ -50,7 +40,7 @@ function project(sol::ReachSolution{Zonotope{Float64}})
     for i in eachindex(ℱ)
         t0, t1 = ℱ[i].t_start, ℱ[i].t_end
         πℱ_i = linear_map(M, ℱ[i].X)
-        πℱ_i = Zonotope(πℱ_i.center, delete_zero_cols(πℱ_i.generators))
+        πℱ_i = Zonotope(πℱ_i.center, πℱ_i.generators)
         πℱ_i = reduce_order(πℱ_i, options[:max_order])
         πℱ[i] = ReachSet{Zonotope{Float64}, Float64}(πℱ_i, t0, t1)
     end
