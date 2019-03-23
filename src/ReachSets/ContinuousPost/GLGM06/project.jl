@@ -26,7 +26,7 @@ function add_time(ℱ)
     return ℱ_with_time
 end
 
-function project(sol::ReachSolution{Zonotope})
+function project(sol::ReachSolution{Zonotope{Float64}})
     N = length(sol.Xk)  # number of reach sets
     n = dim(first(sol.Xk).X) # state space dimension
     options = copy(sol.options)
