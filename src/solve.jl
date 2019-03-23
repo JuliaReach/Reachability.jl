@@ -184,7 +184,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             if !(reach_set.X isa CartesianProductArray) || !(array(reach_set.X)[1] isa CH)
                 Xoa = overapproximate(reach_set.X)
                 ti, tf = reach_set.t_start, reach_set.t_end
-                passed_list[loc_id] = [ReachSet(Xoa, ti, tf)]
+                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
             end
         end
 

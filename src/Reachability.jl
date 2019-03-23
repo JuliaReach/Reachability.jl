@@ -7,6 +7,7 @@ module Reachability
 using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
       Compat, Suppressor
 @reexport using LazySets
+using LazySets.Approximations: overapproximate
 
 import LazySets.use_precise_ρ
 import LazySets.LinearMap
