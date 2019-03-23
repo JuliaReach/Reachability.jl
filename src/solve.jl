@@ -181,10 +181,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO For lazy X0 the fixpoint check is likely to fail, so we
             # currently ignore that. In general, we want to add an
             # *underapproximation*, which we currently do not support.
-            @assert reach_set.X isa CartesianProductArray
-            X0hat = array(reach_set.X)[1]
-            if !(X0hat isa ConvexHull)
-                Xoa = LazySets.Approximations.overapproximate(reach_set.X)
+            if !(reach_set.X isa CartesianProductArray) || !(array(reach_set.X)[1] isa CH)
+                Xoa = overapproximate(reach_set.X)
                 ti, tf = reach_set.t_start, reach_set.t_end
                 passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
             end
