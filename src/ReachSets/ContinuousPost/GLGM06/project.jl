@@ -5,8 +5,8 @@ import LazySets.Approximations: project
 
 function delete_zero_cols(A::AbstractMatrix)
     nonzero_cols = Vector{Int}()
-    for (i, ci) in enumerate(eachcol(A))
-        if !iszero(ci)
+    for i in 1:size(A, 2)
+        if !iszero(A[:, i])
             push!(nonzero_cols, i)
         end
     end
