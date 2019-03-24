@@ -62,7 +62,7 @@ function normalize(system::AbstractSystem)
 end
 
 # "black-box" like systems are not normalized; algorithms should handle this
-normalize(S::BBCS) = S
+normalize(S::Union{BBCS, CBBCS, CBBCCS}) = S
 
 # x' = Ax, in the continuous case
 # x+ = Ax, in the discrete case
