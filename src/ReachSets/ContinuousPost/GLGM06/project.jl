@@ -4,7 +4,7 @@
 import LazySets.Approximations: project
 
 # add a "time" variable by taking the cartesian product of the flowpipe ℱ with each time lapse
-function add_time(ℱ)
+function add_time(ℱ::Vector{ReachSet{Zonotope{Float64}, Float64}})
     ℱ_with_time = Vector{ReachSet{Zonotope{Float64}, Float64}}(undef, length(ℱ))
     @inbounds for i in eachindex(ℱ)
         t0, t1 = ℱ[i].t_start, ℱ[i].t_end
