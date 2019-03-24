@@ -16,7 +16,7 @@ const CACS = ConstrainedAffineContinuousSystem
 const CADS = ConstrainedAffineDiscreteSystem
 const BBCS = BlackBoxContinuousSystem
 const CBBCS = ConstrainedBlackBoxContinuousSystem
-const CBBCCS = ConstrainedBlackBoxContinuousSystem
+const CBBCCS = ConstrainedBlackBoxControlContinuousSystem
 
 export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, CACS, CADS, IVP, BBCS,
        CBBCS, CBBCCS
