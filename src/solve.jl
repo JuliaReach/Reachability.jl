@@ -118,7 +118,16 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     if opC isa BFFPSV18
         inout_map = nothing
     end
-    property = options[:mode] == "check" ? options[:property] : nothing
+
+    if opC isa TMJets
+        if options[:mode] == "check" || (options[:mode] == "reach" && haskey(options, :property))
+            property = options[:property]
+        else
+            property = (t, x) -> true
+        end
+    else
+        property = options[:mode] == "check" ? options[:property] : nothing
+    end
 
     # waiting_list entries:
     # - (discrete) location
@@ -161,6 +170,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         if property != nothing
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
+        end
+        
+        if opC isa TMJets
+            options_copy[:property] = get(property, loc_id, (t,x) -> true)
         end
         reach_tube = solve!(IVP(loc, X0.X), options_copy, op=opC)
 

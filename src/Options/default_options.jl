@@ -92,7 +92,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
                 error("No property has been defined.")
             end
         elseif key == :property
-            expected_type = Union{Nothing, Property, Dict{Int, <:Property}, Function}
+            expected_type = Union{Nothing, Property, Dict{Int, <:Property}, Function, Dict{Int, <:Function}}
         elseif key == :T
             expected_type = Float64
             domain_constraints = (v::Float64  ->  v > 0.)
