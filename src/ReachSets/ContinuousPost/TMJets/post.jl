@@ -39,9 +39,12 @@ function post(𝒜::TMJets,
     if 𝑂[:mode] == "check"
         property = 𝑂[:property]
     elseif 𝑂[:mode] == "reach"
-        property = (t, x) -> true
+        if haskey(𝑂, property)
+            property = 𝑂[:property]
+        else
+            property = (t, x) -> true
+        end
     end
-
     # =====================
     # Flowpipe computation
     # =====================
