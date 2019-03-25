@@ -2,7 +2,7 @@ julia 1.0
 Compat
 Expokit
 HybridSystems
-LazySets
+LazySets 1.10.0
 MathematicalSystems 0.6.4
 Memento
 Optim
