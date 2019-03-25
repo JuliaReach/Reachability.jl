@@ -185,10 +185,14 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         property_loc = property isa Dict ?
                        get(property, loc_id, nothing) :
                        property
-        if property_loc != nothing
-            for (i, reach_set) in enumerate(reach_tube.Xk)
-                if !check(property_loc, reach_set.X)
-                    return CheckSolution(false, i, options)
+        
+        # (temp) do not make this check for TMJets
+        if !isa(opC, TMJets)
+            if property_loc != nothing
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    if !check(property_loc, reach_set.X)
+                        return CheckSolution(false, i, options)
+                    end
                 end
             end
         end
