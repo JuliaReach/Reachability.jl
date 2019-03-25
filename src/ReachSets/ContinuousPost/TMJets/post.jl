@@ -48,11 +48,12 @@ function post(𝒜::TMJets,
     # =====================
     # Flowpipe computation
     # =====================
+    invariant = stateset(𝑃.s)
 
     info("Reachable States Computation...")
     @timing begin
         tTM, xTM = validated_integ(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
-                                   maxsteps=max_steps, check_property=property)
+                                   maxsteps=max_steps, check_property=property, invariant=invariant)
     end
 
     # convert to hyperrectangle and wrap around the reach solution
