@@ -44,6 +44,7 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     partition = convert_partition(options[:partition])
     N = ceil(Int, options[:T] / options[:δ])
 
+
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n &&
             options[:block_options_init] == LinearMap
@@ -155,11 +156,15 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
     # time step
     push!(args, options[:δ])
     # termination function
+    constraints_list = options[:constraints]
     if invariant == nothing
         termination = (k, set, t0) -> termination_N(N, k, set, t0)
-    else
+    elseif isempty(constraints_list)
         termination =
             (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+    else
+        termination =
+            (inv, k, set, t0) -> termination_inv_N(N, inv, k, set, t0)
     end
     push!(args, termination)
 
@@ -173,7 +178,14 @@ function reach(S::Union{IVP{<:LDS{NUM}, <:LazySet{NUM}},
         error("Unsupported algorithm: ", algorithm)
     end
     push!(args, res)
-    push!(args, steps)
+    if isempty(constraints_list)
+        push!(args, steps)
+    else
+        push!(args, constraints_list)
+    end
+    push!(args, invariant)
+    # comp_vars = options[:comp_vars]
+    # push!(args, comp_vars)
 
     # call the adequate function with the given arguments list
     info("- Computing successors")
@@ -212,11 +224,14 @@ end
 
 function termination_inv_N(N, inv, k, set, t0)
     if k >= N
-        return (true, false)
-    elseif isdisjoint(set, inv)
-        return (true, true)
+        return (true, false, inv)
     else
-        return (false, false)
+        inv_int = intersection(set, inv)
+        if isempty(inv_int)
+            return (true, true, inv)
+        else
+            return (false, false, inv_int)
+        end
     end
 end
 

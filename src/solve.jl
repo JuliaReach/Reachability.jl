@@ -242,8 +242,30 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             delete!(options_copy.dict, :blocks)
         end
         #TODO check low-dim option
-        if (opD isa ConcreteContDiscretePost)
+        if (opD isa ConcreteMixedSetDiscretePost)
             temp_vars = unique([global_vars; nonzero_vars[loc_id]])
+
+            opc_options_copy = copy(opC.options.specified)
+            opc_options_copy.dict[:vars] = temp_vars
+            c_intersect = Vector()
+            for trans in out_transitions(HS, loc_id)
+                trans_annot = HS.resetmaps[symbol(HS, trans)]
+                guard = trans_annot.X
+
+                push!(c_intersect, guard)
+            end
+            opc_options_copy.dict[:constraints] = c_intersect
+
+
+            # println(opC.options[:vars])
+            opC = BFFPSV18(opc_options_copy)
+        end
+        temp_vars = unique([global_vars; nonzero_vars[loc_id]])
+        if (opD isa ConcreteContDiscretePost)
+
+
+
+
             # comp_blocks = Vector{Int}()
             # partition = options_copy.dict[:partition]
             # for b_i in 1:length(partition)
@@ -275,10 +297,11 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
             opc_options_copy = copy(opC.options.specified)
             opc_options_copy.dict[:vars] = temp_vars
+
+
+            # println(opC.options[:vars])
             opC = BFFPSV18(opc_options_copy)
-            println("vars")
-            println(opC.options[:vars])
-            source_invariant = Approximations.project(source_invariant,temp_vars,LinearMap)
+            source_invariant = HPolytope(constraints_list(Approximations.project(source_invariant,temp_vars,LinearMap)))
         end
         #
         reach_tube = solve!(IVP(loc, X0.X),
@@ -315,7 +338,21 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
         #TODO Add option for lowdim
-        if (opD isa ConcreteContDiscretePost)
+        if (opD isa ConcreteMixedSetDiscretePost)
+            low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
+            println("Start_low")
+
+            count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
+                                [X0.t_start, X0.t_end], global_vars,temp_vars)
+            println("count_Rsets")
+            println(count_Rsets)
+            if jumps == max_jumps
+                continue
+            end
+
+            post(opD, HS, waiting_list, passed_list, loc_id, Rsets,low_dim_sets, count_Rsets,
+                 jumps,options, global_vars)
+        elseif (opD isa ConcreteContDiscretePost)
 
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
             println("Start_low")

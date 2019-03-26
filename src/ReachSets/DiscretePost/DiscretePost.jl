@@ -33,7 +33,7 @@ function postprocess(𝒫,
             filter(x -> !isfixpoint(𝒫, x, passed_list, target_loc_id),
                    fixpoint_list)
         post_jump_filtered_h =
-           filter(x -> isfiltered(x, post_jump_filtered_l),
+           filter(x -> isfiltered(x, fixpoint_list),
                   post_jump)
     else
         post_jump_filtered_h = post_jump

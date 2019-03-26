@@ -41,12 +41,14 @@ function options_BFFPSV18()
             ispartition,
             info="block partition; a block is represented by a vector " *
                  "containing its indices"),
-
+        OptionSpec(:constraints, Vector(),domain=AbstractVector,
+             info="constraints to check"),
         # discretization options
         OptionSpec(:sih_method, "concrete", domain=String,
             info="method to compute the symmetric interval hull in discretization"),
         OptionSpec(:exp_method, "base", domain=String,
             info="method to compute the matrix exponential"),
+
         OptionSpec(:assume_sparse, false, domain=Bool,
             info="use an analysis for sparse discretized matrices?"),
 

@@ -67,8 +67,8 @@ function tube⋂inv!(𝒫::ConcreteContDiscretePost,
 
     # counts the number of sets R⋂I added to Rsets
     count = 0
+    invariant_proj = HPolytope(constraints_list(LazySets.Approximations.project(invariant, computed_vars, LinearMap)))
     for reach_set in reach_tube
-        invariant_proj = HPolytope(constraints_list(LazySets.Approximations.project(invariant, computed_vars, LinearMap)))
         R⋂I = intersection(reach_set.X, invariant_proj, true)
         if isempty(R⋂I)
             break
@@ -121,25 +121,20 @@ function post(𝒫::ConcreteContDiscretePost,
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
         println(length(tube⋂inv))
+        guard_proj = HPolytope(constraints_list(LazySets.Approximations.project(guard, computed_vars, LinearMap)))
+        target_invariant_proj = HPolytope(constraints_list(LazySets.Approximations.project(target_invariant, computed_vars, LinearMap)))
         for reach_set in low_dim_sets
             # check intersection with guard
-            guard_proj = HPolytope(constraints_list(LazySets.Approximations.project(guard, computed_vars, LinearMap)))
 
             R⋂G = intersection(reach_set.X,guard_proj,true)
             if isempty(R⋂G)
                 continue
             end
             A⌜R⋂G⌟ = linear_map(assignment, R⋂G, computed_vars)
-            target_invariant_proj = HPolytope(constraints_list(LazySets.Approximations.project(target_invariant, computed_vars, LinearMap)))
             A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant_proj, true)
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
-            # store result
-            # println(A⌜R⋂G⌟⋂I)
-            # println(global_vars)
-            # println(dirs)
-            # println(Approximations.project(A⌜R⋂G⌟⋂I, global_vars, dirs))
             push!(post_jump, ReachSet{LazySet{N}, N}(Approximations.project(A⌜R⋂G⌟⋂I, global_vars, dirs),
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
@@ -157,6 +152,7 @@ function post(𝒫::ConcreteContDiscretePost,
     opc_options_copy = copy(opC.options.specified)
     opc_options_copy.dict[:vars] = 1:statedim(loc)
     opc_options_copy.dict[:steps] = steps
+    println("Start_high")
     opC = BFFPSV18(opc_options_copy)
 
     h_reach_tube = solve!(IVP(loc, X0.X),
@@ -166,21 +162,24 @@ function post(𝒫::ConcreteContDiscretePost,
     h_Rsets = Vector{ReachSet{LazySet{N}, N}}()
     count = 1
 
+    @inbounds for i = 1:length(h_reach_tube.Xk)
+       reach_set = h_reach_tube.Xk[i]
+       R⋂I = intersection(reach_set.X, loc.X, true)
+       if isempty(R⋂I)
+           break
+       end
+       push!(h_Rsets, ReachSet{LazySet{N}, N}(R⋂I,
+           reach_set.t_start + X0.t_start,
+           reach_set.t_end + X0.t_end,
+           reach_set.k))
+
+   end
+
     sizehint!(h_Rsets, length(steps))
     println(length(steps))
     println(length(h_reach_tube.Xk))
-    @inbounds for i = 1:length(h_reach_tube.Xk)
-        reach_set = h_reach_tube.Xk[i]
-        R⋂I = intersection(reach_set.X, loc.X, true)
-        if isempty(R⋂I)
-            break
-        end
-        push!(h_Rsets, ReachSet{LazySet{N}, N}(R⋂I,
-            reach_set.t_start + X0.t_start,
-            reach_set.t_end + X0.t_end,
-            reach_set.k))
 
-    end
+
 
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
@@ -212,15 +211,18 @@ function post(𝒫::ConcreteContDiscretePost,
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
-
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
         end
 
+        println("postprocess")
+
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps, post_fix[count])
+        println("2postprocess")
+
         count = count + 1
     end
 

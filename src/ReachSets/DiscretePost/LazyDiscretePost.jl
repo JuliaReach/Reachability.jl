@@ -98,9 +98,11 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
         if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
             break
         end
+    #    println("R⋂I = overapproximate(R⋂I, dirs)")
         if !𝒫.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
+    #    println("R⋂I = overapproximate(R⋂I, dirs)")
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2], reach_set.k))
@@ -157,24 +159,31 @@ function post(𝒫::LazyDiscretePost,
             if isempty(R⋂G)
                 continue
             end
+        #    println("R⋂G = overapproximate(R⋂I, dirs)")
             if !𝒫.options[:lazy_R⋂G]
                 R⋂G = overapproximate(R⋂G, oa)
             end
+        #    println("R⋂G = overapproxicmate(R⋂I, dirs)")
 
             # apply assignment
             A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
+        #    println("if !𝒫.options[:lazy_A⌜R⋂G⌟]")
+
             if !𝒫.options[:lazy_A⌜R⋂G⌟]
                 A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, oa)
             end
+        #    println("if !𝒫.options[:lazy_A⌜R⋂G⌟]")
 
             # intersect with target invariant
             A⌜R⋂G⌟⋂I = Intersection(target_invariant, A⌜R⋂G⌟)
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
             end
+    #        println("A⌜R⋂G⌟⋂I")
             if !𝒫.options[:lazy_A⌜R⋂G⌟⋂I]
                 A⌜R⋂G⌟⋂I = overapproximate(A⌜R⋂G⌟⋂I, oa)
             end
+    #        println("A⌜R⋂G⌟⋂I")
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
@@ -182,8 +191,10 @@ function post(𝒫::LazyDiscretePost,
                                                      reach_set.t_end, reach_set.k))
         end
 
+    #    println("post_jump")
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
+    #        println("postprocess")
     end
 end
 
