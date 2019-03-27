@@ -24,7 +24,7 @@ matrix:
 
 ## uncomment the following lines to override the default test script
 script:
- - julia -e $TEST_SUITE
+ - julia -e '$TEST_SUITE'
 
 after_success:
   - julia -e 'using Pkg; Pkg.add("Documenter");
