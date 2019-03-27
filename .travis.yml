@@ -12,19 +12,20 @@ git:
 
 ## allow failures (tests will run but not make your overall status red)
 matrix:
+ fast_finish: true
  allow_failures:
    - julia: nightly
+     env: TEST_SUITE='using Pkg; Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
+ include:
+   - julia: 1.0
+     env: TEST_SUITE='using Pkg; Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
+   - julia: 1.0
+     env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
 
 ## uncomment the following lines to override the default test script
 script:
- - julia -e 'using Pkg;
-             Pkg.develop("LazySets");
-             Pkg.develop("MathematicalSystems");
-             Pkg.develop("HybridSystems");
-             Pkg.develop("TaylorModels");
-             Pkg.clone(pwd());
-             Pkg.build("Reachability");
-             Pkg.test("Reachability"; coverage=true)'
+ - julia -e $TEST_SUITE
+
 after_success:
   - julia -e 'using Pkg; Pkg.add("Documenter");
               Pkg.pin(PackageSpec(name="Documenter", version="0.19.7"));'
