@@ -2,9 +2,9 @@
 language: julia
 os:
   - linux
-julia:
-  - 1.0
-  - nightly
+#julia:
+#  - 1.0
+#  - nightly
 notifications:
   email: false
 git:
@@ -12,13 +12,13 @@ git:
 
 ## allow failures (tests will run but not make your overall status red)
 matrix:
- fast_finish: true
- allow_failures:
-   - julia: nightly
-     env: TEST_SUITE='using Pkg; Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
+ #fast_finish: true
+ #allow_failures:
+ #  - julia: nightly
+ #    env: TEST_SUITE='using Pkg; Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
  include:
    - julia: 1.0
-     env: TEST_SUITE='using Pkg; Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
+     env: TEST_SUITE='using Pkg; Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
    - julia: 1.0
      env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
 
