@@ -23,6 +23,13 @@ function options_ASB08()
     push!(𝑂spec, OptionSpec(:max_order, 10, domain=Int,
                             info="maximum allowed order of zonotopes"))
 
+    push!(𝑂spec, OptionSpec(:taylor_terms, 4, domain=Int,
+                            info="number of taylor terms considered in the linearization"))
+
+    push!(𝑂spec, OptionSpec(:opC, info="continuous post-operator"))
+
+    push!(𝑂spec, OptionSpec(:θ, info="expansion vector"))
+
     return 𝑂spec
 end
 
