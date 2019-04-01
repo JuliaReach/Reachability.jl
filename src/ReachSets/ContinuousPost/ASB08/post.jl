@@ -1,5 +1,5 @@
 function post(𝒜::ASB08,
-              𝑃::InitialValueProblem{<:AbstractContinuousSystem, <:LazySet},
+              𝑃::InitialValueProblem{<:AbstractContinuousSystem},
               𝑂::Options)
 
     # ==================================
@@ -23,18 +23,16 @@ function post(𝒜::ASB08,
     # =====================
 
     # preallocate output
-    Rsets = Vector{ReachSet{Zonotope, Float64}}(undef, N)
+    Rsets = Vector{ReachSet{Zonotope{Float64}, Float64}}(undef, N)
 
     info("Reachable States Computation...")
     @timing begin
     if inputdim(𝑃_discrete) == 0
-        error("not implemented")
-        #reach_homog!(Rsets, Ω0, Φ, N, δ, max_order)
+        reach_homog!(Rsets, Ω0, Φ, N, δ, max_order)
 
     else
         U = inputset(𝑃_discrete)
-        error("not implemented")
-        #reach_inhomog!(Rsets, Ω0, U, Φ, N, δ, max_order)
+        reach_inhomog!(Rsets, Ω0, U, Φ, N, δ, max_order)
     end
     end # timing
 
