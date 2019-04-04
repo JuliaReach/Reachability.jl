@@ -1,22 +1,22 @@
 function linearize(𝑃::IVP{<:BBCS}, δ)
-
     # nonlinear ODE
     f = 𝑃.s.f
-    
-    # initial set of current chunk
-    𝑋₀i = 𝑃.x0
+    n = statedim(𝑃.s)
 
-    # linearization point for current chunk
-    c = center(𝑋₀i)
+    # initial set
+    𝑋₀ = 𝑃.x0
+
+    # linearization point
+    c = center(𝑋₀)
     x̃ = c + δ/2 * f(c)
 
     # evaluate Jacobian at the linearization point
-    Ax̃ = jacobian(f, x̃) #  map(x -> evaluate(x, x̃), Jf)
+    Ax̃ = jacobian(f, x̃)
     bx̃ = f(x̃) - Ax̃ * x̃
 
     # instantiate linearized system; it doesn't have state constraints
-    𝑆lin = ConstrainedAffineContinuousSystem(Ax̃, bx̃, Universe(2));
-    𝑃lin = IVP(𝑆lin, 𝑋₀i)
+    𝑆lin = ConstrainedAffineContinuousSystem(Ax̃, bx̃, Universe(n))
+    𝑃lin = IVP(𝑆lin, 𝑋₀)
     return x̃, 𝑃lin
 end
 
@@ -39,18 +39,19 @@ function _add_chunk!(Rsets::Vector{ReachSet{Zonotope{Float64}, Float64}}, Rlin, 
     return Rsets
 end
 
-function admissible_error(Ax̃, δ, θ; n=2)
-    @assert n == 2
+function admissible_error(Ax̃, δ, θ)
+    n = size(A, 1)
     Φ₁_Aδ = Φ₁(Ax̃, δ)
-    R̄err = Hyperrectangle(zeros(2), θ*δ)
+    R̄err = Hyperrectangle(zeros(n), θ*δ)
     l̄ = abs.(inv(Φ₁_Aδ)) * θ * δ
-    L̄ = Hyperrectangle(zeros(2), l̄)
+    L̄ = Hyperrectangle(zeros(n), l̄)
     return R̄err, L̄
 end
 
-function lagrange_remainder(f, Rlin, R̄err, x̃; n=2)
+function lagrange_remainder(𝑆, Rlin, R̄err, x̃)
+    n = statedim(𝑆)
     @assert n == 2
-    
+
     Hf₁ = [∂(f[1], (2, 0)) ∂(f[1], (1, 1));
            ∂(f[1], (1, 1)) ∂(f[1], (0, 2))]
     Hf₂ = [∂(f[2], (2, 0)) ∂(f[2], (1, 1));
@@ -69,10 +70,8 @@ function lagrange_remainder(f, Rlin, R̄err, x̃; n=2)
     R̂lin_zono = convert(Zonotope, R̂lin_rect)
 
     γ = abs.(R̂lin_zono.center - x̃) + sum(abs.(R̂lin_zono.generators), dims=2)
-    
     G = [sup.(abs.(Hf₁_box)), sup.(abs.(Hf₂_box))];
     li_zono = [(1/2 * transpose(γ) * G[i] * γ)[1, 1] for i in 1:n]
     L = Hyperrectangle(zeros(n), li_zono)
     return L
 end
-
