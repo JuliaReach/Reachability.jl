@@ -10,10 +10,12 @@ git:
 matrix:
  fast_finish: true
  allow_failures:
-   - julia: nightly
+   - julia: 1.1  # development versions
      env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
  include:
    - julia: 1.1  # master versions
+     env: TEST_SUITE='using Pkg; Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
+   - julia: 1.0  # master versions
      env: TEST_SUITE='using Pkg; Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
    - julia: 1.1  # development versions
      env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.clone(pwd()); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'
