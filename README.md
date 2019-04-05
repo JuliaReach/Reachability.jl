@@ -10,10 +10,10 @@
 It is written in [Julia](http://julialang.org), a modern high-performance language
 for scientific computing.
 
-Currently this package implements algorithms that can handle:
+Currently this package implements algorithms for flowpipe approximation of:
 
-- flowpipe computation of affine ODEs with nondeterministic inputs
-- hybrid dynamical systems (hybrid automata) with nondeterministic affine ODEs in each mode
+- linear and nonlinear purely continuous or purely discrete ODEs with nondeterministic inputs
+- hybrid dynamical systems
 
 ## Resources
 
