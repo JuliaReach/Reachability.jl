@@ -533,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Citations",
     "title": "Citations",
     "category": "section",
-    "text": "Pages = [\"citations.md\"]This page lists publications citing packages or papers from the JuliaReach ecosystem."
+    "text": "Pages = [\"citations.md\"]This page lists publications citing JuliaReach, such as packages or papers from the JuliaReach ecosystem."
 },
 
 {
@@ -549,7 +549,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Citations",
     "title": "Preprints",
     "category": "section",
-    "text": "Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. \"Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling.\" arXiv preprint arXiv:1901.01006 (2019)."
+    "text": "Liu, C., Arnon, T., Lazarus, C., Barrett, C., & Kochenderfer, M. J. (2019). Algorithms for Verifying Deep Neural Networks. arXiv preprint arXiv:1903.06758.\nJulian, K. D., & Kochenderfer, M. J. (2019). A Reachability Method for Verifying Dynamical Systems with Deep Neural Network Controllers. arXiv preprint arXiv:1903.00520.Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. \"Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling.\" arXiv preprint arXiv:1901.01006 (2019)."
 },
 
 {
@@ -557,7 +557,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Citations",
     "title": "Theses",
     "category": "section",
-    "text": "Rocca, Alexandre. Formal methods for modelling and validation of biological models. Diss. Grenoble Alpes, 2018.\nSchilling, Christian. \"Fundamental techniques for the scalable analysis of systems.\" (2018)."
+    "text": "Rocca, A. (2018). Formal methods for modelling and validation of biological models (Doctoral dissertation, Grenoble Alpes).\nSchilling, C. (2018). Fundamental techniques for the scalable analysis of systems.\nKekatos, N. (2018). Formal Verification of Cyber-Physical Systems in the Industrial Model-Based Design Process (Doctoral dissertation, Université Grenoble Alpes)."
 },
 
 {
