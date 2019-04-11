@@ -31,7 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.=#
 
 # Some methods for validated integration of ODEs
-
+using TaylorModels: validated_step!
 """
     remainder_taylorstep!(f!, t, x, dx, xI, dxI, δI, δt)
 Returns a remainder for the integration step for the dependent variables (`x`)
