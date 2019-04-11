@@ -4,7 +4,7 @@
 Pages = ["citations.md"]
 ```
 
-This page lists publications citing packages or papers from the JuliaReach ecosystem.
+This page lists publications citing JuliaReach, such as packages or papers from the JuliaReach ecosystem.
 
 ## Conference Proceedings
 
@@ -16,10 +16,18 @@ This page lists publications citing packages or papers from the JuliaReach ecosy
 
 ## Preprints
 
+- Liu, C., Arnon, T., Lazarus, C., Barrett, C., & Kochenderfer, M. J. (2019). Algorithms for Verifying Deep Neural Networks. arXiv preprint arXiv:1903.06758.
+
+- Julian, K. D., & Kochenderfer, M. J. (2019). A Reachability Method for Verifying Dynamical Systems with Deep Neural Network Controllers. arXiv preprint arXiv:1903.00520.
+
+
 - Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. "Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling." arXiv preprint arXiv:1901.01006 (2019).
+
 
 ## Theses
 
-- Rocca, Alexandre. Formal methods for modelling and validation of biological models. Diss. Grenoble Alpes, 2018.
+- Rocca, A. (2018). Formal methods for modelling and validation of biological models (Doctoral dissertation, Grenoble Alpes).
 
-- Schilling, Christian. "Fundamental techniques for the scalable analysis of systems." (2018).
+- Schilling, Christian. (2018). Fundamental techniques for the scalable analysis of systems.
+
+- Kekatos, N. (2018). Formal Verification of Cyber-Physical Systems in the Industrial Model-Based Design Process (Doctoral dissertation, Université Grenoble Alpes).
