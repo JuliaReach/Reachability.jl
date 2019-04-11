@@ -28,6 +28,6 @@ This page lists publications citing JuliaReach, such as packages or papers from 
 
 - Rocca, A. (2018). Formal methods for modelling and validation of biological models (Doctoral dissertation, Grenoble Alpes).
 
-- Schilling, Christian. (2018). Fundamental techniques for the scalable analysis of systems.
+- Schilling, C. (2018). Fundamental techniques for the scalable analysis of systems.
 
 - Kekatos, N. (2018). Formal Verification of Cyber-Physical Systems in the Industrial Model-Based Design Process (Doctoral dissertation, Université Grenoble Alpes).
