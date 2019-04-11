@@ -47,7 +47,7 @@ function post(𝒜::TMJets,
 
     info("Reachable States Computation...")
     @timing begin
-        tTM, xTM = validated_integ(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
+        tTM, xTM = remainder_taylorstep!(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
                                    maxsteps=max_steps, check_property=property)
     end
 
