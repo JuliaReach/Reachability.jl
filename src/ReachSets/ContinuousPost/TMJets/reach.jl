@@ -19,7 +19,7 @@ function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
         t0::T, tmax::T, orderQ::Int, orderT::Int, abstol::T;
         maxsteps::Int=500, parse_eqs::Bool=true,
         check_property::Function=(t, x)->true) where {N, T<:Real}
-    println("hello mom!")
+    
     # Set proper parameters for jet transport
     @assert N == get_numvars()
     dof = N
