@@ -80,10 +80,10 @@ function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
     # @inbounds xTMNv[:, 1] .= xTMN[:]
 
     # Determine if specialized jetcoeffs! method exists (built by @taylorize)
-    parse_eqs = parse_eqs && (length(methods(TaylorIntegration.jetcoeffs!)) > 2)
+    parse_eqs = parse_eqs && (length(methods(jetcoeffs!)) > 2)
     if parse_eqs
         try
-            TaylorIntegration.jetcoeffs!(Val(f!), t, x, dx)
+            jetcoeffs!(Val(f!), t, x, dx)
         catch
             parse_eqs = false
         end
