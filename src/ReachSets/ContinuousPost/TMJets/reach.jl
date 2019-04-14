@@ -15,25 +15,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.=#
 
+using TaylorSeries:get_numvars
+using TaylorIntegration
+using TaylorModels: validated_step!,TaylorModelN
+using IntervalArithmetic
+
 function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
         t0::T, tmax::T, orderQ::Int, orderT::Int, abstol::T;
         maxsteps::Int=500, parse_eqs::Bool=true,
         check_property::Function=(t, x)->true) where {N, T<:Real}
-    
     # Set proper parameters for jet transport
+
     @assert N == get_numvars()
     dof = N
     # if get_order() != orderQ
     #     set_variables("δ", numvars=dof, order=orderQ)
     # end
-
     # Some variables
-    R   = Interval{T}
+
+    R = IntervalArithmetic.Interval{T}
     q0 = IntervalBox(qq0)
     t   = t0 + Taylor1(orderT)
     tI  = t0 + Taylor1(orderT+1)
-    δq_norm = IntervalBox(Interval{T}(-1, 1), Val(N))
-    q0box = q0 .+ δq_norm
+    δq_norm = IntervalBox(IntervalArithmetic.Interval{T}(-1,1),Val(N))
+    q0box = q0 + δq_norm
 
     # Allocation of vectors
     # Output
@@ -47,15 +52,15 @@ function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
     x0    = Array{TaylorN{T}}(undef, dof)
     xTMN  = Array{TaylorModelN{N,T,T}}(undef, dof)
     # Internals: Taylor1{Interval{T}} integration
-    xI    = Array{Taylor1{Interval{T}}}(undef, dof)
-    dxI   = Array{Taylor1{Interval{T}}}(undef, dof)
-    xauxI = Array{Taylor1{Interval{T}}}(undef, dof)
-    x0I   = Array{Interval{T}}(undef, dof)
+    xI    = Array{Taylor1{IntervalArithmetic.Interval{T}}}(undef, dof)
+    dxI   = Array{Taylor1{IntervalArithmetic.Interval{T}}}(undef, dof)
+    xauxI = Array{Taylor1{IntervalArithmetic.Interval{T}}}(undef, dof)
+    x0I   = Array{IntervalArithmetic.Interval{T}}(undef, dof)
 
     # Set initial conditions
     zI = zero(R)
     Δ = zero.(q0)
-    rem = Array{Interval{T}}(undef, dof)
+    rem = Array{IntervalArithmetic.Interval{T}}(undef, dof)
     @inbounds for i in eachindex(x)
         qaux = normalize_taylor(qq0[i] + TaylorN(i, order=orderQ), δq0, true)
         x[i] = Taylor1( qaux, orderT)
@@ -119,4 +124,5 @@ function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
 
     return view(tv,1:nsteps), view(xv,1:nsteps)#, view(xTMNv, 1:nsteps, :)
 end
+
 
