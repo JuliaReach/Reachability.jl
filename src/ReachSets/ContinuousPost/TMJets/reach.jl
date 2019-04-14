@@ -18,7 +18,7 @@ SOFTWARE.=#
 using TaylorSeries:get_numvars
 using TaylorIntegration
 using TaylorModels: validated_step!,TaylorModelN
-using IntervalArithmetic
+import IntervalArithmetic
 
 function validated_integ(f!, qq0::AbstractArray{T,1}, δq0::IntervalBox{N,T},
         t0::T, tmax::T, orderQ::Int, orderT::Int, abstol::T;
