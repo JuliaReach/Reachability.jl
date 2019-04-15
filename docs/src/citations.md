@@ -23,6 +23,9 @@ This page lists publications citing JuliaReach, such as packages or papers from 
 
 - Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. "Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling." arXiv preprint arXiv:1901.01006 (2019).
 
+## Technical Reports
+
+- [Report on compositional verification and incremental verification in interaction with online controller adaptation](https://cps-vo.org/file/60135/download/167990). Maria Prandini - PoliMi, Olaf Stursberg, Zonglin Liu - UKS, Goran Frehse - UGA, Matthias Althoff - TUM, Alexander Rausch, Jens Oehlerking - Bosch. Unifying Control and Verification of Cyber-Physical Systems (UnCoVerCPS)
 
 ## Theses
 
