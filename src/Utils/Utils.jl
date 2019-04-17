@@ -37,6 +37,9 @@ export template_direction_symbols,
 export normalize,
        distribute_initial_set
 
+# others
+export isinvertible
+
 # Extension of MathematicalSystems for use inside Reachability.jl
 include("systems.jl")
 
@@ -376,6 +379,36 @@ function matrix_conversion(Δ, options; A_passed=nothing)
         end
     end
     return Δ
+end
+
+"""
+    isinvertible(map::AbstractMap)
+
+Check if the matrix of an affine map is invertible.
+
+### Input
+
+- `map` -- an affine map
+
+### Output
+
+`true` if the matrix is invertible.
+Because we use a sufficient criterion, there can be false positives.
+"""
+function isinvertible(map::AbstractMap)
+    throw(ArgumentError("isinvertible(::$(typeof(map))) is not implemented"))
+end
+function isinvertible(map::ConstrainedIdentityMap)
+    return true
+end
+function isinvertible(map::ConstrainedLinearMap)
+    return LazySets.isinvertible(map.A)
+end
+function isinvertible(map::ConstrainedAffineMap)
+    return LazySets.isinvertible(map.A)
+end
+function isinvertible(map::ConstrainedResetMap)
+    return false
 end
 
 end # module
