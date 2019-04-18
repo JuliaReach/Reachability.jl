@@ -1,4 +1,3 @@
-using TaylorModels: validated_integ
 using TaylorSeries: set_variables
 using LazySets.Approximations: box_approximation
 
