@@ -553,6 +553,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "citations.html#Technical-Reports-1",
+    "page": "Citations",
+    "title": "Technical Reports",
+    "category": "section",
+    "text": "Report on compositional verification and incremental verification in interaction with online controller adaptation. Maria Prandini - PoliMi, Olaf Stursberg, Zonglin Liu - UKS, Goran Frehse - UGA, Matthias Althoff - TUM, Alexander Rausch, Jens Oehlerking - Bosch. Unifying Control and Verification of Cyber-Physical Systems (UnCoVerCPS)"
+},
+
+{
     "location": "citations.html#Theses-1",
     "page": "Citations",
     "title": "Theses",
