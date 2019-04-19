@@ -22,7 +22,7 @@ using TaylorIntegration:jetcoeffs!
 using TaylorModels: validated_step!,TaylorModelN
 import IntervalArithmetic
 
-function validated_integ(f!, qq0::Vector{T}, δq0::IntervalBox{N,T},
+function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
         t0::T, tmax::T, orderQ::Int, orderT::Int, abstol::T;
         maxsteps::Int=500, parse_eqs::Bool=true,
         check_property::Function=(t, x)->true) where {N, T<:Real}
@@ -36,7 +36,7 @@ function validated_integ(f!, qq0::Vector{T}, δq0::IntervalBox{N,T},
     t   = t0 + Taylor1(orderT)
     tI  = t0 + Taylor1(orderT+1)
     δq_norm = IntervalBox(IntervalArithmetic.Interval{T}(-1,1), Val(N))
-    q0box = q0 .+ δq_norm
+    q0box = q0 + δq_norm
 
     # Allocation of vectors
     # Output
