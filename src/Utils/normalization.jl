@@ -101,13 +101,26 @@ for CLC_S in (:CLCCS, :CLCDS)
     end
 end
 
-# x' = Ax + c, x ∈ X, u ∈ U in the continuous case
-# x+ = Ax + c, x ∈ X, u ∈ U in the discrete case
+# x' = Ax + b, x ∈ X, u ∈ U in the continuous case
+# x+ = Ax + b, x ∈ X, u ∈ U in the discrete case
 for (CA_S, CLC_S) in ((:CACS, :CLCCS), (:CADS, :CLCDS))
     @eval begin
         function normalize(system::$CA_S{N, AN, VN, XT}) where {N, AN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(system.X, n)
+            U = _wrap_inputs(system.b)
+            $CLC_S(system.A, I(n, N), X, U)
+        end
+    end
+end
+
+# x' = Ax + b in the continuous case
+# x+ = Ax + b in the discrete case
+for (A_S, CLC_S) in ((:ACS, :CLCCS), (:ADS, :CLCDS))
+    @eval begin
+        function normalize(system::$A_S{N, AN, VN}) where {N, AN<:AbstractMatrix{N}, VN<:AbstractVector{N}}
+            n = statedim(system)
+            X = Universe(n)
             U = _wrap_inputs(system.b)
             $CLC_S(system.A, I(n, N), X, U)
         end
