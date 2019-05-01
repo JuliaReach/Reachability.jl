@@ -111,6 +111,10 @@ function get_overapproximation_option(𝒫::DiscretePost, n::Int)
         return dirs(n)
     elseif oa isa Type{<:LazySets.LazySet}
         return oa
+    elseif oa isa LazySets.Approximations.AbstractDirections
+        return oa
+    elseif oa <: LazySets.Approximations.AbstractDirections
+        return oa
     else
         error("received unknown :overapproximation option $oa")
     end
