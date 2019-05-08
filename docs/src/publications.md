@@ -10,7 +10,7 @@ This page lists publications about the JuliaReach ecosystem and its applications
 
 - **Reachability analysis of linear hybrid systems via block decomposition.** Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. [Get pdf from arXiv: 1905.02458](https://arxiv.org/abs/1905.02458).
 
-**Abstract.** Reachability analysis aims at identifying states reachable by a system within a given time horizon. This task is known to be computationally hard for hybrid systems. One of the main challenges is the handling of discrete transitions, including computation of intersections with invariants and guards. In this paper, we address this problem by proposing a state-space decomposition approach for linear hybrid systems. This approach allows us to perform most operations in low-dimensional state space, which can lead to significant performance improvements. 
+**Abstract.** *Reachability analysis aims at identifying states reachable by a system within a given time horizon. This task is known to be computationally hard for hybrid systems. One of the main challenges is the handling of discrete transitions, including computation of intersections with invariants and guards. In this paper, we address this problem by proposing a state-space decomposition approach for linear hybrid systems. This approach allows us to perform most operations in low-dimensional state space, which can lead to significant performance improvements.*
 
 
 ## JuliaReach: a Toolbox for Set-Based Reachability
