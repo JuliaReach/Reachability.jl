@@ -66,6 +66,7 @@ Here we list the names of the contributors to  `Reachability.jl` (in alphabetic 
 
 - Bruno Garate
 - Kostiantyn Potomkin
+- Frédéric Viry
 
 ### Colaborators
 
@@ -73,5 +74,5 @@ We are also grateful to the following persons for enlightening discussions:
 
 - [Sergiy Bogomolov](https://www.sergiybogomolov.com/)
 - [Goran Frehse](https://sites.google.com/site/frehseg/) 
+- Nikolaos Kekatos
 - Andreas Podelski
-- Frédéric Viry
