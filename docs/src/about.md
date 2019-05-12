@@ -55,7 +55,7 @@ For a full references list of algorithms implemented in this repository, consult
 
 ## Credits
 
-Here we list the names of the contributors to  `Reachability.jl` (in alphabetic order).
+Here we list the names of the contributors to `Reachability.jl` (in alphabetic order).
 
 ### Core developers
 
@@ -64,11 +64,13 @@ Here we list the names of the contributors to  `Reachability.jl` (in alphabetic 
 
 ### Contributors
 
+- Aadesh Deshmukh
 - Bruno Garate
 - Kostiantyn Potomkin
+- Moritz Schauer
 - Frédéric Viry
 
-### Colaborators
+### Collaborators
 
 We are also grateful to the following persons for enlightening discussions: 
 
@@ -76,3 +78,4 @@ We are also grateful to the following persons for enlightening discussions:
 - [Goran Frehse](https://sites.google.com/site/frehseg/) 
 - Nikolaos Kekatos
 - Andreas Podelski
+- Alexandre Rocca
