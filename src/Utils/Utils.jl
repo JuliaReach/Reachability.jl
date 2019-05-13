@@ -383,12 +383,6 @@ function convert_partition(partition::AbstractVector{<:AbstractVector{Int}})::Un
     return partition_out
 end
 
-template_direction_symbols = Dict(
-    :box     => Approximations.BoxDirections,
-    :oct     => Approximations.OctDirections,
-    :boxdiag => Approximations.BoxDiagDirections
-    )
-
 # sparse/dense matrix conversion
 function matrix_conversion(Δ, options; A_passed=nothing)
     if A_passed == nothing

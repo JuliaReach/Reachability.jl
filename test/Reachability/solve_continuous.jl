@@ -72,10 +72,11 @@ s = solve(IVP(LCS(A), X0),
 # Test reachability options
 # ===============================
 
-# template directions (eg. :box, :oct, :octbox)
+# template directions
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :ε_proj=>1e-5, :set_type_proj=>HPolygon),
-          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4], :block_options => :oct))
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:4],
+                      :block_options => LazySets.Approximations.OctDirections))
 
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
