@@ -55,11 +55,27 @@ For a full references list of algorithms implemented in this repository, consult
 
 ## Credits
 
-These persons have contributed to `Reachability.jl` (in alphabetic order):
+Here we list the names of the contributors to `Reachability.jl` (in alphabetic order).
 
-- [Marcelo Forets](http://marcelo-forets.fr)
-- [Christian Schilling](http://swt.informatik.uni-freiburg.de/staff/christian_schilling/)
-- Frederic Viry
+### Core developers
 
-We are also grateful to Goran Frehse, Sergiy Bogomolov, Andreas Podelski, Alexandre Rocca and
-Nikolaos Kekatos for enlightening discussions.
+- [Marcelo Forets](http://main.marcelo-forets.fr/)
+- [Christian Schilling](https://schillic.github.io/)
+
+### Contributors
+
+- Aadesh Deshmukh
+- Bruno Garate
+- Kostiantyn Potomkin
+- Moritz Schauer
+- Frédéric Viry
+
+### Collaborators
+
+We are also grateful to the following persons for enlightening discussions: 
+
+- [Sergiy Bogomolov](https://www.sergiybogomolov.com/)
+- [Goran Frehse](https://sites.google.com/site/frehseg/) 
+- Nikolaos Kekatos
+- Andreas Podelski
+- Alexandre Rocca
