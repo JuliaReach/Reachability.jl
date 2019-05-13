@@ -60,19 +60,19 @@ function cluster(𝒫::DiscretePost,
                  reach_sets::Vector{ReachSet{LazySet{N}, N}},
                  options::Options) where N<:Real
     clustering_strategy = options[:clustering]
-    dirs = 𝒫.options[:overapproximation]
+    oa = 𝒫.options[:overapproximation]
     if clustering_strategy == :none
         # no clustering, keeping original set
         return reach_sets
     elseif clustering_strategy == :none_oa
         # no clustering but overapproximation
-        return [ReachSet{LazySet{N}, N}(overapproximate(reach_set.X, dirs),
+        return [ReachSet{LazySet{N}, N}(overapproximate(reach_set.X, oa),
                 reach_set.t_start, reach_set.t_end) for reach_set in reach_sets]
     elseif clustering_strategy == :chull
         # cluster all sets in a convex hull and overapproximate that set
         chull = ConvexHullArray(
             LazySet{N}[reach_set.X for reach_set in reach_sets])
-        chull_oa = overapproximate(chull, dirs)
+        chull_oa = overapproximate(chull, oa)
         return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
                 reach_sets[end].t_end)]
     end
@@ -102,22 +102,6 @@ end
 function use_precise_ρ(𝒫::DiscretePost,
                              cap::Intersection{N})::Bool where N<:Real
     return true
-end
-
-function get_overapproximation_option(𝒫::DiscretePost, n::Int)
-    oa = 𝒫.options[:overapproximation]
-    if oa isa Symbol
-        dirs = Utils.template_direction_symbols[oa]
-        return dirs(n)
-    elseif oa isa Type{<:LazySets.LazySet}
-        return oa
-    elseif oa isa LazySets.Approximations.AbstractDirections
-        return oa
-    elseif oa <: LazySets.Approximations.AbstractDirections
-        return oa
-    else
-        error("received unknown :overapproximation option $oa")
-    end
 end
 
 # --- default methods for handling assignments ---

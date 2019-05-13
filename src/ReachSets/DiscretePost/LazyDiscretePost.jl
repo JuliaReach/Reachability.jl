@@ -88,7 +88,6 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
                    start_interval
                   ) where {N}
 
-    # TODO dirs = get_overapproximation_option(op, dim(invariant)) ?
     dirs = 𝒫.options[:overapproximation]
 
     # counts the number of sets R⋂I added to Rsets
@@ -121,8 +120,7 @@ function post(𝒫::LazyDiscretePost,
               options
              ) where {N}
     jumps += 1
-    # TODO? oa = 𝒫.options[:overapproximation]
-    oa = get_overapproximation_option(𝒫, options[:n])
+    oa = 𝒫.options[:overapproximation]
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
