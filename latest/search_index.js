@@ -637,7 +637,31 @@ var documenterSearchIndex = {"docs": [
     "page": "About",
     "title": "Credits",
     "category": "section",
-    "text": "These persons have contributed to Reachability.jl (in alphabetic order):Marcelo Forets\nChristian Schilling\nFrederic ViryWe are also grateful to Goran Frehse, Sergiy Bogomolov, Andreas Podelski, Alexandre Rocca and Nikolaos Kekatos for enlightening discussions."
+    "text": "Here we list the names of the contributors to Reachability.jl (in alphabetic order)."
+},
+
+{
+    "location": "about.html#Core-developers-1",
+    "page": "About",
+    "title": "Core developers",
+    "category": "section",
+    "text": "Marcelo Forets\nChristian Schilling"
+},
+
+{
+    "location": "about.html#Contributors-1",
+    "page": "About",
+    "title": "Contributors",
+    "category": "section",
+    "text": "Aadesh Deshmukh\nBruno Garate\nKostiantyn Potomkin\nMoritz Schauer\nFrédéric Viry"
+},
+
+{
+    "location": "about.html#Collaborators-1",
+    "page": "About",
+    "title": "Collaborators",
+    "category": "section",
+    "text": "We are also grateful to the following persons for enlightening discussions: Sergiy Bogomolov\nGoran Frehse \nNikolaos Kekatos\nAndreas Podelski\nAlexandre Rocca"
 },
 
 ]}
