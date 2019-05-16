@@ -18,8 +18,8 @@ SOFTWARE.
 =#
 
 using TaylorSeries
-using TaylorIntegration:jetcoeffs!
-using TaylorModels: validated_step!,TaylorModelN
+using TaylorIntegration: jetcoeffs!
+using TaylorModels: validated_step!, TaylorModel1, TaylorModelN
 import IntervalArithmetic
 
 function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
@@ -31,17 +31,19 @@ function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
     @assert N == get_numvars()
     dof = N
 
+    # Some variables
     R = IntervalArithmetic.Interval{T}
     q0 = IntervalBox(qq0)
-    t   = t0 + Taylor1(orderT)
-    tI  = t0 + Taylor1(orderT+1)
+    t = t0 + Taylor1(orderT)
+    tI = t0 + Taylor1(orderT+1)
     δq_norm = IntervalBox(IntervalArithmetic.Interval{T}(-1,1), Val(N))
-    q0box = q0 + δq_norm
+    q0box = q0 .+ δq_norm
 
     # Allocation of vectors
     # Output
     tv    = Vector{T}(undef, maxsteps+1)
     xv    = Vector{IntervalBox{N,T}}(undef, maxsteps+1)
+    xTM1v = Matrix{TaylorModel1{TaylorN{T}, T}}(undef, dof, maxsteps+1)
 
     # Internals: jet transport integration
     x     = Vector{Taylor1{TaylorN{T}}}(undef, dof)
@@ -58,20 +60,21 @@ function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
 
     # Set initial conditions
     zI = zero(R)
-    Δ = zero.(q0)
     rem = Vector{IntervalArithmetic.Interval{T}}(undef, dof)
 
     @inbounds for i in eachindex(x)
         qaux = normalize_taylor(qq0[i] + TaylorN(i, order=orderQ), δq0, true)
-        x[i] = Taylor1( qaux, orderT)
+        x[i] = Taylor1(qaux, orderT)
         dx[i] = x[i]
         x0[i] = copy(qaux)
         xTMN[i] = TaylorModelN(x[i][0], zI, q0, q0box)
-        #
+
         xI[i] = Taylor1(q0box[i], orderT+1)
         dxI[i] = xI[i]
         x0I[i] = qaux(δq_norm)
         rem[i] = zI
+
+        xTM1v[i, 1] = TaylorModel1(deepcopy(x[i]), zI, zI, zI)
     end
 
     # Output vectors
@@ -100,13 +103,18 @@ function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
         # New initial conditions and time
         nsteps += 1
         t0 += δt
-        @inbounds t[0] = t0
-        @inbounds tI[0] = t0
-        @inbounds tv[nsteps] = t0
-        @inbounds for i in eachindex(x)
-            aux = x[i](δt)
-            x[i]  = Taylor1(aux, orderT)
-            dx[i] = Taylor1(zero(aux), orderT)
+        @inbounds begin
+            t[0] = t0
+            tI[0] = t0
+            tv[nsteps] = t0
+            for i in eachindex(x)
+                xTM1v[i, nsteps] = TaylorModel1(deepcopy(x[i]), rem[i],
+                                        IntervalArithmetic.Interval(0, 0),
+                                        IntervalArithmetic.Interval(0, δt))
+                aux = x[i](δt)
+                x[i]  = Taylor1(aux, orderT)
+                dx[i] = Taylor1(zero(aux), orderT)
+            end
         end
 
         if nsteps > maxsteps
@@ -116,7 +124,7 @@ function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
 
     end
 
-    return view(tv,1:nsteps), view(xv,1:nsteps)
+    return view(tv,1:nsteps), view(xv,1:nsteps), view(xTM1v, :, 1:nsteps)
 end
 
 
