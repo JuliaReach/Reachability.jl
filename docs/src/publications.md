@@ -6,6 +6,26 @@ Pages = ["publications.md"]
 
 This page lists publications about the JuliaReach ecosystem and its applications.
 
+## ARCH 2019 Competition NLN Category Report
+
+- **ARCH-COMP19 Category Report: Continuous and Hybrid Systems with Nonlinear Dynamics.** Fabian Immler, Matthias Althoff, Luis Benet, Alexandre Chapoutot, Xin Chen, Marcelo Forets, Luca Geretti, Niklas Kochdumper, David P. Sanders and Christian Schilling (2019) ARCH19. 6th International Workshop on Applied Verification of Continuous and Hybrid Systems, vol 61, pages 41--61 [doi: 10.29007/bj1w](https://easychair.org/publications/paper/1gbP). Packages: [Reachability.jl](https://github.com/JuliaReach/Reachability.jl).
+
+**Abstract.** *We present the results of a friendly competition for formal verification of continuous and hybrid systems with nonlinear continuous dynamics. The friendly competition took place as part of the workshop Applied Verification for Continuous and Hybrid Systems (ARCH) in 2019. In this year, 6 tools Ariadne, CORA, DynIbex, Flow*, Isabelle/HOL, and JuliaReach (in alphabetic order) participated. They are applied to solve reachability analysis problems on four benchmark problems, one of them with hybrid dynamics. We do not rank the tools based on the results, but show the current status and discover the potential advantages of different tools.*
+
+The repeatability evaluation package for JuliaReach is available at [ARCH2019_RE](https://github.com/JuliaReach/ARCH2019_RE).
+
+The repeatability evaluation packages of all tools participating in this report is available in the [ARCH-COMP gitlab repo](https://gitlab.com/goranf/ARCH-COMP).
+
+## ARCH 2019 Competition AFF Category Report
+
+- **ARCH-COMP19 Category Report: Continuous and Hybrid Systems with Linear Continuous Dynamics.** Matthias Althoff, Stanley Bak, Marcelo Forets, Goran Frehse, Niklas Kochdumper, Rajarshi Ray, Christian Schilling and Stefan Schupp (2019) ARCH19. 6th International Workshop on Applied Verification of Continuous and Hybrid Systems, vol 61, pages 14--40 [doi: 10.29007/bj1w](https://easychair.org/publications/paper/1gbP). Packages: [Reachability.jl](https://github.com/JuliaReach/Reachability.jl).
+
+**Abstract.** *This report presents the results of a friendly competition for formal verification of continuous and hybrid systems with linear continuous dynamics. The friendly competition took place as part of the workshop Applied Verification for Continuous and Hybrid Systems (ARCH) in 2019. In its third edition, seven tools have been applied to solve six different benchmark problems in the category for linear continuous dynamics (in alphabetical order): CORA, CORA/SX, HyDRA, Hylaa, JuliaReach, SpaceEx, and XSpeed. This report is a snapshot of the current landscape of tools and the types of benchmarks they are particularly suited for. Due to the diversity of problems, we are not ranking tools, yet the presented results provide one of the most complete assessments of tools for the safety verification of continuous and hybrid systems with linear continuous dynamics up to this date.*
+
+The repeatability evaluation package for JuliaReach is available at [ARCH2019_RE](https://github.com/JuliaReach/ARCH2019_RE).
+
+The repeatability evaluation packages of all tools participating in this report is available in the [ARCH-COMP gitlab repo](https://gitlab.com/goranf/ARCH-COMP).
+
 ## Reachability analysis of linear hybrid systems via block decomposition
 
 - **Reachability analysis of linear hybrid systems via block decomposition.** Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling. [Get pdf from arXiv: 1905.02458](https://arxiv.org/abs/1905.02458).
