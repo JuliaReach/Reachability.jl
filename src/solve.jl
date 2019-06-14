@@ -181,8 +181,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     property = options[:mode] == "check" ? options[:property] : nothing
     nonzero_vars = constrained_dimensions(HS)
     global_vars = options[:global_vars]
-    println("global_vars")
-    println(global_vars)
     # waiting_list entries:
     # - (discrete) location
     # - (set of) continuous-time reach sets
@@ -222,6 +220,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     Rsets = Vector{ReachSet{LazySet{N}, N}}()
     while (!isempty(waiting_list))
         loc_id, X0, jumps = pop!(waiting_list)
+        println(jumps)
         loc = HS.modes[loc_id]
         source_invariant = loc.X
 
@@ -244,7 +243,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #TODO check low-dim option
         if (opD isa ConcreteMixedSetDiscretePost)
             temp_vars = unique([global_vars; nonzero_vars[loc_id]])
-
             opc_options_copy = copy(opC.options.specified)
             opc_options_copy.dict[:vars] = temp_vars
             c_intersect = Vector()
@@ -260,7 +258,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # println(opC.options[:vars])
             opC = BFFPSV18(opc_options_copy)
         end
-        temp_vars = unique([global_vars; nonzero_vars[loc_id]])
+        #temp_vars = unique([global_vars; nonzero_vars[loc_id]])
         if (opD isa ConcreteContDiscretePost)
 
 
@@ -308,6 +306,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                             options_copy,
                             op=opC,
                             invariant=source_invariant)
+
         inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
         # get the property for the current location
         property_loc = property isa Dict ?
@@ -340,12 +339,12 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         #TODO Add option for lowdim
         if (opD isa ConcreteMixedSetDiscretePost)
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
-            println("Start_low")
-
+            # println("Start_low")
+            # println(temp_vars)
             count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
                                 [X0.t_start, X0.t_end], global_vars,temp_vars)
-            println("count_Rsets")
-            println(count_Rsets)
+            # println("count_Rsets")
+            # println(count_Rsets)
             if jumps == max_jumps
                 continue
             end
@@ -355,12 +354,12 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         elseif (opD isa ConcreteContDiscretePost)
 
             low_dim_sets = Vector{ReachSet{LazySet{N}, N}}()
-            println("Start_low")
+            # println("Start_low")
 
             count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets, low_dim_sets,
                                 [X0.t_start, X0.t_end], global_vars,temp_vars)
-            println("count_Rsets")
-            println(count_Rsets)
+            # println("count_Rsets")
+            # println(count_Rsets)
             if jumps == max_jumps
                 continue
             end

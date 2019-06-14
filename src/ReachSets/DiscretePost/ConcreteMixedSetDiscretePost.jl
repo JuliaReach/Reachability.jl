@@ -65,20 +65,41 @@ function tube⋂inv!(𝒫::ConcreteMixedSetDiscretePost,
                   ) where {N}
     # take intersection with source invariant
     dirs = 𝒫.options[:overapproximation]
-
+    indices = Vector{Int}()
+    for v_i in 1:length(computed_vars)
+        if (in(computed_vars[v_i],global_vars))
+            push!(indices, v_i)
+        end
+    end
+    #println(indices)
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
+        # if (reach_set.k == 1)
+        #     continue
+        # end
         # R⋂I = intersection(reach_set.X, invariant, true)
         # if isempty(R⋂I)
         #     break
         # end
         #R⋂I = overapproximate(R⋂I, dirs)
-        push!(Rsets, ReachSet{LazySet{N}, N}(LazySets.Approximations.project(reach_set.X,global_vars,LinearMap),
-            reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2],
-            reach_set.k))
-        if (dim(reach_set.X) != length(computed_vars))
+        # println(reach_set.X)
+        # println(global_vars)
+        # println(indices)
+        if isempty(reach_set.X)
+            break
+        end
+
+        if (dim(reach_set.X) == length(computed_vars))
+            push!(Rsets, ReachSet{LazySet{N}, N}(reach_set.X,
+                reach_set.t_start + start_interval[1],
+                reach_set.t_end + start_interval[2],
+                reach_set.k))
+        else
+            push!(Rsets, ReachSet{LazySet{N}, N}(LazySets.Approximations.project(reach_set.X,global_vars,LinearMap),
+                reach_set.t_start + start_interval[1],
+                reach_set.t_end + start_interval[2],
+                reach_set.k))
             push!(low_dim_sets, ReachSet{LazySet{N}, N}(reach_set.X,
                 reach_set.t_start + start_interval[1],
                 reach_set.t_end + start_interval[2],
@@ -104,7 +125,7 @@ function post(𝒫::ConcreteMixedSetDiscretePost,
     jumps += 1
     dirs = get_overapproximation_option(𝒫, options[:n])
     for trans in out_transitions(HS, source_loc_id)
-        println("trans")
+        # println("trans")
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
         target_loc = HS.modes[target(HS, trans)]
@@ -118,8 +139,12 @@ function post(𝒫::ConcreteMixedSetDiscretePost,
         post_jump_low = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
         sizehint!(post_jump_low, count_Rsets)
+
+        #print(length(low_dim_sets))
         for reach_set in low_dim_sets
             # check intersection with guard
+            # println(reach_set.X)
+            # println(guard)
             R⋂G = intersection(reach_set.X, guard, true)
             if isempty(R⋂G)
                 continue
@@ -129,8 +154,7 @@ function post(𝒫::ConcreteMixedSetDiscretePost,
 
             A⌜R⋂G⌟ = linear_map(assignment, R⋂G)
 
-            # intersect with target invariant
-            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant, true)
+            A⌜R⋂G⌟⋂I = intersection(A⌜R⋂G⌟, target_invariant)
 
             if isempty(A⌜R⋂G⌟⋂I)
                 continue
@@ -140,15 +164,11 @@ function post(𝒫::ConcreteMixedSetDiscretePost,
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end, reach_set.k))
-            push!(post_jump_low, ReachSet{LazySet{N}, N}(LazySets.Approximations.project(A⌜R⋂G⌟⋂I, global_vars, LinearMap),
-                                                  reach_set.t_start,
-                                                  reach_set.t_end, reach_set.k))
 
         end
 
-        println(length(post_jump))
-
+        # println(length(post_jump))
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
-            target_loc_id, jumps, post_jump_low)
+            target_loc_id, jumps)
     end
 end

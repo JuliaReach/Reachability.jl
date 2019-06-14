@@ -46,7 +46,7 @@ function get_vars(blocks, partition)
         if p_i == blocks[b_i]
             result = vcat(result, collect(partition[p_i]))
             b_i += 1
-            if b_i >= length(blocks)
+            if b_i > length(blocks)
                 return result
             end
         end
@@ -202,18 +202,23 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t1 = δ
     vars = get_vars(blocks, partition)
     constraints = get_guard_projections(constraints, vars)
-    inv = LazySets.Approximations.project(invariant, vars, LinearMap)
+    if (invariant == Universe(dim(invariant)))
+        inv = Universe(length(vars))
+    else
+        inv = LazySets.Approximations.project(invariant, vars, LinearMap)
+    end
     diff_blocks = setdiff(collect(1:length(partition)),blocks)
 
     b = length(blocks)
     bd = length(diff_blocks)
 
-    if !(is_intersection_disjoint(X_store, constraints))
+    #if !(is_intersection_disjoint(X_store, constraints))
         array_d = CartesianProductArray(Xhat0[diff_blocks])
         X_store_d = (output_function == nothing) ?
             array_d :
             box_approximation(output_function(array_d))
-    end
+    #end
+    X_store = combine_array(X_store, X_store_d, blocks, diff_blocks)
     store!(res, 1, 1, X_store, t0, t1, NUM)
 
     # if isempty(steps) || (1 in steps)
@@ -287,7 +292,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             terminate, skip, rs = termination(temp_inv, k, X_store, t0)
         end
 
-        if !(is_intersection_disjoint(X_store, constraints))
+        if  !(is_intersection_disjoint(X_store, constraints))
             temp_inv = invariant
             for i in 1:bd
                 bi = partition[diff_blocks[i]]
@@ -307,14 +312,16 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             X_store_d = (output_function == nothing) ?
                 array_d :
                 box_approximation(output_function(array_d))
+            if !terminate
+                X_store = combine_array(rs, X_store_d, blocks, diff_blocks)
+            end
 
-            X_store = combine_array(rs, X_store_d, blocks, diff_blocks)
         end
 
         t0 = t1
         t1 += δ
-        store!(res, k, k, X_store, t0, t1, NUM)
 
+        store!(res, k, k, X_store, t0, t1, NUM)
 
         if terminate
             break
@@ -362,7 +369,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        steps::Vector{Int},
                        invariant::Union{LazySet, Nothing}
                        )::Tuple{Int, Bool} where {NUM}
-    println("reach_b")
+    # println("reach_b")
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
        array :
@@ -532,10 +539,11 @@ function reach_blocks!(ϕ::SparseMatrixExp{NUM},
         t0 = t1
         t1 += δ
         terminate, skip, rs = termination(k, X_store, t0)
-        store!(res, k, rs, t0, t1, NUM)
         if terminate
             break
         end
+        store!(res, k, rs, t0, t1, NUM)
+
 
         ϕpowerk.M .= ϕpowerk.M + ϕ.M
         k += 1

@@ -29,37 +29,69 @@ function postprocess(𝒫,
 
     if fixpoint_strategy == :eager
         # eager fixpoint checking
-        post_jump_filtered_l =
+        post_jump_filtered =
             filter(x -> !isfixpoint(𝒫, x, passed_list, target_loc_id),
-                   fixpoint_list)
-        post_jump_filtered_h =
-           filter(x -> isfiltered(x, fixpoint_list),
-                  post_jump)
+                   post_jump)
+        # post_jump_filtered_h =
+        #    filter(x -> isfiltered(x, fixpoint_list),
+        #           post_jump)
     else
-        post_jump_filtered_h = post_jump
+        post_jump_filtered = post_jump
+        # post_jump_filtered_h = post_jump
     end
 
-    if (isempty(post_jump_filtered_l) || isempty(post_jump_filtered_h))
-        # fixpoint found or transition can never be taken
+
+    if isempty(post_jump_filtered)
         return
     end
+    # println("**")
+    # for pjf in post_jump_filtered
+    #     println(dim(pjf.X))
+    # end
+    # println("**")
+
+    # if (isempty(post_jump_filtered_l) || isempty(post_jump_filtered_h))
+    #     # fixpoint found or transition can never be taken
+    #     return
+    # end
 
     # apply clustering
-    clustered_h = cluster(𝒫, post_jump_filtered_h, options)
-    clustered_l = cluster(𝒫, post_jump_filtered_l, options)
+    clustered = cluster(𝒫, post_jump_filtered, options)
+    # clustered_h = cluster(𝒫, post_jump_filtered_h, options)
+    # clustered_l = cluster(𝒫, post_jump_filtered_l, options)
+    # println("*clustered*")
+    # for pjf in clustered
+    #     println(dim(pjf.X))
+    # end
+    # println("**")
 
     # push new sets after jump (unless a fixpoint is detected)
-    for rs_i in length(clustered_l)
-        reach_set = clustered_l[rs_i]
+
+    for rs_i in length(clustered)
+        reach_set = clustered[rs_i]
         if fixpoint_strategy != :none
             if fixpoint_strategy == :lazy &&
                     isfixpoint(𝒫, reach_set, passed_list, target_loc_id)
                 continue
             end
+            # println("dim(reach_set.X)")
+            # println(dim(reach_set.X))
             push!(passed_list[target_loc_id], reach_set)
         end
-        push!(waiting_list, (target_loc_id, clustered_h[rs_i], jumps))
+        push!(waiting_list, (target_loc_id, clustered[rs_i], jumps))
     end
+
+    # for rs_i in length(clustered_l)
+    #     reach_set = clustered_l[rs_i]
+    #     if fixpoint_strategy != :none
+    #         if fixpoint_strategy == :lazy &&
+    #                 isfixpoint(𝒫, reach_set, passed_list, target_loc_id)
+    #             continue
+    #         end
+    #         push!(passed_list[target_loc_id], reach_set)
+    #     end
+    #     push!(waiting_list, (target_loc_id, clustered_h[rs_i], jumps))
+    # end
 end
 
 function cluster(𝒫::DiscretePost,
@@ -92,8 +124,10 @@ function isfixpoint(𝒫::DiscretePost,
                     loc_id
                    ) where N
     @assert passed_list != nothing
+
     if isassigned(passed_list, loc_id)
         for other_reach_set in passed_list[loc_id]
+            # println(LazySets.dim(other_reach_set.X))
             if reach_set.X ⊆ other_reach_set.X
                 info("found a fixpoint in some reach tube")
                 return true

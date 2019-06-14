@@ -210,6 +210,7 @@ function reach(system::IVP{<:AbstractContinuousSystem},
     # Time discretization
     # ===================
     info("Time discretization...")
+    # println("Time discretization")
     Δ = @timing discretize(system, options[:δ], algorithm=options[:discretization],
                                                 exp_method=options[:exp_method],
                                                 sih_method=options[:sih_method])
@@ -226,6 +227,7 @@ function termination_inv_N(N, inv, k, set, t0)
     if k >= N
         return (true, false, inv)
     else
+        # println("inv ", inv)
         inv_int = intersection(set, inv)
         if isempty(inv_int)
             return (true, true, inv)

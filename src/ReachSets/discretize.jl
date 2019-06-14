@@ -400,7 +400,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
                                exp_method::String="base")
 
     # unwrap coefficient matrix and initial states
-    A, X0 = 𝑆.s.A, 𝑆.x0 
+    A, X0 = 𝑆.s.A, 𝑆.x0
 
     # system size; A is assumed square
     n = size(A, 1)
@@ -651,7 +651,6 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
 
     U = inputset(𝑆)
     U0 = next_set(U, 1)
-
     Eψ0 = sih(Phi2Aabs * sih(A * U0))
     Ω0, Ud = _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, Val(set_operations))
 

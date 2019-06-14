@@ -89,7 +89,7 @@ function project_reach(
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
                     CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
-                Rsets[i].t_start, Rsets[i].t_end)
+                Rsets[i].t_start, Rsets[i].t_end, Rsets[i].k)
         end
     else
         @inbounds for i in 1:N
@@ -180,7 +180,7 @@ function project_2d_reach(
             radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(CartesianProduct(BallInf([t0 + radius], radius), Rsets[i].X)),
-                Rsets[i].t_start, Rsets[i].t_end)
+                Rsets[i].t_start, Rsets[i].t_end, Rsets[i].k)
         end
     elseif got_time # x variable is 'time'
         @inbounds for i in 1:N
@@ -190,7 +190,7 @@ function project_2d_reach(
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
                     CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
-                Rsets[i].t_start, Rsets[i].t_end)
+                Rsets[i].t_start, Rsets[i].t_end, Rsets[i].k)
         end
     else
         @inbounds for i in 1:N

@@ -99,8 +99,13 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
             break
         end
     #    println("R⋂I = overapproximate(R⋂I, dirs)")
+
         if !𝒫.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
+        end
+
+        if isempty(R⋂I)
+            break
         end
     #    println("R⋂I = overapproximate(R⋂I, dirs)")
         push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
