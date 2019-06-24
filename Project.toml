@@ -1,0 +1,48 @@
+name = "Reachability"
+uuid = "774a0091-654f-5c65-bbdc-ad5b67b45832"
+version = "0.2.0"
+
+[deps]
+Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
+Expokit = "a1e7a1ef-7a5d-5822-a38c-be74e1bb89f4"
+HybridSystems = "2207ec0c-686c-5054-b4d2-543502888820"
+IntervalArithmetic = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
+LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043"
+MathematicalSystems = "d14a8603-c872-5ed3-9ece-53e0e82e39da"
+Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
+TaylorIntegration = "92b13dbe-c966-51a2-8445-caca9f8a7d42"
+TaylorModels = "314ce334-5f6e-57ae-acf6-00b6e903104a"
+TaylorSeries = "6aa5eb33-94cf-58f4-a9d0-e4b2c4fc25ea"
+
+[compat]
+julia = "≥ 1.0.0"
+Compat = "≥ 2.1.0"
+Expokit = "≥ 0.2.0"
+HybridSystems = "≥ 0.3.0"
+IntervalArithmetic = "≥ 0.15.2"
+LazySets = "≥ 1.13.0"
+MathematicalSystems = "≥ 0.6.4"
+Memento = "≥ 0.11.0"
+Optim = "≥ 0.17.2"
+Polyhedra = "≥ 0.3.4"
+ProgressMeter = "≥ 0.9.0"
+RecipesBase = "≥ 0.6.0"
+Reexport = "≥ 0.2.0"
+Suppressor = "≥ 0.1.1"
+TaylorIntegration = "≥ 0.4.1"
+TaylorModels = "≥ 0.1.1"
+TaylorSeries = "≥ 0.10.0"
+
+[extras]
+CDDLib = "3391f64e-dcde-5f30-b752-e11513730f60"
+Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
+
+[targets]
+test = ["CDDLib", "Polyhedra"]
