@@ -400,7 +400,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
     # system size; A is assumed square
     n = size(A, 1)
 
-    Anorm = norm(Matrix(A), p)
+    Anorm = opnorm(Matrix(A), p)
     κ = exp(δ*Anorm) - 1.0 - δ*Anorm
     RX0 = norm(X0, p)
 
