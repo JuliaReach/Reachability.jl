@@ -192,22 +192,18 @@ function init!(𝒫::BFFPS19, 𝑆::AbstractSystem, 𝑂::Options)
     end
 
     opD = 𝒫.options[:opD]
-    if opD isa DecomposedDiscretePost
-        HS = 𝒫.options[:HS]
-        constrained_dims = constrained_dimensions(HS)
-        out_vars = opD.options[:out_vars]
-        loc_id = 𝒫.options[:loc_id]
-        temp_vars = unique([out_vars; constrained_dims[loc_id]])
-        opD.options[:temp_vars] = temp_vars
-        guards_constraints = [guard(HS, trans) for trans in out_transitions(HS, loc_id)]
-        𝑂validated[:vars] = temp_vars
-        𝑂validated[:guards_proj] = [project(c, temp_vars) for c in guards_constraints]
-        𝑂validated[:blocks] = compute_blocks(𝑂validated[:vars], 𝑂validated[:partition])
-
-        info("- Total")
-    else
-        throw(MethodError("This continuous post operator works only with DecomposedDiscretePost"))
-    end
+    @assert opD isa DecomposedDiscretePost "this continuous post operator works " *
+                                       "only with DecomposedDiscretePost"
+    HS = 𝒫.options[:HS]
+    constrained_dims = constrained_dimensions(HS)
+    out_vars = opD.options[:out_vars]
+    loc_id = 𝒫.options[:loc_id]
+    temp_vars = unique([out_vars; constrained_dims[loc_id]])
+    opD.options[:temp_vars] = temp_vars
+    guards_constraints = [guard(HS, trans) for trans in out_transitions(HS, loc_id)]
+    𝑂validated[:vars] = temp_vars
+    𝑂validated[:guards_proj] = [project(c, temp_vars) for c in guards_constraints]
+    𝑂validated[:blocks] = compute_blocks(𝑂validated[:vars], 𝑂validated[:partition])
 
     # :block_options_init & :block_options_iter options:
     # set default according to :partition
@@ -246,46 +242,22 @@ Calculate the reachable states of the given initial value problem using `BFFPS19
 function post(𝒫::BFFPS19, 𝑆::AbstractSystem, 𝑂_input::Options)
     𝑂 = TwoLayerOptions(merge(𝑂_input, 𝒫.options.specified), 𝒫.options.defaults)
 
-    if 𝑂[:mode] == "reach"
-        info("Reachable States Computation...")
-        @timing begin
-            Rsets = reach_mixed(𝑆, 𝑂)
-        end
+    @assert 𝑂[:mode] == "reach" "the mode $(𝑂[:mode]) is not supported"
 
-        # Projection
-        if 𝑂[:project_reachset]
-            info("Projection...")
-            RsetsProj = @timing project(Rsets, 𝑂)
-        else
-            RsetsProj = Rsets
-        end
+    info("Reachable States Computation...")
+    @timing begin
+        Rsets = reach_mixed(𝑆, 𝑂)
 
-        return ReachSolution(RsetsProj, 𝑂_input)
+        info("- Total")
+    end
 
-    elseif 𝑂[:mode] == "check"
-        info("invariants are currently not supported in 'check' mode")
-
-        # Input -> Output variable mapping in property
-        property = inout_map_property(𝑂[:property], 𝑂[:partition], 𝑂[:blocks], 𝑂[:n])
-
-        # =================
-        # Property checking
-        # =================
-        info("Property Checking...")
-        @timing begin
-            answer = check_property(𝑆, property, 𝑂)
-            info("- Total")
-        end
-
-        if answer == 0
-            info("The property is satisfied!")
-            return CheckSolution(true, -1, 𝑂_input)
-        else
-            info("The property may be violated at index $answer," *
-                " (time point $(answer * 𝑂[:δ]))!")
-            return CheckSolution(false, answer, 𝑂_input)
-        end
+    # Projection
+    if 𝑂[:project_reachset]
+        info("Projection...")
+        RsetsProj = @timing project(Rsets, 𝑂)
     else
-        error("unsupported mode $(𝑂[:mode])")
-    end # mode
+        RsetsProj = Rsets
+    end
+
+    return ReachSolution(RsetsProj, 𝑂_input)
 end

@@ -1,5 +1,55 @@
 
 
+#helper functions
+@inline function deco_post_sparse(b, blocks, Whatk_blocks, partition,
+                                  ϕpowerk, Xhat0, output_function)
+    for i in 1:b
+        bi = partition[blocks[i]]
+        Xhatk = ZeroSet(length(bi))
+        for (j, bj) in enumerate(partition)
+          block = ϕpowerk[bi, bj]
+          if !iszero(block)
+              Xhatk = Xhatk + block * Xhat0[j]
+          end
+        end
+        Xhatk_lazy = (U == nothing ? Xhatk : Xhatk + Whatk_blocks[i])
+        Xhatk_d[i] = (output_function == nothing) ?
+          overapproximate(blocks[i], Xhatk_lazy) :
+          Xhatk_lazy
+    end
+
+    array_d = CartesianProductArray(copy(Xhatk_d))
+
+    X_store = (output_function == nothing) ?
+                  array_d :
+                  box_approximation(output_function(array_d))
+
+    return X_store
+end
+
+@inline function deco_post_dense(b, blocks, Whatk_blocks, partition,
+                                  ϕpowerk, arr, arr_length, U, Xhat0, output_function)
+    for i in 1:b
+        bi = partition[blocks[i]]
+        for (j, bj) in enumerate(partition)
+            arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
+        end
+        if U != nothing
+            arr[arr_length] = Whatk_blocks[i]
+        end
+        Xhatk[i] = (output_function == nothing) ?
+            overapproximate(blocks[i], MinkowskiSumArray(arr)) :
+            MinkowskiSumArray(copy(arr))
+    end
+    array = CartesianProductArray(copy(Xhatk))
+
+    X_store = (output_function == nothing) ?
+        array :
+        box_approximation(output_function(array))
+
+    return X_store
+end
+
 # sparse
 function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        Xhat0::Vector{<:LazySet{NUM}},
@@ -27,7 +77,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     t0 = zero(δ)
     t1 = δ
 
-    diff_blocks = setdiff(collect(1:length(partition)),blocks)
+    diff_blocks = setdiff(1:length(partition),blocks)
 
     b = length(blocks)
     bd = length(diff_blocks)
@@ -50,81 +100,38 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     if U != nothing
         Whatk_blocks = Vector{LazySet{NUM}}(undef, b)
+        Whatk_diff_blocks = Vector{LazySet{NUM}}(undef, bd)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
             Whatk_blocks[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
-       end
-    end
-
-    if U != nothing
-       Whatk_diff_blocks = Vector{LazySet{NUM}}(undef, bd)
-       inputs = next_set(U)
-       @inbounds for i in 1:bd
-           bi = partition[diff_blocks[i]]
-           Whatk_diff_blocks[i] = overapproximate_inputs(1, diff_blocks[i], proj(bi, n) * inputs)
+        end
+        @inbounds for i in 1:bd
+            bi = partition[diff_blocks[i]]
+            Whatk_diff_blocks[i] = overapproximate_inputs(1, diff_blocks[i], proj(bi, n) * inputs)
         end
     end
 
     k = 2
     @inbounds while true
         update!(progress_meter, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            Xhatk_bi = ZeroSet(length(bi))
-            for (j, bj) in enumerate(partition)
-                block = ϕpowerk[bi, bj]
-                if !iszero(block)
-                    Xhatk_bi = Xhatk_bi + block * Xhat0[j]
-                end
-            end
-            Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk_blocks[i])
-            Xhatk[i] = (output_function == nothing) ?
-                overapproximate(blocks[i], Xhatk_bi_lazy) :
-                Xhatk_bi_lazy
-        end
-        array = CartesianProductArray(copy(Xhatk))
-        X_store = (output_function == nothing) ?
-            array :
-            box_approximation(output_function(array))
-
-
-        terminate, skip, rs = termination(k, X_store, t0)
-
-        if  !(isdisjoint(X_store, UnionSetArray(guards_proj)))
-            for i in 1:bd
-                bi = partition[diff_blocks[i]]
-                Xhatk_bi = ZeroSet(length(bi))
-                for (j, bj) in enumerate(partition)
-                    block = ϕpowerk[bi, bj]
-                    if !iszero(block)
-                        Xhatk_bi = Xhatk_bi + block * Xhat0[j]
-                    end
-                end
-                Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk_diff_blocks[i])
-                Xhatk[i] = (output_function == nothing) ?
-                    overapproximate(diff_blocks[i], Xhatk_bi_lazy) :
-                    Xhatk_bi_lazy
-            end
-
-             array_d = CartesianProductArray(copy(Xhatk_d))
-
-             X_store_d = (output_function == nothing) ?
-                            array_d :
-                            box_approximation(output_function(array_d))
-            if !terminate
-                X_store = combine_cpas(LazySets.Approximations.overapproximate(rs, CartesianProductArray, block_options), X_store_d, blocks, diff_blocks)
-            end
-        end
+        X_store = deco_post_sparse(b, blocks, Whatk_blocks, partition,
+                                          ϕpowerk, Xhat0, output_function)
 
         t0 = t1
         t1 += δ
-        store!(res, k, X_store, t0, t1, N)
 
-        terminate, skip = termination(k, X_store, t0)
-        if terminate
-            break
+        terminate, skip, reach_set_intersected = termination(k, X_store, t0)
+
+        if !(isdisjoint(X_store, UnionSetArray(guards_proj)))
+            X_store_d = deco_post_sparse(bd, diff_blocks, Whatk_diff_blocks, partition,
+                                              ϕpowerk, Xhat0, output_function)
+
+            rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
+            X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
         end
+
+        store!(res, k, X_store, t0, t1, N)
 
         if U != nothing
             for i in 1:b
@@ -177,7 +184,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t0 = zero(δ)
     t1 = δ
 
-    diff_blocks = setdiff(collect(1:length(partition)),blocks)
+    diff_blocks = setdiff(1:length(partition),blocks)
 
     b = length(blocks)
     bd = length(diff_blocks)
@@ -201,16 +208,12 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
     if U != nothing
         Whatk_blocks = Vector{LazySet{NUM}}(undef, b)
+        Whatk_diff_blocks = Vector{LazySet{NUM}}(undef, bd)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
             Whatk_blocks[i] = overapproximate_inputs(1, blocks[i], proj(bi, n) * inputs)
         end
-    end
-
-     if U != nothing
-        Whatk_diff_blocks = Vector{LazySet{NUM}}(undef, bd)
-        inputs = next_set(U)
         @inbounds for i in 1:bd
             bi = partition[diff_blocks[i]]
             Whatk_diff_blocks[i] = overapproximate_inputs(1, diff_blocks[i], proj(bi, n) * inputs)
@@ -222,52 +225,18 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     k = 2
     @inbounds while true
         update!(progress_meter, k)
-        for i in 1:b
-            bi = partition[blocks[i]]
-            for (j, bj) in enumerate(partition)
-                arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
-            end
-            if U != nothing
-                arr[arr_length] = Whatk_blocks[i]
-            end
-            Xhatk[i] = (output_function == nothing) ?
-                overapproximate(blocks[i], MinkowskiSumArray(arr)) :
-                MinkowskiSumArray(copy(arr))
-        end
-        array = CartesianProductArray(copy(Xhatk))
+        X_store = deco_post_dense(b, blocks, Whatk_blocks, partition,
+                                          ϕpowerk, arr, arr_length, U, Xhat0, output_function)
 
-        X_store = (output_function == nothing) ?
-            array :
-            box_approximation(output_function(array))
+        terminate, skip, reach_set_intersected = termination(k, X_store, t0)
+        if !(isdisjoint(X_store, UnionSetArray(guards_proj)))
+            X_store_d = deco_post_dense(bd, diff_blocks, Whatk_diff_blocks, partition,
+                                              ϕpowerk, arr, arr_length, U, Xhat0, output_function)
 
-        terminate, skip, rs = termination(k, X_store, t0)
-        if  !(isdisjoint(X_store, UnionSetArray(guards_proj)))
-            for i in 1:bd
-               bi = partition[diff_blocks[i]]
-               for (j, bj) in enumerate(partition)
-                   arr[j] = ϕpowerk[bi, bj] * Xhat0[j]
-               end
-               if U != nothing
-                   arr[arr_length] = Whatk_diff_blocks[i]
-               end
-               Xhatk_d[i] = (output_function == nothing) ?
-                   overapproximate(diff_blocks[i], MinkowskiSumArray(arr)) :
-                   MinkowskiSumArray(copy(arr))
-            end
-
-            array_d = CartesianProductArray(copy(Xhatk_d))
-
-            X_store_d = (output_function == nothing) ?
-               array_d :
-               box_approximation(output_function(array_d))
-            if !terminate
-               rs_oa = LazySets.Approximations.overapproximate(rs, CartesianProductArray, block_options)
-               X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
-            end
+            rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
+            X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
         end
 
-        t0 = t1
-        t1 += δ
         store!(res, k, X_store, t0, t1, N)
 
         if terminate

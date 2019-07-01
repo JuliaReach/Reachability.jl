@@ -21,16 +21,7 @@ Compose high-dimensional cartesian product array from 2 low-dimensional CPA's
 
 ### Output
 
-A sequence of [`ReachSet`](@ref)s.
-
-### Notes
-
-A dictionary with available algorithms is available via
-`Reachability.available_algorithms`.
-
-The numeric type of the system's coefficients and the set of initial states
-is inferred from the first parameter of the system (resp. lazy set), ie.
-`NUM = first(typeof(problem.s).parameters)`.
+High-dimensional cartesian product array.
 """
 function combine_cpas(cpa1::CartesianProductArray{N, S}, cpa2::CartesianProductArray{N, S},
                        blocks1::Vector{Int}, blocks2::Vector{Int}) where {N, S<:LazySet{N}}
@@ -55,9 +46,6 @@ Interface to reachability algorithms for an LTI system.
 A sequence of [`ReachSet`](@ref)s.
 
 ### Notes
-
-A dictionary with available algorithms is available via
-`Reachability.available_algorithms`.
 
 The numeric type of the system's coefficients and the set of initial states
 is inferred from the first parameter of the system (resp. lazy set), ie.
@@ -204,7 +192,7 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     end
     termination = get_termination_function_out(N, invariant)
     push!(args, options[:guards_proj])
-    push!(args, options[:block_options_init])
+    push!(args, options[:block_options_iter])
     push!(args, vars)
     push!(args, termination)
 

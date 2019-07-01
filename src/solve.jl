@@ -210,7 +210,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             continue
         end
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
-                jumps, options)
+            jumps, options)
 
     end
     if options[:mode] == "check"
