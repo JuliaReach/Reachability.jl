@@ -139,10 +139,6 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                 Whatk_blocks[i] = overapproximate_inputs(k, blocks[i],
                     Whatk_blocks[i] + row(ϕpowerk, bi) * inputs)
             end
-        end
-
-         ##for diffs
-        if U != nothing
             for i in 1:bd
                 bi = partition[diff_blocks[i]]
                 Whatk_diff_blocks[i] = overapproximate_inputs(k, diff_blocks[i],
@@ -249,10 +245,6 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                 Whatk_blocks[i] = overapproximate_inputs(k, blocks[i],
                     Whatk_blocks[i] + row(ϕpowerk, bi) * inputs)
             end
-        end
-
-         ##for diffs
-        if U != nothing
             for i in 1:bd
                 bi = partition[diff_blocks[i]]
                 Whatk_diff_blocks[i] = overapproximate_inputs(k, diff_blocks[i],
