@@ -28,7 +28,7 @@
 end
 
 @inline function deco_post_dense(b, blocks, Whatk_blocks, partition,
-                                  ϕpowerk, arr, arr_length, U, Xhat0, output_function)
+                                  ϕpowerk, arr::Vector{LazySet{NUM}}, arr_length, U, Xhat0, Xhatk, output_function) where {NUM}
     for i in 1:b
         bi = partition[blocks[i]]
         for (j, bj) in enumerate(partition)
@@ -44,8 +44,8 @@ end
     array = CartesianProductArray(copy(Xhatk))
 
     X_store = (output_function == nothing) ?
-        array :
-        box_approximation(output_function(array))
+                array :
+                box_approximation(output_function(array))
 
     return X_store
 end
@@ -221,13 +221,13 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     k = 2
     @inbounds while true
         update!(progress_meter, k)
-        X_store = deco_post_dense(b, blocks, Whatk_blocks, partition,
+        X_store = deco_post_dense(b, blocks, Whatk_blocks, partition, ϕpowerk, arr, arr_length, U, Xhat0, Xhatk, output_function)
                                           ϕpowerk, arr, arr_length, U, Xhat0, output_function)
 
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if !(isdisjoint(X_store, UnionSetArray(guards_proj)))
             X_store_d = deco_post_dense(bd, diff_blocks, Whatk_diff_blocks, partition,
-                                              ϕpowerk, arr, arr_length, U, Xhat0, output_function)
+                                              ϕpowerk, arr, arr_length, U, Xhat0, Xhatk_d, output_function)
 
             rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
             X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
