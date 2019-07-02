@@ -1,5 +1,4 @@
 
-
 #helper functions
 @inline function deco_post_sparse(b, blocks, Whatk_blocks, partition,
                                   ϕpowerk, Xhat0, output_function)
@@ -13,7 +12,7 @@
           end
         end
         Xhatk_lazy = (U == nothing ? Xhatk : Xhatk + Whatk_blocks[i])
-        Xhatk_d[i] = (output_function == nothing) ?
+        Xhatk[i] = (output_function == nothing) ?
           overapproximate(blocks[i], Xhatk_lazy) :
           Xhatk_lazy
     end
