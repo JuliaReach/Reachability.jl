@@ -1,27 +1,26 @@
-
 #helper functions
 @inline function deco_post_sparse(b, blocks, Whatk_blocks, partition,
-                                  ϕpowerk, Xhat0, output_function)
+                                  ϕpowerk, Xhatk, Xhat0, output_function)
     for i in 1:b
         bi = partition[blocks[i]]
-        Xhatk = ZeroSet(length(bi))
+        Xhatk_bi = ZeroSet(length(bi))
         for (j, bj) in enumerate(partition)
-          block = ϕpowerk[bi, bj]
-          if !iszero(block)
-              Xhatk = Xhatk + block * Xhat0[j]
-          end
+            block = ϕpowerk[bi, bj]
+            if !iszero(block)
+                Xhatk_bi = Xhatk_bi + block * Xhat0[j]
+            end
         end
-        Xhatk_lazy = (U == nothing ? Xhatk : Xhatk + Whatk_blocks[i])
+        Xhatk_bi_lazy = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
         Xhatk[i] = (output_function == nothing) ?
-          overapproximate(blocks[i], Xhatk_lazy) :
-          Xhatk_lazy
+            overapproximate(blocks[i], Xhatk_bi_lazy) :
+            Xhatk_bi_lazy
     end
 
-    array_d = CartesianProductArray(copy(Xhatk_d))
+    array = CartesianProductArray(copy(Xhatk))
 
     X_store = (output_function == nothing) ?
                   array_d :
-                  box_approximation(output_function(array_d))
+                  box_approximation(output_function(array))
 
     return X_store
 end
