@@ -3,7 +3,7 @@ export DecomposedDiscretePost
 """
     DecomposedDiscretePost <: DiscretePost
 
-Textbook implementation of a discrete post operator, but with lazy decomposed intersections.
+Textbook implementation of a discrete post operator, but with decomposed intersections.
 
 ### Fields
 
@@ -11,8 +11,9 @@ Textbook implementation of a discrete post operator, but with lazy decomposed in
 
 ### Algorithm
 
-The algorithm is based on [Flowpipe-Guard Intersection for Reachability
-Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
+The algorithm is based on [Reachability analysis of linear hybrid systems via block
+decomposition](https://arxiv.org/pdf/1905.02458.pdf).
+This discrete-post operator can only be used in combination with the continuous-post operator [`BFFPS19`](@ref).
 """
 struct DecomposedDiscretePost <: DiscretePost
     options::Options
@@ -52,11 +53,10 @@ function tube⋂inv!(𝒫::DecomposedDiscretePost,
                    start_interval
                   ) where {N}
 
-    dirs = 𝒫.options[:overapproximation]
-
     # counts the number of sets R⋂I added to Rsets
     count = 0
     @inbounds for reach_set in reach_tube
+        #intersection with invariant is computed inside of BFFPS19 CPost operator
         push!(Rsets, ReachSet{LazySet{N}, N}(reach_set.X,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
@@ -78,7 +78,7 @@ function post(𝒫::DecomposedDiscretePost,
              ) where {N}
     jumps += 1
     oa = 𝒫.options[:overapproximation]
-    temp_vars = 𝒫.options[:temp_vars]
+    n_lowdim = length(𝒫.options[:temp_vars])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
 
@@ -93,7 +93,7 @@ function post(𝒫::DecomposedDiscretePost,
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
-            if (dim(reach_set.X) == length(temp_vars))
+            if (dim(reach_set.X) == n_lowdim)
                 continue
             end
             # check intersection with guard
@@ -128,13 +128,6 @@ function post(𝒫::DecomposedDiscretePost,
 end
 
 # --- handling assignments ---
-
-function apply_assignment(𝒫::DecomposedDiscretePost,
-                          constrained_map::Union{IdentityMap, ConstrainedIdentityMap},
-                          R⋂G::LazySet;
-                          kwargs...)
-    return R⋂G
-end
 
 function apply_assignment(𝒫::DecomposedDiscretePost,
                           constrained_map::ConstrainedLinearMap,

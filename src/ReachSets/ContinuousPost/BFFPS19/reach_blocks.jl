@@ -86,7 +86,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     X_store_d = (output_function == nothing) ?
             array_d :
             box_approximation(output_function(array_d))
-    X_store = combine_cpas(X_store, X_store_d, blocks, diff_blocks)
+    terminate, skip, reach_set_intersected = termination(1, X_store, t0)
+    rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
+    X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
     store!(res, 1, X_store, t0, t1, N)
     terminate, skip = termination(1, X_store, t0)
     if terminate
@@ -132,6 +134,10 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         end
 
         store!(res, k, X_store, t0, t1, N)
+
+        if terminate
+            break
+        end
 
         if U != nothing
             for i in 1:b
@@ -190,8 +196,9 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         array_d :
         box_approximation(output_function(array_d))
 
-    terminate, skip = termination(1, X_store, t0)
-    X_store = combine_cpas(X_store, X_store_d, blocks, diff_blocks)
+    terminate, skip, reach_set_intersected = termination(1, X_store, t0)
+    rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
+    X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
     store!(res, 1, X_store, t0, t1, N)
     if terminate
         return 1, skip
