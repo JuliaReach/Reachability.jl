@@ -1,4 +1,15 @@
 #helper functions
+@inline function termination_X(k, set, t, X_store_d, blocks, diff_blocks, block_options, termination)
+    terminate, skip, reach_set_intersected = termination(k, set, t)
+    X_store = getX_store(reach_set_intersected, block_options, X_store_d, blocks, diff_blocks)
+    return terminate, skip, X_store
+end
+
+@inline function getX_store(X_store, block_options, X_store_d, blocks, diff_blocks)
+    rs_oa = Approximations.overapproximate(X_store, CartesianProductArray, block_options)
+    return combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
+end
+
 @inline function deco_post_sparse(b, blocks, Whatk_blocks, partition,
                                   ϕpowerk, Xhatk, Xhat0, output_function, overapproximate)
     for i in 1:b
@@ -86,9 +97,9 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     X_store_d = (output_function == nothing) ?
             array_d :
             box_approximation(output_function(array_d))
-    terminate, skip, reach_set_intersected = termination(1, X_store, t0)
-    rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
-    X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
+
+    terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
+                                diff_blocks, block_options, termination)
     store!(res, 1, X_store, t0, t1, N)
     if terminate
         return 1, skip
@@ -127,9 +138,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         if !(isdisjoint(X_store, UnionSetArray(guards_proj)))
             X_store_d = deco_post_sparse(bd, diff_blocks, Whatk_diff_blocks, partition,
                                               ϕpowerk, Xhatk_d, Xhat0, output_function, overapproximate)
-
-            rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
-            X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
+            X_store = getX_store(reach_set_intersected, block_options, X_store_d, blocks, diff_blocks)
         end
 
         store!(res, k, X_store, t0, t1, N)
@@ -195,9 +204,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         array_d :
         box_approximation(output_function(array_d))
 
-    terminate, skip, reach_set_intersected = termination(1, X_store, t0)
-    rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
-    X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
+    terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
+                                diff_blocks, block_options, termination)
     store!(res, 1, X_store, t0, t1, N)
     if terminate
         return 1, skip
@@ -229,13 +237,14 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         update!(progress_meter, k)
         X_store = deco_post_dense(b, blocks, Whatk_blocks, partition, ϕpowerk,
                     arr, arr_length, U, Xhat0, Xhatk, output_function, overapproximate)
+        t0 = t1
+        t1 += δ
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if !(isdisjoint(X_store, UnionSetArray(guards_proj)))
             X_store_d = deco_post_dense(bd, diff_blocks, Whatk_diff_blocks, partition, ϕpowerk, arr,
                                               arr_length, U, Xhat0, Xhatk_d, output_function, overapproximate)
 
-            rs_oa = Approximations.overapproximate(reach_set_intersected, CartesianProductArray, block_options)
-            X_store = combine_cpas(rs_oa, X_store_d, blocks, diff_blocks)
+            X_store = getX_store(reach_set_intersected, block_options, X_store_d, blocks, diff_blocks)
         end
 
         store!(res, k, X_store, t0, t1, N)
