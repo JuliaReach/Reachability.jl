@@ -77,11 +77,11 @@ function post(𝒫::DecomposedDiscretePost,
               options
              ) where {N}
     jumps += 1
+    n = options[:n]
     oa = 𝒫.options[:overapproximation]
     n_lowdim = length(𝒫.options[:temp_vars])
     source_invariant = HS.modes[source_loc_id].X
     inv_isa_Hrep, inv_isa_H_polytope = get_Hrep_info(source_invariant)
-
     for trans in out_transitions(HS, source_loc_id)
         info("Considering transition: $trans")
         target_loc_id = target(HS, trans)
@@ -93,7 +93,7 @@ function post(𝒫::DecomposedDiscretePost,
         post_jump = Vector{ReachSet{LazySet{N}, N}}()
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
-            if (dim(reach_set.X) == n_lowdim)
+            if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
                 continue
             end
             # check intersection with guard
