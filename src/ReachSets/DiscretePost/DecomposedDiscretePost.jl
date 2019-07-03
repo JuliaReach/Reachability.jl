@@ -115,7 +115,6 @@ function post(𝒫::DecomposedDiscretePost,
 
             A⌜R⋂G⌟⋂I = overapproximate(A⌜R⋂G⌟⋂I, CartesianProductArray, oa)
 
-
             # store result
             push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
@@ -125,13 +124,4 @@ function post(𝒫::DecomposedDiscretePost,
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
             target_loc_id, jumps)
     end
-end
-
-# --- handling assignments ---
-
-function apply_assignment(𝒫::DecomposedDiscretePost,
-                          constrained_map::ConstrainedLinearMap,
-                          R⋂G::LazySet;
-                          kwargs...)
-    return LinearMap(constrained_map.A, R⋂G)
 end
