@@ -124,7 +124,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}}}, Int}()
+    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}}()
 
     for (loc_id, x0) in init_sets
         loc = HS.modes[loc_id]
