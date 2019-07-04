@@ -124,7 +124,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}}()
+    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}}}}()
 
     for (loc_id, x0) in init_sets
         loc = HS.modes[loc_id]
@@ -137,8 +137,8 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
 
         if !isempty(loc_x0set)
-            push!(waiting_list, (loc_id,
-                ReachSet{LazySet{N}, N}(loc_x0set, zero(N), zero(N)), 0))
+            aux = ReachSet{LazySet{N}}(loc_x0set, zero(N), zero(N))
+            push!(waiting_list, (loc_id, aux))
         end
     end
 
@@ -146,9 +146,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # reach sets
     passed_list = options[:fixpoint_check] == :none ?
         nothing :
-        Vector{Vector{ReachSet{LazySet{N}, N}}}(undef, nstates(HS))
+        Vector{Vector{ReachSet{LazySet{N}}}}(undef, nstates(HS))
 
-    Rsets = Vector{ReachSet{LazySet{N}, N}}()
+    Rsets = Vector{ReachSet{LazySet{N}}}()
     while (!isempty(waiting_list))
         loc_id, X0, jumps = pop!(waiting_list)
         loc = HS.modes[loc_id]
@@ -190,7 +190,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             if !(reach_set.X isa CartesianProductArray) || !(array(reach_set.X)[1] isa CH)
                 Xoa = overapproximate(reach_set.X)
                 ti, tf = reach_set.t_start, reach_set.t_end
-                passed_list[loc_id] = [ReachSet{LazySet{N}, N}(Xoa, ti, tf)]
+                passed_list[loc_id] = [ReachSet{LazySet{N}}(Xoa, ti, tf)]
             end
         end
 

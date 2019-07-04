@@ -4,14 +4,14 @@
 import LazySets.Approximations: project
 
 # add a "time" variable by taking the cartesian product of the flowpipe ℱ with each time lapse
-function add_time(ℱ::Vector{ReachSet{Zonotope{Float64}, Float64}})
-    ℱ_with_time = Vector{ReachSet{Zonotope{Float64}, Float64}}(undef, length(ℱ))
+function add_time(ℱ::Vector{ReachSet{Zonotope{Float64}}})
+    ℱ_with_time = Vector{ReachSet{Zonotope{Float64}}}(undef, length(ℱ))
     @inbounds for i in eachindex(ℱ)
         t0, t1 = ℱ[i].t_start, ℱ[i].t_end
         radius = (t1 - t0)/2.0
         Xi = ℱ[i].X × Zonotope([t0 + radius], hcat(radius))
         Xi = convert(Zonotope, Xi)
-        ℱ_with_time[i] = ReachSet{Zonotope{Float64}, Float64}(Xi, t0, t1)
+        ℱ_with_time[i] = ReachSet{Zonotope{Float64}}(Xi, t0, t1)
     end
     return ℱ_with_time
 end
@@ -20,7 +20,7 @@ function project(sol::ReachSolution{Zonotope{Float64}})
     N = length(sol.Xk)  # number of reach sets
     n = dim(first(sol.Xk).X) # state space dimension
     options = copy(sol.options)
-    πℱ = Vector{ReachSet{Zonotope{Float64}, Float64}}(undef, N) # preallocated projected reachsets
+    πℱ = Vector{ReachSet{Zonotope{Float64}}}(undef, N) # preallocated projected reachsets
     πvars = sol.options[:plot_vars] # variables for plotting
     @assert length(πvars) == 2
 
@@ -42,7 +42,7 @@ function project(sol::ReachSolution{Zonotope{Float64}})
         πℱ_i = linear_map(M, ℱ[i].X)
         πℱ_i = Zonotope(πℱ_i.center, πℱ_i.generators)
         πℱ_i = reduce_order(πℱ_i, options[:max_order])
-        πℱ[i] = ReachSet{Zonotope{Float64}, Float64}(πℱ_i, t0, t1)
+        πℱ[i] = ReachSet{Zonotope{Float64}}(πℱ_i, t0, t1)
     end
     return ReachSolution(πℱ, options)
 end

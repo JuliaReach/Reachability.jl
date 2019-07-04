@@ -74,9 +74,9 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
 
     # preallocate output vector
     if output_function == nothing
-        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}, NUM}
+        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
     else
-        res_type = ReachSet{Hyperrectangle{NUM}, NUM}
+        res_type = ReachSet{Hyperrectangle{NUM}}
     end
     res = (N == nothing) ? Vector{res_type}() : Vector{res_type}(undef, N)
 
