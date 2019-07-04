@@ -55,7 +55,7 @@ function init!(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
 end
 
 function tube⋂inv!(𝒫::ConcreteDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet}},
+                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
