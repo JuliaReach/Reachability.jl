@@ -57,8 +57,8 @@ function postprocess(𝒫,
 end
 
 function cluster(𝒫::DiscretePost,
-                 reach_sets::Vector{ReachSet{LazySet{N}, N}},
-                 options::Options) where N<:Real
+                 reach_sets::Vector{RSN},
+                 options::Options) where {SN, RSN<:ReachSet{SN}}
     clustering_strategy = options[:clustering]
     oa = 𝒫.options[:overapproximation]
     if clustering_strategy == :none
@@ -66,23 +66,21 @@ function cluster(𝒫::DiscretePost,
         return reach_sets
     elseif clustering_strategy == :none_oa
         # no clustering but overapproximation
-        return [ReachSet{LazySet{N}, N}(overapproximate(reach_set.X, oa),
-                reach_set.t_start, reach_set.t_end) for reach_set in reach_sets]
+        return [RSN(overapproximate(reach_set.X, oa),
+        reach_set.t_start, reach_set.t_end) for reach_set in reach_sets]
     elseif clustering_strategy == :chull
         # cluster all sets in a convex hull and overapproximate that set
-        chull = ConvexHullArray(
-            LazySet{N}[reach_set.X for reach_set in reach_sets])
+        chull = ConvexHullArray([reach_set.X for reach_set in reach_sets])
         chull_oa = overapproximate(chull, oa)
-        return [ReachSet{LazySet{N}, N}(chull_oa, reach_sets[1].t_start,
-                reach_sets[end].t_end)]
+        return [RSN(chull_oa, reach_sets[1].t_start, reach_sets[end].t_end)]
     end
 end
 
 function isfixpoint(𝒫::DiscretePost,
-                    reach_set::ReachSet{LazySet{N}, N},
+                    reach_set::RSN,
                     passed_list,
                     loc_id
-                   ) where N
+                   ) where {SN, RSN<:ReachSet{SN}}
     @assert passed_list != nothing
     if isassigned(passed_list, loc_id)
         for other_reach_set in passed_list[loc_id]
@@ -93,7 +91,7 @@ function isfixpoint(𝒫::DiscretePost,
         end
         return false
     else
-        passed_list[loc_id] = Vector{ReachSet{LazySet{N}, N}}()
+        passed_list[loc_id] = Vector{RSN}()
         return false
     end
 end

@@ -82,7 +82,7 @@ function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
 end
 
 function tube⋂inv!(𝒫::LazyDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet, N}},
+                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
@@ -100,7 +100,7 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
         if !𝒫.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
-        push!(Rsets, ReachSet{LazySet{N}, N}(R⋂I,
+        push!(Rsets, ReachSet{LazySet{N}}(R⋂I,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
         count = count + 1
@@ -111,7 +111,7 @@ end
 
 function post(𝒫::LazyDiscretePost,
               HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
@@ -143,7 +143,7 @@ function post(𝒫::LazyDiscretePost,
         end
 
         # perform jumps
-        post_jump = Vector{ReachSet{LazySet{N}, N}}()
+        post_jump = Vector{ReachSet{LazySet{N}}}()
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
@@ -175,9 +175,9 @@ function post(𝒫::LazyDiscretePost,
             end
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
-                                                     reach_set.t_start,
-                                                     reach_set.t_end))
+            push!(post_jump, ReachSet{LazySet{N}}(A⌜R⋂G⌟⋂I,
+                                                  reach_set.t_start,
+                                                  reach_set.t_end))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,
