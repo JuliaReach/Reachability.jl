@@ -199,7 +199,7 @@ function init!(𝒫::BFFPS19, 𝑆::AbstractSystem, 𝑂::Options)
     out_vars = opD.options[:out_vars]
     loc_id = 𝒫.options[:loc_id]
     temp_vars = unique([out_vars; constrained_dims[loc_id]])
-    temp_vars = get_vars(𝑂validated[:partition], temp_vars)
+    temp_vars = get_variables_from_relevant_blocks(𝑂validated[:partition], temp_vars)
     opD.options[:temp_vars] = temp_vars
     guards_constraints = [guard(HS, trans) for trans in out_transitions(HS, loc_id)]
     𝑂validated[:vars] = temp_vars
@@ -263,10 +263,10 @@ function post(𝒫::BFFPS19, 𝑆::AbstractSystem, 𝑂_input::Options)
     return ReachSolution(RsetsProj, 𝑂_input)
 end
 
-function get_vars(partition, vars)
+function get_variables_from_relevant_blocks(partition, vars)
     result = Vector{Int}()
     for ur in partition
-        if any(v ∈ vars for v in collect(ur))
+        if any(v ∈ ur for v in vars)
             append!(result, collect(ur))
         end
     end
