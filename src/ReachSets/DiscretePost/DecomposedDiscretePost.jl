@@ -57,7 +57,7 @@ function tube⋂inv!(𝒫::DecomposedDiscretePost,
     count = 0
     @inbounds for reach_set in reach_tube
         #intersection with invariant is computed inside of BFFPS19 CPost operator
-        push!(Rsets, ReachSet{LazySet{N}, N}(reach_set.X,
+        push!(Rsets, ReachSet{LazySet{N}}(reach_set.X,
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
         count = count + 1
