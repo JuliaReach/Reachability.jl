@@ -27,6 +27,12 @@ for model in models
     # overapproximating discrete-post operator
     sol = solve(system, options, opC, ApproximatingDiscretePost())
 
+    # --- BFFPS19
+
+    opC = BFFPS19(:δ=>0.1)
+
+    sol = solve(system, options, opC, DecomposedDiscretePost())
+
     # --- GLGM06
 
     opC = GLGM06(:δ=>0.1)

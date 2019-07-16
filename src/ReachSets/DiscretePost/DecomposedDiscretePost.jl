@@ -47,7 +47,7 @@ function init!(𝒫::DecomposedDiscretePost, 𝒮::AbstractSystem, 𝑂::Options
 end
 
 function tube⋂inv!(𝒫::DecomposedDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet, N}},
+                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
@@ -68,7 +68,7 @@ end
 
 function post(𝒫::DecomposedDiscretePost,
               HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}, N}, Int}},
+              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
@@ -90,7 +90,7 @@ function post(𝒫::DecomposedDiscretePost,
         constrained_map = resetmap(HS, trans)
         guard = stateset(constrained_map)
         # perform jumps
-        post_jump = Vector{ReachSet{LazySet{N}, N}}()
+        post_jump = Vector{ReachSet{LazySet{N}}}()
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
@@ -116,7 +116,7 @@ function post(𝒫::DecomposedDiscretePost,
             A⌜R⋂G⌟⋂I = overapproximate(A⌜R⋂G⌟⋂I, CartesianProductArray, oa)
 
             # store result
-            push!(post_jump, ReachSet{LazySet{N}, N}(A⌜R⋂G⌟⋂I,
+            push!(post_jump, ReachSet{LazySet{N}}(A⌜R⋂G⌟⋂I,
                                                      reach_set.t_start,
                                                      reach_set.t_end))
         end
