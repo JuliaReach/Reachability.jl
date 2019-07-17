@@ -122,7 +122,7 @@ end
     BFFPS19 <: ContinuousPost
 
 Implementation of the reachability algorithm for purely continuous linear
-time-invariant systems using block decompositons by S. Bogomolov, M. Forets,
+time-invariant systems using block decompositions by S. Bogomolov, M. Forets,
 G. Frehse, A. Podelski, C. Schilling and F. Viry [1].
 
 ### Fields
@@ -141,11 +141,9 @@ $(print_option_spec(options_BFFPS19()))
 
 We refer to [1] for technical details.
 
-[1] [Reach Set Approximation through Decomposition with Low-dimensional Sets
-and High-dimensional Matrices](https://dl.acm.org/citation.cfm?id=3178128).
-S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry.
-HSCC '18 Proceedings of the 21st International Conference on Hybrid Systems:
-Computation and Control (part of CPS Week).
+[1] [Reachability analysis of linear hybrid systems via block
+decomposition.](https://arxiv.org/abs/1905.02458).
+Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling.
 """
 struct BFFPS19 <: ContinuousPost
     options::TwoLayerOptions
