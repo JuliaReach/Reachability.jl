@@ -142,7 +142,7 @@ $(print_option_spec(options_BFFPS19()))
 We refer to [1] for technical details.
 
 [1] [Reachability analysis of linear hybrid systems via block
-decomposition.](https://arxiv.org/abs/1905.02458).
+decomposition](https://arxiv.org/abs/1905.02458).
 Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling.
 """
 struct BFFPS19 <: ContinuousPost
