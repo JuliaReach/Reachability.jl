@@ -120,7 +120,7 @@ function filtered_oscillator(n0::Int=6, x=1, y=2)
 
     problem = InitialValueProblem(HS, [(3, X0)])
 
-    options = Options(:T=>Inf, :mode=>"reach", :max_jumps=>5, :verbosity=>1)
+    options = Options(:T=>99., :mode=>"reach", :max_jumps=>5, :verbosity=>1)
 
     return (problem, options)
 end
