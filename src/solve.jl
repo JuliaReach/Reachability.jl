@@ -162,6 +162,14 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
         end
+
+        if opC isa BFFPS19
+            opC.options.specified[:HS] = HS
+            opC.options.specified[:loc_id] = loc_id
+            opC.options.specified[:opD] = opD
+        end
+
+
         reach_tube = solve!(IVP(loc, X0.X), options_copy, op=opC)
 
         if opC isa BFFPSV18
@@ -201,9 +209,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         if jumps == max_jumps
             continue
         end
-
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
-             jumps, options)
+            jumps, options)
+
     end
     if options[:mode] == "check"
         return CheckSolution(true, -1, options)

@@ -102,6 +102,8 @@ include("ContinuousPost/GLGM06/GLGM06.jl")
 
 include("ContinuousPost/TMJets/TMJets.jl")
 
+include("ContinuousPost/BFFPS19/BFFPS19.jl")
+
 # ========================
 # Reachability Algorithms
 # ========================
@@ -125,6 +127,7 @@ export available_algorithms
 # ==========================
 include("DiscretePost/LazyDiscretePost.jl")
 include("DiscretePost/ConcreteDiscretePost.jl")
+include("DiscretePost/DecomposedDiscretePost.jl")
 
 # ==============================================
 # Projection of the reach set in two dimensions
