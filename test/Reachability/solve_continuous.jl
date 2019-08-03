@@ -201,7 +201,7 @@ using TaylorIntegration
 using TaylorModels: @taylorize
 using Reachability: solve
 
-@taylorize function vanderPol!(t, x, dx)
+@taylorize function vanderPol!(dx, x, params, t)
     local μ = 1.0
     dx[1] = x[2]
     dx[2] = (μ * x[2]) * (1 - x[1]^2) - x[1]
