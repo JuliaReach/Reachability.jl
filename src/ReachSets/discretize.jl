@@ -1,3 +1,6 @@
+using IntervalMatrices: expm_overapproximation, correction_hull, _expm_remainder
+IM = IntervalMatrices
+
 """
     discretize(𝑆, δ; [algorithm], [exp_method], [sih_method], [set_operations])
 
@@ -9,7 +12,7 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
                      non-deterministic inputs
 - `δ`             -- step size
 - `algorithm`     -- (optional, default: `"forward"`) the algorithm used to
-                     compute the approximation model for the discretization,
+                     compute the approximation model for the discretization;
                      choose among:
 
     - `"forward"`    -- use forward-time interpolation
@@ -18,7 +21,7 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
     - `"nobloating"` -- do not bloat the initial states
 
 - `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
-                    exponential of the coefficient matrix, choose among:
+                    exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -30,7 +33,7 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
                   `expmv` implementation from `Expokit`
 
 - `sih_method`  -- (optional, default: `"concrete"`) the method used to take the
-                    symmetric interval hull operation, choose among:
+                    symmetric interval hull operation; choose among:
 
     - `"concrete"` -- compute the full symmetric interval hull using the function
                       `symmetric_interval_hull` from `LazySets.Approximations`
@@ -38,7 +41,8 @@ Apply an approximation model to `S` obtaining a discrete initial value problem.
                       in a lazy way using `SymmetricIntervalHull`
 
 - `set_operations`  -- (optional, default: `"lazy"`) set operations used for the
-                       discretized initial states and transformed inputs, choose among:
+                       discretized initial states and transformed inputs; choose
+                       among:
 
     - `"lazy"`     -- use lazy convex hull for the initial states and lazy linear
                       map for the inputs
@@ -89,7 +93,8 @@ function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
                     algorithm::String="forward",
                     exp_method::String="base",
                     sih_method::String="concrete",
-                    set_operations::String="lazy")
+                    set_operations::String="lazy",
+                    order::Int=2)
 
     if algorithm in ["forward", "backward"]
         return discretize_interpolation(𝑆, δ, algorithm=algorithm,
@@ -106,6 +111,10 @@ function discretize(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
             throw(ArgumentError("the algorithm $algorithm with set operations=$set_operations is not implemented"))
         end
         return discretize_nobloating(𝑆, δ, exp_method=exp_method)
+
+    elseif algorithm == "interval_matrix"
+        return discretize_interval_matrix(𝑆, δ, order;
+                                          set_operations=set_operations)
     else
         throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
@@ -121,7 +130,7 @@ Compute the matrix exponential ``e^{Aδ}``.
 - `A`           -- coefficient matrix
 - `δ`           -- step size
 - `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
-                    exponential of the coefficient matrix, choose among:
+                    exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -169,7 +178,7 @@ where ``A`` is a square matrix of order ``n`` and ``δ ∈ \\mathbb{R}_{≥0}``.
 - `A`           -- coefficient matrix
 - `δ`           -- step size
 - `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
-                    exponential of the coefficient matrix, choose among:
+                    exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -243,7 +252,7 @@ where ``A`` is a square matrix of order ``n`` and ``δ ∈ \\mathbb{R}_{≥0}``.
 - `A`           -- coefficient matrix
 - `δ`           -- step size
 - `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
-                    exponential of the coefficient matrix, choose among:
+                    exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -316,7 +325,7 @@ value problem.
 - `δ`           -- step size
 - `p`           -- (optional, default: `Inf`) parameter in the considered norm
 - `exp_method`  -- (optional, default: `"base"`) the method used to take the matrix
-                    exponential of the coefficient matrix, choose among:
+                    exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -395,7 +404,7 @@ function discretize_firstorder(𝑆::InitialValueProblem,
                                exp_method::String="base")
 
     # unwrap coefficient matrix and initial states
-    A, X0 = 𝑆.s.A, 𝑆.x0 
+    A, X0 = 𝑆.s.A, 𝑆.x0
 
     # system size; A is assumed square
     n = size(A, 1)
@@ -472,7 +481,7 @@ for discrete-time reachability.
 - `𝑆`          -- a continuous system
 - `δ`          -- step size
 - `exp_method` -- (optional, default: `"base"`) the method used to take the matrix
-                  exponential of the coefficient matrix, choose among:
+                  exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -552,7 +561,7 @@ Compute bloating factors using forward or backward interpolation.
 - `algorithm`     -- choose the algorithm to compute the approximation model
                      among `"forward"` and `"backward"`
 - `exp_method`    -- (optional, default: `"base"`) the method used to take the matrix
-                     exponential of the coefficient matrix, choose among:
+                     exponential of the coefficient matrix; choose among:
 
     - `"base"` -- the scaling and squaring method implemented in Julia base,
                   see `?exp` for details
@@ -564,11 +573,21 @@ Compute bloating factors using forward or backward interpolation.
                   `expmv` implementation from `Expokit`
 
 - `sih_method`    -- (optional, default: `"concrete"`) the method used to take the
-                     symmetric interval hull operation, choose among:
+                     symmetric interval hull operation; choose among:
 
     - `"concrete"` -- compute the full symmetric interval hull
     - `"lazy"`     -- compute a wrapper set type around symmetric interval hull in a
                       lazy way
+
+- `set_operations` -- (optional, default: `"lazy"`) set operations used for the
+                      discretized initial states and transformed inputs; choose
+                      among:
+
+    - `"lazy"`     -- use lazy convex hull for the initial states and lazy
+                      linear map for the inputs
+    - `"zonotope"` -- use concrete zonotope operations (linear map and Minkowski
+                      sum) and return zonotopes for both the initial states and
+                      the inputs of the discretized system
 
 ### Output
 
@@ -715,6 +734,157 @@ function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, si
         end
         Ud = VaryingInput(Ud)
 
+    else
+        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+    end
+    return Ω0, Ud
+end
+
+"""
+    discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64, order::Int)
+
+Discretize an affine continuous system whose dynamics are described by an
+interval matrix.
+
+### Input
+
+- `𝑆`              -- a continuous system
+- `δ`              -- step size
+- `order`          -- order for Taylor-series approximation, ≥ 2
+- `set_operations` -- (optional, default: `"zonotope"`) set operations used for
+                      the discretized initial states and transformed inputs;
+                      choose among:
+
+    - `"lazy"`     -- use lazy convex hull for the initial states and lazy
+                      linear map for the inputs
+    - `"zonotope"` -- use concrete zonotope operations (linear map and Minkowski
+                      sum) and return zonotopes for both the initial states and
+                      the inputs of the discretized system
+
+### Output
+
+The discretized system. In particular:
+
+- if the input system is homogeneous, a `LinearDiscreteSystem` is returned,
+- otherwise a `ConstrainedLinearControlDiscreteSystem` is returned.
+
+## Algorithm
+
+See the first two lines of Algorithm 1 in [1].
+
+[1] M. Althoff, O. Stursberg, M. Buss. Reachability Analysis of Linear Systems
+with Uncertain Parameters and Inputs. CDC 2007.
+"""
+function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
+                                    order::Int;
+                                    set_operations::String="zonotope")
+    @assert order > 1 "order must be > 1 but was $order"
+    N = Float64
+
+    # used to dispatch on the value of the set operation
+    set_ops = Val(Symbol(set_operations))
+
+    A, X0 = 𝑆.s.A, 𝑆.x0
+    ϕ = expm_overapproximation(A, δ, order)
+    F = correction_hull(A, δ, order)
+
+    Ω0_homog = _discretize_interval_matrix_homog(X0, ϕ, F, set_ops)
+
+    # early return for homogeneous systems
+    if inputdim(𝑆) == 0
+        return IVP(CLDS(ϕ, stateset(𝑆.s)), Ω0_homog)
+    end
+
+    U = inputset(𝑆)
+    U0 = next_set(U, 1)
+    n = size(A, 1)
+    linear_maps = Vector{LinearMap{N}}(undef, order > 2 ? 3 : 2)
+
+    IδW = 1/2 * δ^2 * A + 1/6 * δ^3 * A * A
+    @inbounds for i in 1:n
+        IδW[i, i] *= δ
+    end
+    linear_maps[1] = LinearMap(IδW, U0)
+
+    linear_maps[2] = LinearMap(_expm_remainder(A, δ, order; n=n) * δ, U0)
+
+    zero_interval = IntervalMatrices.Interval(zero(N), zero(N))
+    if order > 2
+        fac_i_plus_1 = 6
+        Ai = A * A
+        δ_iplus1 = δ^3
+        M_sum = IntervalMatrix(fill(zero_interval, size(A)))
+        @inbounds for i in 3:order
+            fac_i_plus_1 *= i+1
+            δ_iplus1 *= δ
+            Ai *= A
+            1/fac_i_plus_1 * δ_iplus1 * Ai
+        end
+        linear_maps[3] = LinearMap(M_sum, U0)
+    end
+
+    Ω0, Ud = _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
+                                                 set_ops)
+
+    # create identity interval matrix
+    one_interval = IntervalMatrices.Interval(one(N), one(N))
+    B = IntervalMatrix(fill(zero_interval, (n, n)))
+    @inbounds for i in 1:n
+        B[i, i] = one_interval
+    end
+
+    return IVP(CLCDS(ϕ, B, stateset(𝑆.s), Ud), Ω0)
+end
+
+# version using lazy sets and operations
+function _discretize_interval_matrix_homog(X0, ϕ, F, set_ops::Val{:lazy})
+    Ω0 = ConvexHull(X0, LinearMap(ϕ, X0)) + LinearMap(F, X0)
+    return Ω0
+end
+
+# version using concrete operations with zonotopes
+function _discretize_interval_matrix_homog(X0, ϕ, F, set_ops::Val{:zonotope})
+    X1 = overapproximate(LinearMap(ϕ, X0), Zonotope)
+    CH_X0_X1 = overapproximate(ConvexHull(X0, X1), Zonotope)
+    F_X0 = overapproximate(LinearMap(F, X0), Zonotope)
+    Ω0 = minkowski_sum(CH_X0_X1, F_X0)
+    return Ω0
+end
+
+# version using lazy sets and operations
+function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
+                                             set_ops::Val{:lazy})
+    Ω0_inhomog = length(linear_maps) == 2 ?
+        linear_maps[1] ⊕ linear_maps[2] :
+        MinkowskiSumArray(linear_maps)
+    Ω0 = MinkowskiSumArray(vcat([Ω0_homog], linear_maps))
+
+    if U isa ConstantInput
+        Ud = ConstantInput(Ω0_inhomog)
+    elseif U isa VaryingInput
+        throw(ArgumentError("varying inputs with interval matrices are not " *
+                            "supported yet"))
+    else
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
+    end
+    return Ω0, Ud
+end
+
+# version using concrete operations with zonotopes
+function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
+                                             set_ops::Val{:zonotope})
+    Ω0_inhomog = overapproximate(linear_maps[1], Zonotope)
+    @inbounds for i in 2:length(linear_map)
+        Z = overapproximate(linear_maps[i], Zonotope)
+        Ω0_inhomog = minkowski_sum(Z, Ω0_inhomog)
+    end
+    Ω0 = minkowski_sum(Ω0_homog, Ω0_inhomog)
+
+    if U isa ConstantInput
+        Ud = ConstantInput(Ω0_inhomog)
+    elseif U isa VaryingInput
+        throw(ArgumentError("varying inputs with interval matrices are not " *
+                            "supported yet"))
     else
         throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
     end

@@ -144,4 +144,23 @@ let # preventing global scope
 
     # concrete symmetric interval hull
     discr_sys = discretize(cont_sys, δ, sih_method="concrete")
+
+    # ================================================================
+    # Discretization of a continuous-time system with interval matrix
+    # ================================================================
+    A_itv = IntervalMatrix([-1.1..0.9 -4.1.. -3.9; 3.9..4.1 -1.1..0.9])
+    X0 = BallInf(zeros(2), 0.1)
+    sys_homog = IVP(CLCS(A_itv, Universe(2)), X0)
+    B = IntervalMatrix([1.0..1.0 0.0..0.0; 0.0..0.0 1.0..1.0])
+    U = ConstantInput(BallInf(ones(2), 0.5))
+    sys_heterog = IVP(CLCCS(A_itv, B, Universe(2), U), X0)
+    algorithm = "interval_matrix"
+
+    for cont_sys in [sys_homog, sys_heterog]
+        # default order
+        discr_sys = discretize(cont_sys, δ; algorithm=algorithm)
+
+        # specific order
+        discr_sys = discretize(cont_sys, δ; algorithm=algorithm, order=4)
+    end
 end
