@@ -605,11 +605,11 @@ International Conference on Computer Aided Verification. Springer, Berlin,
 Heidelberg, 2011.
 """
 function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
-                                   δ::Float64;
-                                   algorithm::String="forward",
-                                   exp_method::String="base",
-                                   sih_method::String="concrete",
-                                   set_operations::String="lazy")
+                                  δ::Float64;
+                                  algorithm::String="forward",
+                                  exp_method::String="base",
+                                  sih_method::String="concrete",
+                                  set_operations::String="lazy")
 
     # used to dispatch on the value of the set operation
     set_operations = Symbol(set_operations)
@@ -636,7 +636,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     elseif algorithm == "backward"
         Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use E⁻
     else
-        throw(ArgumentError("the algorithm $approximation is unknown"))
+        throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
 
     # early return for homogeneous systems
