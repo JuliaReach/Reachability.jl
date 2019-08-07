@@ -9,7 +9,7 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 
 @reexport using LazySets
 import LazySets: use_precise_ρ
-using LazySets: LinearMap, AffineMap, ResetMap
+using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
 import LazySets.Approximations: project
 

@@ -7,6 +7,8 @@ module ReachSets
 using ..Utils, ..Properties
 using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
       LinearAlgebra, SparseArrays
+import IntervalMatrices
+using IntervalMatrices: IntervalMatrix
 
 import ProgressMeter
 using ProgressMeter: Progress
@@ -14,7 +16,7 @@ using ProgressMeter: Progress
 function ProgressMeter.update!(::Nothing, ::Int) end
 
 # fix namespace conflicts with MathematicalSystems
-using LazySets: LinearMap, AffineMap, ResetMap
+using LazySets: LinearMap, AffineMap, ResetMap, Interval
 using Reachability: info, warn
 
 using LazySets.Approximations: AbstractDirections
