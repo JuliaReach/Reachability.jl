@@ -509,14 +509,13 @@ The transformations are:
 
 - ``Φ ← \\exp^{Aδ}``
 - ``Ω₀ ← \\mathcal{X}_0``
-- ``V ← Φ₁(A, δ)U(k)``, where ``Φ₁(A, δ)`` is defined in
-  [`Φ₁(A, δ; [exp_method])`](@ref).
+- ``V ← Φ₁(A, δ)U(k)``, where ``Φ₁(A, δ)`` is defined in [`Φ₁`](@ref).
 
 Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
 """
-function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
-                                δ::Float64;
-                                exp_method::String="base")
+function discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+                               δ::Float64;
+                               exp_method::String="base")
 
     # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0
