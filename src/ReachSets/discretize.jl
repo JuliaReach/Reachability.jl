@@ -196,10 +196,10 @@ submatrices of the block matrix
 
 ```math
 P = \\exp \\begin{pmatrix}
-Aδ && δI_n && 0 \\
-0 && 0 && δI_n \\
+Aδ && δI_n && 0 \\\\
+0 && 0 && δI_n \\\\
 0 && 0 && 0
-\\end{array}.
+\\end{pmatrix}.
 ```
 It can be shown that `Φ₁(A, δ) = P[1:n, (n+1):2*n]`.
 
@@ -271,10 +271,10 @@ submatrices of the block matrix
 
 ```math
 P = \\exp \\begin{pmatrix}
-Aδ && δI_n && 0 \\
-0 && 0 && δI_n \\
+Aδ && δI_n && 0 \\\\
+0 && 0 && δI_n \\\\
 0 && 0 && 0
-\\end{array}.
+\\end{pmatrix}.
 ```
 It can be shown that `Φ₂(A, δ) = P[1:n, (2*n+1):3*n]`.
 
