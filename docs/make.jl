@@ -1,12 +1,14 @@
 ENV["GKSwstype"] = "100"  # set 'GR environment' to 'no output' (for Travis CI)
 using Documenter, Reachability
 
+DocMeta.setdocmeta!(Reachability, :DocTestSetup, :(using Reachability); recursive=true)
+
 makedocs(
-    doctest=true, # use this flag to skip doctests (saves time!)
-    modules = [Reachability],
-    format = :html,
-    assets = ["assets/juliareach.css"],
     sitename = "Reachability.jl",
+    modules = [Reachability],
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true",
+        assets = ["assets/juliareach.css"]),
     pages = [
         "Home" => "index.md",
         "Library" => Any[
@@ -24,10 +26,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/JuliaReach/Reachability.jl.git",
-    target = "build",
-    osname = "linux",
-    julia  = "1.0",
-    deps = nothing,
-    make = nothing
+    repo = "github.com/JuliaReach/Reachability.jl.git"
 )
