@@ -99,7 +99,7 @@ julia> dim(add_dimension(X))
 5
 
 julia> typeof(X)
-LazySets.ZeroSet{Float64}
+ZeroSet{Float64}
 ```
 
 More than one dimension can be added passing the second argument:
@@ -137,11 +137,16 @@ Adds an extra dimension to a continuous system.
 ### Examples
 
 ```jldoctest add_dimension_cont_sys
-julia> using MathematicalSystems
+julia> using MathematicalSystems, SparseArrays
+
 julia> A = sprandn(3, 3, 0.5);
+
 julia> X0 = BallInf(zeros(3), 1.0);
+
 julia> s = InitialValueProblem(LinearContinuousSystem(A), X0);
+
 julia> sext = add_dimension(s);
+
 julia> statedim(sext)
 4
 ```
@@ -150,10 +155,14 @@ If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
 julia> U = ConstantInput(Ball2(ones(3), 0.1));
+
 julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
+
 julia> sext = add_dimension(s);
+
 julia> statedim(sext)
 4
+
 julia> dim(next_set(inputset(sext)))
 4
 ```
@@ -164,10 +173,14 @@ If there is an input set, it is also extended:
 
 ```jldoctest add_dimension_cont_sys
 julia> U = VaryingInput([Ball2(ones(3), 0.1 * i) for i in 1:3]);
+
 julia> s = InitialValueProblem(ConstrainedLinearControlContinuousSystem(A, Matrix(1.0I, size(A)), nothing, U), X0);
+
 julia> sext = add_dimension(s);
+
 julia> statedim(sext)
 4
+
 julia> dim(next_set(inputset(sext), 1))
 4
 ```
@@ -176,8 +189,10 @@ Extending a varing input set with more than one extra dimension:
 
 ```jldoctest add_dimension_cont_sys
 julia> sext = add_dimension(s, 7);
+
 julia> statedim(sext)
 10
+
 julia> dim(next_set(inputset(sext), 1))
 10
 ```
