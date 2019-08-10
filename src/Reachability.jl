@@ -10,7 +10,7 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 using LazySets.Approximations: overapproximate
 
 import LazySets.use_precise_ρ
-import LazySets.LinearMap
+import LazySets: LinearMap, AffineMap, ResetMap
  
 include("logging.jl")
 include("Options/dictionary.jl")
