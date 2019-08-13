@@ -210,7 +210,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             end
         end
 
-        _A_mul_B!(ϕpowerk_cache, ϕpowerk, ϕ)
+        mul!(ϕpowerk_cache, ϕpowerk, ϕ)
         copyto!(ϕpowerk, ϕpowerk_cache)
 
         k += 1

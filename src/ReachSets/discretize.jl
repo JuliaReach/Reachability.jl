@@ -138,7 +138,7 @@ A matrix.
 """
 function exp_Aδ(A::AbstractMatrix{Float64}, δ::Float64; exp_method="base")
     if exp_method == "base"
-        return expmat(Matrix(A*δ))
+        return exp(Matrix(A*δ))
     elseif exp_method == "lazy"
         return SparseMatrixExp(A*δ)
     elseif exp_method == "pade"
@@ -210,7 +210,7 @@ Heidelberg, 2011.
 function Φ₁(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        P = exp(Matrix(Pmatrix(A, δ, n)))
         Φ₁_Aδ = P[1:n, (n+1):2*n]
 
     elseif exp_method == "lazy"
@@ -285,7 +285,7 @@ Heidelberg, 2011.
 function Φ₂(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        P = exp(Matrix(Pmatrix(A, δ, n)))
         Φ₂_Aδ = P[1:n, (2*n+1):3*n]
 
     elseif exp_method == "lazy"

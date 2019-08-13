@@ -3,11 +3,11 @@ uuid = "774a0091-654f-5c65-bbdc-ad5b67b45832"
 version = "0.2.0"
 
 [deps]
-Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 Expokit = "a1e7a1ef-7a5d-5822-a38c-be74e1bb89f4"
 HybridSystems = "2207ec0c-686c-5054-b4d2-543502888820"
 IntervalArithmetic = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
 LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathematicalSystems = "d14a8603-c872-5ed3-9ece-53e0e82e39da"
 Memento = "f28f55f0-a522-5efc-85c2-fe41dfb9b2d9"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
@@ -23,7 +23,6 @@ TaylorSeries = "6aa5eb33-94cf-58f4-a9d0-e4b2c4fc25ea"
 
 [compat]
 julia = "≥ 1.0.0"
-Compat = "≥ 2.1.0"
 Expokit = "≥ 0.2.0"
 HybridSystems = "≥ 0.3.0"
 IntervalArithmetic = "≥ 0.15.2"

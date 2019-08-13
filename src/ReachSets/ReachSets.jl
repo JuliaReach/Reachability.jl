@@ -6,20 +6,13 @@ module ReachSets
 
 using ..Utils, ..Properties
 using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
-      ProgressMeter
+      LinearAlgebra, SparseArrays, ProgressMeter
 
 # fix namespace conflicts with MathematicalSystems
-using LazySets: LinearMap
+using LazySets: LinearMap, AffineMap, ResetMap
 using Reachability: info, warn
 
-include("../compat.jl")
-
-using LazySets.Approximations: symmetric_interval_hull,
-                               decompose,
-                               overapproximate,
-                               box_approximation,
-                               AbstractDirections
-
+using LazySets.Approximations: AbstractDirections
 import LazySets.Approximations: project
 
 using Reachability: @timing,
