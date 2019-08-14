@@ -36,7 +36,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        prop::Property,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
     if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
@@ -62,7 +62,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
 
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             Xhatk_bi = ZeroSet(length(bi))
@@ -114,7 +114,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
                        prop::Property,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
     if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
@@ -142,7 +142,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(undef, arr_length)
@@ -196,7 +196,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        prop::Property,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
     if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
@@ -222,7 +222,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
 
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             ϕpowerk_πbi = row(ϕpowerk, bi)
@@ -272,7 +272,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        prop::Property,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
     if !check(prop, CartesianProductArray(Xhat0[blocks]))
         if eager_checking
@@ -299,7 +299,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
     arr_length = (U == nothing) ? length(partition) : length(partition) + 1
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         for i in 1:b
             bi = partition[blocks[i]]
             arr = Vector{LazySet{NUM}}(undef, arr_length)

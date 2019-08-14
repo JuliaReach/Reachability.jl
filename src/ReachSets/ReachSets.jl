@@ -6,7 +6,12 @@ module ReachSets
 
 using ..Utils, ..Properties
 using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
-      LinearAlgebra, SparseArrays, ProgressMeter
+      LinearAlgebra, SparseArrays
+
+import ProgressMeter
+using ProgressMeter: Progress
+# no-op progress meter for unbounded time
+function ProgressMeter.update!(::Nothing, ::Int) end
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap, AffineMap, ResetMap

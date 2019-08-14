@@ -4,7 +4,6 @@ using LazySets: CacheMinkowskiSum,
                  isdisjoint
 
 import LazySets.Approximations: overapproximate
-import ProgressMeter: update!
 
 """
 combine_cpas(cpa1::CartesianProductArray{N, S}, cpa2::CartesianProductArray{N, S},
