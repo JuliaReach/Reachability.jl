@@ -57,7 +57,7 @@ function reach_inhomog!(X::Vector{ReachSet{Zonotope{Float64}}},
 
         Wk₊ = reduce_order(Wk₊, max_order)
 
-        _A_mul_B!(Φ_power_k_cache, Φ_power_k, Φ)
+        mul!(Φ_power_k_cache, Φ_power_k, Φ)
         copyto!(Φ_power_k, Φ_power_k_cache)
         k += 1
     end
