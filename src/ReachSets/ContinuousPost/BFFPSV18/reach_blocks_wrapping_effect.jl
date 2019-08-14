@@ -40,7 +40,7 @@ function reach_blocks_wrapping_effect!(
     k = 2
     p = Progress(N, 1, "Computing successors ")
     @inbounds while true
-        update!(p, k)
+        ProgressMeter.update!(p, k)
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)

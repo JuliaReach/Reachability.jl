@@ -17,10 +17,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
+import IntervalArithmetic
 using TaylorSeries
 using TaylorIntegration: jetcoeffs!
 using TaylorModels: validated_step!, TaylorModel1, TaylorModelN
-import IntervalArithmetic
 
 function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
         t0::T, tmax::T, orderQ::Int, orderT::Int, abstol::T;

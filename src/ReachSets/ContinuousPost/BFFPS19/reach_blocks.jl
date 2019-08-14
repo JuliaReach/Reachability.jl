@@ -80,7 +80,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -126,7 +126,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         X_store = deco_post_sparse(b, blocks, Whatk_blocks, partition,
                                           ϕpowerk, Xhatk, Xhat0, output_function, overapproximate)
 
@@ -189,7 +189,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        progress_meter::Union{Progress, Nothing},
                        res::Vector{<:ReachSet}
                        )::Tuple{Int, Bool} where {NUM}
-    update!(progress_meter, 1)
+    ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
     X_store = (output_function == nothing) ?
         array :
@@ -237,7 +237,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     arr = Vector{LazySet{NUM}}(undef, arr_length)
     k = 2
     @inbounds while true
-        update!(progress_meter, k)
+        ProgressMeter.update!(progress_meter, k)
         X_store = deco_post_dense(b, blocks, Whatk_blocks, partition, ϕpowerk,
                     arr, arr_length, U, Xhat0, Xhatk, output_function, overapproximate)
         t0 = t1

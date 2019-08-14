@@ -4,7 +4,6 @@ using LazySets: CacheMinkowskiSum,
                  isdisjoint
 
 import LazySets.Approximations: overapproximate
-import ProgressMeter: update!
 
 """
     reach(problem, options)
@@ -291,6 +290,3 @@ end
 function has_constant_directions(block_options, i::Int)
     return true
 end
-
-# no-op progress meter for unbounded time
-function update!(::Nothing, ::Int) end
