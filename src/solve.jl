@@ -181,9 +181,27 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                        get(property, loc_id, nothing) :
                        property
         if property_loc != nothing
-            for (i, reach_set) in enumerate(reach_tube.Xk)
-                if !check(property_loc, reach_set.X)
-                    return CheckSolution(false, i, options)
+            if opD isa DecomposedDiscretePost
+                temp_vars = opD.options[:temp_vars]
+                n_lowdim = length(temp_vars)
+                n = dim(X0.X)
+                property_loc_lowdim = project(property_loc, temp_vars)
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
+                        if !check(property_loc_lowdim, reach_set.X)
+                            return CheckSolution(false, i, options)
+                        end
+                    else
+                        if !check(property_loc, reach_set.X)
+                            return CheckSolution(false, i, options)
+                        end
+                    end
+                end
+            else
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    if !check(property_loc, reach_set.X)
+                        return CheckSolution(false, i, options)
+                    end
                 end
             end
         end

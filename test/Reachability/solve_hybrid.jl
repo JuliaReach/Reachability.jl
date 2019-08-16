@@ -55,5 +55,16 @@ for model in models
         @test constrained_dimensions(HS) == Dict{Int,Vector{Int}}(1=>[1, 2])
     elseif model == thermostat
         @test constrained_dimensions(HS) == Dict{Int,Vector{Int}}(1=>[1], 2=>[1])
+
+        opC = BFFPS19(:δ=>0.1)
+
+        prop_poly = HPolyhedron([HalfSpace([1.], 17.5)])
+        property = BadStatesProperty(prop_poly)
+
+        options[:property]= property
+        options[:mode]= "check"
+
+        sol = solve(system, options, opC, DecomposedDiscretePost())
+        @test sol.satisfied == true
     end
 end
