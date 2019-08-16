@@ -70,3 +70,8 @@ Let ``Y`` be the safe states represented by 𝑃.
 @inline function check(𝑃::SafeStatesProperty, X::LazySet; witness::Bool=false)
     return ⊆(X, 𝑃.safe, witness)
 end
+
+@inline function project(𝑃::SafeStatesProperty, vars::AbstractVector{Int})
+    proj = project(𝑃.safe, vars)
+    return SafeStatesProperty(proj)
+end

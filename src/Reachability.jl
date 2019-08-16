@@ -11,6 +11,8 @@ using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
 import LazySets: use_precise_ρ
 using LazySets: LinearMap, AffineMap, ResetMap
 
+import LazySets.Approximations: project
+
 include("logging.jl")
 include("Options/dictionary.jl")
 include("Options/validation.jl")
@@ -22,8 +24,6 @@ include("ReachSets/ReachSets.jl")
 @reexport using Reachability.Utils,
                 Reachability.ReachSets,
                 Reachability.Properties
-
-export project
 
 include("solve.jl")
 include("plot_recipes.jl")

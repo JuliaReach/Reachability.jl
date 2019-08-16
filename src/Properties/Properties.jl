@@ -7,6 +7,7 @@ module Properties
 using LazySets
 
 import LazySets.dim
+import LazySets.Approximations: project
 
 # ==============================
 # Property struct and evaluation
@@ -14,7 +15,8 @@ import LazySets.dim
 include("Property.jl")
 export Property,
        dim,
-       check
+       check,
+       project
 
 include("Conjunction.jl")
 include("Disjunction.jl")

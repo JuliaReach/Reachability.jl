@@ -191,7 +191,11 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
         invariant = LazySets.Approximations.project(invariant, vars)
     end
     termination = get_termination_function_out(N, invariant)
-    push!(args, options[:guards_proj])
+    if length(options[:guards_proj]) > 0
+        push!(args, options[:guards_proj])
+    else
+        push!(args, [Universe{NUM}(length(vars))])
+    end
     push!(args, options[:block_options_iter])
     push!(args, vars)
     push!(args, termination)

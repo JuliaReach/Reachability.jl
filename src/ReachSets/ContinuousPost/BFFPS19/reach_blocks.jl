@@ -135,7 +135,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if reach_set_intersected isa EmptySet
-            store!(res, k, X_store_d, t0, t1, N)
+            store!(res, k, X_store, t0, t1, N)
             break
         end
         if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
@@ -244,7 +244,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         t1 += δ
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if reach_set_intersected isa EmptySet
-            store!(res, k, X_store_d, t0, t1, N)
+            store!(res, k, X_store, t0, t1, N)
             break
         end
         if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
