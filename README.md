@@ -33,7 +33,7 @@ on how to install and run Julia in your system.
 
 The set computations depend on the core library [`LazySets.jl`](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets.jl` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
 
-The latest stable release of [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) is installed automatically when you install `Reachability.jl`, see installation instructions below. See the [installation section of LazySets.jl](https://juliareach.github.io/LazySets.jl/latest/man/getting_started/#Getting-Started-1) for further details.
+The latest stable release of [`LazySets.jl`](https://github.com/JuliaReach/LazySets.jl) is installed automatically when you install `Reachability.jl` (see the installation instructions below). See the [installation section of `LazySets.jl`](https://juliareach.github.io/LazySets.jl/latest/man/getting_started/) for further details.
 
 ### Installation
 
