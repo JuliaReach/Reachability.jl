@@ -49,7 +49,7 @@ pkg> add https://github.com/JuliaReach/Reachability.jl
 #### Install the latest development version
 
 ```julia
-pkg> add add https://github.com/JuliaReach/Reachability.jl#master
+pkg> add https://github.com/JuliaReach/Reachability.jl#master
 ```
 
 #### [Clone the package for development](https://julialang.github.io/Pkg.jl/v1/managing-packages/#Developing-packages-1)
