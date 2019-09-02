@@ -57,9 +57,3 @@ pkg> add https://github.com/JuliaReach/Reachability.jl#master
 ```julia
 pkg> dev add https://github.com/JuliaReach/Reachability.jl
 ```
-
-To install this package, use the following command inside Julia's REPL:
-```julia
-using Pkg
-Pkg.clone("")
-```
