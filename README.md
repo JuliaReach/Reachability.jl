@@ -18,11 +18,11 @@ Currently this package implements algorithms for flowpipe approximation of:
 ## Resources
 
 - [Manual](http://juliareach.github.io/Reachability.jl/latest/)
-- [Contributing](https://juliareach.github.io/Reachability.jl/latest/about.html#Contributing-1)
+- [Contributing](https://juliareach.github.io/Reachability.jl/latest/about/#Contributing-1)
 - [Release notes of tagged versions](https://github.com/JuliaReach/Reachability.jl/releases)
 - [Release log of the development version](https://github.com/JuliaReach/Reachability.jl/wiki/Release-log-tracker)
-- [Publications](https://juliareach.github.io/Reachability.jl/latest/publications.html)
-
+- [Publications](https://juliareach.github.io/Reachability.jl/latest/publications/)
+- [Citations](https://juliareach.github.io/Reachability.jl/latest/citations/)
 
 ## Installing
 
