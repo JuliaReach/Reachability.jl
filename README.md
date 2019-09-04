@@ -31,21 +31,29 @@ on how to install and run Julia in your system.
 
 ### Dependencies
 
-The set computations depend on the core library [LazySets.jl](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
+The set computations depend on the core library [`LazySets.jl`](https://github.com/JuliaReach/LazySets.jl), which is also part of the [JuliaReach](https://github.com/JuliaReach/) framework. `LazySets.jl` exploits the principle of lazy (on-demand) evaluation and uses support functions to represent lazy sets. 
 
-The latest stable release of [LazySets.jl](https://github.com/JuliaReach/LazySets.jl) is installed automatically when you install `Reachability.jl`, see installation instructions below. You can always install the development version via `Pkg.clone`; see the [installation section of LazySets.jl](https://juliareach.github.io/LazySets.jl/latest/man/getting_started.html#Setup-1) for further details.
+The latest stable release of [`LazySets.jl`](https://github.com/JuliaReach/LazySets.jl) is installed automatically when you install `Reachability.jl` (see the installation instructions below). See the [installation section of `LazySets.jl`](https://juliareach.github.io/LazySets.jl/latest/man/getting_started/) for further details.
 
 ### Installation
 
-To install this package, use the following command inside Julia's REPL:
+Depending on your needs, choose an appropriate command from the following list
+and enter it in Julia's REPL. To activate the `pkg` mode, type `]` (and to leave it, type `<backspace>`).
+
+#### [Install the latest release version](https://julialang.github.io/Pkg.jl/v1/managing-packages/#Adding-registered-packages-1)
+
 ```julia
-using Pkg
-Pkg.clone("https://github.com/JuliaReach/Reachability.jl")
+pkg> add https://github.com/JuliaReach/Reachability.jl
 ```
 
-## Updating
+#### Install the latest development version
 
-To checkout the latest version, do
 ```julia
-Pkg.checkout("Reachability")
-````
+pkg> add https://github.com/JuliaReach/Reachability.jl#master
+```
+
+#### [Clone the package for development](https://julialang.github.io/Pkg.jl/v1/managing-packages/#Developing-packages-1)
+
+```julia
+pkg> dev https://github.com/JuliaReach/Reachability.jl
+```
