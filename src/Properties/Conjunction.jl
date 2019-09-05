@@ -75,3 +75,7 @@ function check(𝑃::Conjunction, X::LazySet{N};
     end
     return witness ? (true, N[]) : true
 end
+
+@inline function project(𝑃::Conjunction, vars::AbstractVector{Int})
+    return Conjunction([project(conjunct, vars) for conjunct in 𝑃.conjuncts])
+end

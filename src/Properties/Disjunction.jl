@@ -114,3 +114,7 @@ function _reorder!(𝑃::Disjunction, i::Int)
     𝑃.disjuncts[1] = first
     return nothing
 end
+
+@inline function project(𝑃::Disjunction, vars::AbstractVector{Int})
+    return Disjunction([project(disjunct, vars) for disjunct in 𝑃.disjuncts])
+end

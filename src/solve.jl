@@ -162,6 +162,14 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO temporary hack, to be resolved in #447
             options_copy[:mode] = "reach"
         end
+
+        if opC isa BFFPS19
+            opC.options.specified[:HS] = HS
+            opC.options.specified[:loc_id] = loc_id
+            opC.options.specified[:opD] = opD
+        end
+
+
         reach_tube = solve!(IVP(loc, X0.X), options_copy, op=opC)
 
         if opC isa BFFPSV18
@@ -173,9 +181,27 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                        get(property, loc_id, nothing) :
                        property
         if property_loc != nothing
-            for (i, reach_set) in enumerate(reach_tube.Xk)
-                if !check(property_loc, reach_set.X)
-                    return CheckSolution(false, i, options)
+            if opD isa DecomposedDiscretePost
+                temp_vars = opD.options[:temp_vars]
+                n_lowdim = length(temp_vars)
+                n = dim(X0.X)
+                property_loc_lowdim = project(property_loc, temp_vars)
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
+                        if !check(property_loc_lowdim, reach_set.X)
+                            return CheckSolution(false, i, options)
+                        end
+                    else
+                        if !check(property_loc, reach_set.X)
+                            return CheckSolution(false, i, options)
+                        end
+                    end
+                end
+            else
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    if !check(property_loc, reach_set.X)
+                        return CheckSolution(false, i, options)
+                    end
                 end
             end
         end
@@ -201,9 +227,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         if jumps == max_jumps
             continue
         end
-
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, count_Rsets,
-             jumps, options)
+            jumps, options)
+
     end
     if options[:mode] == "check"
         return CheckSolution(true, -1, options)

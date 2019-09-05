@@ -70,3 +70,8 @@ Let ``Y`` be the bad states represented by 𝑃.
 @inline function check(𝑃::BadStatesProperty, X::LazySet; witness::Bool=false)
     return isdisjoint(X, 𝑃.bad, witness)
 end
+
+@inline function project(𝑃::BadStatesProperty, vars::AbstractVector{Int})
+    proj = project(𝑃.bad, vars)
+    return BadStatesProperty(proj)
+end

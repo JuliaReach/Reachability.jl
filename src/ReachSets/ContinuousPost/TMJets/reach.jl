@@ -17,9 +17,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =#
 
+import IntervalArithmetic
 using TaylorSeries
 import TaylorIntegration
 using TaylorModels: validated_step!, TaylorModel1, TaylorModelN
+
 import IntervalArithmetic
 const IA = IntervalArithmetic
 const TI = TaylorIntegration

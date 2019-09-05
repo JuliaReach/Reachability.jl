@@ -6,6 +6,31 @@ using LazySets: CacheMinkowskiSum,
 import LazySets.Approximations: overapproximate
 
 """
+combine_cpas(cpa1::CartesianProductArray{N, S}, cpa2::CartesianProductArray{N, S},
+                       blocks1::Vector{Int}, blocks2::Vector{Int}) where {N, S<:LazySet{N}}
+
+Compose high-dimensional cartesian product array from 2 low-dimensional CPA's
+
+### Input
+
+- `cpa1`   -- Cartesian Product Array
+- `cpa2`   -- Cartesian Product Array
+- `blocks1`   -- Block structure of cpa1 in sense of high-dimensional set
+- `blocks2`   -- Block structure of cpa2 in sense of high-dimensional set
+
+### Output
+
+High-dimensional cartesian product array.
+"""
+function combine_cpas(cpa1::CartesianProductArray{N, S}, cpa2::CartesianProductArray{N, S},
+                       blocks1::Vector{Int}, blocks2::Vector{Int}) where {N, S<:LazySet{N}}
+    result = Vector{S}(undef, length(array(cpa1)) + length(array(cpa2)))
+    result[blocks1] = array(cpa1)
+    result[blocks2] = array(cpa2)
+    return CartesianProductArray(result)
+end
+
+"""
     reach(problem, options)
 
 Interface to reachability algorithms for an LTI system.
@@ -21,14 +46,11 @@ A sequence of [`ReachSet`](@ref)s.
 
 ### Notes
 
-A dictionary with available algorithms is available via
-`Reachability.available_algorithms`.
-
 The numeric type of the system's coefficients and the set of initial states
 is inferred from the first parameter of the system (resp. lazy set), ie.
 `NUM = first(typeof(problem.s).parameters)`.
 """
-function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
+function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
@@ -52,7 +74,6 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     partition = convert_partition(options[:partition])
     T = options[:T]
     N = (T == Inf) ? nothing : ceil(Int, T / options[:δ])
-
     # Cartesian decomposition of the initial set
     if length(partition) == 1 && length(partition[1]) == n &&
             options[:block_options_init] == LinearMap
@@ -162,7 +183,20 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
 
     # termination function
     invariant = stateset(problem.s)
-    termination = get_termination_function(N, invariant)
+    vars = [e for block in blocks for e in partition[block]]
+    if invariant isa Universe
+        invariant = Universe(length(vars))
+    else
+        invariant = LazySets.Approximations.project(invariant, vars)
+    end
+    termination = get_termination_function_out(N, invariant)
+    if length(options[:guards_proj]) > 0
+        push!(args, options[:guards_proj])
+    else
+        push!(args, [Universe{NUM}(length(vars))])
+    end
+    push!(args, options[:block_options_iter])
+    push!(args, vars)
     push!(args, termination)
 
     info("- Computing successors")
@@ -173,20 +207,12 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
         nothing
     push!(args, progress_meter)
 
-    # choose algorithm backend
-    algorithm = options[:algorithm]
-    if algorithm == "explicit"
-        algorithm_backend = "explicit_blocks"
-    elseif algorithm == "wrap"
-        algorithm_backend = "wrap"
-    else
-        error("Unsupported algorithm: ", algorithm)
-    end
+    # preallocated result
     push!(args, res)
 
     # call the adequate function with the given arguments list
     @timing begin
-        index, skip = available_algorithms[algorithm_backend]["func"](args...)
+        index, skip = reach_blocks!(args...)
     end
 
     # shrink result array
@@ -201,7 +227,7 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     return res
 end
 
-function reach(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
+function reach_mixed(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCCS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
               )::Vector{<:ReachSet} where {NUM <: Real}
@@ -209,84 +235,53 @@ function reach(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
     Δ = @timing discretize(problem, options[:δ],
         algorithm=options[:discretization], exp_method=options[:exp_method],
         sih_method=options[:sih_method])
-    return reach(Δ, options)
+    return reach_mixed(Δ, options)
 end
 
-function get_termination_function(N::Nothing, invariant::Universe)
-    termination_function = (k, set, t0) -> termination_unconditioned()
+function get_termination_function_out(N::Nothing, invariant::Universe)
+    termination_function = (k, set, t0) -> termination_unconditioned(set)
     warn("no termination condition specified; the reachability analysis will " *
          "not terminate")
     return termination_function
 end
 
-function get_termination_function(N::Int, invariant::Universe)
-    return (k, set, t0) -> termination_N(N, k, t0)
+function get_termination_function_out(N::Int, invariant::Universe)
+    return (k, set, t0) -> termination_N_out(N, k, t0, set)
 end
 
-function get_termination_function(N::Nothing, invariant::LazySet)
-    return (k, set, t0) -> termination_inv(invariant, set, t0)
+function get_termination_function_out(N::Nothing, invariant::LazySet)
+    return (k, set, t0) -> termination_inv_out(invariant, set, t0)
 end
 
-function get_termination_function(N::Int, invariant::LazySet)
-    return (k, set, t0) -> termination_inv_N(N, invariant, k, set, t0)
+function get_termination_function_out(N::Int, invariant::LazySet)
+    return (k, set, t0) -> termination_inv_N_out(N, invariant, k, set, t0)
 end
 
-function termination_unconditioned()
-    return (false, false)
+function termination_unconditioned_out(set)
+    return (false, false, set)
 end
 
-function termination_N(N, k, t0)
-    return (k >= N, false)
+function termination_N_out(N, k, t0, set)
+    return (k >= N, false, set)
 end
 
-function termination_inv(inv, set, t0)
-    if isdisjoint(set, inv)
-        return (true, true)
+function termination_inv_out(inv, set, t0)
+    l_inters = Intersection(set, inv)
+    if isempty(l_inters)
+        return (true, true, EmptySet())
     else
-        return (false, false)
+        return (false, false, l_inters)
     end
 end
 
-function termination_inv_N(N, inv, k, set, t0)
+function termination_inv_N_out(N, inv, k, set, t0)
     if k >= N
-        return (true, false)
-    elseif isdisjoint(set, inv)
-        return (true, true)
-    else
-        return (false, false)
+        return (true, false, EmptySet())
     end
-end
-
-function overapproximate(X::LazySet, pair::Pair)
-    return overapproximate(X, pair[1], pair[2])
-end
-
-function overapproximate(X::LazySet, ::Nothing)
-    return X
-end
-
-function overapproximate(msa::MinkowskiSumArray, ::Nothing)
-    return MinkowskiSumArray(copy(array(msa)))
-end
-
-function has_constant_directions(block_options::AbstractVector, i::Int)
-    return has_constant_directions(block_options[i], i)
-end
-
-function has_constant_directions(block_options::Dict{<:UnionAll, <:Real},
-                                 i::Int)
-    return has_constant_directions(block_options[i], i)
-end
-
-function has_constant_directions(block_options::Pair{<:UnionAll, <:Real},
-                                 i::Int)
-    return has_constant_directions(block_options[2], i)
-end
-
-function has_constant_directions(block_options::Real, i::Int)
-    return ε == Inf
-end
-
-function has_constant_directions(block_options, i::Int)
-    return true
+    l_inters = Intersection(set, inv)
+    if isempty(l_inters)
+        return (true, true, EmptySet())
+    else
+        return (false, false, l_inters)
+    end
 end

@@ -42,9 +42,9 @@ Return the keys of the given options object.
 
 Obtain the keys of some options with one element:
 
-```jldoctest options_setindex
+```jldoctest
 julia> op = Options(:T=>1.0)
-Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
+Options(Dict{Symbol,Any}(:T=>1.0))
 
 julia> collect(keys(op))
 1-element Array{Symbol,1}:
@@ -66,9 +66,9 @@ Return the values of the given options object.
 
 Obtain the values of some options with one element:
 
-```jldoctest options_setindex
+```jldoctest
 julia> op = Options(:T=>1.0)
-Reachability.Options(Dict{Symbol,Any}(Pair{Symbol,Any}(:T, 1.0)))
+Options(Dict{Symbol,Any}(:T=>1.0))
 
 julia> collect(values(op))
 1-element Array{Any,1}:
@@ -159,9 +159,9 @@ Store the given value at the given key in the options.
 
 Create an empty options object and add an input:
 
-```jldoctest options_setindex
-julia> Options()
-Reachability.Options(Dict{Symbol,Any}())
+```jldoctest
+julia> op = Options(:T=>1.0)
+Options(Dict{Symbol,Any}(:T=>1.0))
 
 julia> op[:T] = 1.0
 1.0
@@ -451,6 +451,8 @@ A new options wrapper.
 ### Examples
 
 ```jldoctest
+julia> using Reachability: OptionSpec
+
 julia> 𝑂 = Options(:option1 => 1.0, :op2 => "value");
 
 julia> specs_list = [OptionSpec(:option1, nothing),

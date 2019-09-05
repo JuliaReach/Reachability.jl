@@ -4,9 +4,12 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, MathematicalSystems, HybridSystems
+using LazySets, MathematicalSystems, HybridSystems, Printf
 
-include("../compat.jl")
+# fix namespace conflicts with MathematicalSystems
+using LazySets: LinearMap, AffineMap, ResetMap
+
+import LinearAlgebra: normalize
 
 using Reachability: Options
 

@@ -138,7 +138,7 @@ A matrix.
 """
 function exp_Aδ(A::AbstractMatrix{Float64}, δ::Float64; exp_method="base")
     if exp_method == "base"
-        return expmat(Matrix(A*δ))
+        return exp(Matrix(A*δ))
     elseif exp_method == "lazy"
         return SparseMatrixExp(A*δ)
     elseif exp_method == "pade"
@@ -196,10 +196,10 @@ submatrices of the block matrix
 
 ```math
 P = \\exp \\begin{pmatrix}
-Aδ && δI_n && 0 \\
-0 && 0 && δI_n \\
+Aδ && δI_n && 0 \\\\
+0 && 0 && δI_n \\\\
 0 && 0 && 0
-\\end{array}.
+\\end{pmatrix}.
 ```
 It can be shown that `Φ₁(A, δ) = P[1:n, (n+1):2*n]`.
 
@@ -210,7 +210,7 @@ Heidelberg, 2011.
 function Φ₁(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        P = exp(Matrix(Pmatrix(A, δ, n)))
         Φ₁_Aδ = P[1:n, (n+1):2*n]
 
     elseif exp_method == "lazy"
@@ -271,10 +271,10 @@ submatrices of the block matrix
 
 ```math
 P = \\exp \\begin{pmatrix}
-Aδ && δI_n && 0 \\
-0 && 0 && δI_n \\
+Aδ && δI_n && 0 \\\\
+0 && 0 && δI_n \\\\
 0 && 0 && 0
-\\end{array}.
+\\end{pmatrix}.
 ```
 It can be shown that `Φ₂(A, δ) = P[1:n, (2*n+1):3*n]`.
 
@@ -285,7 +285,7 @@ Heidelberg, 2011.
 function Φ₂(A, δ; exp_method="base")
     n = size(A, 1)
     if exp_method == "base"
-        P = expmat(Matrix(Pmatrix(A, δ, n)))
+        P = exp(Matrix(Pmatrix(A, δ, n)))
         Φ₂_Aδ = P[1:n, (2*n+1):3*n]
 
     elseif exp_method == "lazy"
@@ -509,14 +509,13 @@ The transformations are:
 
 - ``Φ ← \\exp^{Aδ}``
 - ``Ω₀ ← \\mathcal{X}_0``
-- ``V ← Φ₁(A, δ)U(k)``, where ``Φ₁(A, δ)`` is defined in
-  [`Φ₁(A, δ; [exp_method])`](@ref).
+- ``V ← Φ₁(A, δ)U(k)``, where ``Φ₁(A, δ)`` is defined in [`Φ₁`](@ref).
 
 Here we allow ``U`` to be a sequence of time varying non-deterministic input sets.
 """
-function  discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
-                                δ::Float64;
-                                exp_method::String="base")
+function discretize_nobloating(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
+                               δ::Float64;
+                               exp_method::String="base")
 
     # unwrap coefficient matrix and initial states
     A, X0 = 𝑆.s.A, 𝑆.x0
@@ -605,11 +604,11 @@ International Conference on Computer Aided Verification. Springer, Berlin,
 Heidelberg, 2011.
 """
 function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuousSystem},
-                                   δ::Float64;
-                                   algorithm::String="forward",
-                                   exp_method::String="base",
-                                   sih_method::String="concrete",
-                                   set_operations::String="lazy")
+                                  δ::Float64;
+                                  algorithm::String="forward",
+                                  exp_method::String="base",
+                                  sih_method::String="concrete",
+                                  set_operations::String="lazy")
 
     # used to dispatch on the value of the set operation
     set_operations = Symbol(set_operations)
@@ -636,7 +635,7 @@ function discretize_interpolation(𝑆::InitialValueProblem{<:AbstractContinuous
     elseif algorithm == "backward"
         Einit = sih(Phi2Aabs * sih((A * A * ϕ) * X0)) # use E⁻
     else
-        throw(ArgumentError("the algorithm $approximation is unknown"))
+        throw(ArgumentError("the algorithm $algorithm is unknown"))
     end
 
     # early return for homogeneous systems
