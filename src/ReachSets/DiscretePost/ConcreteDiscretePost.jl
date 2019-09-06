@@ -62,27 +62,18 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
                   ) where {N}
     # take intersection with source invariant
 
-    # TODO First check for empty intersection, which can be more efficient.
-    #      However, we need to make sure that the emptiness check does not just
-    #      compute the concrete intersection; otherwise, we would do the work
-    #      twice. This is currently the case for 'Polyhedra' polytopes.
-
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
         rs = reach_set.X
         if rs isa CartesianProductArray && length(array(rs)) == 1
             # TODO workaround for lazy X0
-            rs_converted = Approximations.overapproximate(rs,
-                Approximations.BoxDirections(dim(rs)))
-        else
-            rs_converted = HPolytope(constraints_list(rs))
+            rs = overapproximate(rs, BoxDirections)
         end
-        R⋂I = intersection(invariant, rs_converted)
-        if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
+        if 𝒫.options[:check_invariant_intersection] && isdisjoint(rs, invariant)
             break
         end
-        push!(Rsets, ReachSet{LazySet{N}}(R⋂I,
+        push!(Rsets, ReachSet{LazySet{N}}(intersection(rs, invariant),
             reach_set.t_start + start_interval[1],
             reach_set.t_end + start_interval[2]))
         count = count + 1
@@ -115,7 +106,7 @@ function post(𝒫::ConcreteDiscretePost,
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            R⋂G = intersection(guard, HPolytope(constraints_list(reach_set.X)))
+            R⋂G = intersection(guard, reach_set.X)
             if isempty(R⋂G)
                 continue
             end
