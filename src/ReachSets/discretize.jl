@@ -1,5 +1,5 @@
 using IntervalMatrices: expm_overapproximation, correction_hull, _expm_remainder
-IM = IntervalMatrices
+const IM = IntervalMatrices
 
 """
     discretize(𝑆, δ; [algorithm], [exp_method], [sih_method], [set_operations])
