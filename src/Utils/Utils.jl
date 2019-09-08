@@ -4,7 +4,7 @@ decompositions and visualization.
 """
 module Utils
 
-using LazySets, MathematicalSystems, HybridSystems, Printf
+using LazySets, MathematicalSystems, HybridSystems, SparseArrays, Printf
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap, AffineMap, ResetMap
