@@ -14,6 +14,7 @@ discretize
 discretize_interpolation
 discretize_firstorder
 discretize_nobloating
+discretize_interval_matrix
 ```
 
 ## Helper functions
