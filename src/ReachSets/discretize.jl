@@ -818,7 +818,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
             αᵢ₊₁ *= i+1
             δⁱ⁺¹ *= δ
             Aⁱ *= A
-            M_sum += 1/αᵢ₊₁ * Aⁱ * δⁱ⁺¹
+            M_sum += (δⁱ⁺¹/αᵢ₊₁) * Aⁱ
         end
         linear_maps[3] = LinearMap(M_sum, U0)
     end
