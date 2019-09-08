@@ -800,31 +800,30 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     n = size(A, 1)
     linear_maps = Vector{LinearMap{N}}(undef, order > 2 ? 3 : 2)
 
-    IδW = 1/2 * δ^2 * A + 1/6 * δ^3 * A * A
-    @inbounds for i in 1:n
-        IδW[i, i] *= δ
-    end
+    A² = A * A
+    IδW = δ*I + 1/2 * δ^2 * A + 1/6 * δ^3 * A²
     linear_maps[1] = LinearMap(IδW, U0)
 
-    linear_maps[2] = LinearMap(_expm_remainder(A, δ, order; n=n) * δ, U0)
+    E = _expm_remainder(A, δ, order; n=n)
+    linear_maps[2] = LinearMap(E*δ, U0)
 
     zero_interval = IntervalMatrices.Interval(zero(N), zero(N))
     if order > 2
-        fac_i_plus_1 = 6
-        Ai = A * A
-        δ_iplus1 = δ^3
+        # i = 2
+        αᵢ₊₁ = 6 # factorial of (i+1)
+        Aⁱ = A²
+        δⁱ⁺¹ = δ^3
         M_sum = IntervalMatrix(fill(zero_interval, size(A)))
         @inbounds for i in 3:order
-            fac_i_plus_1 *= i+1
-            δ_iplus1 *= δ
-            Ai *= A
-            1/fac_i_plus_1 * δ_iplus1 * Ai
+            αᵢ₊₁ *= i+1
+            δⁱ⁺¹ *= δ
+            Aⁱ *= A
+            M_sum += 1/αᵢ₊₁ * Aⁱ * δⁱ⁺¹
         end
         linear_maps[3] = LinearMap(M_sum, U0)
     end
 
-    Ω0, Ud = _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
-                                                 set_ops)
+    Ω0, Ud = _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps, set_ops)
 
     # create identity interval matrix
     one_interval = IntervalMatrices.Interval(one(N), one(N))
@@ -852,11 +851,8 @@ function _discretize_interval_matrix_homog(X0, ϕ, F, set_ops::Val{:zonotope})
 end
 
 # version using lazy sets and operations
-function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
-                                             set_ops::Val{:lazy})
-    Ω0_inhomog = length(linear_maps) == 2 ?
-        linear_maps[1] ⊕ linear_maps[2] :
-        MinkowskiSumArray(linear_maps)
+function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps, set_ops::Val{:lazy})
+    Ω0_inhomog = MinkowskiSumArray(linear_maps)
     Ω0 = MinkowskiSumArray(vcat([Ω0_homog], linear_maps))
 
     if U isa ConstantInput

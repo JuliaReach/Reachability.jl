@@ -6,9 +6,7 @@ module ReachSets
 
 using ..Utils, ..Properties
 using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
-      LinearAlgebra, SparseArrays
-import IntervalMatrices
-using IntervalMatrices: IntervalMatrix
+      LinearAlgebra, SparseArrays, IntervalMatrices
 
 import ProgressMeter
 using ProgressMeter: Progress
