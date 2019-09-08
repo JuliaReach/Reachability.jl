@@ -17,3 +17,8 @@ end
 # constructor with no options
 ReachSolution(Xk::Vector{RSN}) where {SN, RSN<:ReachSet{SN}} =
     ReachSolution{SN, RSN<:ReachSet{SN}}(Xk, Options())
+
+function project(rs::ReachSolution, M::AbstractMatrix)
+    Yk = [project(X, M) for X in rs.Xk]
+    return ReachSolution(Yk, rs.options)
+end
