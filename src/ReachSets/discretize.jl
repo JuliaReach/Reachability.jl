@@ -871,7 +871,7 @@ end
 function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
                                              set_ops::Val{:zonotope})
     Ω0_inhomog = overapproximate(linear_maps[1], Zonotope)
-    @inbounds for i in 2:length(linear_map)
+    @inbounds for i in 2:length(linear_maps)
         Z = overapproximate(linear_maps[i], Zonotope)
         Ω0_inhomog = minkowski_sum(Z, Ω0_inhomog)
     end
