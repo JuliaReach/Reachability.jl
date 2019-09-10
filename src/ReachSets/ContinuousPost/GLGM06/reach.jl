@@ -14,7 +14,7 @@ function reach_homog!(R::Vector{ReachSet{Zonotope{Float64}}},
 
     k = 2
     while k <= N
-        Rₖ = linear_map(Φ, R[k-1].X)
+        Rₖ = linear_map(Φ, set(R[k-1]))
         Rₖ = reduce_order(Rₖ, max_order)
         t0 = t1
         t1 += δ

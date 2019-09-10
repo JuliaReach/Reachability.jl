@@ -13,20 +13,20 @@ X0 = BallInf(ones(4), 0.1)
 
 # default options (computes all variables)
 s = solve(IVP(LCS(A), X0), :T=>0.1)
-@test dim(s.Xk[1].X) == 4
+@test dim(set(s.Xk[1])) == 4
 @test s.options isa Options
 
 # two variables and custom partition
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
-@test dim(s.Xk[1].X) == 4
+@test dim(set(s.Xk[1])) == 4
 
 # the default partition is used.
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3]))
-@test dim(s.Xk[1].X) == 2
+@test dim(set(s.Xk[1])) == 2
 
 # ===============================
 # Test projection

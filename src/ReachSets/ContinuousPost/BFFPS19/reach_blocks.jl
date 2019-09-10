@@ -72,13 +72,14 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       dimensions::Vector{Int},
                        δ::NUM,
                        guards_proj::Vector{<:LazySet{NUM}},
                        block_options,
                        vars::Vector{Int},
                        termination::Function,
                        progress_meter::Union{Progress, Nothing},
-                       res::Vector{<:ReachSet}
+                       res::Vector{<:AbstractReachSet}
                        )::Tuple{Int, Bool} where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
@@ -100,7 +101,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
                                 diff_blocks, block_options, termination)
-    store!(res, 1, X_store, t0, t1, N)
+    store!(res, 1, X_store, t0, t1, dimensions, N)
     if terminate
         return 1, skip
     end
@@ -135,7 +136,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if reach_set_intersected isa EmptySet
-            store!(res, k, X_store, t0, t1, N)
+            store!(res, k, X_store, t0, t1, dimensions, N)
             break
         end
         if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
@@ -144,7 +145,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
         end
 
-        store!(res, k, X_store, t0, t1, N)
+        store!(res, k, X_store, t0, t1, dimensions, N)
 
         if terminate
             break
@@ -181,13 +182,14 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        output_function::Union{Function, Nothing},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
+                       dimensions::Vector{Int},
                        δ::NUM,
                        guards_proj::Vector{<:LazySet{NUM}},
                        block_options,
                        vars::Vector{Int},
                        termination::Function,
                        progress_meter::Union{Progress, Nothing},
-                       res::Vector{<:ReachSet}
+                       res::Vector{<:AbstractReachSet}
                        )::Tuple{Int, Bool} where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
@@ -209,7 +211,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
                                 diff_blocks, block_options, termination)
-    store!(res, 1, X_store, t0, t1, N)
+    store!(res, 1, X_store, t0, t1, dimensions, N)
     if terminate
         return 1, skip
     end
@@ -244,7 +246,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         t1 += δ
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
         if reach_set_intersected isa EmptySet
-            store!(res, k, X_store, t0, t1, N)
+            store!(res, k, X_store, t0, t1, dimensions, N)
             break
         end
         if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
@@ -254,7 +256,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
         end
 
-        store!(res, k, X_store, t0, t1, N)
+        store!(res, k, X_store, t0, t1, dimensions, N)
 
         if terminate
             break

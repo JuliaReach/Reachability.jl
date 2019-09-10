@@ -47,7 +47,7 @@ function init!(𝒫::DecomposedDiscretePost, 𝒮::AbstractSystem, 𝑂::Options
 end
 
 function tube⋂inv!(𝒫::DecomposedDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+                   reach_tube::Vector{<:AbstractReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
@@ -57,9 +57,9 @@ function tube⋂inv!(𝒫::DecomposedDiscretePost,
     count = 0
     @inbounds for reach_set in reach_tube
         #intersection with invariant is computed inside of BFFPS19 CPost operator
-        push!(Rsets, ReachSet{LazySet{N}}(reach_set.X,
-            reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2]))
+        push!(Rsets, ReachSet{LazySet{N}}(set(reach_set),
+            time_start(reach_set) + start_interval[1],
+            time_end(reach_set) + start_interval[2]))
         count = count + 1
     end
 
@@ -68,7 +68,7 @@ end
 
 function post(𝒫::DecomposedDiscretePost,
               HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}},
+              waiting_list::Vector{Tuple{Int, <:AbstractReachSet{LazySet{N}}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
@@ -93,11 +93,11 @@ function post(𝒫::DecomposedDiscretePost,
         post_jump = Vector{ReachSet{LazySet{N}}}()
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
-            if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
+            if (dim(set(reach_set)) == n_lowdim && n_lowdim < n)
                 continue
             end
             # check intersection with guard
-            R⋂G = Intersection(reach_set.X, guard)
+            R⋂G = Intersection(set(reach_set), guard)
             if isempty(R⋂G)
                 continue
             end
@@ -117,8 +117,8 @@ function post(𝒫::DecomposedDiscretePost,
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}}(A⌜R⋂G⌟⋂I,
-                                                     reach_set.t_start,
-                                                     reach_set.t_end))
+                                                  time_start(reach_set),
+                                                  time_end(reach_set)))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,

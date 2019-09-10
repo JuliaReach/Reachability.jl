@@ -17,10 +17,10 @@ The `vars` argument is required even if the optional argument
 a dimension from this variable.
 """
 function project_reach(
-        Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
+        Rsets::Vector{<:AbstractReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
-        options::AbstractOptions)::Vector{<:ReachSet} where {numeric_type<:Real}
+        options::AbstractOptions)::Vector{<:AbstractReachSet} where {numeric_type<:Real}
 
     # parse input
     @assert(length(vars) == 2)
@@ -83,19 +83,19 @@ function project_reach(
 
     if got_time
         @inbounds for i in 1:N
-            t0 = Rsets[i].t_start
-            t1 = Rsets[i].t_end
+            t0 = time_start(Rsets[i])
+            t1 = time_end(Rsets[i])
             radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
-                Rsets[i].t_start, Rsets[i].t_end)
+                    CartesianProduct(set(Rsets[i]),
+                                     BallInf([t0 + radius], radius))), t0, t1)
         end
     else
         @inbounds for i in 1:N
             RsetsProj[i] = ReachSet(
-                oa(projection_matrix * Rsets[i].X),
-                Rsets[i].t_start, Rsets[i].t_end)
+                oa(projection_matrix * set(Rsets[i])),
+                time_start(Rsets[i]), time_end(Rsets[i]))
         end
     end
 
@@ -124,10 +124,10 @@ It is assumed that the variable given in vars belongs to the block computed
 in the sequence of 2D sets `Rsets`.
 """
 function project_2d_reach(
-        Rsets::Vector{<:ReachSet{<:LazySets.LazySet{numeric_type}}},
+        Rsets::Vector{<:AbstractReachSet{<:LazySets.LazySet{numeric_type}}},
         vars::Vector{Int64},
         n::Int64,
-        options::AbstractOptions)::Vector{<:ReachSet} where {numeric_type<:Real}
+        options::AbstractOptions)::Vector{<:AbstractReachSet} where {numeric_type<:Real}
 
     # first projection dimension
     xaxis = vars[1]
@@ -175,27 +175,27 @@ function project_2d_reach(
 
     if output_function
         @inbounds for i in 1:N
-            t0 = Rsets[i].t_start
-            t1 = Rsets[i].t_end
+            t0 = time_start(Rsets[i])
+            t1 = time_end(Rsets[i])
             radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
-                oa(CartesianProduct(BallInf([t0 + radius], radius), Rsets[i].X)),
-                Rsets[i].t_start, Rsets[i].t_end)
+                oa(CartesianProduct(BallInf([t0 + radius], radius),
+                                    set(Rsets[i]))), t0, t1)
         end
     elseif got_time # x variable is 'time'
         @inbounds for i in 1:N
-            t0 = Rsets[i].t_start
-            t1 = Rsets[i].t_end
+            t0 = time_start(Rsets[i])
+            t1 = time_end(Rsets[i])
             radius = (t1 - t0)/2.0
             RsetsProj[i] = ReachSet(
                 oa(projection_matrix *
-                    CartesianProduct(Rsets[i].X, BallInf([t0 + radius], radius))),
-                Rsets[i].t_start, Rsets[i].t_end)
+                    CartesianProduct(set(Rsets[i]),
+                                     BallInf([t0 + radius], radius))), t0, t1)
         end
     else
         @inbounds for i in 1:N
-            RsetsProj[i] = ReachSet(oa(projection_matrix * Rsets[i].X),
-                Rsets[i].t_start, Rsets[i].t_end)
+            RsetsProj[i] = ReachSet(oa(projection_matrix * set(Rsets[i])),
+                time_start(Rsets[i]), time_end(Rsets[i]))
         end
     end
 
@@ -217,7 +217,7 @@ Projects a sequence of sets according to the settings defined in the options.
 A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
-function project(Rsets::Vector{<:ReachSet}, options::AbstractOptions)
+function project(Rsets::Vector{<:AbstractReachSet}, options::AbstractOptions)
     plot_vars = copy(options[:plot_vars])
     for i in 1:length(plot_vars)
         if plot_vars[i] != 0
@@ -231,5 +231,5 @@ end
 
 project(reach_sol::ReachSolution) = project(reach_sol.Xk, reach_sol.options)
 
-project(Rsets::Vector{<:ReachSet}, options::Pair{Symbol,<:Any}...) =
+project(Rsets::Vector{<:AbstractReachSet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))

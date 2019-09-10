@@ -1,3 +1,5 @@
+abstract type AbstractReachSet{SN} end
+
 """
     ReachSet{SN}
 
@@ -10,10 +12,22 @@ the reachable states for a given time interval.
 - `t_start` -- time interval lower bound
 - `t_end`   -- time interval upper bound
 """
-struct ReachSet{SN}
+struct ReachSet{SN} <: AbstractReachSet{SN}
     X::SN
     t_start::Float64
     t_end::Float64
+end
+
+function set(rs::ReachSet)
+    return rs.X
+end
+
+function time_start(rs::ReachSet)
+    return rs.t_start
+end
+
+function time_end(rs::ReachSet)
+    return rs.t_end
 end
 
 function project(rs::ReachSet, M::AbstractMatrix)
@@ -26,9 +40,27 @@ end
 # low-dimensional reach set
 # =========================
 
-struct SparseReachSet{SN}
+struct SparseReachSet{SN} <: AbstractReachSet{SN}
     rs::ReachSet{SN}
-    dimensions::Vector{Int}
+    dimensions::AbstractVector{Int}
+end
+
+# flattened constructor
+function SparseReachSet(X, t_start::Float64, t_end::Float64,
+                        dimensions::AbstractVector{Int})
+    return SparseReachSet(ReachSet(X, t_start, t_end), dimensions)
+end
+
+function set(srs::SparseReachSet)
+    return set(srs.rs)
+end
+
+function time_start(srs::SparseReachSet)
+    return time_start(srs.rs)
+end
+
+function time_end(srs::SparseReachSet)
+    return time_end(srs.rs)
 end
 
 function project(srs::SparseReachSet, M::AbstractMatrix)

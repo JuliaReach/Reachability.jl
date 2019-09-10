@@ -52,6 +52,7 @@ available_algorithms_check = Dict{String, Dict{String, Any}}()
 include("ContinuousPost/BFFPSV18/check_blocks.jl")
 include("ContinuousPost/BFFPSV18/check_property.jl")
 include("ContinuousPost/BFFPSV18/partitions.jl")
+include("ContinuousPost/BFFPSV18/compute_dimensions.jl")
 include("ContinuousPost/BFFPSV18/inout_map_reach.jl")
 
 # "explicit" backends
@@ -73,7 +74,8 @@ export tune_δ
 include("ReachSet.jl")
 include("ReachSolution.jl")
 
-export ReachSet,
+export AbstractReachSet, ReachSet, SparseReachSet,
+       set, time_start, time_end,
        ReachSolution
 
 # ===============

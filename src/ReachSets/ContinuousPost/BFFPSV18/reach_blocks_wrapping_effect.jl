@@ -12,7 +12,7 @@ function reach_blocks_wrapping_effect!(
         partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
         δ::NUM,
         termination::Function,
-        res::Vector{<:ReachSet}
+        res::Vector{<:AbstractReachSet}
        )::Tuple{Int, Bool} where {NUM}
     X_store = CartesianProductArray(Xhat0)
     t0 = zero(δ)
@@ -44,7 +44,7 @@ function reach_blocks_wrapping_effect!(
         for i in 1:b
             bi = partition[blocks[i]]
             for (j, bj) in enumerate(partition)
-                arr[j] = ϕ[bi, bj] * array(res[k-1].X)[j]
+                arr[j] = ϕ[bi, bj] * array(set(res[k-1]))[j]
             end
             if U != nothing
                 arr[arr_length] = Whatk[i]
