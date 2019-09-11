@@ -222,9 +222,6 @@ function init!(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂::Options)
             compute_default_block_options(𝑂validated[:partition])
     end
 
-    # Input -> Output variable mapping
-    𝑂validated[:inout_map] = inout_map_reach(𝑂validated[:partition], 𝑂validated[:blocks], 𝑂validated[:n])
-
     if 𝑂validated[:project_reachset]
         𝑂validated[:output_function] = nothing
     else

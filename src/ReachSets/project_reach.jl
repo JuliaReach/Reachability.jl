@@ -1,5 +1,5 @@
 """
-    project_reach(Rsets, vars, n, options)
+    project_reach(Rsets, vars, options)
 
 Projection of a reachability analysis result in 2D.
 
@@ -7,7 +7,6 @@ Projection of a reachability analysis result in 2D.
 
 - `Rsets`   -- reachable states representation
 - `vars`    -- variables to plot; two-dimensional index vector
-- `n`       -- system dimension
 - `options` -- options
 
 ### Notes
@@ -17,186 +16,83 @@ The `vars` argument is required even if the optional argument
 a dimension from this variable.
 """
 function project_reach(
-        Rsets::Vector{<:AbstractReachSet{<:LazySets.LazySet{numeric_type}}},
+        Rsets::Vector{<:AbstractReachSet{<:LazySets.LazySet{N}}},
         vars::Vector{Int64},
-        n::Int64,
-        options::AbstractOptions)::Vector{<:AbstractReachSet} where {numeric_type<:Real}
-
+        options::AbstractOptions)::Vector{<:AbstractReachSet} where {N<:Real}
     # parse input
-    @assert(length(vars) == 2)
-    if n == 2
-        return project_2d_reach(Rsets, vars, n, options)
-    end
-
-    # first projection dimension
+    @assert length(vars) == 2 "we only support projection to two dimensions"
     xaxis = vars[1]
-    if xaxis == 0
-        got_time = true
-        xaxis = n+1 # we add a new dimension for time
+    yaxis = vars[2]
+    got_time = (xaxis == 0)
+    if xaxis < 0
+        throw(DomainError("value $xaxis for x variable not allowed"))
+    elseif yaxis <= 0
+        throw(DomainError("value $yaxis for y variable not allowed"))
+    end
+    n = options[:n]
+    projection_matrix_high_dimensional = options[:projection_matrix]
+    transformation_matrix = options[:transformation_matrix]
+
+    # allocate output and define overapproximation function
+    ε = options[:ε_proj]
+    if ε < Inf
+        oa = x -> overapproximate(x, HPolygon, ε)
+        RsetsProj = Vector{ReachSet{HPolygon{N}}}(undef, length(Rsets))
     else
-        got_time = false
-        if (xaxis <= 0 || xaxis > n)
-            throw(DomainError("value $xaxis for X variable not allowed"))
-        end
+        set_type = options[:set_type_proj]
+        oa = x -> overapproximate(x, set_type)
+        RsetsProj = Vector{ReachSet{set_type{N}}}(undef, length(Rsets))
     end
 
-    # build projection matrix
-    projection_matrix = options[:projection_matrix]
-    output_function = !options[:project_reachset]
-    m = got_time ? n+1 : n
-    if projection_matrix == nothing
-        # projection to a state variable
-        yaxis = vars[2]
-        if (yaxis <= 0 || yaxis > n)
-            throw(DomainError("value $yaxis for Y variable not allowed"))
+    @inbounds for (i, rs) in enumerate(Rsets)
+        X = set(rs)
+        if projection_matrix_high_dimensional == nothing
+            # use a simple projection to state variables
+            if got_time
+                # projection to a single state variable
+                projection_matrix = sparse([1], [yaxis], [1.0], 1, n)
+            else
+                # projection to two state variables
+                projection_matrix =
+                    sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, n)
+            end
+        else
+            @assert size(projection_matrix, 1) == 1 "currently we only " *
+                "support one-dimensional projection matrices"
+            if got_time
+                # create a 1-row matrix
+                projection_matrix =
+                    sparse(fill(1, n), 1:n, projection_matrix[1, :], 1, n)
+            else
+                # create a 2-row matrix
+                projection_matrix =
+                    sparse(fill(2, n), 1:n, projection_matrix[1, :], 2, n)
+                projection_matrix[1, xaxis] = 1.0
+            end
         end
-        projection_matrix = sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, m)
-    else
-        @assert(size(projection_matrix) == (1,n))
-        # make vector a 2-row matrix
-        projection_matrix = sparse(fill(2, n), 1:n, projection_matrix[1, :], 2, m)
-        projection_matrix[1, xaxis] = 1.0
-    end
 
-    # apply optional transformation to projection matrix
-    if options[:transformation_matrix] != nothing
-        transformation_matrix = options[:transformation_matrix]
+        # apply optional transformation to projection matrix
+        if transformation_matrix != nothing
+            if got_time
+                # add another dimension for time: block matrix [S 0; 0 1]
+                transformation_matrix =
+                    sparse(cat([1, 2], transformation_matrix, [1]))
+            end
+            projection_matrix = projection_matrix * transformation_matrix
+        end
+
+        # project set
+        rs = project(rs, projection_matrix)
+        projected = set(rs)
+
+        # add time dimension
+        t0 = time_start(rs)
+        t1 = time_end(rs)
         if got_time
-            # add another dimension for time: block matrix [S 0; 0 1]
-            transformation_matrix = sparse(cat([1, 2], transformation_matrix, [1]))
+            time_interval = Interval(t0, t1)
+            projected = CartesianProduct(time_interval, projected)
         end
-        projection_matrix = projection_matrix * transformation_matrix
-    end
-
-    N = length(Rsets)
-
-    # allocate output and define overapproximation function
-    ε = options[:ε_proj]
-    if ε < Inf
-        oa = x -> overapproximate(x, HPolygon, ε)
-        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}}}(undef, N)
-    else
-        set_type = options[:set_type_proj]
-        oa = x -> overapproximate(x, set_type)
-        RsetsProj = Vector{ReachSet{set_type{numeric_type}}}(undef, N)
-    end
-
-    if got_time
-        @inbounds for i in 1:N
-            t0 = time_start(Rsets[i])
-            t1 = time_end(Rsets[i])
-            radius = (t1 - t0)/2.0
-            RsetsProj[i] = ReachSet(
-                oa(projection_matrix *
-                    CartesianProduct(set(Rsets[i]),
-                                     BallInf([t0 + radius], radius))), t0, t1)
-        end
-    else
-        @inbounds for i in 1:N
-            RsetsProj[i] = ReachSet(
-                oa(projection_matrix * set(Rsets[i])),
-                time_start(Rsets[i]), time_end(Rsets[i]))
-        end
-    end
-
-    return RsetsProj
-end
-
-"""
-    project_reach(Rsets, vars, n, options)
-
-This function projects a sequence of sets into the time variable, or can be
-used to take a linear combination of the given variables.
-
-### Input
-
-- `Rsets`   -- reachable states representation
-- `vars`    -- variables to plot; two-dimensional index vector
-- `n`       -- system dimension
-- `options` -- options
-
-### Notes
-
-The input `Rsets` is an array of sets (instead of a `CartesianProductArray`).
-This array contains the collection of reach sets in 2D.
-
-It is assumed that the variable given in vars belongs to the block computed
-in the sequence of 2D sets `Rsets`.
-"""
-function project_2d_reach(
-        Rsets::Vector{<:AbstractReachSet{<:LazySets.LazySet{numeric_type}}},
-        vars::Vector{Int64},
-        n::Int64,
-        options::AbstractOptions)::Vector{<:AbstractReachSet} where {numeric_type<:Real}
-
-    # first projection dimension
-    xaxis = vars[1]
-    if xaxis == 0
-        got_time = true
-        xaxis = 3  # time is associated to dimension 3
-    else
-        got_time = false
-        if (xaxis <= 0 || xaxis > n)
-            throw(DomainError())
-        end
-        # map back to 2d block
-        xaxis = iseven(xaxis) ? 2 : 1
-    end
-
-    # build projection matrix
-    projection_matrix = options[:projection_matrix]
-    output_function = !options[:project_reachset]
-    if projection_matrix == nothing
-        # projection to a state variable
-        yaxis = vars[2]
-        if (yaxis <= 0 || yaxis > n)
-            throw(DomainError())
-        end
-        # map back to 2d block
-        yaxis = iseven(yaxis) ? 2 : 1
-        m = got_time ? 3 : 2
-        projection_matrix = sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, m)
-    elseif !output_function
-        error("projection matrix not allowed for this algorithm")
-    end
-
-    N = length(Rsets)
-
-    # allocate output and define overapproximation function
-    ε = options[:ε_proj]
-    if ε < Inf
-        oa = x -> overapproximate(x, HPolygon, ε)
-        RsetsProj = Vector{ReachSet{HPolygon{numeric_type}}}(undef, N)
-    else
-        set_type = options[:set_type_proj]
-        oa = x -> overapproximate(x, set_type)
-        RsetsProj = Vector{ReachSet{set_type{numeric_type}}}(undef, N)
-    end
-
-    if output_function
-        @inbounds for i in 1:N
-            t0 = time_start(Rsets[i])
-            t1 = time_end(Rsets[i])
-            radius = (t1 - t0)/2.0
-            RsetsProj[i] = ReachSet(
-                oa(CartesianProduct(BallInf([t0 + radius], radius),
-                                    set(Rsets[i]))), t0, t1)
-        end
-    elseif got_time # x variable is 'time'
-        @inbounds for i in 1:N
-            t0 = time_start(Rsets[i])
-            t1 = time_end(Rsets[i])
-            radius = (t1 - t0)/2.0
-            RsetsProj[i] = ReachSet(
-                oa(projection_matrix *
-                    CartesianProduct(set(Rsets[i]),
-                                     BallInf([t0 + radius], radius))), t0, t1)
-        end
-    else
-        @inbounds for i in 1:N
-            RsetsProj[i] = ReachSet(oa(projection_matrix * set(Rsets[i])),
-                time_start(Rsets[i]), time_end(Rsets[i]))
-        end
+        RsetsProj[i] = ReachSet(oa(projected), t0, t1)
     end
 
     return RsetsProj
@@ -218,15 +114,7 @@ A projection matrix can be given in the options structure, or passed as a
 dictionary entry.
 """
 function project(Rsets::Vector{<:AbstractReachSet}, options::AbstractOptions)
-    plot_vars = copy(options[:plot_vars])
-    for i in 1:length(plot_vars)
-        if plot_vars[i] != 0
-            plot_vars[i] = options[:inout_map][plot_vars[i]]
-        end
-    end
-    reduced_n = sum(x -> x != 0, options[:inout_map])
-    output_function = !options[:project_reachset]
-    RsetsProj = project_reach(Rsets, plot_vars, reduced_n, options)
+    return project_reach(Rsets, options[:plot_vars], options)
 end
 
 project(reach_sol::ReachSolution) = project(reach_sol.Xk, reach_sol.options)

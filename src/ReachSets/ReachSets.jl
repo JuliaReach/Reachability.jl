@@ -53,7 +53,6 @@ include("ContinuousPost/BFFPSV18/check_blocks.jl")
 include("ContinuousPost/BFFPSV18/check_property.jl")
 include("ContinuousPost/BFFPSV18/partitions.jl")
 include("ContinuousPost/BFFPSV18/compute_dimensions.jl")
-include("ContinuousPost/BFFPSV18/inout_map_reach.jl")
 
 # "explicit" backends
 push!(available_algorithms_check, "explicit_blocks"=>Dict("func"=>check_blocks,

@@ -115,9 +115,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     options = init!(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
-    if opC isa BFFPSV18
-        inout_map = nothing
-    end
     property = options[:mode] == "check" ? options[:property] : nothing
 
     # waiting_list entries:
@@ -171,10 +168,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
 
         reach_tube = solve!(IVP(loc, set(X0)), options_copy, op=opC)
-
-        if opC isa BFFPSV18
-             inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
-        end
 
         # get the property for the current location
         property_loc = property isa Dict ?
@@ -236,10 +229,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     end
 
     # Projection
-    if opC isa BFFPSV18
-        options[:inout_map] = inout_map
-    end
-
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(Rsets, options)
