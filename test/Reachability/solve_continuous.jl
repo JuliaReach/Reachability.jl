@@ -181,9 +181,9 @@ s = solve(IVP(LCS(A), X0), :T=>Inf, :mode=>"check", :property=>property)
 s = solve(IVP(CLCCS(A, B, X, U), X0),
           :T=>Inf, :mode=>"check", :property=>property)
 
-# =================================================================
-# Affine ODE with a nondeterministic input, x' = Ax + b, no inputs
-# =================================================================
+# ==================================
+# Affine ODE, x' = Ax + b, no inputs
+# ==================================
 A = [ 0.0509836  0.168159  0.95246   0.33644
       0.42377    0.67972   0.129232  0.126662
       0.518654   0.981313  0.489854  0.588326
@@ -220,3 +220,32 @@ solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2));
 property=(t,x)->x[2] <= 2.75
 𝑂 = Options(:T=>7.0, :mode=>"check", :property=>property)
 solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
+
+# =====
+# ASB07
+# =====
+
+# example 1 from
+# "Reachability analysis of linear systems with uncertain parameters and inputs"
+
+# initial set
+X0 = BallInf([1.0, 1.0], 0.1)
+
+# linear ODE: x' = Ax
+A = IntervalMatrix([-1.0 ± 0.05 -4.0 ± 0.05;
+                    4.0 ± 0.05 -1.0 ± 0.05])
+P_lin = IVP(LCS(A), X0)
+
+# affine ODE: x' = Ax + Bu
+B = IntervalMatrix(hcat([1.0 ± 0.0; 1.0 ± 0.0]))
+U = ConstantInput(Interval(-0.05, 0.05))
+P_aff = IVP(CLCCS(A, B, nothing, U), X0)
+
+for P in [P_lin, P_aff]
+    # default options
+    s = solve(P, Options(:T => 0.1), op=ASB07())
+
+    # use specific options
+    opC = ASB07(:δ => 0.04, :max_order => 10, :order_discretization => 4)
+    s = solve(P, Options(:T => 5.0), op=opC)
+end
