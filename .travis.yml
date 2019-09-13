@@ -13,14 +13,16 @@ git:
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 1.1  # development versions
+    - julia: 1.2  # development versions
       env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
   include:
-    - julia: 1.1  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
     - julia: 1.0  # master versions
       env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=true
-    - julia: 1.1  # development versions
+    - julia: 1.1  # master versions
+      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
+    - julia: 1.2  # master versions
+      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
+    - julia: 1.2  # development versions
       env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
 
 script:
