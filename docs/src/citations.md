@@ -18,7 +18,7 @@ This page lists publications citing JuliaReach, such as packages or papers from 
 
 ## Journals
 
-- Althoff, M. (2019). *Reachability analysis of large linear systems with uncertain inputs in the krylov subspace.* IEEE Transactions on Automatic Control.
+- Althoff, M. (2019). *Reachability analysis of large linear systems with uncertain inputs in the Krylov subspace.* IEEE Transactions on Automatic Control.
 
 ## Preprints
 
