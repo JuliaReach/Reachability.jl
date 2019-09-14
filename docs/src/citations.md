@@ -32,7 +32,7 @@ This page lists publications citing JuliaReach, such as packages or papers from 
 
 - Mitchell, Ian M., Jacob Budzis, and Andriy Bolyachevets. *Invariant, Viability and Discriminating Kernel Under-Approximation via Zonotope Scaling.* arXiv preprint arXiv:1901.01006 (2019).
 
-- Dang, T. (2019). *Reachability Analysis and Hybrid Systems Biology-In Memoriam Oded Maler.* In International Workshop on Hybrid Systems Biology (pp. 16-29). Springer, Cham.
+- Dang, T. (2019). *Reachability Analysis and Hybrid Systems Biology - In Memoriam Oded Maler.* In International Workshop on Hybrid Systems Biology (pp. 16-29). Springer, Cham.
 
 ## Technical Reports
 
