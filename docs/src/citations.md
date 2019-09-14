@@ -8,7 +8,7 @@ This page lists publications citing JuliaReach, such as packages or papers from 
 
 ## Conference Proceedings
 
-- Bogomolov, S., Frehse, G., Gurung, A., Li, D., Martius, G., & Ray, R. (2019). *Falsification of hybrid systems using symbolic reachability and trajectory splicing.* In Proceedings of the 22nd ACM International Conference on Hybrid Systems: Computation and Control (pp. 1-10). ACM.
+- Bogomolov, S., Frehse, G., Gurung, A., Li, D., Martius, G., & Ray, R. (2019). *Falsification of hybrid systems using symbolic reachability and trajectory splicing.* In Proceedings of [HSCC'19](http://hscc2019.eecs.umich.edu/): 22nd ACM International Conference on Hybrid Systems: Computation and Control (pp. 1-10). ACM.
 
 - Bak, Stanley, Hoang-Dung Tran, and Taylor T. Johnson. *Numerical Verification of Affine Systems with up to a Billion Dimensions.* arXiv preprint arXiv:1804.01583 (2018). Accepted in Proceedings of [HSCC'19](http://hscc2019.eecs.umich.edu/): 22nd ACM International Conference on Hybrid Systems: Computation and Control (HSCC'19).
 
