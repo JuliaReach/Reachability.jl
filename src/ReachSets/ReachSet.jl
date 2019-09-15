@@ -30,6 +30,11 @@ function time_end(rs::ReachSet)
     return rs.t_end
 end
 
+function substitute(rs::ReachSet; set=set(rs), time_start=time_start(rs),
+                    time_end=time_end(rs))
+    return ReachSet(set, time_start, time_end)
+end
+
 function project(rs::ReachSet, M::AbstractMatrix)
     @assert dim(rs.X) == size(M, 2) "a projection of size $(size(M, 2)) is " *
         "incompatible with a set of dimension $(dim(rs.X))"
@@ -61,6 +66,12 @@ end
 
 function time_end(srs::SparseReachSet)
     return time_end(srs.rs)
+end
+
+function substitute(srs::SparseReachSet; set=set(srs),
+                    time_start=time_start(srs), time_end=time_end(srs))
+    substituted_rs = substitute(srs.rs, set=set, time_start=time_start, time_end=time_end)
+    return SparseReachSet(substituted_rs, srs.dimensions)
 end
 
 function project(srs::SparseReachSet, M::AbstractMatrix)

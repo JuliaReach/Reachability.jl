@@ -73,9 +73,10 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
         if 𝒫.options[:check_invariant_intersection] && isdisjoint(rs, invariant)
             break
         end
-        push!(Rsets, ReachSet{LazySet{N}}(intersection(rs, invariant),
-            time_start(reach_set) + start_interval[1],
-            time_end(reach_set) + start_interval[2]))
+        push!(Rsets,
+              substitute(reach_set, set=intersection(rs, invariant),
+                         time_start=time_start(reach_set) + start_interval[1],
+                         time_end=time_end(reach_set) + start_interval[2]))
         count = count + 1
     end
 

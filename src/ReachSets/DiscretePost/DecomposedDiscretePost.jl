@@ -47,7 +47,7 @@ function init!(𝒫::DecomposedDiscretePost, 𝒮::AbstractSystem, 𝑂::Options
 end
 
 function tube⋂inv!(𝒫::DecomposedDiscretePost,
-                   reach_tube::Vector{<:AbstractReachSet{<:LazySet{N}}},
+                   reach_tube::Vector{<:SparseReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
@@ -56,10 +56,11 @@ function tube⋂inv!(𝒫::DecomposedDiscretePost,
     # counts the number of sets R⋂I added to Rsets
     count = 0
     @inbounds for reach_set in reach_tube
-        #intersection with invariant is computed inside of BFFPS19 CPost operator
-        push!(Rsets, ReachSet{LazySet{N}}(set(reach_set),
-            time_start(reach_set) + start_interval[1],
-            time_end(reach_set) + start_interval[2]))
+        # intersection with invariant is computed inside BFFPS19 CPost operator
+        push!(Rsets,
+              substitute(reach_set,
+                         time_start=time_start(reach_set) + start_interval[1],
+                         time_end=time_end(reach_set) + start_interval[2]))
         count = count + 1
     end
 

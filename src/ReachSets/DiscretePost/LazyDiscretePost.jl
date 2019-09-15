@@ -100,9 +100,10 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
         if !𝒫.options[:lazy_R⋂I]
             R⋂I = overapproximate(R⋂I, dirs)
         end
-        push!(Rsets, ReachSet{LazySet{N}}(R⋂I,
-            time_start(reach_set) + start_interval[1],
-            time_end(reach_set) + start_interval[2]))
+        push!(Rsets,
+              substitute(reach_set, set=R⋂I,
+                         time_start=time_start(reach_set) + start_interval[1],
+                         time_end=time_end(reach_set) + start_interval[2]))
         count = count + 1
     end
 
