@@ -42,7 +42,7 @@ Interface to reachability algorithms for an LTI system.
 
 ### Output
 
-A sequence of [`AbstractReachSet`](@ref)s.
+A sequence of [`SparseReachSet`](@ref)s.
 
 ### Notes
 
@@ -97,9 +97,9 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
 
     # preallocate output vector
     if output_function == nothing
-        res_type = AbstractReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
+        res_type = SparseReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
     else
-        res_type = AbstractReachSet{Hyperrectangle{NUM}}
+        res_type = SparseReachSet{Hyperrectangle{NUM}}
     end
     res = (N == nothing) ? Vector{res_type}() : Vector{res_type}(undef, N)
 

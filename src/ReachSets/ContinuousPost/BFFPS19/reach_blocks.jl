@@ -79,7 +79,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
                        vars::Vector{Int},
                        termination::Function,
                        progress_meter::Union{Progress, Nothing},
-                       res::Vector{<:AbstractReachSet}
+                       res::Vector{<:SparseReachSet}
                        )::Tuple{Int, Bool} where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
@@ -89,7 +89,8 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     t0 = zero(δ)
     t1 = δ
 
-    diff_blocks = setdiff(1:length(partition),blocks)
+    diff_blocks = setdiff(1:length(partition), blocks)
+    all_dimensions = 1:n
 
     b = length(blocks)
     bd = length(diff_blocks)
@@ -100,7 +101,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             box_approximation(output_function(array_d))
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
-                                diff_blocks, block_options, termination)
+                                             diff_blocks, block_options, termination)
     store!(res, 1, X_store, t0, t1, dimensions, N)
     if terminate
         return 1, skip
@@ -128,8 +129,8 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
     k = 2
     @inbounds while true
         ProgressMeter.update!(progress_meter, k)
-        X_store = deco_post_sparse(b, blocks, Whatk_blocks, partition,
-                                          ϕpowerk, Xhatk, Xhat0, output_function, overapproximate)
+        X_store = deco_post_sparse(b, blocks, Whatk_blocks, partition, ϕpowerk,
+                                   Xhatk, Xhat0, output_function, overapproximate)
 
         t0 = t1
         t1 += δ
@@ -139,13 +140,16 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
             store!(res, k, X_store, t0, t1, dimensions, N)
             break
         end
-        if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
+        if isdisjoint(reach_set_intersected, UnionSetArray(guards_proj))
+            # keep sparse reach set
+            store!(res, k, X_store, t0, t1, all_dimensions, N)
+        else
+            # compute full-dimensional reach set
             X_store_d = deco_post_sparse(bd, diff_blocks, Whatk_diff_blocks, partition,
-                                              ϕpowerk, Xhatk_d, Xhat0, output_function, overapproximate)
+                                         ϕpowerk, Xhatk_d, Xhat0, output_function, overapproximate)
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
+            store!(res, k, X_store, t0, t1, dimensions, N)
         end
-
-        store!(res, k, X_store, t0, t1, dimensions, N)
 
         if terminate
             break
@@ -189,7 +193,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
                        vars::Vector{Int},
                        termination::Function,
                        progress_meter::Union{Progress, Nothing},
-                       res::Vector{<:AbstractReachSet}
+                       res::Vector{<:SparseReachSet}
                        )::Tuple{Int, Bool} where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     array = CartesianProductArray(Xhat0[blocks])
@@ -199,7 +203,8 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     t0 = zero(δ)
     t1 = δ
 
-    diff_blocks = setdiff(1:length(partition),blocks)
+    diff_blocks = setdiff(1:length(partition), blocks)
+    all_dimensions = 1:n
 
     b = length(blocks)
     bd = length(diff_blocks)
@@ -210,7 +215,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
         box_approximation(output_function(array_d))
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
-                                diff_blocks, block_options, termination)
+                                             diff_blocks, block_options, termination)
     store!(res, 1, X_store, t0, t1, dimensions, N)
     if terminate
         return 1, skip
@@ -241,7 +246,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
     @inbounds while true
         ProgressMeter.update!(progress_meter, k)
         X_store = deco_post_dense(b, blocks, Whatk_blocks, partition, ϕpowerk,
-                    arr, arr_length, U, Xhat0, Xhatk, output_function, overapproximate)
+                                  arr, arr_length, U, Xhat0, Xhatk, output_function, overapproximate)
         t0 = t1
         t1 += δ
         terminate, skip, reach_set_intersected = termination(k, X_store, t0)
@@ -249,14 +254,18 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
             store!(res, k, X_store, t0, t1, dimensions, N)
             break
         end
-        if !(isdisjoint(reach_set_intersected, UnionSetArray(guards_proj)))
+
+        if isdisjoint(reach_set_intersected, UnionSetArray(guards_proj))
+            # keep sparse reach set
+            store!(res, k, X_store, t0, t1, all_dimensions, N)
+        else
+            # compute full-dimensional reach set
             X_store_d = deco_post_dense(bd, diff_blocks, Whatk_diff_blocks, partition, ϕpowerk, arr,
-                                              arr_length, U, Xhat0, Xhatk_d, output_function, overapproximate)
+                                        arr_length, U, Xhat0, Xhatk_d, output_function, overapproximate)
 
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
+            store!(res, k, X_store, t0, t1, dimensions, N)
         end
-
-        store!(res, k, X_store, t0, t1, dimensions, N)
 
         if terminate
             break
