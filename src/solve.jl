@@ -145,7 +145,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         nothing :
         Vector{Vector{AbstractReachSet{LazySet{N}}}}(undef, nstates(HS))
 
-    Rsets = Vector{AbstractReachSet{LazySet{N}}}()
+    Rsets = Vector{AbstractReachSet{<:LazySet{N}}}()
     while (!isempty(waiting_list))
         loc_id, X0, jumps = pop!(waiting_list)
         loc = HS.modes[loc_id]
@@ -227,6 +227,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     if options[:mode] == "check"
         return CheckSolution(true, -1, options)
     end
+
+    # create vector with concrete set type (needed by ReachSolution)
+    Rsets = [rs for rs in Rsets]
 
     # Projection
     if options[:project_reachset] || options[:projection_matrix] != nothing
