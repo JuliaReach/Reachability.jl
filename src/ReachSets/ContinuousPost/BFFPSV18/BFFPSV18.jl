@@ -174,14 +174,14 @@ since one can choose different partitions and different set representations.
 
 These notes illustrate the options that can be passed to the solver. We begin
 by explaining the default options used by the algorithm. Then we show how to
-specify the computation of a subset of the reachpipe, which helps to improve
+specify the computation of a subset of the flowpipe, which helps to improve
 performance, specially for large systems.
 
-We continue to show some lower-level options such has how to specify a custom
+We continue to show some lower-level options such as how to specify a custom
 block decomposition (the set types used and the sizes of the blocks). 
 
 We conclude showing that there are two different *modes* of operation:
-reachpipe computation and safety property checking, and examples of use.
+flowpipe computation and safety property checking, and examples of use.
 
 #### Running example and default options
 
