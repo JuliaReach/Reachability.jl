@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 export transform
 
 """
@@ -25,8 +27,8 @@ function transform(problem::InitialValueProblem, options::Options)
     if method == ""
         nothing # no-op
     elseif method == "schur"
-        options[:transformation_matrix] = Tm
-        problem = schur_transform(problem)
+        problem, T_inverse = schur_transform(problem)
+        options[:transformation_matrix] = T_inverse
     else
         error("the transformation method $method is undefined")
     end
@@ -40,7 +42,7 @@ Applies a Schur transformation to a discrete or continuous initial-value problem
 
 ### Input
 
-- `S` -- discrete or continuous initial-value problem
+- `problem` -- discrete or continuous initial-value problem
 
 ### Output
 
@@ -58,19 +60,26 @@ function schur_transform(problem::InitialValueProblem{PT, ST}
     n = size(problem.s.A, 1)
 
     # full (dense) matrix is required by schur
-    A_new, T_new = schur(Matrix(problem.s.A))
+    # result S is a struct such that
+    # - S.Schur is in Schur form and
+    # - A == S.vectors * S.Schur * S.vectors'
+    S = schur(Matrix(problem.s.A))
 
     # recall that for Schur matrices, inv(T) == T'
-    Z_inverse = copy(transpose(T_new))
+    Z_inverse = copy(transpose(S.vectors))
+
+    # obtain transformed system matrix
+    A_new = S.Schur
 
     # apply transformation to the initial states
     X0_new = Z_inverse * problem.x0
 
     # apply transformation to the inputs
-    U_new = Z_inverse * problem.s.U
+    B_new = Z_inverse * problem.s.B
+    U_new = problem.s.U
 
-    # obtain the transformation matrix for reverting the transformation again
-    T_inverse = F[:vectors]
+    # matrix for reverting the transformation again
+    T_inverse = S.vectors
 
     # apply transformation to the invariant
     if hasmethod(stateset, Tuple{typeof(problem.s)})
@@ -79,6 +88,17 @@ function schur_transform(problem::InitialValueProblem{PT, ST}
         invariant_new = Universe(n)
     end
 
-    system_new = (A_new, I(n), invariant_new, U_new)
-    return InitialValueProblem(PT(system_new), X0_new)
+    system_new = _wrap_system(PT, A_new, B_new, invariant_new, U_new)
+    problem_new = InitialValueProblem(system_new, X0_new)
+    return problem_new, T_inverse
+end
+
+function _wrap_system(PT::Type{<:ConstrainedLinearControlDiscreteSystem},
+                      A, B, invariant, U)
+    return ConstrainedLinearControlDiscreteSystem(A, B, invariant, U)
+end
+
+function _wrap_system(PT::Type{<:ConstrainedLinearControlContinuousSystem},
+                      A, B, invariant, U)
+    return ConstrainedLinearControlContinuousSystem(A, B, invariant, U)
 end
