@@ -55,7 +55,7 @@ function init!(𝒫::ConcreteDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
 end
 
 function tube⋂inv!(𝒫::ConcreteDiscretePost,
-                   reach_tube::Vector{<:ReachSet{<:LazySet{N}}},
+                   reach_tube::Vector{<:AbstractReachSet{<:LazySet{N}}},
                    invariant,
                    Rsets,
                    start_interval
@@ -65,7 +65,7 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
     # counts the number of sets R⋂I added to Rsets
     count = 0
     for reach_set in reach_tube
-        rs = reach_set.X
+        rs = set(reach_set)
         if rs isa CartesianProductArray && length(array(rs)) == 1
             # TODO workaround for lazy X0
             rs = overapproximate(rs, BoxDirections)
@@ -73,9 +73,10 @@ function tube⋂inv!(𝒫::ConcreteDiscretePost,
         if 𝒫.options[:check_invariant_intersection] && isdisjoint(rs, invariant)
             break
         end
-        push!(Rsets, ReachSet{LazySet{N}}(intersection(rs, invariant),
-            reach_set.t_start + start_interval[1],
-            reach_set.t_end + start_interval[2]))
+        push!(Rsets,
+              substitute(reach_set, set=intersection(rs, invariant),
+                         time_start=time_start(reach_set) + start_interval[1],
+                         time_end=time_end(reach_set) + start_interval[2]))
         count = count + 1
     end
 
@@ -84,7 +85,7 @@ end
 
 function post(𝒫::ConcreteDiscretePost,
               HS::HybridSystem,
-              waiting_list::Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}},
+              waiting_list::Vector{Tuple{Int, <:AbstractReachSet{LazySet{N}}, Int}},
               passed_list,
               source_loc_id,
               tube⋂inv,
@@ -106,7 +107,7 @@ function post(𝒫::ConcreteDiscretePost,
         sizehint!(post_jump, count_Rsets)
         for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
             # check intersection with guard
-            R⋂G = intersection(guard, reach_set.X)
+            R⋂G = intersection(guard, set(reach_set))
             if isempty(R⋂G)
                 continue
             end
@@ -122,8 +123,8 @@ function post(𝒫::ConcreteDiscretePost,
 
             # store result
             push!(post_jump, ReachSet{LazySet{N}}(A⌜R⋂G⌟⋂I,
-                                                     reach_set.t_start,
-                                                     reach_set.t_end))
+                                                     time_start(reach_set),
+                                                     time_end(reach_set)))
         end
 
         postprocess(𝒫, HS, post_jump, options, waiting_list, passed_list,

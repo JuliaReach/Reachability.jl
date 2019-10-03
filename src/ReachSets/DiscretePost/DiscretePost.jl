@@ -10,7 +10,7 @@ Abstract supertype of all discrete post operators.
 All discrete post operators should provide the following method, in addition
 to those provided for general post operators:
 ```julia
-tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:ReachSet{<:LazySet, N}},
+tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:AbstractReachSet{<:LazySet, N}},
           invariant, Rsets, start_interval) where {N}
 ```
 """
@@ -58,7 +58,7 @@ end
 
 function cluster(𝒫::DiscretePost,
                  reach_sets::Vector{RSN},
-                 options::Options) where {SN, RSN<:ReachSet{SN}}
+                 options::Options) where {SN, RSN<:AbstractReachSet{SN}}
     clustering_strategy = options[:clustering]
     oa = 𝒫.options[:overapproximation]
     if clustering_strategy == :none
@@ -66,13 +66,14 @@ function cluster(𝒫::DiscretePost,
         return reach_sets
     elseif clustering_strategy == :none_oa
         # no clustering but overapproximation
-        return [RSN(overapproximate(reach_set.X, oa),
-        reach_set.t_start, reach_set.t_end) for reach_set in reach_sets]
+        return [RSN(overapproximate(set(reach_set), oa),
+        time_start(reach_set), time_end(reach_set)) for reach_set in reach_sets]
     elseif clustering_strategy == :chull
         # cluster all sets in a convex hull and overapproximate that set
-        chull = ConvexHullArray([reach_set.X for reach_set in reach_sets])
+        chull = ConvexHullArray([set(reach_set) for reach_set in reach_sets])
         chull_oa = overapproximate(chull, oa)
-        return [RSN(chull_oa, reach_sets[1].t_start, reach_sets[end].t_end)]
+        return [RSN(chull_oa, time_start(reach_sets[1]),
+                    time_end(reach_sets[end]))]
     end
 end
 
@@ -80,11 +81,11 @@ function isfixpoint(𝒫::DiscretePost,
                     reach_set::RSN,
                     passed_list,
                     loc_id
-                   ) where {SN, RSN<:ReachSet{SN}}
+                   ) where {SN, RSN<:AbstractReachSet{SN}}
     @assert passed_list != nothing
     if isassigned(passed_list, loc_id)
         for other_reach_set in passed_list[loc_id]
-            if reach_set.X ⊆ other_reach_set.X
+            if set(reach_set) ⊆ set(other_reach_set)
                 info("found a fixpoint in some reach tube")
                 return true
             end

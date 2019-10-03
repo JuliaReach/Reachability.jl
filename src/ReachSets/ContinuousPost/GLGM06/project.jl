@@ -7,9 +7,9 @@ import LazySets.Approximations: project
 function add_time(ℱ::Vector{ReachSet{Zonotope{Float64}}})
     ℱ_with_time = Vector{ReachSet{Zonotope{Float64}}}(undef, length(ℱ))
     @inbounds for i in eachindex(ℱ)
-        t0, t1 = ℱ[i].t_start, ℱ[i].t_end
+        t0, t1 = time_start(ℱ[i]), time_end(ℱ[i])
         radius = (t1 - t0)/2.0
-        Xi = ℱ[i].X × Zonotope([t0 + radius], hcat(radius))
+        Xi = set(ℱ[i]) × Zonotope([t0 + radius], hcat(radius))
         Xi = convert(Zonotope, Xi)
         ℱ_with_time[i] = ReachSet{Zonotope{Float64}}(Xi, t0, t1)
     end
@@ -18,7 +18,7 @@ end
 
 function project(sol::ReachSolution{Zonotope{Float64}})
     N = length(sol.Xk)  # number of reach sets
-    n = dim(first(sol.Xk).X) # state space dimension
+    n = dim(set(first(sol.Xk))) # state space dimension
     options = copy(sol.options)
     πℱ = Vector{ReachSet{Zonotope{Float64}}}(undef, N) # preallocated projected reachsets
     πvars = sol.options[:plot_vars] # variables for plotting
@@ -38,8 +38,8 @@ function project(sol::ReachSolution{Zonotope{Float64}})
 
     M = sparse([1, 2], πvars, [1.0, 1.0], 2, n)
     for i in eachindex(ℱ)
-        t0, t1 = ℱ[i].t_start, ℱ[i].t_end
-        πℱ_i = linear_map(M, ℱ[i].X)
+        t0, t1 = time_start(ℱ[i]), time_end(ℱ[i])
+        πℱ_i = linear_map(M, set(ℱ[i]))
         πℱ_i = Zonotope(πℱ_i.center, πℱ_i.generators)
         πℱ_i = reduce_order(πℱ_i, options[:max_order])
         πℱ[i] = ReachSet{Zonotope{Float64}}(πℱ_i, t0, t1)

@@ -42,7 +42,7 @@ Interface to reachability algorithms for an LTI system.
 
 ### Output
 
-A sequence of [`ReachSet`](@ref)s.
+A sequence of [`SparseReachSet`](@ref)s.
 
 ### Notes
 
@@ -53,7 +53,7 @@ is inferred from the first parameter of the system (resp. lazy set), ie.
 function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCDS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
-              )::Vector{<:ReachSet} where {NUM <: Real}
+              ) where {NUM <: Real}
     # optional matrix conversion
     problem = matrix_conversion(problem, options)
 
@@ -87,6 +87,9 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
         end
     end
 
+    # compute dimensions
+    dimensions = compute_dimensions(partition, blocks)
+
     # determine output function: linear map with the given matrix
     output_function = options[:output_function] != nothing ?
         (x -> options[:output_function] * x) :
@@ -94,9 +97,9 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
 
     # preallocate output vector
     if output_function == nothing
-        res_type = ReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
+        res_type = SparseReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
     else
-        res_type = ReachSet{Hyperrectangle{NUM}}
+        res_type = SparseReachSet{Hyperrectangle{NUM}}
     end
     res = (N == nothing) ? Vector{res_type}() : Vector{res_type}(undef, N)
 
@@ -177,6 +180,7 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     # add mode-specific block(s) argument
     push!(args, blocks)
     push!(args, partition)
+    push!(args, dimensions)
 
     # time step
     push!(args, options[:δ])
@@ -230,7 +234,7 @@ end
 function reach_mixed(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},
                               IVP{<:CLCCS{NUM}, <:LazySet{NUM}}},
                options::TwoLayerOptions
-              )::Vector{<:ReachSet} where {NUM <: Real}
+              ) where {NUM <: Real}
     info("Time discretization...")
     Δ = @timing discretize(problem, options[:δ],
         algorithm=options[:discretization], exp_method=options[:exp_method],

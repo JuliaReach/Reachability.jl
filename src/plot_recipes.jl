@@ -33,7 +33,7 @@ argument. For additional options, consult the Plots.jl reference manual.
                           label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing,
                           use_subindices=true)
-    @assert dim(sol.Xk[1].X) == 2 "we only support plotting 2D sets"
+    @assert dim(set(sol.Xk[1])) == 2 "we only support plotting 2D sets"
 
     options = check_aliases_and_add_default_value(sol)
 
@@ -60,7 +60,7 @@ argument. For additional options, consult the Plots.jl reference manual.
     # Using single list and NaN separators
     vlist = Vector{Vector{Float64}}()
     for i in indices
-        append!(vlist, convex_hull(vertices_list(sol.Xk[i].X)))
+        append!(vlist, convex_hull(vertices_list(set(sol.Xk[i]))))
         push!(vlist, [NaN; NaN])
     end
     vlist = hcat(vlist...)'

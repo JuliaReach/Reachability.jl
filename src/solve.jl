@@ -115,16 +115,13 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     options = init!(opD, HS, options_input)
     time_horizon = options[:T]
     max_jumps = options[:max_jumps]
-    if opC isa BFFPSV18
-        inout_map = nothing
-    end
     property = options[:mode] == "check" ? options[:property] : nothing
 
     # waiting_list entries:
     # - (discrete) location
     # - (set of) continuous-time reach sets
     # - number of previous jumps
-    waiting_list = Vector{Tuple{Int, ReachSet{LazySet{N}}, Int}}()
+    waiting_list = Vector{Tuple{Int, AbstractReachSet{LazySet{N}}, Int}}()
 
     for (loc_id, x0) in init_sets
         loc = HS.modes[loc_id]
@@ -146,9 +143,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
     # reach sets
     passed_list = options[:fixpoint_check] == :none ?
         nothing :
-        Vector{Vector{ReachSet{LazySet{N}}}}(undef, nstates(HS))
+        Vector{Vector{AbstractReachSet{LazySet{N}}}}(undef, nstates(HS))
 
-    Rsets = Vector{ReachSet{LazySet{N}}}()
+    Rsets = Vector{AbstractReachSet{<:LazySet{N}}}()
     while (!isempty(waiting_list))
         loc_id, X0, jumps = pop!(waiting_list)
         loc = HS.modes[loc_id]
@@ -156,7 +153,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
         # compute reach tube
         options_copy = copy(options)
-        options_copy.dict[:T] = time_horizon - X0.t_start
+        options_copy.dict[:T] = time_horizon - time_start(X0)
         options_copy.dict[:project_reachset] = false
         if property != nothing
             # TODO temporary hack, to be resolved in #447
@@ -170,11 +167,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
 
 
-        reach_tube = solve!(IVP(loc, X0.X), options_copy, op=opC)
-
-        if opC isa BFFPSV18
-             inout_map = reach_tube.options[:inout_map]  # TODO temporary hack
-        end
+        reach_tube = solve!(IVP(loc, set(X0)), options_copy, op=opC)
 
         # get the property for the current location
         property_loc = property isa Dict ?
@@ -184,22 +177,21 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             if opD isa DecomposedDiscretePost
                 temp_vars = opD.options[:temp_vars]
                 n_lowdim = length(temp_vars)
-                n = dim(X0.X)
+                n = dim(set(X0))
                 property_loc_lowdim = project(property_loc, temp_vars)
                 for (i, reach_set) in enumerate(reach_tube.Xk)
-                    if (dim(reach_set.X) == n_lowdim && n_lowdim < n)
-                        if !check(property_loc_lowdim, reach_set.X)
+                    X = set(reach_set)
+                    if (dim(X) == n_lowdim && n_lowdim < n)
+                        if !check(property_loc_lowdim, X)
                             return CheckSolution(false, i, options)
                         end
-                    else
-                        if !check(property_loc, reach_set.X)
-                            return CheckSolution(false, i, options)
-                        end
+                    elseif !check(property_loc, X)
+                        return CheckSolution(false, i, options)
                     end
                 end
             else
                 for (i, reach_set) in enumerate(reach_tube.Xk)
-                    if !check(property_loc, reach_set.X)
+                    if !check(property_loc, set(reach_set))
                         return CheckSolution(false, i, options)
                     end
                 end
@@ -213,16 +205,17 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
             # TODO For lazy X0 the fixpoint check is likely to fail, so we
             # currently ignore that. In general, we want to add an
             # *underapproximation*, which we currently do not support.
-            if !(reach_set.X isa CartesianProductArray) || !(array(reach_set.X)[1] isa CH)
-                Xoa = overapproximate(reach_set.X)
-                ti, tf = reach_set.t_start, reach_set.t_end
+            X = set(reach_set)
+            if !(X isa CartesianProductArray) || !(array(X)[1] isa CH)
+                Xoa = overapproximate(X)
+                ti, tf = time_start(reach_set), time_end(reach_set)
                 passed_list[loc_id] = [ReachSet{LazySet{N}}(Xoa, ti, tf)]
             end
         end
 
         # count_Rsets counts the number of new reach sets added to Rsets
         count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
-                                [X0.t_start, X0.t_end])
+                                [time_start(X0), time_end(X0)])
 
         if jumps == max_jumps
             continue
@@ -235,11 +228,10 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         return CheckSolution(true, -1, options)
     end
 
-    # Projection
-    if opC isa BFFPSV18
-        options[:inout_map] = inout_map
-    end
+    # create vector with concrete set type (needed by ReachSolution)
+    Rsets = [rs for rs in Rsets]
 
+    # Projection
     if options[:project_reachset] || options[:projection_matrix] != nothing
         info("Projection...")
         RsetsProj = @timing project(Rsets, options)
