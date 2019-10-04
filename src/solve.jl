@@ -173,30 +173,6 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         property_loc = property isa Dict ?
                        get(property, loc_id, nothing) :
                        property
-        if property_loc != nothing
-            if opD isa DecomposedDiscretePost
-                temp_vars = opD.options[:temp_vars]
-                n_lowdim = length(temp_vars)
-                n = dim(set(X0))
-                property_loc_lowdim = project(property_loc, temp_vars)
-                for (i, reach_set) in enumerate(reach_tube.Xk)
-                    X = set(reach_set)
-                    if (dim(X) == n_lowdim && n_lowdim < n)
-                        if !check(property_loc_lowdim, X)
-                            return CheckSolution(false, i, options)
-                        end
-                    elseif !check(property_loc, X)
-                        return CheckSolution(false, i, options)
-                    end
-                end
-            else
-                for (i, reach_set) in enumerate(reach_tube.Xk)
-                    if !check(property_loc, set(reach_set))
-                        return CheckSolution(false, i, options)
-                    end
-                end
-            end
-        end
 
         # add the very first initial approximation
         if passed_list != nothing &&
@@ -216,6 +192,31 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         # count_Rsets counts the number of new reach sets added to Rsets
         count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
                                 [time_start(X0), time_end(X0)])
+
+        if property_loc != nothing
+            if opD isa DecomposedDiscretePost
+                temp_vars = opD.options[:temp_vars]
+                n_lowdim = length(temp_vars)
+                n = dim(set(X0))
+                property_loc_lowdim = project(property_loc, temp_vars)
+                for (i, reach_set) in enumerate(reach_tube.Xk)
+                    X = set(reach_set)
+                    if (dim(X) == n_lowdim && n_lowdim < n)
+                        if !check(property_loc_lowdim, X)
+                            return CheckSolution(false, i, options)
+                        end
+                    elseif !check(property_loc, X)
+                        return CheckSolution(false, i, options)
+                    end
+                end
+            else
+                for (i, reach_set) in enumerate(Rsets[length(Rsets) - count_Rsets + 1 : end])
+                    if !check(property_loc, set(reach_set))
+                        return CheckSolution(false, i, options)
+                    end
+                end
+            end
+        end
 
         if jumps == max_jumps
             continue
