@@ -210,7 +210,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                     end
                 end
             else
-                 for (i, reach_set) in enumerate(Rsets[length(Rsets) - count_Rsets + 1 : end])
+                for (i, reach_set) in enumerate(Rsets[length(Rsets) - count_Rsets + 1 : end])
                     if !check(property_loc, set(reach_set))
                         return CheckSolution(false, i, options)
                     end
