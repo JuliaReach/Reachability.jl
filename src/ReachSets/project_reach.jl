@@ -41,7 +41,7 @@ function project_reach(
     else
         set_type = options[:set_type_proj]
         oa = x -> overapproximate(x, set_type)
-        RsetsProj = Vector{ReachSet{set_type{N}}}(undef, length(Rsets))
+        RsetsProj = Vector{ReachSet{<:set_type{N}}}(undef, length(Rsets))
     end
 
     @inbounds for (i, rs) in enumerate(Rsets)

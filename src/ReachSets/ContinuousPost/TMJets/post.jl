@@ -53,7 +53,8 @@ function post(𝒜::TMJets,
 
     # convert to hyperrectangle and wrap around the reach solution
     N = length(xTM)
-    Rsets = Vector{ReachSet{Hyperrectangle{Float64}}}(undef, N-1)
+    SET_TYPE = Hyperrectangle{Float64, Vector{Float64}, Vector{Float64}}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Hi = convert(Hyperrectangle, xTM[i])
         t0 = tTM[i]; t1 = tTM[i+1]
