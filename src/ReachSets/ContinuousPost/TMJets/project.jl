@@ -17,7 +17,7 @@ function add_time(ℱ::Vector{ReachSet{Hyperrectangle{Float64}}})
     return ℱ_with_time
 end
 
-function project(sol::ReachSolution{Hyperrectangle{Float64}})
+function project(sol::ReachSolution)
     N = length(sol.Xk)  # number of reach sets
     n = dim(set(first(sol.Xk))) # state space dimension
     options = copy(sol.options)

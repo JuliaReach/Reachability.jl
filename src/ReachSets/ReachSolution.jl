@@ -9,14 +9,13 @@ sets, and a dictionary of options.
 - `Xk`       -- the list of [`AbstractReachSet`](@ref)s
 - `options`  -- the dictionary of options
 """
-struct ReachSolution{SN, RSN<:AbstractReachSet{SN}} <: AbstractSolution
-    Xk::Vector{RSN}
+struct ReachSolution <: AbstractSolution
+    Xk::Vector{<:AbstractReachSet}
     options::AbstractOptions
 end
 
 # constructor with no options
-ReachSolution(Xk::Vector{RSN}) where {SN, RSN<:AbstractReachSet{SN}} =
-    ReachSolution{SN, RSN}(Xk, Options())
+ReachSolution(Xk::Vector{<:AbstractReachSet}) = ReachSolution(Xk, Options())
 
 function project(rs::ReachSolution, M::AbstractMatrix)
     Yk = [project(X, M) for X in rs.Xk]
