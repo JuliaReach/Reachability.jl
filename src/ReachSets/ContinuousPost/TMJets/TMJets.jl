@@ -2,6 +2,8 @@ export TMJets
 
 using IntervalArithmetic: IntervalBox
 
+using StaticArrays: SVector
+
 struct TMJets <: ContinuousPost
     options::TwoLayerOptions
 
