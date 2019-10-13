@@ -1,6 +1,33 @@
 using LinearAlgebra
 
-export transform
+export transform,
+       backtransform
+
+"""
+    backtransform(Rsets::ReachSolution, options::Options)
+
+Undo a coordinate transformation.
+
+### Input
+
+- `Rsets`  -- flowpipe
+- `option` -- problem options containing an `:transformation_matrix` entry
+
+### Output
+
+A new flowpipe where each reach set has been transformed.
+
+### Notes
+
+The transformation is implemented with a lazy `LinearMap`.
+"""
+function backtransform(Rsets, options::Options)
+    transformation_matrix = options[:transformation_matrix]
+    if transformation_matrix == nothing
+        return Rsets
+    end
+    return project(Rsets, transformation_matrix)
+end
 
 """
     transform(problem::InitialValueProblem, options::Options)

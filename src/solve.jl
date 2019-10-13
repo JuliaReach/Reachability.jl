@@ -71,7 +71,10 @@ function solve!(problem::InitialValueProblem,
     problem, options = transform(problem, options)
 
     # run the continuous-post operator
-    post(op, problem, options)
+    res = post(op, problem, options)
+
+    # undo a coordinate transformation
+    res = backtransform(res, options)
 end
 
 """
