@@ -221,9 +221,9 @@ property=(t,x)->x[2] <= 2.75
 𝑂 = Options(:T=>7.0, :mode=>"check", :property=>property)
 solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
 
-# =====
-# ASB07
-# =====
+# ========================
+# ASB07 & ASB07_decomposed
+# ========================
 
 # example 1 from
 # "Reachability analysis of linear systems with uncertain parameters and inputs"
@@ -241,11 +241,21 @@ B = IntervalMatrix(hcat([1.0 ± 0.0; 1.0 ± 0.0]))
 U = ConstantInput(Interval(-0.05, 0.05))
 P_aff = IVP(CLCCS(A, B, nothing, U), X0)
 
+opC1 = ASB07()
+opC2 = ASB07(:δ => 0.04, :max_order => 10, :order_discretization => 4)
+opC3 = ASB07_decomposed(:vars => [1, 2], :partition => [[1], [2]])
+opC4 = ASB07_decomposed(:δ => 0.04, :max_order => 10,
+                        :order_discretization => 4, :vars => [1, 2],
+                        :partition => [[1], [2]])
+
 for P in [P_lin, P_aff]
     # default options
-    s = solve(P, Options(:T => 0.1), op=ASB07())
+    for opC in [opC1, opC3]
+        s = solve(P, Options(:T => 0.1), op=opC)
+    end
 
     # use specific options
-    opC = ASB07(:δ => 0.04, :max_order => 10, :order_discretization => 4)
-    s = solve(P, Options(:T => 5.0), op=opC)
+    for opC in [opC2, opC4]
+        s = solve(P, Options(:T => 5.0), op=opC)
+    end
 end

@@ -107,6 +107,8 @@ include("ContinuousPost/BFFPS19/BFFPS19.jl")
 
 include("ContinuousPost/ASB07/ASB07.jl")
 
+include("ContinuousPost/ASB07_decomposed/ASB07_decomposed.jl")
+
 # ========================
 # Reachability Algorithms
 # ========================
