@@ -4,30 +4,29 @@
 import LazySets.Approximations: project
 using LazySets.Approximations: overapproximate
 
-# add a "time" variable by taking the cartesian product of the flowpipe ℱ with each time lapse
-function add_time(ℱ::Vector{ReachSet{Hyperrectangle{Float64}}})
-    ℱ_with_time = Vector{ReachSet{Hyperrectangle{Float64}}}(undef, length(ℱ))
+# add a "time" variable by taking the cartesian product of the flowpipe ℱ with
+# each time lapse, given by an interval
+function add_time(ℱ::Vector{ReachSet{Hyperrectangle{T, VC, VR}}}) where {T, VC, VR}
+    HT = Hyperrectangle{T, VC, VR}
+    ST = CartesianProduct{T, HT, Interval{T, IA.Interval{T}}}
+    ℱ_with_time = Vector{ReachSet{ST}}(undef, length(ℱ))
     @inbounds for i in eachindex(ℱ)
         t0, t1 = time_start(ℱ[i]), time_end(ℱ[i])
-        radius = (t1 - t0)/2.0
-        Xi = set(ℱ[i]) × Hyperrectangle([t0 + radius], [radius])
-        Xi = convert(Hyperrectangle, Xi)
-        ℱ_with_time[i] = ReachSet{Hyperrectangle{Float64}}(Xi, t0, t1)
+        Xi = set(ℱ[i]) × Interval(t0, t1)
+        ℱ_with_time[i] = ReachSet(Xi, t0, t1)
     end
     return ℱ_with_time
 end
 
-function project(sol::ReachSolution{Hyperrectangle{Float64}})
+function project(sol::ReachSolution{Hyperrectangle{T, VC, VR}}) where {T, VC, VR}
     N = length(sol.Xk)  # number of reach sets
     n = dim(set(first(sol.Xk))) # state space dimension
+
     options = copy(sol.options)
-    πℱ = Vector{ReachSet{Hyperrectangle{Float64}}}(undef, N) # preallocated projected reachsets
     πvars = sol.options[:plot_vars] # variables for plotting
     @assert length(πvars) == 2
 
-    if 0 ∈ πvars
-        # add the time variable to the flowpipe (assuming it's not already
-        # part of the model)
+    if 0 ∈ πvars # if we want to project along time
         ℱ = add_time(sol.Xk)
         n += 1
         options[:n] += 1 # TODO : remove when option is removed
@@ -37,11 +36,15 @@ function project(sol::ReachSolution{Hyperrectangle{Float64}})
         ℱ = sol.Xk
     end
 
+    HT = Hyperrectangle{T, Vector{T}, Vector{T}} # we hardcode dense vectors here,
+    # as using VC and VR would require to adapt overapproximate
+    πℱ = Vector{ReachSet{HT}}(undef, N) # preallocate projected reachsets
+
     M = sparse([1, 2], πvars, [1.0, 1.0], 2, n)
     for i in eachindex(ℱ)
         t0, t1 = time_start(ℱ[i]), time_end(ℱ[i])
         πℱ_i = overapproximate(M * set(ℱ[i]), Hyperrectangle)
-        πℱ[i] = ReachSet{Hyperrectangle{Float64}}(πℱ_i, t0, t1)
+        πℱ[i] = ReachSet(πℱ_i, t0, t1)
     end
     return ReachSolution(πℱ, options)
 end
