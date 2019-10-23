@@ -120,7 +120,7 @@ function validated_integ(f!, qq0::AbstractVector{T}, δq0::IntervalBox{N,T},
         end
 
         if nsteps > maxsteps
-            info("Maximum number of integration steps reached; exiting.")
+            warn("Maximum number of integration steps $maxsteps reached; exiting. Try increasing `max_steps`.")
             break
         end
 
