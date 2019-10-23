@@ -59,7 +59,7 @@ solve(system::AbstractSystem, options::Pair{Symbol,<:Any}...) =
 function solve!(problem::InitialValueProblem,
                 options::Options;
                 op::ContinuousPost=default_operator(problem)
-               )::AbstractSolution
+               )
 
     # normalize system to a canonical form if needed
     problem = IVP(normalize(problem.s), problem.x0)
@@ -79,7 +79,7 @@ end
 
 """
     solve(system::InitialValueProblem{<:HybridSystem},
-          options::Options)::AbstractSolution
+          options::Options)
 
 Interface to reachability algorithms for a hybrid system PWA dynamics.
 
@@ -91,7 +91,7 @@ Interface to reachability algorithms for a hybrid system PWA dynamics.
 function solve(system::InitialValueProblem{<:HybridSystem, <:LazySet},
                options::Options,
                opC::ContinuousPost=BFFPSV18(),
-               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
+               opD::DiscretePost=LazyDiscretePost())
     return solve!(distribute_initial_set(system), copy(options), opC, opD)
 end
 
@@ -100,7 +100,7 @@ function solve(system::InitialValueProblem{<:HybridSystem,
                                            <:Vector{<:Tuple{Int64,<:LazySet}}},
                options::Options,
                opC::ContinuousPost=BFFPSV18(),
-               opD::DiscretePost=LazyDiscretePost())::AbstractSolution
+               opD::DiscretePost=LazyDiscretePost())
     return solve!(system, copy(options), opC, opD)
 end
 
@@ -109,7 +109,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                options_input::Options,
                opC::ContinuousPost,
                opD::DiscretePost
-              )::AbstractSolution where N<:Real
+              ) where N<:Real
     # update global variable
     global discrete_post_operator = opD
 
