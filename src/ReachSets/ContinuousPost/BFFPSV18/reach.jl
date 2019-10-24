@@ -78,7 +78,8 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     if output_function == nothing
         res_type = SparseReachSet{CartesianProductArray{NUM, LazySet{NUM}}}
     else
-        res_type = SparseReachSet{Hyperrectangle{NUM}}
+        # by default, this algorithm uses box overapproximation
+        res_type = SparseReachSet{Hyperrectangle{NUM, Vector{NUM}, Vector{NUM}}}
     end
     res = (N == nothing) ? Vector{res_type}() : Vector{res_type}(undef, N)
 
