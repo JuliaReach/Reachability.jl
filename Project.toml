@@ -1,6 +1,6 @@
 name = "Reachability"
 uuid = "774a0091-654f-5c65-bbdc-ad5b67b45832"
-version = "0.2.0"
+version = "0.4.0"
 
 [deps]
 Expokit = "a1e7a1ef-7a5d-5822-a38c-be74e1bb89f4"
