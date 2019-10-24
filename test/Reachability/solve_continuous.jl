@@ -72,6 +72,10 @@ s = solve(IVP(LCS(A), X0),
 # Test reachability options
 # ===============================
 
+# projection matrix
+M = [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0]
+s = solve(IVP(LCS(A), X0), Options(:T=>1.0, :projection_matrix=>M), op=BFFPSV18(:δ=>0.1))
+
 # template directions
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :ε_proj=>1e-5, :set_type_proj=>HPolygon),
