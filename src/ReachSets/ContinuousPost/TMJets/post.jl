@@ -1,6 +1,60 @@
 using TaylorSeries: set_variables
 using LazySets.Approximations: box_approximation
 
+function _to_hyperrectangle(tTM, xTM, n)
+    N = length(xTM)
+    SET_TYPE = Hyperrectangle{Float64, SVector{n, Float64}, SVector{n, Float64}}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    @inbounds for i in 1:N-1
+        Hi = convert(Hyperrectangle, xTM[i])
+        t0 = tTM[i]; t1 = tTM[i+1]
+        Rsets[i] = ReachSet(Hi, t0, t1)
+    end
+    return Rsets
+end
+
+function _to_intervalbox(tTM, xTM, n)
+    N = length(xTM)
+    SET_TYPE = IntervalBox{n, Float64}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    @inbounds for i in 1:N-1
+        Bi = xTM[i]
+        t0 = tTM[i]; t1 = tTM[i+1]
+        Rsets[i] = ReachSet(Bi, t0, t1)
+    end
+    return Rsets
+end
+
+import TaylorModels
+
+const IA = IntervalArithmetic
+const zeroI = IA.Interval(0.0) # [0.0, 0.0]
+const oneI = IA.Interval(1.0) # [1.0, 1.0]
+const symI = IA.Interval(-1.0, 1.0)
+zeroBox(m) = IntervalBox(zeroI, m)
+symBox(m) = IntervalBox(symI, m)
+
+function _to_zonotope(tTM, vTM, n)
+    N = length(tTM)
+    SET_TYPE = Zonotope{Float64}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    @inbounds for i in 1:N-1
+        X = vTM[:, i] # pick the i-th Taylor model
+        Δt = TaylorModels.domain(X[1]) # pick the time domain of the given TM (same in all dimensions)
+        X_Δt = evaluate(X, Δt) # evaluate the Taylor model in time, the coefficents are now intervals
+        # and t disappears
+        # builds the associated taylor model for each coordinate
+        X̂ = [TaylorModelN(X_Δt[k], X[k].rem, zeroBox(n), symBox(n)) for k in 1:n]
+        # floating point rigorous polynomial approximation
+        fX̂ = TaylorModels.fp_rpa.(X̂)
+        # LazySets can overapproximate a Taylor model with a Zonotope
+        Zi = overapproximate(fX̂, Zonotope)
+        t0 = tTM[i]; t1 = tTM[i+1]
+        Rsets[i] = ReachSet(Zi, t0, t1)
+    end
+    return Rsets
+end
+
 function post(𝒜::TMJets,
               𝑃::InitialValueProblem{<:Union{BBCS, CBBCS, CBBCCS}, <:LazySet},
               𝑂_global::Options)
@@ -47,18 +101,18 @@ function post(𝒜::TMJets,
 
     info("Reachable States Computation...")
     @timing begin
-        tTM, xTM = validated_integ(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
-                                   maxsteps=max_steps, check_property=property)
+        tTM, xTM, vTM = validated_integ(f!, q0, δq0, t0, T, orderQ, orderT, abs_tol,
+                                        maxsteps=max_steps, check_property=property)
     end
 
     # convert to hyperrectangle and wrap around the reach solution
-    N = length(xTM)
-    SET_TYPE = Hyperrectangle{Float64, SVector{n, Float64}, SVector{n, Float64}}
-    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
-    @inbounds for i in 1:N-1
-        Hi = convert(Hyperrectangle, xTM[i])
-        t0 = tTM[i]; t1 = tTM[i+1]
-        Rsets[i] = ReachSet(Hi, t0, t1)
+    output_type = 𝑂[:output_type]
+    if output_type == Hyperrectangle
+        Rsets = _to_hyperrectangle(tTM, xTM, n)
+    elseif output_type == IntervalBox
+        Rsets = _to_intervalbox(tTM, xTM, n)
+    elseif output_type == Zonotope
+        Rsets = _to_zonotope(tTM, vTM, n)
     end
 
     Rsol = ReachSolution(Rsets, 𝑂)

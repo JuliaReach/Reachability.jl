@@ -225,6 +225,16 @@ property=(t,x)->x[2] <= 2.75
 𝑂 = Options(:T=>7.0, :mode=>"check", :property=>property)
 solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
 
+# test output type option
+sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>Hyperrectangle));
+@test set(sol.Xk[1]) isa Hyperrectangle
+
+sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>IntervalBox));
+@test set(sol.Xk[1]) isa IntervalBox
+
+sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>Zonotope));
+@test set(sol.Xk[1]) isa Zonotope
+
 # ========================
 # ASB07 & ASB07_decomposed
 # ========================
