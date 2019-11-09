@@ -1,6 +1,15 @@
 using TaylorSeries: set_variables
 using LazySets.Approximations: box_approximation
 
+import TaylorModels
+import IntervalArithmetic
+const IA = IntervalArithmetic
+const zeroI = IA.Interval(0.0) # [0.0, 0.0]
+const oneI = IA.Interval(1.0) # [1.0, 1.0]
+const symI = IA.Interval(-1.0, 1.0)
+@inline zeroBox(m) = IntervalBox(zeroI, m)
+@inline symBox(m) = IntervalBox(symI, m)
+
 function _to_hyperrectangle(tTM, xTM, n)
     N = length(xTM)
     SET_TYPE = Hyperrectangle{Float64, SVector{n, Float64}, SVector{n, Float64}}
@@ -15,7 +24,7 @@ end
 
 function _to_intervalbox(tTM, xTM, n)
     N = length(xTM)
-    SET_TYPE = IntervalBox{n, Float64}
+    SET_TYPE = IA.IntervalBox{n, Float64}
     Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Bi = xTM[i]
@@ -25,31 +34,30 @@ function _to_intervalbox(tTM, xTM, n)
     return Rsets
 end
 
-import TaylorModels
-
-const IA = IntervalArithmetic
-const zeroI = IA.Interval(0.0) # [0.0, 0.0]
-const oneI = IA.Interval(1.0) # [1.0, 1.0]
-const symI = IA.Interval(-1.0, 1.0)
-zeroBox(m) = IntervalBox(zeroI, m)
-symBox(m) = IntervalBox(symI, m)
-
 function _to_zonotope(tTM, vTM, n)
     N = length(tTM)
     SET_TYPE = Zonotope{Float64}
     Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
-        X = vTM[:, i] # pick the i-th Taylor model
-        Δt = TaylorModels.domain(X[1]) # pick the time domain of the given TM (same in all dimensions)
-        X_Δt = evaluate(X, Δt) # evaluate the Taylor model in time, the coefficents are now intervals
-        # and t disappears
+        # pick the i-th Taylor model
+        X = vTM[:, i]
+
+        # pick the time domain of the given TM (same in all dimensions)
+        Δt = TaylorModels.domain(X[1])
+
+        # evaluate the Taylor model in time, the coefficents are now intervals
+        X_Δt = evaluate(X, Δt)
+
         # builds the associated taylor model for each coordinate
         X̂ = [TaylorModelN(X_Δt[k], X[k].rem, zeroBox(n), symBox(n)) for k in 1:n]
+
         # floating point rigorous polynomial approximation
         fX̂ = TaylorModels.fp_rpa.(X̂)
+
         # LazySets can overapproximate a Taylor model with a Zonotope
         Zi = overapproximate(fX̂, Zonotope)
         t0 = tTM[i]; t1 = tTM[i+1]
+
         Rsets[i] = ReachSet(Zi, t0, t1)
     end
     return Rsets
