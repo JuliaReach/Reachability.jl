@@ -16,7 +16,8 @@ function _to_hyperrectangle(tTM, xTM, n)
     Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Hi = convert(Hyperrectangle, xTM[i])
-        t0 = tTM[i]; t1 = tTM[i+1]
+        t0 = tTM[i]
+        t1 = tTM[i+1]
         Rsets[i] = ReachSet(Hi, t0, t1)
     end
     return Rsets
@@ -28,7 +29,8 @@ function _to_intervalbox(tTM, xTM, n)
     Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Bi = xTM[i]
-        t0 = tTM[i]; t1 = tTM[i+1]
+        t0 = tTM[i]
+        t1 = tTM[i+1]
         Rsets[i] = ReachSet(Bi, t0, t1)
     end
     return Rsets
@@ -56,7 +58,8 @@ function _to_zonotope(tTM, vTM, n)
 
         # LazySets can overapproximate a Taylor model with a Zonotope
         Zi = overapproximate(fX̂, Zonotope)
-        t0 = tTM[i]; t1 = tTM[i+1]
+        t0 = tTM[i]
+        t1 = tTM[i+1]
 
         Rsets[i] = ReachSet(Zi, t0, t1)
     end
