@@ -40,7 +40,7 @@ function _to_zonotope(tTM, vTM, n)
     N = length(tTM)
     SET_TYPE = Zonotope{Float64}
     Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
-    @inbounds for i in 1:N-1
+    @inbounds for i in 1:N-1 # loop over the reach sets
         # pick the i-th Taylor model
         X = vTM[:, i]
 
@@ -50,8 +50,8 @@ function _to_zonotope(tTM, vTM, n)
         # evaluate the Taylor model in time, the coefficents are now intervals
         X_Δt = evaluate(X, Δt)
 
-        # builds the associated taylor model for each coordinate
-        X̂ = [TaylorModelN(X_Δt[k], X[k].rem, zeroBox(n), symBox(n)) for k in 1:n]
+        # builds the associated taylor model for each coordinate j = 1...n
+        X̂ = [TaylorModelN(X_Δt[j], X[j].rem, zeroBox(n), symBox(n)) for j in 1:n]
 
         # floating point rigorous polynomial approximation
         fX̂ = TaylorModels.fp_rpa.(X̂)
