@@ -151,6 +151,16 @@ for inputs in [U1, U2]
     s = solve(IVP(CLCCS(A, B, nothing, U), X0), :T=>0.1)
 end
 
+# linear ODE: x' = Ax + Bu, u ∈ U, x ∈ X
+A = [0.0 1.0; 0.0 0.0]
+B = reshape([0.0, -1.0], (2, 1))
+X = HalfSpace([1.0, 0.0], 0.0)
+U = Singleton([1.0])
+s = CLCCS(A, B, X, U)
+X0 = BallInf(zeros(2), 0.1)
+p = InitialValueProblem(s, X0)
+solve(p, :T=>1.0)
+
 # ===============================
 # Test GLGM06
 # ===============================
