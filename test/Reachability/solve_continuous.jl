@@ -152,14 +152,14 @@ for inputs in [U1, U2]
 end
 
 # linear ODE: x' = Ax + Bu, u ∈ U, x ∈ X
-A = [0.0 1.0; 0.0 0.0]
-B = reshape([0.0, -1.0], (2, 1))
-X = HalfSpace([1.0, 0.0], 0.0)
-U = Singleton([1.0])
-s = CLCCS(A, B, X, U)
-X0 = BallInf(zeros(2), 0.1)
-p = InitialValueProblem(s, X0)
-solve(p, :T=>1.0)
+A2 = [0.0 1.0; 0.0 0.0]
+B2 = reshape([0.0, -1.0], (2, 1))
+X2 = HalfSpace([1.0, 0.0], 0.0)
+U2 = Singleton([1.0])
+s2 = CLCCS(A2, B2, X2, U2)
+X02 = BallInf(zeros(2), 0.1)
+p2 = InitialValueProblem(s2, X02)
+solve(p2, :T=>1.0)
 
 # ===============================
 # Test GLGM06
