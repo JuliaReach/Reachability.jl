@@ -18,7 +18,7 @@ Plots the solution of a reachability problem in 2D with the given options.
                        axes with the variables being plotted; this option can be
                        passed through `sol.options`, or as a pair of integers,
                        where 0 indicates the time variable
-- `use_subindices`  -- (optional, default: `true`) if `true`, use subindices
+- `use_subindices`  -- (optional, default: `false`) if `false`, use subindices
                        for the labels, e.g. `x1` is displayed as `x₁`
 
 ### Notes
@@ -32,7 +32,7 @@ argument. For additional options, consult the Plots.jl reference manual.
                           seriestype=:shape,
                           label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing,
-                          use_subindices=true)
+                          use_subindices=false)
     @assert dim(set(sol.Xk[1])) == 2 "we only support plotting 2D sets"
 
     options = check_aliases_and_add_default_value(sol)
