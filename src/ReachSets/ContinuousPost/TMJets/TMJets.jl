@@ -1,5 +1,8 @@
 export TMJets
 
+using Reexport
+@reexport using TaylorIntegration
+
 using IntervalArithmetic: IntervalBox
 
 using StaticArrays: SVector

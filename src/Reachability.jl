@@ -6,7 +6,8 @@ module Reachability
 
 using Reexport, RecipesBase, Memento, HybridSystems, LinearAlgebra, Suppressor,SparseArrays, Printf, Parameters
 
-@reexport using LazySets
+@reexport using LazySets, MathematicalSystems
+
 import LazySets: use_precise_ρ
 using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
