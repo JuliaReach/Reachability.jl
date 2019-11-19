@@ -40,6 +40,9 @@ function solve(problem::InitialValueProblem{ST, XT},
 end
 
 function _solve_continuous(problem, post; kwargs...)
+    @assert statedim(problem) == dim(problem.x0) "the state-space dimension should match the " *
+    "dimension of the initial states, but they are of size $(statedim(p)) and $(problem.x0) respectively"
+
     # normalize system to canonical form if needed
     problem = IVP(normalize(problem.s), problem.x0)
 
