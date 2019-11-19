@@ -4,10 +4,11 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
-using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
+using Reexport, RecipesBase, Memento, HybridSystems,
       LinearAlgebra, Suppressor, SparseArrays, Printf
 
-@reexport using LazySets
+@reexport using LazySets, MathematicalSystems
+
 import LazySets: use_precise_ρ
 using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
