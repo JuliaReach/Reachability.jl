@@ -138,7 +138,7 @@ function validation_BFFPSV18(𝑂)
 end
 
 """
-    BFFPSV18 <: ContinuousPost
+    BFFPSV18 <: AbstractContinuousPost
 
 Implementation of the reachability algorithm for purely continuous linear
 time-invariant systems using block decompositons by S. Bogomolov, M. Forets,
@@ -166,7 +166,7 @@ S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry.
 HSCC '18 Proceedings of the 21st International Conference on Hybrid Systems:
 Computation and Control (part of CPS Week).
 """
-struct BFFPSV18 <: ContinuousPost
+struct BFFPSV18 <: AbstractContinuousPost
     options::TwoLayerOptions
 
     function BFFPSV18(𝑂::Options)

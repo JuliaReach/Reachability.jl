@@ -1,5 +1,5 @@
 """
-    PostOperator
+    AbstractPostOperator
 
 Abstract supertype of all post operators.
 
@@ -7,9 +7,9 @@ Abstract supertype of all post operators.
 
 All post operators should provide the following methods:
 ```julia
-init(op::PostOperator, system, options)
+init(op::AbstractPostOperator, system, options)
 
-post(op::PostOperator, system, ...)
+post(op::AbstractPostOperator, system, ...)
 ```
 """
-abstract type PostOperator end
+abstract type AbstractPostOperator end

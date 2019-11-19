@@ -1,6 +1,6 @@
 export ASB07
 
-struct ASB07 <: ContinuousPost
+struct ASB07 <: AbstractContinuousPost
     options::TwoLayerOptions
 
     function ASB07(𝑂::Options)

@@ -1,7 +1,7 @@
 export ConcreteDiscretePost
 
 """
-    ConcreteDiscretePost <: DiscretePost
+    ConcreteDiscretePost <: AbstractDiscretePost
 
 Textbook implementation of a discrete post operator, using concrete polyhedra
 intersections.
@@ -23,7 +23,7 @@ polytopes in constraint representation resp. half-spaces.
 The algorithm is based on [Flowpipe-Guard Intersection for Reachability
 Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-struct ConcreteDiscretePost <: DiscretePost
+struct ConcreteDiscretePost <: AbstractDiscretePost
     options::Options
 
     function ConcreteDiscretePost(𝑂::Options)

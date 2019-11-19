@@ -4,7 +4,7 @@ using IntervalArithmetic: IntervalBox
 
 using StaticArrays: SVector
 
-struct TMJets <: ContinuousPost
+struct TMJets <: AbstractContinuousPost
     options::TwoLayerOptions
 
     function TMJets(𝑂::Options)

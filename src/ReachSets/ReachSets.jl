@@ -28,6 +28,8 @@ using Reachability: @timing,
                     haskey_specified,
                     validate_solver_options_and_add_default_values!
 
+using Parameters
+
 # ========================================
 # Discretize and compute bloating factors
 # ========================================
@@ -84,9 +86,9 @@ include("PostOperator.jl")
 include("ContinuousPost/ContinuousPost.jl")
 include("DiscretePost/DiscretePost.jl")
 
-export PostOperator,
-       ContinuousPost,
-       DiscretePost,
+export AbstractPostOperator,
+       AbstractContinuousPost,
+       AbstractDiscretePost,
        init, init!,
        post,
        tube⋂inv!

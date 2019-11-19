@@ -1,10 +1,10 @@
 export LazyDiscretePost,
-       ApproximatingDiscretePost
+       ApproximatingAbstractDiscretePost
 
 import LazySets.use_precise_ρ
 
 """
-    LazyDiscretePost <: DiscretePost
+    LazyDiscretePost <: AbstractDiscretePost
 
 Textbook implementation of a discrete post operator, but with lazy intersections.
 
@@ -17,7 +17,7 @@ Textbook implementation of a discrete post operator, but with lazy intersections
 The algorithm is based on [Flowpipe-Guard Intersection for Reachability
 Computations with Support Functions](http://spaceex.imag.fr/sites/default/files/frehser_adhs2012.pdf).
 """
-struct LazyDiscretePost <: DiscretePost
+struct LazyDiscretePost <: AbstractDiscretePost
     options::Options
 
     function LazyDiscretePost(𝑂::Options)
@@ -47,13 +47,13 @@ LazyDiscretePost(𝑂::Pair{Symbol,<:Any}...) = LazyDiscretePost(Options(Dict{Sy
 LazyDiscretePost() = LazyDiscretePost(Options())
 
 """
-    ApproximatingDiscretePost()
+    ApproximatingAbstractDiscretePost()
 
 Textbook implementation of a discrete post operator, but with lazy intersections
 followed by an overapproximation. This is a particular case of the
 `LazyDiscretePost`.
 """
-function ApproximatingDiscretePost()
+function ApproximatingAbstractDiscretePost()
     return LazyDiscretePost(:check_invariant_intersection=>false,
                             :overapproximation=>Hyperrectangle,
                             :lazy_R⋂I=>false,
@@ -61,7 +61,7 @@ function ApproximatingDiscretePost()
                             :lazy_A⌜R⋂G⌟⋂I=>false)
 end
 
-function ApproximatingDiscretePost(𝑂::Options)
+function ApproximatingAbstractDiscretePost(𝑂::Options)
     𝑂_default = Options(:lazy_R⋂I=>false,
                         :lazy_R⋂G=>false,
                         :lazy_A⌜R⋂G⌟⋂I=>false)

@@ -1,6 +1,6 @@
 export ASB07_decomposed
 
-struct ASB07_decomposed <: ContinuousPost
+struct ASB07_decomposed <: AbstractContinuousPost
     options::TwoLayerOptions
 
     function ASB07_decomposed(𝑂::Options)

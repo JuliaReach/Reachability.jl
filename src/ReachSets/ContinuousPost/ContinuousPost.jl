@@ -1,6 +1,6 @@
 """
-    ContinuousPost
+    AbstractContinuousPost
 
 Abstract supertype of all continuous post operators.
 """
-abstract type ContinuousPost <: PostOperator end
+abstract type AbstractContinuousPost <: AbstractPostOperator end

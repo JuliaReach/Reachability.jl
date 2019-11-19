@@ -4,14 +4,16 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
-using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
-      LinearAlgebra, Suppressor, SparseArrays, Printf
+using Reexport, RecipesBase, Memento, HybridSystems, LinearAlgebra, Suppressor,SparseArrays, Printf, Parameters
 
 @reexport using LazySets
 import LazySets: use_precise_ρ
 using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
 import LazySets.Approximations: project
+
+# TODO: refactor
+abstract type AbstractPostOperator end
 
 include("logging.jl")
 include("Options/dictionary.jl")

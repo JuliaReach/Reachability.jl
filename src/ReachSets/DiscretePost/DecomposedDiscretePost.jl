@@ -1,7 +1,7 @@
 export DecomposedDiscretePost
 
 """
-    DecomposedDiscretePost <: DiscretePost
+    DecomposedDiscretePost <: AbstractDiscretePost
 
 Textbook implementation of a discrete post operator, but with decomposed intersections.
 
@@ -15,7 +15,7 @@ The algorithm is based on [Reachability analysis of linear hybrid systems via bl
 decomposition](https://arxiv.org/pdf/1905.02458.pdf).
 This discrete-post operator can only be used in combination with the continuous-post operator [`BFFPS19`](@ref).
 """
-struct DecomposedDiscretePost <: DiscretePost
+struct DecomposedDiscretePost <: AbstractDiscretePost
     options::Options
 
     function DecomposedDiscretePost(𝑂::Options)

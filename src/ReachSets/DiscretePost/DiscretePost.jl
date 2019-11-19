@@ -1,7 +1,7 @@
 import LazySets.use_precise_ρ
 
 """
-    DiscretePost
+    AbstractDiscretePost
 
 Abstract supertype of all discrete post operators.
 
@@ -10,11 +10,11 @@ Abstract supertype of all discrete post operators.
 All discrete post operators should provide the following method, in addition
 to those provided for general post operators:
 ```julia
-tube⋂inv!(𝒫::DiscretePost, reach_tube::Vector{<:AbstractReachSet{<:LazySet, N}},
+tube⋂inv!(𝒫::AbstractDiscretePost, reach_tube::Vector{<:AbstractReachSet{<:LazySet, N}},
           invariant, Rsets, start_interval) where {N}
 ```
 """
-abstract type DiscretePost <: PostOperator end
+abstract type AbstractDiscretePost <: AbstractPostOperator end
 
 function postprocess(𝒫,
                      HS,
@@ -56,7 +56,7 @@ function postprocess(𝒫,
     end
 end
 
-function cluster(𝒫::DiscretePost,
+function cluster(𝒫::AbstractDiscretePost,
                  reach_sets::Vector{RSN},
                  options::Options) where {SN, RSN<:AbstractReachSet{SN}}
     clustering_strategy = options[:clustering]
@@ -77,7 +77,7 @@ function cluster(𝒫::DiscretePost,
     end
 end
 
-function isfixpoint(𝒫::DiscretePost,
+function isfixpoint(𝒫::AbstractDiscretePost,
                     reach_set::RSN,
                     passed_list,
                     loc_id
@@ -98,7 +98,7 @@ function isfixpoint(𝒫::DiscretePost,
 end
 
 # default: always apply line search
-function use_precise_ρ(𝒫::DiscretePost,
+function use_precise_ρ(𝒫::AbstractDiscretePost,
                              cap::Intersection{N})::Bool where N<:Real
     return true
 end
@@ -106,7 +106,7 @@ end
 # --- default methods for handling assignments ---
 
 # default implementation: use 'apply' from MathematicalSystems
-function apply_assignment(𝒫::DiscretePost,
+function apply_assignment(𝒫::AbstractDiscretePost,
                           constrained_map::AbstractMap,
                           R⋂G::LazySet;
                           kwargs...)
@@ -114,7 +114,7 @@ function apply_assignment(𝒫::DiscretePost,
 end
 
 # for reset maps: return a lazy ResetMap from LazySets
-function apply_assignment(𝒫::DiscretePost,
+function apply_assignment(𝒫::AbstractDiscretePost,
                           constrained_map::ConstrainedResetMap,
                           R⋂G::LazySet;
                           kwargs...)

@@ -119,7 +119,7 @@ function validation_BFFPS19(𝑂)
 end
 
 """
-    BFFPS19 <: ContinuousPost
+    BFFPS19 <: AbstractContinuousPost
 
 Implementation of the reachability algorithm for purely continuous linear
 time-invariant systems using block decompositions by S. Bogomolov, M. Forets,
@@ -145,7 +145,7 @@ We refer to [1] for technical details.
 decomposition](https://arxiv.org/abs/1905.02458).
 Sergiy Bogomolov, Marcelo Forets, Goran Frehse, Kostiantyn Potomkin, Christian Schilling.
 """
-struct BFFPS19 <: ContinuousPost
+struct BFFPS19 <: AbstractContinuousPost
     options::TwoLayerOptions
 
     function BFFPS19(𝑂::Options)
