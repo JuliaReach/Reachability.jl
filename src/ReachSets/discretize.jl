@@ -889,7 +889,7 @@ function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
 end
 
 # fallback implementation for conversion (if applicable) or overapproximation
-function _convert_or_overapproximate(X::Type{<:Zonotope}, Y::LazySet)
+function _convert_or_overapproximate(X::Type{<:AbstractPolytope}, Y::LazySet)
     if applicable(convert, X, Y)
         return convert(X, Y)
     elseif applicable(overapproximate, Y, X)
