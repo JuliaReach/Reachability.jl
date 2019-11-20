@@ -895,6 +895,6 @@ function _convert_or_overapproximate(X::Type{<:AbstractPolytope}, Y::LazySet)
     elseif applicable(overapproximate, Y, X)
         return overapproximate(Y, X)
     else
-        return convert(Zonotope, overapproximate(Y, Hyperrectangle))
+        return convert(X, overapproximate(Y, Hyperrectangle))
     end
 end
