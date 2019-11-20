@@ -25,7 +25,8 @@ end
 # default options (they are added in the function validate_and_wrap_options)
 #GLGM06() = GLGM06(Options())
 
-include("init.jl")
+#include("init.jl")
+
 include("post.jl")
 include("reach.jl")
 include("project.jl")

@@ -2,7 +2,8 @@ export solve
 
 """
     solve(problem::InitialValueProblem{ST, XT},
-          post::AbstractPostOperator=default_operator(ST); kwargs...) where {ST, XT}
+          opC::AbstractContinuousPost=default_continuous_post(ST),
+          opD::Union{AbstractDiscretePost, Nothing}=nothing; kwargs...) where {ST, XT}
 
 Solves a reachability problem for the  the given options.
 If some options are not defined, we may fall back to default values.
@@ -25,10 +26,10 @@ To see all available input options, see
 """
 function solve(problem::InitialValueProblem{ST, XT},
                opC::AbstractContinuousPost=default_continuous_post(ST),
-               opD::AbstractDiscretePost=nothing; kwargs...) where {ST, XT}
+               opD::Union{AbstractDiscretePost, Nothing}=nothing; kwargs...) where {ST, XT}
 
     if iscontinuoussystem(ST)
-        _solve_continuous(problem, opC, kwargs...)
+        _solve_continuous(problem, opC; kwargs...)
     elseif ishybridsystem(ST)
         if opD == nothing
             opD = default_discrete_post(ST)
@@ -39,7 +40,7 @@ function solve(problem::InitialValueProblem{ST, XT},
     end
 end
 
-function _solve_continuous(problem, post; kwargs...)
+function _solve_continuous(problem, op; kwargs...)
     @assert statedim(problem) == dim(problem.x0) "the state-space dimension should match the " *
     "dimension of the initial states, but they are of size $(statedim(p)) and $(problem.x0) respectively"
 
@@ -47,10 +48,12 @@ function _solve_continuous(problem, post; kwargs...)
     problem = IVP(normalize(problem.s), problem.x0)
 
     # initialize the algorithm-specific options
-    options = init!(op, problem, kwargs...)
+    #options = init!(op, problem, kwargs...)
+    #options = Dict(kwargs...)
+    T = kwargs[:T] # TODO check that key exists
 
     # run the continuous-post operator
-    sol = post(op, problem, options)
+    sol = post(op, problem, T)
 
     return sol
 end

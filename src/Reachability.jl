@@ -13,9 +13,6 @@ using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
 import LazySets.Approximations: project
 
-# TODO: refactor
-abstract type AbstractPostOperator end
-
 include("logging.jl")
 include("Options/dictionary.jl")
 include("Options/validation.jl")

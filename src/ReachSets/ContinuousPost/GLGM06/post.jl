@@ -1,22 +1,20 @@
-function post(𝒜::GLGM06,
-              𝑃::InitialValueProblem{<:AbstractContinuousSystem},
-              𝑂::Options)
+function post(alg::GLGM06, problem, time_horizon)
 
     # ==================================
     # Initialization and discretization
     # ==================================
-
-    𝑂 = merge(𝒜.options.defaults, 𝑂, 𝒜.options.specified)
-    max_order = 𝑂[:max_order]
-    δ, T = 𝑂[:δ], 𝑂[:T]
-    N = round(Int, T / δ)
+    max_order = alg.max_order
+    δ = alg.δ
+    T = time_horizon
+    N = round(Int, T / δ) # number of reach sets to be evaluated at most
 
     # compute and unrwap discretized system
-    𝑃_discrete = discretize(𝑃, δ, algorithm=𝑂[:discretization],
-                                  sih_method=𝑂[:sih_method],
-                                  exp_method=𝑂[:exp_method],
-                                  set_operations="zonotope")
-    Ω0, Φ = 𝑃_discrete.x0, 𝑃_discrete.s.A
+    Pdiscr = discretize(problem, δ, algorithm=alg.discretization,
+                                    sih_method=alg.sih_method,
+                                    exp_method=alg.exp_method,
+                                    set_operations="zonotope")
+
+    Ω0, Φ = Pdiscr.x0, Pdiscr.s.A
 
     # =====================
     # Flowpipe computation
@@ -27,25 +25,13 @@ function post(𝒜::GLGM06,
 
     info("Reachable States Computation...")
     @timing begin
-    if inputdim(𝑃_discrete) == 0
+    if inputdim(Pdiscr) == 0
         reach_homog!(Rsets, Ω0, Φ, N, δ, max_order)
-
     else
-        U = inputset(𝑃_discrete)
+        U = inputset(Pdiscr) # TODO dispatch for constant input..
         reach_inhomog!(Rsets, Ω0, U, Φ, N, δ, max_order)
     end
     end # timing
 
-    Rsol = ReachSolution(Rsets, 𝑂)
-
-    # ===========
-    # Projection
-    # ===========
-
-    if 𝑂[:project_reachset]
-        info("Projection...")
-        Rsol = @timing project(Rsol)
-    end
-
-    return Rsol
+    return Rsets
 end

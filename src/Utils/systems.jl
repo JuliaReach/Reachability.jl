@@ -1,7 +1,7 @@
-export ContinuousSystem,
-       DiscreteSystem,
-       add_dimension,
-       next_set
+export add_dimension,
+       next_set,
+       iscontinuoussystem,
+       ishybridsystem
 
 # name alises
 const LCS = LinearContinuousSystem
@@ -19,6 +19,22 @@ const CADS = ConstrainedAffineDiscreteSystem
 const BBCS = BlackBoxContinuousSystem
 const CBBCS = ConstrainedBlackBoxContinuousSystem
 const CBBCCS = ConstrainedBlackBoxControlContinuousSystem
+
+# continuous systems that are handled by this library
+iscontinuoussystem(T::Type{<:AbstractSystem}) = false
+iscontinuoussystem(T::Type{<:LCS}) = true
+iscontinuoussystem(T::Type{<:CLCS}) = true
+iscontinuoussystem(T::Type{<:CLCCS}) = true
+iscontinuoussystem(T::Type{<:ACS}) = true
+iscontinuoussystem(T::Type{<:CACCS}) = true
+iscontinuoussystem(T::Type{<:CACS}) = true
+iscontinuoussystem(T::Type{<:BBCS}) = true
+iscontinuoussystem(T::Type{<:CBBCS}) = true
+iscontinuoussystem(T::Type{<:CBBCCS}) = true
+
+# hybrid systems that are handled by this library
+ishybridsystem(T::Type{<:AbstractSystem}) = false
+ishybridsystem(T::Type{<:HybridSystem}) = true
 
 export LCS, LDS, CLCS, CLDS, CLCCS, CLCDS, CACCS, CACDS, CACS, CADS, IVP, BBCS,
        CBBCS, CBBCCS
