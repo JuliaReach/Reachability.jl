@@ -28,6 +28,9 @@ s = solve(IVP(LCS(A), X0),
           op=BFFPSV18(:vars=>[1,3]))
 @test dim(set(s.Xk[1])) == 2
 
+# test that dimensions should match
+@test_throws AssertionError solve(IVP(LCS(A), BallInf(ones(3), 0.1)), :T=>0.1)
+
 # ===============================
 # Test projection
 # ===============================
