@@ -57,16 +57,16 @@ function project_reach(
                     sparse([1, 2], [xaxis, yaxis], [1.0, 1.0], 2, n)
             end
         else
-            @assert size(projection_matrix, 1) == 1 "currently we only " *
-                "support one-dimensional projection matrices"
+            @assert size(projection_matrix_high_dimensional, 1) == 1 "currently " *
+                "we only support one-dimensional projection matrices"
             if got_time
                 # create a 1-row matrix
                 projection_matrix =
-                    sparse(fill(1, n), 1:n, projection_matrix[1, :], 1, n)
+                    sparse(fill(1, n), 1:n, projection_matrix_high_dimensional[1, :], 1, n)
             else
                 # create a 2-row matrix
                 projection_matrix =
-                    sparse(fill(2, n), 1:n, projection_matrix[1, :], 2, n)
+                    sparse(fill(2, n), 1:n, projection_matrix_high_dimensional[1, :], 2, n)
                 projection_matrix[1, xaxis] = 1.0
             end
         end
