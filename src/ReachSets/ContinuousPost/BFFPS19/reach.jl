@@ -108,7 +108,7 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
         res[1] = res_type(
             CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
             zero(NUM), options[:δ])
-        return res
+        return Flowpipe(res)
     end
     push!(args, Xhat0)
 
@@ -228,7 +228,7 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
     end
 
     # return the result
-    return res
+    return Flowpipe(res)
 end
 
 function reach_mixed(problem::Union{IVP{<:CLCS{NUM}, <:LazySet{NUM}},

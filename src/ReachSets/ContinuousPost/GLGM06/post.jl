@@ -36,7 +36,7 @@ function post(𝒜::GLGM06,
     end
     end # timing
 
-    Rsol = ReachSolution(Rsets, 𝑂)
+    Rsol = ReachSolution(Flowpipe(Rsets), 𝑂)
 
     # ===========
     # Projection

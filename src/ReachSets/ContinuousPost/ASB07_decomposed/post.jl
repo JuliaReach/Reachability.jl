@@ -41,7 +41,7 @@ function post(𝒜::ASB07_decomposed,
                             blocks)
     end # timing
 
-    Rsol = ReachSolution(Rsets, 𝑂)
+    Rsol = ReachSolution(Flowpipe(Rsets), 𝑂)
 
     # ==========
     # Projection

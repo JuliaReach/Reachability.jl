@@ -44,7 +44,7 @@ function project_reach(
         RsetsProj = Vector{ReachSet{<:set_type{N}}}(undef, length(Rsets))
     end
 
-    @inbounds for (i, rs) in enumerate(Rsets)
+    function _project(rs)
         X = set(rs)
         if projection_matrix_high_dimensional == nothing
             # use a simple projection to state variables
@@ -92,10 +92,10 @@ function project_reach(
             time_interval = Interval(t0, t1)
             projected = CartesianProduct(time_interval, projected)
         end
-        RsetsProj[i] = ReachSet(oa(projected), t0, t1)
+        return ReachSet(oa(projected), t0, t1)
     end
 
-    return RsetsProj
+    return [_project(rs) for rs in Rsets]
 end
 
 """
@@ -117,7 +117,17 @@ function project(Rsets::Vector{<:AbstractReachSet}, options::AbstractOptions)
     return project_reach(Rsets, options[:plot_vars], options)
 end
 
-project(reach_sol::ReachSolution) = project(reach_sol.Xk, reach_sol.options)
+function project(flowpipe::Flowpipe, options::AbstractOptions)
+    return Flowpipe(project(flowpipe.reachsets, options))
+end
+
+function project(reach_sol::ReachSolution)
+    proj_flowpipes = Vector{Flowpipe}(undef, length(reach_sol.flowpipes))
+    for (i, flowpipe) in enumerate(reach_sol.flowpipes)
+        proj_flowpipes[i] = project(flowpipe, reach_sol.options)
+    end
+    return ReachSolution(proj_flowpipes, reach_sol.options)
+end
 
 project(Rsets::Vector{<:AbstractReachSet}, options::Pair{Symbol,<:Any}...) =
     project(Rsets, Options(Dict{Symbol,Any}(options)))

@@ -248,19 +248,19 @@ function post(𝒫::BFFPSV18, 𝑆::AbstractSystem, 𝑂_input::Options)
     if 𝑂[:mode] == "reach"
         info("Reachable States Computation...")
         @timing begin
-            Rsets = reach(𝑆, 𝑂)
+            flowpipe = reach(𝑆, 𝑂)
             info("- Total")
         end
 
         # Projection
         if 𝑂[:project_reachset]
             info("Projection...")
-            RsetsProj = @timing project(Rsets, 𝑂)
+            flowpipe_proj = @timing project(flowpipe, 𝑂)
         else
-            RsetsProj = Rsets
+            flowpipe_proj = flowpipe
         end
 
-        return ReachSolution(RsetsProj, 𝑂_input)
+        return ReachSolution(flowpipe_proj, 𝑂_input)
 
     elseif 𝑂[:mode] == "check"
         info("invariants are currently not supported in 'check' mode")

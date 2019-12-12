@@ -174,6 +174,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
 
 
         reach_tube = solve!(IVP(loc, set(X0)), options_copy, op=opC)
+        reach_sets = reach_tube.flowpipes[1].reachsets
 
         # get the property for the current location
         property_loc = property isa Dict ?
@@ -183,7 +184,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         # add the very first initial approximation
         if passed_list != nothing &&
                 (!isassigned(passed_list, loc_id) || isempty(passed_list[loc_id]))
-            reach_set = reach_tube.Xk[1]
+            reach_set = reach_sets[1]
             # TODO For lazy X0 the fixpoint check is likely to fail, so we
             # currently ignore that. In general, we want to add an
             # *underapproximation*, which we currently do not support.
@@ -196,7 +197,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
 
         # count_Rsets counts the number of new reach sets added to Rsets
-        count_Rsets = tube⋂inv!(opD, reach_tube.Xk, loc.X, Rsets,
+        count_Rsets = tube⋂inv!(opD, reach_sets, loc.X, Rsets,
                                 [time_start(X0), time_end(X0)])
 
         if property_loc != nothing
@@ -205,7 +206,7 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                 n_lowdim = length(temp_vars)
                 n = dim(set(X0))
                 property_loc_lowdim = project(property_loc, temp_vars)
-                for (i, reach_set) in enumerate(reach_tube.Xk)
+                for (i, reach_set) in enumerate(reach_sets)
                     X = set(reach_set)
                     if (dim(X) == n_lowdim && n_lowdim < n)
                         if !check(property_loc_lowdim, X)

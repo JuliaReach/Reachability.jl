@@ -35,7 +35,7 @@ function post(𝒜::ASB07,
     reach_ASB07!(Rsets, Ω0, U, Φ, N, δ, max_order)
     end # timing
 
-    Rsol = ReachSolution(Rsets, 𝑂)
+    Rsol = ReachSolution(Flowpipe(Rsets), 𝑂)
 
     # ==========
     # Projection

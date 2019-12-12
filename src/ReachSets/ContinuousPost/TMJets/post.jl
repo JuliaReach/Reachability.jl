@@ -126,7 +126,7 @@ function post(𝒜::TMJets,
         Rsets = _to_zonotope(tTM, vTM, n)
     end
 
-    Rsol = ReachSolution(Rsets, 𝑂)
+    Rsol = ReachSolution(Flowpipe(Rsets), 𝑂)
 
     # ===========
     # Projection
