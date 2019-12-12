@@ -92,7 +92,7 @@ export PostOperator,
        DiscretePost,
        init, init!,
        post,
-       tube⋂inv!
+       tube⋂inv
 
 # ==========================
 # Continuous post operators

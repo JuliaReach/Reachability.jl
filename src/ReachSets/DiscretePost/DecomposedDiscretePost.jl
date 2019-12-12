@@ -46,25 +46,22 @@ function init!(𝒫::DecomposedDiscretePost, 𝒮::AbstractSystem, 𝑂::Options
     return 𝑂out
 end
 
-function tube⋂inv!(𝒫::DecomposedDiscretePost,
-                   reach_tube::Vector{<:SparseReachSet{<:LazySet{N}}},
-                   invariant,
-                   Rsets,
-                   start_interval
-                  ) where {N}
+function tube⋂inv(𝒫::DecomposedDiscretePost,
+                  reach_tube::Vector{<:SparseReachSet{<:LazySet{N}}},
+                  invariant,
+                  start_interval
+                 ) where {N}
 
-    # counts the number of sets R⋂I added to Rsets
-    count = 0
+    Rsets = Vector{AbstractReachSet{<:LazySet{N}}}()
     @inbounds for reach_set in reach_tube
         # intersection with invariant is computed inside BFFPS19 CPost operator
         push!(Rsets,
               substitute(reach_set,
                          time_start=time_start(reach_set) + start_interval[1],
                          time_end=time_end(reach_set) + start_interval[2]))
-        count = count + 1
     end
 
-    return count
+    return Rsets
 end
 
 function post(𝒫::DecomposedDiscretePost,
@@ -73,7 +70,6 @@ function post(𝒫::DecomposedDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
-              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -92,8 +88,8 @@ function post(𝒫::DecomposedDiscretePost,
         guard = stateset(constrained_map)
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}}}()
-        sizehint!(post_jump, count_Rsets)
-        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
+        sizehint!(post_jump, length(tube⋂inv))
+        for reach_set in tube⋂inv
             if (dim(set(reach_set)) == n_lowdim && n_lowdim < n)
                 continue
             end
