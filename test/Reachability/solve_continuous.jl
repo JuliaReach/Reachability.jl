@@ -35,6 +35,9 @@ s = solve(IVP(LCS(A), X0),
 # Test projection
 # ===============================
 s = solve(IVP(LCS(A), X0),
+          Options(:T=>0.1, :project_reachset=>true),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
+s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :project_reachset=>false),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
 ps = project(s)
