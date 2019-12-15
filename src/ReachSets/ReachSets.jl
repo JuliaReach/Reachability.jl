@@ -71,11 +71,14 @@ export tune_δ
 # Reachability results
 # =====================
 include("ReachSet.jl")
+include("Flowpipe.jl")
 include("ReachSolution.jl")
 
 export AbstractReachSet, ReachSet, SparseReachSet,
        set, time_start, time_end,
-       ReachSolution
+       Flowpipe,
+       ReachSolution,
+       n_sets
 
 # ===============
 # Post operators
@@ -89,7 +92,7 @@ export PostOperator,
        DiscretePost,
        init, init!,
        post,
-       tube⋂inv!
+       tube⋂inv
 
 # ==========================
 # Continuous post operators

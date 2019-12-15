@@ -33,7 +33,7 @@ argument. For additional options, consult the Plots.jl reference manual.
                           label="", grid=true, alpha=0.5,
                           indices=nothing, vars=nothing,
                           use_subindices=false)
-    @assert dim(set(sol.Xk[1])) == 2 "we only support plotting 2D sets"
+    @assert dim(set(sol.flowpipes[1].reachsets[1])) == 2 "we only support plotting 2D sets"
 
     options = check_aliases_and_add_default_value(sol)
 
@@ -57,11 +57,31 @@ argument. For additional options, consult the Plots.jl reference manual.
         linecolor --> :match
     end
 
-    # Using single list and NaN separators
+    # using single list and NaN separators
+    # going through the flowpipes involves complicated index computations
+    # example:
+    # indices: [5, 10]
+    # flowpipes: [1, 2, 3], [4, 5, 6, 7, 8], [9], [10, 11]
     vlist = Vector{Vector{Float64}}()
-    for i in indices
-        append!(vlist, convex_hull(vertices_list(set(sol.Xk[i]))))
-        push!(vlist, [NaN; NaN])
+    i_indices = 1
+    next_index = indices[i_indices]
+    offset = 0
+    for flowpipe in sol.flowpipes
+        n_sets = length(flowpipe.reachsets)
+        while next_index - offset <= n_sets
+            reachset = flowpipe.reachsets[next_index - offset]
+            append!(vlist, convex_hull(vertices_list(set(reachset))))
+            push!(vlist, [NaN; NaN])
+            i_indices += 1
+            if i_indices > length(indices)
+                break
+            end
+            next_index = indices[i_indices]
+        end
+        if i_indices > length(indices)
+            break
+        end
+        offset += n_sets
     end
     vlist = hcat(vlist...)'
     vlist[:, 1], vlist[:, 2]
@@ -86,7 +106,7 @@ function check_aliases_and_add_default_value(sol::ReachSolution)::Options
     dict_copy = options_copy.dict
 
     check_aliases!(dict, dict_copy, [:plot_vars, :output_variables])
-    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_indices], 1:length(sol.Xk), false)
+    check_aliases_and_add_default_value!(dict, dict_copy, [:plot_indices], 1:n_sets(sol), false)
 
     return options_copy
 end

@@ -81,17 +81,15 @@ function init!(𝒫::LazyDiscretePost, 𝒮::AbstractSystem, 𝑂::Options)
     return 𝑂out
 end
 
-function tube⋂inv!(𝒫::LazyDiscretePost,
-                   reach_tube::Vector{<:AbstractReachSet{<:LazySet{N}}},
-                   invariant,
-                   Rsets,
-                   start_interval
-                  ) where {N}
+function tube⋂inv(𝒫::LazyDiscretePost,
+                  reach_tube::Vector{<:AbstractReachSet{<:LazySet{N}}},
+                  invariant,
+                  start_interval
+                 ) where {N}
 
     dirs = 𝒫.options[:overapproximation]
 
-    # counts the number of sets R⋂I added to Rsets
-    count = 0
+    Rsets = Vector{AbstractReachSet{<:LazySet{N}}}()
     @inbounds for reach_set in reach_tube
         R⋂I = Intersection(set(reach_set), invariant)
         if 𝒫.options[:check_invariant_intersection] && isempty(R⋂I)
@@ -104,10 +102,9 @@ function tube⋂inv!(𝒫::LazyDiscretePost,
               substitute(reach_set, set=R⋂I,
                          time_start=time_start(reach_set) + start_interval[1],
                          time_end=time_end(reach_set) + start_interval[2]))
-        count = count + 1
     end
 
-    return count
+    return Rsets
 end
 
 function post(𝒫::LazyDiscretePost,
@@ -116,7 +113,6 @@ function post(𝒫::LazyDiscretePost,
               passed_list,
               source_loc_id,
               tube⋂inv,
-              count_Rsets,
               jumps,
               options
              ) where {N}
@@ -145,8 +141,8 @@ function post(𝒫::LazyDiscretePost,
 
         # perform jumps
         post_jump = Vector{ReachSet{LazySet{N}}}()
-        sizehint!(post_jump, count_Rsets)
-        for reach_set in tube⋂inv[length(tube⋂inv) - count_Rsets + 1 : end]
+        sizehint!(post_jump, length(tube⋂inv))
+        for reach_set in tube⋂inv
             # check intersection with guard
             if combine_constraints
                 R⋂G = Intersection(set(reach_set).X, invariant_guard)

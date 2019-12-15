@@ -13,20 +13,20 @@ X0 = BallInf(ones(4), 0.1)
 
 # default options (computes all variables)
 s = solve(IVP(LCS(A), X0), :T=>0.1)
-@test dim(set(s.Xk[1])) == 4
+@test dim(set(s.flowpipes[1].reachsets[1])) == 4
 @test s.options isa Options
 
 # two variables and custom partition
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
-@test dim(set(s.Xk[1])) == 4
+@test dim(set(s.flowpipes[1].reachsets[1])) == 4
 
 # the default partition is used.
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1),
           op=BFFPSV18(:vars=>[1,3]))
-@test dim(set(s.Xk[1])) == 2
+@test dim(set(s.flowpipes[1].reachsets[1])) == 2
 
 # test that dimensions should match
 @test_throws AssertionError solve(IVP(LCS(A), BallInf(ones(3), 0.1)), :T=>0.1)
@@ -34,6 +34,9 @@ s = solve(IVP(LCS(A), X0),
 # ===============================
 # Test projection
 # ===============================
+s = solve(IVP(LCS(A), X0),
+          Options(:T=>0.1, :project_reachset=>true),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
 s = solve(IVP(LCS(A), X0),
           Options(:T=>0.1, :project_reachset=>false),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4]))
@@ -240,13 +243,13 @@ solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2))
 
 # test output type option
 sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>Hyperrectangle));
-@test set(sol.Xk[1]) isa Hyperrectangle
+@test set(sol.flowpipes[1].reachsets[1]) isa Hyperrectangle
 
 sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>IntervalBox));
-@test set(sol.Xk[1]) isa IntervalBox
+@test set(sol.flowpipes[1].reachsets[1]) isa IntervalBox
 
 sol = solve(𝑃, 𝑂, op=TMJets(:abs_tol=>1e-10, :orderT=>10, :orderQ=>2, :output_type=>Zonotope));
-@test set(sol.Xk[1]) isa Zonotope
+@test set(sol.flowpipes[1].reachsets[1]) isa Zonotope
 
 # ========================
 # ASB07 & ASB07_decomposed
