@@ -4,6 +4,7 @@ using LazySets.Approximations: box_approximation
 import TaylorModels
 import IntervalArithmetic
 const IA = IntervalArithmetic
+const TM = TaylorModels
 const zeroI = IA.Interval(0.0) # [0.0, 0.0]
 const oneI = IA.Interval(1.0) # [1.0, 1.0]
 const symI = IA.Interval(-1.0, 1.0)
@@ -66,6 +67,62 @@ function _to_zonotope(tTM, vTM, n)
     return Rsets
 end
 
+# cut the Δt into different segments
+function _to_zonotope_time(tTM, vTM, n, NΔt)
+    N = length(tTM)
+    SET_TYPE = Zonotope{Float64}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, (N-1)*NΔt)
+
+    @inbounds for i in 1:N-1 # loop over the reach sets
+        # pick the i-th Taylor model
+        X = vTM[:, i]
+
+        # pick the time domain of the given TM (same in all dimensions)
+        Δt = TaylorModels.domain(X[1])
+
+        Δt_div = range(IA.inf(Δt), stop=IA.sup(Δt), length=NΔt+1)
+
+        for k in 1:NΔt
+            # evaluate the Taylor model in time, the coefficients are now intervals
+            X_Δt = evaluate(X, IA.Interval(Δt_div[k], Δt_div[k+1]))
+
+            # builds the associated taylor model for each coordinate j = 1...n
+            X̂ = [TaylorModelN(X_Δt[j], X[j].rem, zeroBox(n), symBox(n)) for j in 1:n]
+
+            # floating point rigorous polynomial approximation
+            fX̂ = TaylorModels.fp_rpa.(X̂)
+
+            # LazySets can overapproximate a Taylor model with a Zonotope
+            Zi = overapproximate(fX̂, Zonotope)
+            t0 = Δt_div[k]
+            t1 = Δt_div[k+1]
+
+            Rsets[NΔt * (i - 1) + k] = ReachSet(Zi, t0, t1)
+        end
+    end
+    return Rsets
+end
+
+function _to_taylormodel(tTM, vTM, n)
+    N = length(tTM)
+    SET_TYPE = Vector{TaylorModels.TaylorModel1{TaylorN{Float64}, Float64}}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    @inbounds for i in 1:N-1 # loop over the reach sets
+        # pick the i-th Taylor model
+        X = vTM[:, i]
+
+        # pick the time domain of the given TM (same in all dimensions)
+        Δt = TaylorModels.domain(X[1])
+
+        # LazySets can overapproximate a Taylor model with a Zonotope
+        t0 = tTM[i]
+        t1 = tTM[i+1]
+
+        Rsets[i] = ReachSet(X, t0, t1)
+    end
+    return Rsets
+end
+
 function post(𝒜::TMJets,
               𝑃::InitialValueProblem{<:Union{BBCS, CBBCS, CBBCCS}, <:LazySet},
               𝑂_global::Options)
@@ -123,7 +180,10 @@ function post(𝒜::TMJets,
     elseif output_type == IntervalBox
         Rsets = _to_intervalbox(tTM, xTM, n)
     elseif output_type == Zonotope
-        Rsets = _to_zonotope(tTM, vTM, n)
+        Rsets = _to_zonotope(tTM, vTM, n) # WITHOUT SPLITTING IN TIME
+        #Rsets = _to_zonotope_time(tTM, vTM, n, 𝑂[:NΔt])
+    elseif output_type == :TaylorModel
+        Rsets = _to_taylormodel(tTM, vTM, n)
     end
 
     Rsol = ReachSolution(Rsets, 𝑂)

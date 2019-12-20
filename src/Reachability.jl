@@ -4,8 +4,9 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
-using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
+using Reexport, RecipesBase, MathematicalSystems, HybridSystems,
       LinearAlgebra, Suppressor, SparseArrays, Printf
+#using Memento
 
 @reexport using LazySets
 import LazySets: use_precise_ρ
@@ -13,7 +14,19 @@ using LazySets: LinearMap, AffineMap, ResetMap, Interval
 
 import LazySets.Approximations: project
 
-include("logging.jl")
+#include("logging.jl")
+info(s) = println(s)
+warn(s) = println(s)
+macro timing(expr, func=info)
+    return quote
+        local t0 = time()
+        local val = $(esc(expr))
+        local t1 = time()
+        $func(@sprintf "elapsed time: %1.3e seconds" t1-t0)
+        val
+    end
+end
+
 include("Options/dictionary.jl")
 include("Options/validation.jl")
 include("Options/default_options.jl")

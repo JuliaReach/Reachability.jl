@@ -15,6 +15,7 @@ function options_TMJets()
 
     # output options
     push!(𝑂spec, OptionSpec(:output_type, Hyperrectangle, info="output type of the Taylor model overapproximation"))
+    push!(𝑂spec, OptionSpec(:NΔt, Int, info="number of partitions in time"))
 
     return 𝑂spec
 end
