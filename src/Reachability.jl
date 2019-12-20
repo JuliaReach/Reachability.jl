@@ -26,6 +26,10 @@ macro timing(expr, func=info)
         val
     end
 end
+DEFAULT_LOG_LEVEL = "warn"
+function configure_logger(level::Union{String, Int, Nothing}=DEFAULT_LOG_LEVEL)
+    return nothing
+end
 
 include("Options/dictionary.jl")
 include("Options/validation.jl")

@@ -47,7 +47,7 @@ function validate_solver_options_and_add_default_values!(options::Options)::Opti
     LOGGER = haskey(dict, :verbosity) ?
         configure_logger(dict[:verbosity]) :
         configure_logger()
-    check_aliases_and_add_default_value!(dict, dict_copy, [:verbosity], getlevel(LOGGER))
+    check_aliases_and_add_default_value!(dict, dict_copy, [:verbosity], "warn")
     if haskey(dict, :logfile)
         add_file_logger(dict[:logfile])
         check_aliases!(dict, dict_copy, [:logfile])
