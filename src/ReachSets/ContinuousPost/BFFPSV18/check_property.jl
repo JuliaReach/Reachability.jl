@@ -59,7 +59,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         if length(blocks) == 1
             Xhat0_mod = Xhat0[blocks[1]]
         else
-            Xhat0_mod = CartesianProductArray(Xhat0)
+            Xhat0_mod = CartesianProductArray(Xhat0[blocks])
         end
         return check(property, Xhat0_mod) ? 0 : 1
     end
