@@ -1,8 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-MathematicalSystems = "d14a8603-c872-5ed3-9ece-53e0e82e39da"
-SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-Documenter = "^ 0.23.0"
-MathematicalSystems = "≥ 0.6.4"
+Documenter = "0.23.0"
