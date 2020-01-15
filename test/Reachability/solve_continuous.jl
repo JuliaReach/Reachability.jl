@@ -106,6 +106,11 @@ s = solve(IVP(LCS(sparse(A)), X0),
           op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4], :exp_method=>"lazy",
                       :assume_sparse=>true))
 
+s = solve(IVP(LCS(A), X0),
+          Options(:T=>0.1),
+          op=BFFPSV18(:vars=>[1,3], :partition=>[1:2, 3:4],
+                      :lazy_inputs_interval => (k -> false)))
+
 # uses Interval for set_type_init and set_type_iter but Hyperrectangle for
 # set_type_proj
 s = solve(IVP(LCS(sparse(A)), X0),

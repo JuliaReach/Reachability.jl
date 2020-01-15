@@ -1,4 +1,4 @@
-using LazySets: CacheMinkowskiSum
+using LazySets: CachedMinkowskiSumArray
 
 """
     check_property(S, property, options)
@@ -92,10 +92,10 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         # first set in a series
         function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
-            return CacheMinkowskiSum(LazySet{NUM}[x])
+            return CachedMinkowskiSumArray(LazySet{NUM}[x])
         end
         # further sets of the series
-        function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
+        function _f(k, i, x::MinkowskiSum{NUM, <:CachedMinkowskiSumArray}) where NUM
             if has_constant_directions(block_options_iter, i)
                 # forget sets if we do not use epsilon-close approximation
                 forget_sets!(x.X)
@@ -104,7 +104,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
             if lazy_inputs_interval(k)
                 # overapproximate lazy set
                 y = overapproximate_fun(i, x.X)
-                return CacheMinkowskiSum(LazySet{NUM}[y])
+                return CachedMinkowskiSumArray(LazySet{NUM}[y])
             end
             return x.X
         end

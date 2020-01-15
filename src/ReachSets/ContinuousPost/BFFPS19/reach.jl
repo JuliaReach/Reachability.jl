@@ -1,7 +1,7 @@
 using ..Utils: LDS, CLCDS
 
-using LazySets: CacheMinkowskiSum,
-                 isdisjoint
+using LazySets: CachedMinkowskiSumArray,
+                isdisjoint
 
 import LazySets.Approximations: overapproximate
 
@@ -140,10 +140,10 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
         # first set in a series
         function _f(k, i, x::LinearMap{NUM}) where {NUM}
             @assert k == 1 "a LinearMap is only expected in the first iteration"
-            return CacheMinkowskiSum(LazySet{NUM}[x])
+            return CachedMinkowskiSumArray(LazySet{NUM}[x])
         end
         # further sets of the series
-        function _f(k, i, x::MinkowskiSum{NUM, <:CacheMinkowskiSum}) where NUM
+        function _f(k, i, x::MinkowskiSum{NUM, <:CachedMinkowskiSumArray}) where NUM
             if has_constant_directions(block_options_iter, i)
                 # forget sets if we do not use epsilon-close approximation
                 forget_sets!(x.X)
@@ -152,7 +152,7 @@ function reach_mixed(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
             if lazy_inputs_interval(k)
                 # overapproximate lazy set
                 y = overapproximate_fun(i, x.X)
-                return CacheMinkowskiSum(LazySet{NUM}[y])
+                return CachedMinkowskiSumArray(LazySet{NUM}[y])
             end
             return x.X
         end
