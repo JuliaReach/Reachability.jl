@@ -701,8 +701,8 @@ end
 
 # version using concrete operations with zonotopes
 function _discretize_interpolation_homog(X0, ϕ, Einit, set_operations::Val{:zonotope})
-    Einit = convert(Zonotope, Einit)
-    Z1 = convert(Zonotope, X0)
+    Einit = _convert_or_overapproximate(Zonotope, Einit)
+    Z1 = _convert_or_overapproximate(Zonotope, X0)
     Z2 = linear_map(ϕ, minkowski_sum(Z1, Einit))
     Ω0 = overapproximate(ConvexHull(Z1, Z2), Zonotope)
     return Ω0
@@ -711,11 +711,11 @@ end
 # version using concrete operations with zonotopes
 function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, sih, Phi2Aabs, set_operations::Val{:zonotope})
     n = size(A, 1)
-    Einit = convert(Zonotope, Einit)
-    Eψ0 = convert(Zonotope, Eψ0)
-    Z1 = convert(Zonotope, X0)
+    Einit = _convert_or_overapproximate(Zonotope, Einit)
+    Eψ0 = _convert_or_overapproximate(Zonotope, Eψ0)
+    Z1 = _convert_or_overapproximate(Zonotope, X0)
     ϕX0 = linear_map(ϕ, Z1)
-    U0 = convert(Zonotope, U0)
+    U0 = _convert_or_overapproximate(Zonotope, U0)
     δI = Matrix(δ*I, n, n)
     δU0 = linear_map(δI, U0)
     Z2 = reduce(minkowski_sum, [ϕX0, δU0, Eψ0, Einit])
@@ -727,8 +727,8 @@ function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, si
     elseif U isa VaryingInput
         Ud = Vector{LazySet}(undef, length(U))
         for (k, Uk) in enumerate(U)
-            Eψk = convert(Zonotope, sih(Phi2Aabs * sih(A * Uk)))
-            Uk = convert(Zonotope, Uk)
+            Eψk = _convert_or_overapproximate(Zonotope, sih(Phi2Aabs * sih(A * Uk)))
+            Uk = _convert_or_overapproximate(Zonotope, Uk)
             δUk = linear_map(δI, Uk)
             Ud[k] = minkowski_sum(δUk, Eψk)
         end
@@ -886,4 +886,15 @@ function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
         throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
     end
     return Ω0, Ud
+end
+
+# fallback implementation for conversion (if applicable) or overapproximation
+function _convert_or_overapproximate(X::Type{<:AbstractPolytope}, Y::LazySet)
+    if applicable(convert, X, Y)
+        return convert(X, Y)
+    elseif applicable(overapproximate, Y, X)
+        return overapproximate(Y, X)
+    else
+        return convert(X, overapproximate(Y, Hyperrectangle))
+    end
 end

@@ -194,6 +194,10 @@ s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06(:max_order=>15))
 # affine system, x' = Ax + Bu
 s = solve(IVP(CLCCS(A, B, nothing, U), X0), Options(:T=>0.1), op=GLGM06())
 
+# initial set which cannot be converted to a zonotope
+X0 = Ball2(ones(4), 0.1)
+s = solve(IVP(LCS(A), X0), Options(:T=>0.1), op=GLGM06())
+
 # ======================
 # Unbounded-time setting
 # ======================
