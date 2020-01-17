@@ -85,9 +85,7 @@ function reach(problem::Union{IVP{<:CLDS{NUM}, <:LazySet{NUM}},
 
     # shortcut if only the initial set is required
     if N == 1
-        res[1] = res_type(
-            CartesianProductArray{NUM, LazySet{NUM}}(Xhat0[blocks]),
-            zero(NUM), options[:δ])
+        res[1] = SparseReachSet(CartesianProductArray(Xhat0[blocks]), zero(NUM), options[:δ], dimensions)
         return Flowpipe(res)
     end
     push!(args, Xhat0)
