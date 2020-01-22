@@ -735,7 +735,7 @@ function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, si
         Ud = VaryingInput(Ud)
 
     else
-        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
     return Ω0, Ud
 end
@@ -883,7 +883,7 @@ function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
         throw(ArgumentError("varying inputs with interval matrices are not " *
                             "supported yet"))
     else
-        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
     return Ω0, Ud
 end
