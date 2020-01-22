@@ -801,7 +801,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     linear_maps = Vector{LinearMap{N}}(undef, order > 2 ? 3 : 2)
 
     A² = A * A
-    Iδ = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(δ), size(A, 1))))
+    Iδ = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(δ), n)))
     IδW = Iδ + 1/2 * δ^2 * A + 1/6 * δ^3 * A²
     linear_maps[1] = LinearMap(IδW, U0)
 
