@@ -101,27 +101,27 @@ for CLC_S in (:CLCCS, :CLCDS)
     end
 end
 
-# x' = Ax + b, x ∈ X, u ∈ U in the continuous case
-# x+ = Ax + b, x ∈ X, u ∈ U in the discrete case
+# x' = Ax + c, x ∈ X, u ∈ U in the continuous case
+# x+ = Ax + c, x ∈ X, u ∈ U in the discrete case
 for (CA_S, CLC_S) in ((:CACS, :CLCCS), (:CADS, :CLCDS))
     @eval begin
         function normalize(system::$CA_S{N, AN, VN, XT}) where {N, AN<:AbstractMatrix{N}, VN<:AbstractVector{N}, XT<:XNCF{N}}
             n = statedim(system)
             X = _wrap_invariant(system.X, n)
-            U = _wrap_inputs(system.b)
+            U = _wrap_inputs(system.c)
             $CLC_S(system.A, I(n, N), X, U)
         end
     end
 end
 
-# x' = Ax + b in the continuous case
-# x+ = Ax + b in the discrete case
+# x' = Ax + c in the continuous case
+# x+ = Ax + c in the discrete case
 for (A_S, CLC_S) in ((:ACS, :CLCCS), (:ADS, :CLCDS))
     @eval begin
         function normalize(system::$A_S{N, AN, VN}) where {N, AN<:AbstractMatrix{N}, VN<:AbstractVector{N}}
             n = statedim(system)
             X = Universe(n)
-            U = _wrap_inputs(system.b)
+            U = _wrap_inputs(system.c)
             $CLC_S(system.A, I(n, N), X, U)
         end
     end
@@ -154,10 +154,10 @@ _wrap_inputs(U::LazySet, B::AbstractMatrix) = ConstantInput(B*U)
 _wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple) = isidentity(B) ? VaryingInput(U) : VaryingInput(map(u -> B*u, U))
 _wrap_inputs(U::Vector{<:LazySet}, B::AbstractMatrix) = VaryingInput(map(u -> B*u, U))
 
-_wrap_inputs(U::AbstractInput, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? map(u -> u ⊕ c, U) : map(u -> B*u ⊕ c, U) 
+_wrap_inputs(U::AbstractInput, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? map(u -> u ⊕ c, U) : map(u -> B*u ⊕ c, U)
 _wrap_inputs(U::AbstractInput, B::AbstractMatrix, c::AbstractVector) = map(u -> B*u ⊕ c, U)
 
-_wrap_inputs(U::LazySet, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? ConstantInput(U ⊕ c) : ConstantInput(B*U ⊕ c)  
+_wrap_inputs(U::LazySet, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? ConstantInput(U ⊕ c) : ConstantInput(B*U ⊕ c)
 _wrap_inputs(U::LazySet, B::AbstractMatrix, c::AbstractVector) = ConstantInput(B*U ⊕ c)
 
 _wrap_inputs(U::Vector{<:LazySet}, B::IdentityMultiple, c::AbstractVector) = isidentity(B) ? VaryingInput(map(u -> u ⊕ c, U)) : VaryingInput(map(u -> B*u ⊕ c, U))
