@@ -228,7 +228,9 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         end
         post(opD, HS, waiting_list, passed_list, loc_id, Rsets, jumps, options)
         # create vector with concrete set type (needed by ReachSolution)
-        push!(flowpipes, Flowpipe([rs for rs in Rsets]))
+        delete_empty_sets!(Rsets)
+        Rsets = convert(Vector{typeof(Rsets[1])}, Rsets)
+        push!(flowpipes, Flowpipe(Rsets))
     end
     if options[:mode] == "check"
         return CheckSolution(true, -1, options)
@@ -242,4 +244,14 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
         RsetsProj = ReachSolution(flowpipes, options)
     end
     return RsetsProj
+end
+
+# works for SparseReachSet only (!)
+function delete_empty_sets!(Fvec)
+    for (i, R) in enumerate(Fvec)
+        if typeof(R.rs.X) <: EmptySet
+            deleteat!(Fvec, i)
+        end
+    end
+    return Fvec
 end
