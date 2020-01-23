@@ -735,7 +735,7 @@ function _discretize_interpolation_inhomog(δ, U0, U, X0, ϕ, Einit, Eψ0, A, si
         Ud = VaryingInput(Ud)
 
     else
-        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
     return Ω0, Ud
 end
@@ -801,7 +801,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     linear_maps = Vector{LinearMap{N}}(undef, order > 2 ? 3 : 2)
 
     A² = A * A
-    Iδ = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(δ), size(A, 1))))
+    Iδ = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(δ), n)))
     IδW = Iδ + 1/2 * δ^2 * A + 1/6 * δ^3 * A²
     linear_maps[1] = LinearMap(IδW, U0)
 
@@ -883,7 +883,7 @@ function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
         throw(ArgumentError("varying inputs with interval matrices are not " *
                             "supported yet"))
     else
-        throw(ArgumentError("input of type $(typeof(U)) is not allwed"))
+        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
     return Ω0, Ud
 end
