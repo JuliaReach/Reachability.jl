@@ -796,42 +796,36 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     end
 
     U = inputset(𝑆)
-    U0 = next_set(U, 1)
     n = size(A, 1)
-    linear_maps = Vector{LinearMap{N}}(undef, order > 2 ? 3 : 2)
+
+    # `ΣM` sums up the interval matrices that are multiplied with the inputs:
+    # Σᵢ (Mᵢ * V) = (Σᵢ Mᵢ) * V
 
     A² = A * A
     Iδ = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(δ), n)))
     IδW = Iδ + 1/2 * δ^2 * A + 1/6 * δ^3 * A²
-    linear_maps[1] = LinearMap(IδW, U0)
+    ΣM = IδW
 
-    E = _expm_remainder(A, δ, order; n=n)
-    linear_maps[2] = LinearMap(E*δ, U0)
-
-    zero_interval = IntervalMatrices.Interval(zero(N), zero(N))
     if order > 2
         # i = 2
         αᵢ₊₁ = 6 # factorial of (i+1)
         Aⁱ = A²
         δⁱ⁺¹ = δ^3
-        M_sum = IntervalMatrix(fill(zero_interval, size(A)))
         @inbounds for i in 3:order
             αᵢ₊₁ *= i+1
             δⁱ⁺¹ *= δ
             Aⁱ *= A
-            M_sum += (δⁱ⁺¹/αᵢ₊₁) * Aⁱ
+            ΣM += (δⁱ⁺¹/αᵢ₊₁) * Aⁱ
         end
-        linear_maps[3] = LinearMap(M_sum, U0)
     end
 
-    Ω0, Ud = _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps, set_ops)
+    E = _expm_remainder(A, δ, order; n=n)
+    ΣM += E * δ
+
+    Ω0, Ud = _discretize_interval_matrix_inhomog(Ω0_homog, U, ΣM, set_ops)
 
     # create identity interval matrix
-    one_interval = IntervalMatrices.Interval(one(N), one(N))
-    B = IntervalMatrix(fill(zero_interval, (n, n)))
-    @inbounds for i in 1:n
-        B[i, i] = one_interval
-    end
+    B = IntervalMatrix(Diagonal(fill(IntervalMatrices.Interval(one(N)), n)))
 
     return IVP(CLCDS(ϕ, B, stateset(𝑆.s), Ud), Ω0)
 end
@@ -852,31 +846,25 @@ function _discretize_interval_matrix_homog(X0, ϕ, F, set_ops::Val{:zonotope})
 end
 
 # version using lazy sets and operations
-function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps, set_ops::Val{:lazy})
-    Ω0_inhomog = MinkowskiSumArray(linear_maps)
-    Ω0 = MinkowskiSumArray(vcat([Ω0_homog], linear_maps))
-
-    if U isa ConstantInput
-        Ud = ConstantInput(Ω0_inhomog)
-    elseif U isa VaryingInput
-        throw(ArgumentError("varying inputs with interval matrices are not " *
-                            "supported yet"))
-    else
-        throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
-    end
+function _discretize_interval_matrix_inhomog(Ω0_homog, U, M, set_ops::Val{:lazy})
+    U0 = next_set(U, 1)
+    Ω0_inhomog = M * U0
+    Ω0 = MinkowskiSum(Ω0_homog, Ω0_inhomog)
+    Ud = _discretize_interval_matrix_inhomog_wrap_inputs(U, Ω0_inhomog)
     return Ω0, Ud
 end
 
 # version using concrete operations with zonotopes
-function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
+function _discretize_interval_matrix_inhomog(Ω0_homog, U, M,
                                              set_ops::Val{:zonotope})
-    Ω0_inhomog = overapproximate(linear_maps[1], Zonotope)
-    @inbounds for i in 2:length(linear_maps)
-        Z = overapproximate(linear_maps[i], Zonotope)
-        Ω0_inhomog = minkowski_sum(Z, Ω0_inhomog)
-    end
+    U0 = next_set(U, 1)
+    Ω0_inhomog = overapproximate(M * U0, Zonotope)
     Ω0 = minkowski_sum(Ω0_homog, Ω0_inhomog)
+    Ud = _discretize_interval_matrix_inhomog_wrap_inputs(U, Ω0_inhomog)
+    return Ω0, Ud
+end
 
+function _discretize_interval_matrix_inhomog_wrap_inputs(U, Ω0_inhomog)
     if U isa ConstantInput
         Ud = ConstantInput(Ω0_inhomog)
     elseif U isa VaryingInput
@@ -885,7 +873,7 @@ function _discretize_interval_matrix_inhomog(U, Ω0_homog, linear_maps,
     else
         throw(ArgumentError("input of type $(typeof(U)) is not allowed"))
     end
-    return Ω0, Ud
+    return Ud
 end
 
 # fallback implementation for conversion (if applicable) or overapproximation
