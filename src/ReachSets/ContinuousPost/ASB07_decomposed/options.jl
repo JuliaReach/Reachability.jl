@@ -14,7 +14,7 @@ function options_ASB07_decomposed()
         domain=String, domain_check=(v  ->  v ∈ ["zonotope", "lazy"]),
         info="type of set operations applied during discretization"))
 
-    push!(𝑂spec, OptionSpec(:block_options_init, Hyperrectangle, domain=Any,
+    push!(𝑂spec, OptionSpec(:block_options_init, Zonotope, domain=Any,
         info="option for the decomposition of the initial states"))
 
     push!(𝑂spec, OptionSpec(:partition, [Int[]],
