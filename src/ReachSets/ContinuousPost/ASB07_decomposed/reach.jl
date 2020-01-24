@@ -50,6 +50,15 @@ function reach_ASB07_decomposed!(R::Vector{<:ReachSet},
         t1 += δ
         R[k] = ReachSet(Rₖ, t0, t1)
 
+        if U != nothing
+            for i in 1:b
+                bi = partition[blocks[i]]
+                block_row = IntervalMatrix(row(ϕpowerk, bi))
+                W_new = overapproximate(block_row * inputs, Zonotope)
+                Whatk[i] = minkowski_sum(Whatk[i], W_new)
+            end
+        end
+
         ϕpowerk *= ϕ
 
         k += 1
