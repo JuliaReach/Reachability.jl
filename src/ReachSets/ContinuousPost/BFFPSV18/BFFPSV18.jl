@@ -140,15 +140,20 @@ end
 """
     BFFPSV18 <: ContinuousPost
 
-Implementation of the reachability algorithm for purely continuous linear
-time-invariant systems using block decompositons by S. Bogomolov, M. Forets,
-G. Frehse, A. Podelski, C. Schilling and F. Viry [1].
+Implementation of the reachability algorithm using decompositions from [1].
+
+This algorithm applies to continuous affine ordinary differential equations of
+the form
+
+```
+    x'(t) = Ax(t) + u(t),\\qquad x(0) ∈ X0, u(t) ∈ U ∀ t ∈ [0, T],    (1)
+```
+where `T` is the (finite) time horizon. The result of the algorithm is a sequence
+of sets `Xk` whose union overapproximates the exact flowpipe of (1). 
 
 ### Fields
 
 - `options` -- an `Options` structure that holds the algorithm-specific options
-
-### Notes
 
 The following options are available:
 
@@ -156,15 +161,153 @@ The following options are available:
 $(print_option_spec(options_BFFPSV18()))
 ```
 
+See the `Notes` below for examples and an explanation of the options.
+
 ### Algorithm
 
 We refer to [1] for technical details.
+
+### Notes
+
+The compositional approach offers a tradeoff between accuracy and performance,
+since one can choose different partitions and different set representations.
+
+These notes illustrate the options that can be passed to the solver. We begin
+by explaining the default options used by the algorithm. Then we show how to
+specify the computation of a subset of the flowpipe, which helps to improve
+performance, specially for large systems.
+
+We continue to show some lower-level options such as how to specify a custom
+block decomposition (the set types used and the sizes of the blocks). 
+
+We conclude showing that there are two different *modes* of operation:
+flowpipe computation and safety property checking, and examples of use.
+
+#### Running example and default options
+
+By default, `BFFPSV18` uses a uniform partition of dimension *one* over all
+variables.
+
+For example, consider the two-dimensional example from [2]:
+
+```jldoctest BFFPSV18_example_1
+julia> using Reachability, MathematicalSystems
+
+julia> A = [-1  -4   0  0   0;
+             4  -1   0  0   0;
+             0   0  -3  1   0;
+             0   0  -1  3   0;
+             0   0   0  0  -2]
+
+julia> X₀ = BallInf(ones(5), 0.1);
+
+juoia> problem = InitialValueProblem(LinearContinuousSystem(A), X₀);
+
+julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04)));
+```
+Let's check that the dimension of the first set computed is 5:
+
+```jldoctest BFFPSV18_example_1
+julia> dim(first(sol.Xk).X)
+5
+
+julia> sol.options[:partition]
+5-element Array{Array{Int64,1},1}:
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+```
+Here, `[1]` corresponds to a block of size one for variable `5`, etc., until variable
+`5`. Let's check the set type used is interval:
+
+```jldoctest BFFPSV18_example_1
+julia> sol.options[:set_type]
+Interval
+
+julia> all([Xi isa Interval for Xi in array(first(sol.Xk).X)])
+true
+``` 
+
+#### Specifying a subset of all variables
+
+Suppose that we are only interested in variables `1` and `2`. Then we can
+specify it using the `:vars` option:
+
+```jldoctest BFFPSV18_example_1
+julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2])));
+
+julia> dim(first(sol.Xk).X)
+2
+```
+The sets used are intevals:
+
+```jldoctest BFFPSV18_example_1
+julia> all([Xi isa Hyperrectangle for Xi in first(sol.Xk).X.array])
+true
+```
+
+#### Specifying the set type
+
+We can as well specify using other set types for the overapproximation of the
+flowpipe, such as hyperrectangles. It can be specified using the `:overapproximation`
+option:
+
+```jldoctest BFFPSV18_example_1
+julia> sol = solve(problem, Options(:T=>5.0),
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :set_type=>Hyperrectangle)));
+
+julia> first(sol.Xk).X.array isa Hyperrectangle
+true
+```
+
+To increase the accuracy, the `overapproximation` option offers other possibilities.
+For example, one can use template directions instead of a fixed set type. Below
+we use octagonal directions:
+
+```jldoctest BFFPSV18_example_1
+julia> sol = solve(problem, Options(:T=>5.0),
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :template_directions=>:oct)));
+
+julia> first(sol.Xk).X.array isa HPolygon # CHECK: are these polygons or polytopes?
+true
+```
+
+Another possibility is to use epsilon-close approximation using polygons:
+
+```jldoctest BFFPSV18_example_1
+julia> sol = solve(problem, Options(:T=>5.0),
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :set_type=>HPolygon, :ε=>1e-3)));
+
+julia> first(sol.Xk).X.array isa HPolygon
+true
+```
+In this case, the overapproximation option can be ommited. The previous options
+are equivalent to:
+
+```jldoctest BFFPSV18_example_1
+julia> sol = solve(problem, Options(:T=>5.0),
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :ε=>1e-3)));
+
+julia> first(sol.Xk).X.array isa HPolygon
+true
+```
+
+##### Different decomposition strategies at different stages
+
+
+
+### References
 
 [1] [Reach Set Approximation through Decomposition with Low-dimensional Sets
 and High-dimensional Matrices](https://dl.acm.org/citation.cfm?id=3178128).
 S. Bogomolov, M. Forets, G. Frehse, A. Podelski, C. Schilling, F. Viry.
 HSCC '18 Proceedings of the 21st International Conference on Hybrid Systems:
 Computation and Control (part of CPS Week).
+
+[2] Althoff, Matthias. Reachability analysis and its application to the safety
+assessment of autonomous cars. Diss. Technische Universität München, 2010.
 """
 struct BFFPSV18 <: ContinuousPost
     options::TwoLayerOptions
