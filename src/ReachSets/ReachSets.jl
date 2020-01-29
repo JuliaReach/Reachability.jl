@@ -15,14 +15,14 @@ using ProgressMeter: Progress
 # no-op progress meter for unbounded time
 function ProgressMeter.update!(::Nothing, ::Int) end
 
-# fix namespace conflicts with MathematicalSystems
+# fix namespace conflicts
 using LazySets: LinearMap, AffineMap, ResetMap, Interval
-using Reachability: info, warn
-
 using LazySets.Approximations: AbstractDirections
+
 import LazySets.Approximations: project
 
-using Reachability: @timing,
+using Reachability: info, warn,
+                    @timing,
                     Options, OptionSpec, TwoLayerOptions, AbstractOptions,
                     validate_and_wrap_options, print_option_spec,
                     haskey_specified,
@@ -32,8 +32,6 @@ using Reachability: @timing,
 # Discretize and compute bloating factors
 # ========================================
 include("discretize.jl")
-
-export discretize
 
 # ==========================
 # Property checking results
@@ -142,7 +140,6 @@ include("DiscretePost/DecomposedDiscretePost.jl")
 # ==============================================
 include("project_reach.jl")
 
-export project_reach,
-       project
+export project_reach
 
 end # module ReachSets

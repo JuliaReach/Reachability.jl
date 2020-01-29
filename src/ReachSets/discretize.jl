@@ -1,4 +1,6 @@
 using IntervalMatrices: expm_overapproximation, correction_hull, _expm_remainder
+import MathematicalSystems: discretize
+
 const IM = IntervalMatrices
 
 """
