@@ -1,4 +1,4 @@
-using IntervalMatrices: expm_overapproximation, correction_hull, _expm_remainder
+using IntervalMatrices: exp_overapproximation, correction_hull, _exp_remainder
 import MathematicalSystems: discretize
 
 const IM = IntervalMatrices
@@ -787,7 +787,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     set_ops = Val(Symbol(set_operations))
 
     A, X0 = 𝑆.s.A, 𝑆.x0
-    ϕ = expm_overapproximation(A, δ, order)
+    ϕ = exp_overapproximation(A, δ, order)
     F = correction_hull(A, δ, order)
 
     Ω0_homog = _discretize_interval_matrix_homog(X0, ϕ, F, set_ops)
@@ -821,7 +821,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
         end
     end
 
-    E = _expm_remainder(A, δ, order; n=n)
+    E = _exp_remainder(A, δ, order; n=n)
     ΣM += E * δ
 
     Ω0, Ud = _discretize_interval_matrix_inhomog(Ω0_homog, U, ΣM, set_ops)
