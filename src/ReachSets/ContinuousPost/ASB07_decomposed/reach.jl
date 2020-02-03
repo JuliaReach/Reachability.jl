@@ -59,7 +59,7 @@ function reach_ASB07_decomposed!(R::Vector{<:ReachSet},
             end
         end
 
-        ϕpowerk *= ϕ
+        ϕpowerk = power(ϕ, k)
 
         k += 1
     end

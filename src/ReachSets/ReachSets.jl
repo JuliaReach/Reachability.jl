@@ -8,7 +8,7 @@ using ..Utils, ..Properties
 using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
       LinearAlgebra, SparseArrays
 import IntervalMatrices
-using IntervalMatrices: IntervalMatrix
+using IntervalMatrices: IntervalMatrix, power
 
 import ProgressMeter
 using ProgressMeter: Progress
