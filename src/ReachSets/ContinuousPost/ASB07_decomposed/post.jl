@@ -37,6 +37,7 @@ function post(𝒜::ASB07_decomposed,
     else
         U = inputset(𝑃_discrete)
     end
+    Φ = pexp2(𝑃.s.A, δ, N, 𝑂[:order_discretization])
     reach_ASB07_decomposed!(Rsets, Ωhat0, U, Φ, N, δ, max_order, n, partition,
                             blocks)
     end # timing
@@ -53,4 +54,12 @@ function post(𝒜::ASB07_decomposed,
     end
 
     return Rsol
+end
+
+function pexp2(M, δ, k, p)
+    out = Vector{IntervalMatrix{Float64}}(undef, k)
+    for i in 1:k
+        out[i] = exp_overapproximation(M, i*δ, p)
+    end
+    return out
 end
