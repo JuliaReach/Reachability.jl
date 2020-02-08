@@ -59,7 +59,7 @@ end
 function pexp2(M, δ, k, p)
     out = Vector{IntervalMatrix{Float64}}(undef, k)
     for i in 1:k
-        out[i] = exp_overapproximation(M, i*δ, p)
+        out[i] = IntervalMatrices.scale_and_square(M, 10, i*δ, p)
     end
     return out
 end
