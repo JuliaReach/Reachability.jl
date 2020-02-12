@@ -27,7 +27,7 @@ struct LazyDiscretePost <: DiscretePost
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:overapproximation], Hyperrectangle)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂I], false)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_R⋂G], true)
-        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟], true)
+        check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟], "invertible")
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:lazy_A⌜R⋂G⌟⋂I], true)
         check_aliases_and_add_default_value!(𝑂.dict, 𝑂copy.dict, [:combine_invariant_guard], 𝑂copy[:lazy_R⋂I])
 
@@ -158,7 +158,9 @@ function post(𝒫::LazyDiscretePost,
 
             # apply assignment
             A⌜R⋂G⌟ = apply_assignment(𝒫, constrained_map, R⋂G)
-            if !𝒫.options[:lazy_A⌜R⋂G⌟]
+            if 𝒫.options[:lazy_A⌜R⋂G⌟] == "always" ||
+                    (𝒫.options[:lazy_A⌜R⋂G⌟] == "invertible" &&
+                     !isinvertible(constrained_map))
                 A⌜R⋂G⌟ = overapproximate(A⌜R⋂G⌟, oa)
             end
 
