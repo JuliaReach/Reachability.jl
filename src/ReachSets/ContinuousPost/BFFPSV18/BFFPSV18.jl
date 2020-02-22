@@ -108,15 +108,6 @@ function validation_BFFPSV18(𝑂)
             bo = 𝑂[b_options]
             if bo isa Type{<:LazySet} || bo isa Type{<:AbstractDirections}
                 # uniform options
-            elseif bo isa Symbol
-                # template directions
-                option = get(Utils.template_direction_symbols, bo, nothing)
-                if option == nothing
-                    throw(DomainError(bo, "if the `$b_options` option " *
-                        "is a Symbol, it must be one of " *
-                        "$(keys(Utils.template_direction_symbols))"))
-                end
-                𝑂.specified[b_options] = option
             elseif bo isa AbstractVector || bo isa Dict{Int, Any}
                 # mapping
             elseif bo isa Real || bo isa Pair{<:UnionAll, <:Real}
@@ -148,8 +139,8 @@ the form
 ```
     x'(t) = Ax(t) + u(t),\\qquad x(0) ∈ X0, u(t) ∈ U ∀ t ∈ [0, T],    (1)
 ```
-where `T` is the (finite) time horizon. The result of the algorithm is a sequence
-of sets `Xk` whose union overapproximates the exact flowpipe of (1). 
+where `T` is the (finite) time horizon. The result of the algorithm is a
+sequence of sets `Xk` whose union overapproximates the exact flowpipe of (1).
 
 ### Fields
 
@@ -190,25 +181,27 @@ variables.
 
 For example, consider the two-dimensional example from [2]:
 
-```jldoctest BFFPSV18_example_1
+```jldoctest BFFPSV18_example
 julia> using Reachability, MathematicalSystems
 
-julia> A = [-1  -4   0  0   0;
+julia> A = [-1. -4   0  0   0;
              4  -1   0  0   0;
              0   0  -3  1   0;
              0   0  -1  3   0;
-             0   0   0  0  -2]
+             0   0   0  0  -2];
 
 julia> X₀ = BallInf(ones(5), 0.1);
 
-juoia> problem = InitialValueProblem(LinearContinuousSystem(A), X₀);
+julia> problem = InitialValueProblem(LinearContinuousSystem(A), X₀);
 
 julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04)));
 ```
 Let's check that the dimension of the first set computed is 5:
 
-```jldoctest BFFPSV18_example_1
-julia> dim(first(sol.Xk).X)
+```jldoctest BFFPSV18_example
+julia> X₁ = set(first(first(sol.flowpipes).reachsets));
+
+julia> dim(X₁)
 5
 
 julia> sol.options[:partition]
@@ -219,14 +212,12 @@ julia> sol.options[:partition]
  [4]
  [5]
 ```
-Here, `[1]` corresponds to a block of size one for variable `5`, etc., until variable
-`5`. Let's check the set type used is interval:
+Here, `[1]` corresponds to a block of size one for variable `5`, etc., until
+variable `5`.
+Let's check the set type used is `Interval`:
 
-```jldoctest BFFPSV18_example_1
-julia> sol.options[:set_type]
-Interval
-
-julia> all([Xi isa Interval for Xi in array(first(sol.Xk).X)])
+```jldoctest BFFPSV18_example
+julia> all(Xi isa Interval for Xi in array(X₁))
 true
 ``` 
 
@@ -235,68 +226,54 @@ true
 Suppose that we are only interested in variables `1` and `2`. Then we can
 specify it using the `:vars` option:
 
-```jldoctest BFFPSV18_example_1
-julia> sol = solve(problem, Options(:T=>5.0), op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2])));
+```jldoctest BFFPSV18_example
+julia> sol = solve(problem, Options(:T=>5.0),
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1, 2])));
 
-julia> dim(first(sol.Xk).X)
+julia> X₁ = set(first(first(sol.flowpipes).reachsets));
+
+julia> dim(X₁)
 2
 ```
-The sets used are intevals:
+The sets used are `Interval`s:
 
-```jldoctest BFFPSV18_example_1
-julia> all([Xi isa Hyperrectangle for Xi in first(sol.Xk).X.array])
+```jldoctest BFFPSV18_example
+julia> all(Xi isa Interval for Xi in array(X₁))
 true
 ```
 
 #### Specifying the set type
 
 We can as well specify using other set types for the overapproximation of the
-flowpipe, such as hyperrectangles. It can be specified using the `:overapproximation`
-option:
+flowpipe, such as hyperrectangles. It can be specified using the
+`:overapproximation` option:
 
-```jldoctest BFFPSV18_example_1
+```jldoctest BFFPSV18_example
 julia> sol = solve(problem, Options(:T=>5.0),
-                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :set_type=>Hyperrectangle)));
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1, 2],
+                                       :block_options=>Hyperrectangle)));
 
-julia> first(sol.Xk).X.array isa Hyperrectangle
+julia> X₁ = set(first(first(sol.flowpipes).reachsets));
+
+julia> all(Xi isa Hyperrectangle for Xi in array(X₁))
 true
 ```
 
-To increase the accuracy, the `overapproximation` option offers other possibilities.
-For example, one can use template directions instead of a fixed set type. Below
-we use octagonal directions:
+To increase the accuracy, the `overapproximation` option offers other
+possibilities.
+For example, one can use template directions instead of a fixed set type.
+Below we use octagonal directions:
 
-```jldoctest BFFPSV18_example_1
+```jldoctest BFFPSV18_example
 julia> sol = solve(problem, Options(:T=>5.0),
-                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :template_directions=>:oct)));
+                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1, 2],
+                                       :block_options=>OctDirections)));
 
-julia> first(sol.Xk).X.array isa HPolygon # CHECK: are these polygons or polytopes?
+julia> X₁ = set(first(first(sol.flowpipes).reachsets));
+
+julia> all(Xi isa HPolytope for Xi in array(X₁))
 true
 ```
-
-Another possibility is to use epsilon-close approximation using polygons:
-
-```jldoctest BFFPSV18_example_1
-julia> sol = solve(problem, Options(:T=>5.0),
-                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :set_type=>HPolygon, :ε=>1e-3)));
-
-julia> first(sol.Xk).X.array isa HPolygon
-true
-```
-In this case, the overapproximation option can be ommited. The previous options
-are equivalent to:
-
-```jldoctest BFFPSV18_example_1
-julia> sol = solve(problem, Options(:T=>5.0),
-                   op=BFFPSV18(Options(:δ=>0.04, :vars=>[1,2], :ε=>1e-3)));
-
-julia> first(sol.Xk).X.array isa HPolygon
-true
-```
-
-##### Different decomposition strategies at different stages
-
-
 
 ### References
 

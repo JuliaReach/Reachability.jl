@@ -43,8 +43,8 @@ Return the keys of the given options object.
 Obtain the keys of some options with one element:
 
 ```jldoctest
-julia> op = Options(:T=>1.0)
-Options(Dict{Symbol,Any}(:T=>1.0))
+julia> op = Options(:T => 1.0)
+Options(Dict{Symbol,Any}(:T => 1.0))
 
 julia> collect(keys(op))
 1-element Array{Symbol,1}:
@@ -67,8 +67,8 @@ Return the values of the given options object.
 Obtain the values of some options with one element:
 
 ```jldoctest
-julia> op = Options(:T=>1.0)
-Options(Dict{Symbol,Any}(:T=>1.0))
+julia> op = Options(:T => 1.0)
+Options(Dict{Symbol,Any}(:T => 1.0))
 
 julia> collect(values(op))
 1-element Array{Any,1}:
@@ -160,8 +160,8 @@ Store the given value at the given key in the options.
 Create an empty options object and add an input:
 
 ```jldoctest
-julia> op = Options(:T=>1.0)
-Options(Dict{Symbol,Any}(:T=>1.0))
+julia> op = Options(:T => 1.0)
+Options(Dict{Symbol,Any}(:T => 1.0))
 
 julia> op[:T] = 1.0
 1.0
@@ -461,7 +461,7 @@ julia> specs_list = [OptionSpec(:option1, nothing),
 julia> specs_map = Reachability.optionsspeclist_2_optionsspecmap(specs_list);
 
 julia> Reachability.unify_aliases(𝑂, specs_map)
-Options(Dict{Symbol,Any}(:option2=>"value",:option1=>1.0))
+Options(Dict{Symbol,Any}(:option2 => "value",:option1 => 1.0))
 
 ```
 """

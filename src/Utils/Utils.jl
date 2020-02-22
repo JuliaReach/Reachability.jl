@@ -29,8 +29,7 @@ export @block_id,
 export @filename_to_png
 
 # internal conversion
-export template_direction_symbols,
-       matrix_conversion,
+export matrix_conversion,
        matrix_conversion_lazy_explicit
 
 # internal normalization
