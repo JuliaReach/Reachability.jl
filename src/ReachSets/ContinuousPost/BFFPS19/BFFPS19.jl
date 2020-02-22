@@ -89,15 +89,6 @@ function validation_BFFPS19(𝑂)
             bo = 𝑂[b_options]
             if bo isa Type{<:LazySet} || bo isa Type{<:AbstractDirections}
                 # uniform options
-            elseif bo isa Symbol
-                # template directions
-                option = get(Utils.template_direction_symbols, bo, nothing)
-                if option == nothing
-                    throw(DomainError(bo, "if the `$b_options` option " *
-                        "is a Symbol, it must be one of " *
-                        "$(keys(Utils.template_direction_symbols))"))
-                end
-                𝑂.specified[b_options] = option
             elseif bo isa AbstractVector || bo isa Dict{Int, Any}
                 # mapping
             elseif bo isa Real || bo isa Pair{<:UnionAll, <:Real}

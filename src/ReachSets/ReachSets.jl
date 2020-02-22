@@ -19,6 +19,7 @@ function ProgressMeter.update!(::Nothing, ::Int) end
 using LazySets: LinearMap, AffineMap, ResetMap, Interval
 using LazySets.Approximations: AbstractDirections
 
+import LazySets: set
 import LazySets.Approximations: project
 
 using Reachability: info, warn,

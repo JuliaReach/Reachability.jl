@@ -272,7 +272,7 @@ end
 function termination_inv_out(inv, set, t0)
     l_inters = Intersection(set, inv)
     if isempty(l_inters)
-        return (true, true, EmptySet())
+        return (true, true, EmptySet(dim(inv)))
     else
         return (false, false, l_inters)
     end
@@ -280,11 +280,11 @@ end
 
 function termination_inv_N_out(N, inv, k, set, t0)
     if k >= N
-        return (true, false, EmptySet())
+        return (true, false, EmptySet(dim(inv)))
     end
     l_inters = Intersection(set, inv)
     if isempty(l_inters)
-        return (true, true, EmptySet())
+        return (true, true, EmptySet(dim(inv)))
     else
         return (false, false, l_inters)
     end
