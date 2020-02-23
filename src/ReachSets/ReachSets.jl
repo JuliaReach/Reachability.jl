@@ -4,9 +4,9 @@ Module with reachability algorithms.
 """
 module ReachSets
 
-using ..Utils, ..Properties
-using LazySets, MathematicalSystems, HybridSystems, Expokit, Optim,
-      LinearAlgebra, SparseArrays
+using ..Utils
+using LazySets, MathematicalSystems, MathematicalPredicates, HybridSystems,
+      Expokit, Optim, LinearAlgebra, SparseArrays
 import IntervalMatrices
 using IntervalMatrices: IntervalMatrix
 

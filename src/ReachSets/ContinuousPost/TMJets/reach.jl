@@ -20,7 +20,7 @@ SOFTWARE.
 import IntervalArithmetic
 using TaylorSeries
 import TaylorIntegration
-using TaylorModels: validated_step!, TaylorModel1, TaylorModelN
+using TaylorModels: validated_step!, TaylorModel1, TaylorModelN, evaluate
 
 import IntervalArithmetic
 const IA = IntervalArithmetic

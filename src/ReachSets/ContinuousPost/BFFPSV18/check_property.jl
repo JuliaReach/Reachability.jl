@@ -17,7 +17,7 @@ A dictionary with available algorithms is available via
 `available_algorithms_check`.
 """
 function check_property(S::IVP{<:AbstractDiscreteSystem},
-                        property::Property,
+                        property::Predicate,
                         options::TwoLayerOptions
                        )::Int
     # optional matrix conversion
@@ -61,7 +61,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
         else
             Xhat0_mod = CartesianProductArray(Xhat0[blocks])
         end
-        return check(property, Xhat0_mod) ? 0 : 1
+        return property(Xhat0_mod) ? 0 : 1
     end
     push!(args, Xhat0)
 
@@ -159,7 +159,7 @@ function check_property(S::IVP{<:AbstractDiscreteSystem},
 end
 
 function check_property(problem::IVP{<:AbstractContinuousSystem},
-                        property::Property,
+                        property::Predicate,
                         options::TwoLayerOptions
                        )::Int
     info("Time discretization...")

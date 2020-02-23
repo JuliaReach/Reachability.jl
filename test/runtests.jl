@@ -1,5 +1,5 @@
-using Test, LazySets, Reachability, MathematicalSystems, LinearAlgebra,
-      SparseArrays, IntervalMatrices
+using Test, LazySets, Reachability, MathematicalSystems, MathematicalPredicates,
+      LinearAlgebra, SparseArrays, IntervalMatrices
 
 # fix namespace conflicts with MathematicalSystems
 using LazySets: LinearMap, AffineMap, ResetMap, Interval

@@ -207,16 +207,16 @@ function solve!(system::InitialValueProblem{<:HybridSystem,
                 for (i, reach_set) in enumerate(reach_sets)
                     X = set(reach_set)
                     if (dim(X) == n_lowdim && n_lowdim < n)
-                        if !check(property_loc_lowdim, X)
+                        if !property_loc_lowdim(X)
                             return CheckSolution(false, i, options)
                         end
-                    elseif !check(property_loc, X)
+                    elseif !property_loc(X)
                         return CheckSolution(false, i, options)
                     end
                 end
             else
                 for (i, reach_set) in enumerate(Rsets)
-                    if !check(property_loc, set(reach_set))
+                    if !property_loc(set(reach_set))
                         return CheckSolution(false, i, options)
                     end
                 end

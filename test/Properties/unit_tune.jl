@@ -10,7 +10,7 @@ S = IVP(CLCDS(A, Matrix(1.0I, 4, 4), nothing, U), X0)
 time_horizon = 20.0
 prec = 1e-4
 initial_δ = 0.5
-property = SafeStatesProperty(LinearConstraint([24., 0., 1, 0], 375.))
+property = is_contained_in(LinearConstraint([24., 0., 1, 0], 375.))
 algorithm(N, δ) =
     solve(S,
           Options(:mode => "check", :plot_vars => [1, 3], :T => time_horizon,

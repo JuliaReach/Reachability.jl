@@ -1,9 +1,9 @@
 """
-    inout_map_property(𝑃::PROPERTY,
+    inout_map_property(𝑃::Predicate,
                        partition::AbstractVector{<:AbstractVector{Int}},
                        blocks::AbstractVector{Int},
                        n::Int
-                      )::PROPERTY where {PROPERTY<:Property}
+                      )
 
 Map a property to the dimensions of analyzed blocks.
 
@@ -30,11 +30,11 @@ partition and on the type of property:
   in the reduced dimensions, according to `blocks`.
 - Otherwise, the dimensional reduction is implemented via a (lazy) `LinearMap`.
 """
-function inout_map_property(𝑃::PROPERTY,
+function inout_map_property(𝑃::Predicate,
                             partition::AbstractVector{<:AbstractVector{Int}},
                             blocks::AbstractVector{Int},
                             n::Int
-                           )::PROPERTY where {PROPERTY<:Property}
+                           )
 
     # create a sorted list of all dimensions in `blocks` => available variables for projection
     proj = vcat(partition[blocks]...)
@@ -42,29 +42,5 @@ function inout_map_property(𝑃::PROPERTY,
     # no change in the dimension => return the original property
     length(proj) == n && return 𝑃
 
-    return inout_map_property_helper(𝑃, proj)
-end
-
-function inout_map_property_helper(𝑃::Conjunction, proj::Vector{Int})
-    new_conjuncts = similar(𝑃.conjuncts)
-    for (i, conjunct) in enumerate(𝑃.conjuncts)
-        new_conjuncts[i] = inout_map_property_helper(conjunct, proj)
-    end
-    return Conjunction(new_conjuncts)
-end
-
-function inout_map_property_helper(𝑃::Disjunction, proj::Vector{Int})
-    new_disjuncts = similar(𝑃.disjuncts)
-    for (i, disjunct) in enumerate(𝑃.disjuncts)
-        new_disjuncts[i] = inout_map_property_helper(disjunct, proj)
-    end
-    return Disjunction(new_disjuncts)
-end
-
-function inout_map_property_helper(𝑃::BadStatesProperty, proj::Vector{Int})
-    return BadStatesProperty(project(𝑃.bad, proj))
-end
-
-function inout_map_property_helper(𝑃::SafeStatesProperty, proj::Vector{Int})
-    return SafeStatesProperty(project(𝑃.safe, proj))
+    return project(𝑃, proj)
 end
