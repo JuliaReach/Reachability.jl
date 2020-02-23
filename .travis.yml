@@ -17,17 +17,18 @@ matrix:
       env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
   include:
     - julia: 1.0  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=true
+      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
     - julia: 1.1  # master versions
       env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
     - julia: 1.2  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
+      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=true
     - julia: 1.2  # development versions
       env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
 
 script:
+  - julia -e 'using Pkg; Pkg.clone("https://github.com/JuliaReach/MathematicalPredicates.jl")'
   - julia -e "$TEST_SUITE"
-  - if [ $DOCS == true ]; then julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate();'; fi
+  - if [ $DOCS == true ]; then julia --project=docs/ -e 'using Pkg; Pkg.clone("https://github.com/JuliaReach/MathematicalPredicates.jl"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate();'; fi
   - if [ $DOCS == true ]; then julia --project=docs/ docs/make.jl; fi
 
 after_success:
