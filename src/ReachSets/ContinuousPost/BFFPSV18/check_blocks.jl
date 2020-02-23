@@ -33,12 +33,12 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        eager_checking::Bool,
-                       prop::Property,
+                       prop::Predicate,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
-    if !check(prop, CartesianProductArray(Xhat0[blocks]))
+    if !prop(CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -75,7 +75,7 @@ function check_blocks(ϕ::SparseMatrixCSC{NUM, Int},
             Xhatk[i] = (U == nothing ? Xhatk_bi : Xhatk_bi + Whatk[i])
         end
 
-        if !check(prop, CartesianProductArray(Xhatk))
+        if !prop(CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -111,12 +111,12 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        eager_checking::Bool,
-                       prop::Property,
+                       prop::Predicate,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
-    if !check(prop, CartesianProductArray(Xhat0[blocks]))
+    if !prop(CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -155,7 +155,7 @@ function check_blocks(ϕ::AbstractMatrix{NUM},
             Xhatk[i] = MinkowskiSumArray(arr)
         end
 
-        if !check(prop, CartesianProductArray(Xhatk))
+        if !prop(CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -193,12 +193,12 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        eager_checking::Bool,
-                       prop::Property,
+                       prop::Predicate,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
-    if !check(prop, CartesianProductArray(Xhat0[blocks]))
+    if !prop(CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -240,7 +240,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             end
         end
 
-        if !check(prop, CartesianProductArray(Xhatk))
+        if !prop(CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0
@@ -269,12 +269,12 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
                        blocks::AbstractVector{Int},
                        partition::AbstractVector{<:Union{AbstractVector{Int}, Int}},
                        eager_checking::Bool,
-                       prop::Property,
+                       prop::Predicate,
                        progress_meter::Union{Progress, Nothing}
                        )::Int where {NUM}
     ProgressMeter.update!(progress_meter, 1)
     violation_index = 0
-    if !check(prop, CartesianProductArray(Xhat0[blocks]))
+    if !prop(CartesianProductArray(Xhat0[blocks]))
         if eager_checking
             return 1
         end
@@ -317,7 +317,7 @@ function check_blocks(ϕ::SparseMatrixExp{NUM},
             end
         end
 
-        if !check(prop, CartesianProductArray(Xhatk))
+        if !prop(CartesianProductArray(Xhatk))
             if eager_checking
                 return k
             elseif violation_index == 0

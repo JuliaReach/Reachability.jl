@@ -4,8 +4,9 @@ This is the main module and provides interfaces for specifying and solving reach
 """
 module Reachability
 
-using Reexport, RecipesBase, Memento, MathematicalSystems, HybridSystems,
-      LinearAlgebra, Suppressor, SparseArrays, Printf
+using Reexport, RecipesBase, Memento, MathematicalSystems,
+      MathematicalPredicates, HybridSystems, LinearAlgebra, Suppressor,
+      SparseArrays, Printf
 
 @reexport using LazySets
 import LazySets: use_precise_ρ
@@ -18,12 +19,10 @@ include("Options/dictionary.jl")
 include("Options/validation.jl")
 include("Options/default_options.jl")
 include("Utils/Utils.jl")
-include("Properties/Properties.jl")
 include("ReachSets/ReachSets.jl")
 
 @reexport using Reachability.Utils,
-                Reachability.ReachSets,
-                Reachability.Properties
+                Reachability.ReachSets
 
 include("solve.jl")
 include("plot_recipes.jl")

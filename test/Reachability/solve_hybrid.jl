@@ -59,7 +59,7 @@ for model in models
         opC = BFFPS19(:δ=>0.1)
 
         prop_poly = HPolyhedron([HalfSpace([1.], 17.5)])
-        property = BadStatesProperty(prop_poly)
+        property = is_disjoint_from(prop_poly)
 
         options[:property]= property
         options[:mode]= "check"
