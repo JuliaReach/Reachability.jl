@@ -10,6 +10,8 @@ const symI = IA.Interval(-1.0, 1.0)
 @inline zeroBox(m) = IntervalBox(zeroI, m)
 @inline symBox(m) = IntervalBox(symI, m)
 
+include("utils.jl") # more conversions
+
 function _to_hyperrectangle(tTM, xTM, n)
     N = length(xTM)
     SET_TYPE = Hyperrectangle{Float64, SVector{n, Float64}, SVector{n, Float64}}
