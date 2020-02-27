@@ -66,6 +66,22 @@ function _to_zonotope(tTM, vTM, n)
     return Rsets
 end
 
+function _to_taylor_model(tTM, xTM, vTM, n)
+    N = length(tTM)
+    SET_TYPE = typeof(vTM[:, 1]) # this is Array{TaylorModel1{TaylorN{Float64},Float64},1}
+    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    @inbounds for i in 1:N-1 # loop over the reach sets
+        # pick the i-th Taylor model
+        X = vTM[:, i]
+
+        # pick the time domain of the given TM (same in all dimensions)
+        Δt = TaylorModels.domain(X[1])
+
+        Rsets[i] = ReachSet(X, IA.inf(Δt), IA.sup(Δt))
+    end
+    return Rsets
+end
+
 function post(𝒜::TMJets,
               𝑃::InitialValueProblem{<:Union{BBCS, CBBCS, CBBCCS}, <:LazySet},
               𝑂_global::Options)
@@ -124,6 +140,10 @@ function post(𝒜::TMJets,
         Rsets = _to_intervalbox(tTM, xTM, n)
     elseif output_type == Zonotope
         Rsets = _to_zonotope(tTM, vTM, n)
+    elseif output_type == :TaylorModel
+        Rsets = _to_taylor_model(tTM, xTM, vTM, n)
+    else
+        println("not valid output type")
     end
 
     Rsol = ReachSolution(Flowpipe(Rsets), 𝑂)
