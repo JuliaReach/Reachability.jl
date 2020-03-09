@@ -20,18 +20,26 @@ for model in models
 
     # concrete discrete-post operator
     sol = solve(system, options, opC, ConcreteDiscretePost())
+    sol.options[:plot_vars] = [0, 1]
+    project(sol)
 
     # lazy discrete-post operator
     sol = solve(system, options, opC, LazyDiscretePost())
+    sol.options[:plot_vars] = [0, 1]
+    project(sol)
 
     # overapproximating discrete-post operator
     sol = solve(system, options, opC, ApproximatingDiscretePost())
+    sol.options[:plot_vars] = [0, 1]
+    project(sol)
 
     # --- BFFPS19
 
     opC = BFFPS19(:δ=>0.1)
 
     sol = solve(system, options, opC, DecomposedDiscretePost())
+    sol.options[:plot_vars] = [0, 1]
+    project(sol)
 
     # --- GLGM06
 
@@ -40,7 +48,9 @@ for model in models
     # concrete discrete-post operator
     if model == bouncing_ball  # currently this crashes for the thermostat
         opD = ConcreteDiscretePost(:check_invariant_intersection => true)
-        sol = solve(system, options, opC, opD);
+        sol = solve(system, options, opC, opD)
+        sol.options[:plot_vars] = [0, 1]
+        project(sol)
     end
 
     # lazy discrete-post operator

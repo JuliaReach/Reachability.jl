@@ -102,7 +102,7 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
                                              diff_blocks, block_options, termination)
-    store!(res, 1, X_store, t0, t1, dimensions, N)
+    store!(res, 1, X_store, t0, t1, all_dimensions, N)
     if terminate
         return 1, skip
     end
@@ -142,13 +142,13 @@ function reach_blocks!(ϕ::SparseMatrixCSC{NUM, Int},
         end
         if isdisjoint(reach_set_intersected, UnionSetArray(guards_proj))
             # keep sparse reach set
-            store!(res, k, X_store, t0, t1, all_dimensions, N)
+            store!(res, k, X_store, t0, t1, dimensions, N)
         else
             # compute full-dimensional reach set
             X_store_d = deco_post_sparse(bd, diff_blocks, Whatk_diff_blocks, partition,
                                          ϕpowerk, Xhatk_d, Xhat0, output_function, overapproximate)
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
-            store!(res, k, X_store, t0, t1, dimensions, N)
+            store!(res, k, X_store, t0, t1, all_dimensions, N)
         end
 
         if terminate
@@ -216,7 +216,7 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
     terminate, skip, X_store = termination_X(1, X_store, t0, X_store_d, blocks,
                                              diff_blocks, block_options, termination)
-    store!(res, 1, X_store, t0, t1, dimensions, N)
+    store!(res, 1, X_store, t0, t1, all_dimensions, N)
     if terminate
         return 1, skip
     end
@@ -257,14 +257,14 @@ function reach_blocks!(ϕ::AbstractMatrix{NUM},
 
         if isdisjoint(reach_set_intersected, UnionSetArray(guards_proj))
             # keep sparse reach set
-            store!(res, k, X_store, t0, t1, all_dimensions, N)
+            store!(res, k, X_store, t0, t1, dimensions, N)
         else
             # compute full-dimensional reach set
             X_store_d = deco_post_dense(bd, diff_blocks, Whatk_diff_blocks, partition, ϕpowerk, arr,
                                         arr_length, U, Xhat0, Xhatk_d, output_function, overapproximate)
 
             X_store = getX_store(reach_set_intersected, X_store_d, block_options, blocks, diff_blocks)
-            store!(res, k, X_store, t0, t1, dimensions, N)
+            store!(res, k, X_store, t0, t1, all_dimensions, N)
         end
 
         if terminate
