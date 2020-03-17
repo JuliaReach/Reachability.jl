@@ -6,12 +6,10 @@ function reach_homog!(R::Vector{ReachSet{<:Zonotope{Float64}}},
                       Ω0::Zonotope,
                       Φ::AbstractMatrix,
                       N::Int,
-                      δ::Float64,
-                      max_order::Int)
+                      δ::Float64)
     # initial reach set
     t0, t1 = zero(δ), δ
-    Ω0red = reduce_order(Ω0, max_order)
-    R[1] = ReachSet(Ω0red, t0, t1)
+    R[1] = ReachSet(Ω0, t0, t1)
 
     k = 2
     while k <= N

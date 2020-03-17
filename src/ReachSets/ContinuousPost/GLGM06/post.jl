@@ -17,6 +17,7 @@ function post(𝒜::GLGM06,
                                   exp_method=𝑂[:exp_method],
                                   set_operations="zonotope")
     Ω0, Φ = 𝑃_discrete.x0, 𝑃_discrete.s.A
+    Ω0red = reduce_order(Ω0, max_order)
 
     # =====================
     # Flowpipe computation
@@ -28,11 +29,11 @@ function post(𝒜::GLGM06,
     info("Reachable States Computation...")
     @timing begin
     if inputdim(𝑃_discrete) == 0
-        reach_homog!(Rsets, Ω0, Φ, N, δ, max_order)
+        reach_homog!(Rsets, Ω0red, Φ, N, δ)
 
     else
         U = inputset(𝑃_discrete)
-        reach_inhomog!(Rsets, Ω0, U, Φ, N, δ, max_order)
+        reach_inhomog!(Rsets, Ω0red, U, Φ, N, δ, max_order)
     end
     end # timing
 
