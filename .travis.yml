@@ -15,11 +15,15 @@ matrix:
   allow_failures:
     - julia: 1.3  # development versions
       env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("MathematicalPredicates"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
-  #include:
+  include:
     - julia: 1.0
+      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
+    - julia: 1.2
       env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
     - julia: 1.3
       env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=true
+    #- julia: 1.4
+    #  env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
 
 script:
   - julia -e "$TEST_SUITE"
