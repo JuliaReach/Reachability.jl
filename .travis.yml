@@ -1,34 +1,29 @@
-## Documentation: http://docs.travis-ci.com/user/languages/julia/
+# Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 
 os:
   - linux
+  - osx
 
-notifications:
-  email: false
-
-git:
-  depth: 99999999
+julia:
+  - 1.0
+  - 1.2
+  - 1.3
+  - nightly
 
 matrix:
   fast_finish: true
   allow_failures:
-    - julia: 1.2  # development versions
-      env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("MathematicalPredicates"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
-  include:
-    - julia: 1.0  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
-    - julia: 1.1  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
-    - julia: 1.2  # master versions
-      env: TEST_SUITE='using Pkg; Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=true
-    - julia: 1.2  # development versions
-      env: TEST_SUITE='using Pkg; Pkg.develop("LazySets"); Pkg.develop("MathematicalSystems"); Pkg.develop("HybridSystems"); Pkg.develop("MathematicalPredicates"); Pkg.develop("TaylorModels"); Pkg.build("Reachability"); Pkg.test("Reachability"; coverage=true)'; DOCS=false
+    - julia: nightly
 
-script:
-  - julia -e "$TEST_SUITE"
-  - if [ $DOCS == true ]; then julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate();'; fi
-  - if [ $DOCS == true ]; then julia --project=docs/ docs/make.jl; fi
+# avoid duplicate tests in PRs
+branches:
+  only:
+    - master
+
+notifications:
+  email: false
 
 after_success:
-  - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - julia --color=yes --project=test/coverage/ -e 'using Pkg; Pkg.instantiate()'
+  - julia --color=yes --project=test/coverage/ test/coverage/coverage.jl
