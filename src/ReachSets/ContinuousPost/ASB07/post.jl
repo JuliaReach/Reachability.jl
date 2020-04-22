@@ -14,14 +14,19 @@ function post(𝒜::ASB07,
                             order=𝑂[:order_discretization],
                             set_operations=𝑂[:set_operations_discretization])
     Ω0, Φ = 𝑃_discrete.x0, 𝑃_discrete.s.A
+    if ! (genmat(Ω0) isa Matrix)
+        Ω0 = Zonotope(center(Ω0), Matrix(genmat(Ω0)))
+    end
 
     # ====================
     # Flowpipe computation
     # ====================
 
     # preallocate output
-    T = 𝑂[:set_operations_discretization] == "zonotope" ? Zonotope : LazySet
-    Rsets = Vector{ReachSet{T{Float64}}}(undef, N)
+    T = 𝑂[:set_operations_discretization] == "zonotope" ?
+        Zonotope{Float64, Vector{Float64}, Matrix{Float64}} :
+        LazySet{Float64}
+    Rsets = Vector{ReachSet{T}}(undef, N)
 
     max_order = 𝑂[:max_order]
 

@@ -20,6 +20,9 @@ function reach_ASB07!(R::Vector{<:ReachSet},
         # store reach set
         t0 = t1
         t1 += δ
+        if ! (genmat(Rₖ) isa Matrix)
+            Rₖ = Zonotope(center(Rₖ), Matrix(genmat(Rₖ)))
+        end
         R[k] = ReachSet(Rₖ, t0, t1)
 
         k += 1
