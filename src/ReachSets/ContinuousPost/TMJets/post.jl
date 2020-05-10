@@ -13,7 +13,7 @@ const symI = IA.Interval(-1.0, 1.0)
 function _to_hyperrectangle(tTM, xTM, n)
     N = length(xTM)
     SET_TYPE = Hyperrectangle{Float64, SVector{n, Float64}, SVector{n, Float64}}
-    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    Rsets = Vector{ReachSet{<:SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Hi = convert(Hyperrectangle, xTM[i])
         t0 = tTM[i]
@@ -26,7 +26,7 @@ end
 function _to_intervalbox(tTM, xTM, n)
     N = length(xTM)
     SET_TYPE = IA.IntervalBox{n, Float64}
-    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    Rsets = Vector{ReachSet{<:SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1
         Bi = xTM[i]
         t0 = tTM[i]
@@ -39,7 +39,7 @@ end
 function _to_zonotope(tTM, vTM, n)
     N = length(tTM)
     SET_TYPE = Zonotope{Float64}
-    Rsets = Vector{ReachSet{SET_TYPE}}(undef, N-1)
+    Rsets = Vector{ReachSet{<:SET_TYPE}}(undef, N-1)
     @inbounds for i in 1:N-1 # loop over the reach sets
         # pick the i-th Taylor model
         X = vTM[:, i]

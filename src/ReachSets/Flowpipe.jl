@@ -1,5 +1,5 @@
 """
-    Flowpipe{SN, RSN<:AbstractReachSet{SN}} <: AbstractSolution
+    Flowpipe{RSN<:AbstractReachSet} <: AbstractSolution
 
 Wrapper of a sequence of sets (the solution of a continuous-post operator).
 
@@ -7,7 +7,7 @@ Wrapper of a sequence of sets (the solution of a continuous-post operator).
 
 - `reachsets` -- the list of [`AbstractReachSet`](@ref)s
 """
-struct Flowpipe{SN, RSN<:AbstractReachSet{SN}}
+struct Flowpipe{RSN<:AbstractReachSet}
     reachsets::Vector{RSN}
 end
 

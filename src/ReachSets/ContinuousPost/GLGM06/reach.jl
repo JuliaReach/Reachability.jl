@@ -2,7 +2,7 @@
 # Homogeneous case
 # ================
 
-function reach_homog!(R::Vector{ReachSet{Zonotope{Float64}}},
+function reach_homog!(R::Vector{ReachSet{<:Zonotope{Float64}}},
                       Ω0::Zonotope,
                       Φ::AbstractMatrix,
                       N::Int,
@@ -29,7 +29,7 @@ end
 # Inhomogeneous case
 # ==================
 
-function reach_inhomog!(R::Vector{ReachSet{Zonotope{Float64}}},
+function reach_inhomog!(R::Vector{ReachSet{<:Zonotope{Float64}}},
                         Ω0::Zonotope,
                         U::ConstantInput,
                         Φ::AbstractMatrix,

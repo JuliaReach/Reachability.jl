@@ -23,7 +23,7 @@ function post(𝒜::GLGM06,
     # =====================
 
     # preallocate output
-    Rsets = Vector{ReachSet{Zonotope{Float64}}}(undef, N)
+    Rsets = Vector{ReachSet{<:Zonotope{Float64}}}(undef, N)
 
     info("Reachable States Computation...")
     @timing begin
