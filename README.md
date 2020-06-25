@@ -15,6 +15,8 @@ Currently this package implements algorithms for flowpipe approximation of:
 - linear and nonlinear purely continuous or purely discrete ODEs with nondeterministic inputs
 - hybrid dynamical systems
 
+> :warning: NOTE: If you are a new user, we suggest that you use [ReachabilityAnalysis.jl](https://github.com/JuliaReach/ReachabilityAnalysis.jl).
+
 ## Resources
 
 - [Manual](http://juliareach.github.io/Reachability.jl/dev/)
