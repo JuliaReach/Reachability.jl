@@ -3,8 +3,9 @@ using Reachability: constrained_dimensions
 
 include("models/bouncing_ball.jl")
 include("models/thermostat.jl")
+include("models/filtered_oscillator.jl")
 
-models = [bouncing_ball, thermostat]
+models = [bouncing_ball, thermostat, filtered_oscillator]
 
 for model in models
     system, options = model()
