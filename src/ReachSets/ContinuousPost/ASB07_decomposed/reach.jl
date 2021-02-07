@@ -1,23 +1,23 @@
 function reach_ASB07_decomposed!(R::Vector{<:ReachSet},
                                  Ωhat0::Vector{<:LazySet},
                                  U::Union{ConstantInput, Nothing},
-                                 ϕ::AbstractMatrix{IntervalArithmetic.Interval{NUM}},
+                                 ϕ,
                                  N::Int,
                                  δ::Float64,
                                  max_order::Int,
                                  n::Int,
                                  partition,
-                                 blocks) where {NUM}
+                                 blocks)
     # initial reach set
     t0, t1 = zero(δ), δ
     R[1] = ReachSet(CartesianProductArray(Ωhat0[blocks]), t0, t1)
 
     b = length(blocks)
-    Rₖ_array = Vector{LazySet{NUM}}(undef, b)
-    ϕpowerk = copy(ϕ)
+    Rₖ_array = Vector{LazySet{Float64}}(undef, b)
+    ϕpowerk = ϕ[1]
 
     if U != nothing
-        Whatk = Vector{Zonotope{NUM}}(undef, b)
+        Whatk = Vector{Zonotope{Float64}}(undef, b)
         inputs = next_set(U)
         @inbounds for i in 1:b
             bi = partition[blocks[i]]
@@ -59,7 +59,7 @@ function reach_ASB07_decomposed!(R::Vector{<:ReachSet},
             end
         end
 
-        ϕpowerk *= ϕ
+        ϕpowerk = ϕ[k]
 
         k += 1
     end

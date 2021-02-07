@@ -787,7 +787,7 @@ function discretize_interval_matrix(𝑆::InitialValueProblem, δ::Float64,
     set_ops = Val(Symbol(set_operations))
 
     A, X0 = 𝑆.s.A, 𝑆.x0
-    ϕ = exp_overapproximation(A, δ, order)
+    ϕ = IntervalMatrices.scale_and_square(A, 10, δ, order)
     F = correction_hull(A, δ, order)
 
     Ω0_homog = _discretize_interval_matrix_homog(X0, ϕ, F, set_ops)
