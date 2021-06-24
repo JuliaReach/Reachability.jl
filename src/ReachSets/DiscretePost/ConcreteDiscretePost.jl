@@ -136,3 +136,58 @@ function apply_assignment(𝒫::ConcreteDiscretePost,
                           kwargs...)
     return linear_map(constrained_map.A, R⋂G)
 end
+
+function apply_assignment(𝒫::ConcreteDiscretePost,
+                          constrained_map::ConstrainedResetMap,
+                          R⋂G::LazySet;
+                          kwargs...)
+    old_c = constraints_list(R⋂G)
+    new_c = Vector{eltype(old_c)}()
+    sizehint!(new_c, length(old_c))
+    resets = constrained_map.dict
+    reset_dimensions = [k for k in keys(resets)]
+    for (i, c) in enumerate(old_c)
+        # find out if all or none of the constrained dimensions are reset
+        # 0: unknown
+        # 1: no constrained dims are reset
+        # 2: only constrained dims are reset
+        # 3: mixture
+        status = 0
+        for d in constrained_dimensions(c)
+            if d in reset_dimensions
+                if status == 1
+                    status = 3
+                    break
+                else
+                    status = 2
+                end
+            else
+                if status == 2
+                    status = 3
+                    break
+                else
+                    status = 1
+                end
+            end
+        end
+
+        if status == 1
+            # use old constraint
+            push!(new_c, c)
+        elseif status == 2
+            # add new equality constraints
+            for d in constrained_dimensions(c)
+                hyperplane = Hyperplane(sparsevec([d], [1.]), resets[d])
+                append!(new_c, constraints_list(hyperplane))
+            end
+        elseif status == 3
+            # fall back to default implementation
+            new_c = constraints_list(LazySets.ResetMap(R⋂G, resets))
+            break
+        else
+            # no constrained dimension at all -> keep this constraint
+            push!(new_c, c)
+        end
+    end
+    return HPolytope(new_c)
+end
